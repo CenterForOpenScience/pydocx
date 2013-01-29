@@ -17,10 +17,13 @@ class Docx2Html(DocxParser):
         return '<p>' + text + '</p>'
 
     def insertion(self, text, author, date):
-        pass
+        return "<div class='insert>" + text + "</div>"
 
     def bold(self, text):
         return '<b>' + self.escape(text) + '</b>'
 
     def italics(self, text):
         return '<i>' + self.escape(text) + '</i>'
+
+    def underline(self,text):
+        return '<u>' + self.escape(text) + '</u>'

@@ -17,9 +17,24 @@ class DocxParser:
             for wcr in wcp.find_all('w:r'):
                 text = wcr.find('w:t').text
                 wcrpr = wcr.find('w:rpr')
-                if wcrpr and wcrpr.find('w:i'):
+                if wcrpr and wcrpr.find('w:i') and not wcp.find('w:ins'):
                     paragraph_text += self.italics(text)
-                else:
+                if wcrpr and wcrpr.find('w:b') and not wcp.find('w:ins'):
+                    paragraph_text+=self.bold(text)
+                if wcrpr and wcrpr.find('w:u') and not wcp.find('w:ins'):
+                    paragraph_text+=self.underline(text)
+                if wcp and wcp.find('w:ins'):
+                    author=''
+                    date=''
+                    for ins in wcp.find_all('w:ins'):
+                        author= ins['w:author']
+                        date=ins['w:date']
+                        text=ins.find('w:t').text
+                        try:
+                            paragraph_text+=self.insertion(text,author,date)
+                        except:
+                            pass
+                elif not (wcrpr and wcrpr.find('w:i') or wcrpr and wcrpr.find('w:b') or wcrpr and wcrpr.find('w:u') or wcp and wcp.find('w:ins') ):
                     paragraph_text += text
             if not paragraph_text:
                 self._parsed += self.linebreak()
@@ -48,4 +63,8 @@ class DocxParser:
 
     @abstractmethod
     def italics(self, text):
+        return text
+
+    @abstractmethod
+    def underline(self,text):
         return text

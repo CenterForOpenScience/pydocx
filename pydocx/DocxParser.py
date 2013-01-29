@@ -29,11 +29,14 @@ class DocxParser:
                     for ins in wcp.find_all('w:ins'):
                         author= ins['w:author']
                         date=ins['w:date']
-                        text=ins.find('w:t').text
-                        try:
-                            paragraph_text+=self.insertion(text,author,date)
-                        except:
-                            pass
+                        if ins.find('w:t'):
+                            text=ins.find('w:t').text
+                            try:
+                                paragraph_text+=self.insertion(text,author,date)
+                            except:
+                                pass
+                        else:
+                            self._parsed+=self.linebreak()
                 elif not (wcrpr and wcrpr.find('w:i') or wcrpr and wcrpr.find('w:b') or wcrpr and wcrpr.find('w:u') or wcp and wcp.find('w:ins') ):
                     paragraph_text += text
             if not paragraph_text:

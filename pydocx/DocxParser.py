@@ -1,11 +1,17 @@
 from abc import abstractmethod, ABCMeta
 from bs4 import BeautifulSoup
+import zipfile
 
 class DocxParser:
     __metaclass__ = ABCMeta
 
-    def __init__(self, document):
-        self.soup = BeautifulSoup(document)
+    def __init__(self, path):
+        document = None
+        with zipfile.ZipFile(path) as f:
+            document = f.read('word/document.xml')
+            numbering= f.read('word/numbering.xml')
+        self.document = BeautifulSoup(document)
+        self.numbering = BeautifulSoup(numbering)
         self._parsed = ''
         self.parse()
 
@@ -15,9 +21,8 @@ class DocxParser:
     def parse(self):
         # TODO Convert the beautiful soup code to cElementTree
         self._parsed = ''
-        for wcp in self.soup.find_all('w:p'):
+        for wcp in self.document.find_all('w:p'):
             paragraph_text = ''
-            print wcp
             for wcr in wcp.find_all('w:r'):
                 run_text = ''
                 text = ''
@@ -41,7 +46,11 @@ class DocxParser:
                 if wcr.find('w:tab'):
                     run_text = self.tab() + run_text
 
-                if wcr.parent.find('w:ilvl'):
+                wcilvl = wcr.parent.find('w:ilvl')
+                if wcilvl:
+                    lvl=wcilvl.parent.find('w:numid')['w:val']
+                    self.get_lst_style(lvl)
+                    #create a function that takes in lvl and returns the style
                     run_text = self.list_element(run_text)
 
                 wcins = wcr.find_parent('w:ins')
@@ -55,7 +64,11 @@ class DocxParser:
             else:
                 self._parsed += self.paragraph(paragraph_text)
 
-
+    def get_lst_style(self,lvl):
+        print self.numbering.findAll("w:lvl",{"w:ilvl":lvl})
+        #return style and maybe? indent
+        # if decminal, put a ul around it
+            #marker=wcp.parent['w:ilvl':val]
 #            for wcr in wcp.find_all('w:r'):
 #
 #                wcrpr = wcr.find('w:rpr')
@@ -117,17 +130,13 @@ class DocxParser:
     def tab(self):
         return True
 
-#    @abstractmethod
-#    def ordered_list(self, text):
-#        pass
-#
-#    @abstractmethod
-#    def definition_list(self, text):
-#        pass
-#
-#    @abstractmethod
-#    def unordered_list(self, text):
-#         pass
+    @abstractmethod
+    def ordered_list(self, text):
+        pass
+
+    @abstractmethod
+    def unordered_list(self, text):
+         pass
 
     @abstractmethod
     def list_element(self,text):

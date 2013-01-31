@@ -21,6 +21,8 @@ class DocxParser:
     def parse(self):
         # TODO Convert the beautiful soup code to cElementTree
         self._parsed = ''
+        list_started_flag = False
+        list_text = ''
         for wcp in self.document.find_all('w:p'):
             paragraph_text = ''
             for wcr in wcp.find_all('w:r'):
@@ -46,17 +48,10 @@ class DocxParser:
                 if wcr.find('w:tab'):
                     run_text = self.tab() + run_text
 
-                wcilvl = wcr.parent.find('w:ilvl')
-                if wcilvl:
-                    #print wcilvl.parent.parent.parent #why is this going through two loops?
-                    type_of_lst={}
-                    lvl=wcilvl.parent.find('w:numid')['w:val']
-                    style_information=self.get_lst_style(lvl)
-                    for information in style_information:
-                        type_of_lst[run_text]=information.find('w:numfmt')['w:val']
-                        break
-                    print type_of_lst
-                    #create a function that takes in lvl and returns the style
+                wcilvl = wcp.find('w:ilvl')
+                if wcilvl and not wcr.find('w:rpr'):
+                    list_started_flag = True
+                    type_of_lst=self.get_lst_style(wcilvl)
                     run_text = self.list_element(run_text)
                 wcins = wcr.find_parent('w:ins')
                 if wcins:
@@ -64,19 +59,55 @@ class DocxParser:
                     date = wcins['w:date']
                     run_text = self.insertion(run_text, author, date)
                 paragraph_text += run_text
-            if not paragraph_text:
-                self._parsed += self.linebreak()
-            else:
-                self._parsed += self.paragraph(paragraph_text)
+            #if you are in a list, if sibling is not the same and
 
-    def get_lst_style(self,lvl):
+            is_wcp_a_list = True if wcp.find('w:ilvl') else False
+            wcp_list = wcp.find('w:ilvl')
+            if not list_started_flag:
+                if not paragraph_text:
+                    self._parsed += self.linebreak()
+                else:
+                    self._parsed += self.paragraph(paragraph_text)
+            else:
+                if is_wcp_a_list:
+                    if wcp.nextSibling:
+                        is_sibling_is_list = wcp.nextSibling.find('w:ilvl')
+                        if is_sibling_is_list:
+                            is_sibling_list_same_type = self.get_lst_style(wcp.nextSibling.find('w:ilvl')) == self.get_lst_style(wcp_list)
+                        if not is_sibling_is_list or not is_sibling_list_same_type:
+                            list_text += paragraph_text
+                            if type_of_lst=='bullet':
+                                self._parsed += self.unordered_list(list_text)
+                            else:
+                                self._parsed += self.ordered_list(list_text)
+                            list_started_flag = False
+                            list_text = ''
+                        else:
+                            list_text += paragraph_text
+                    else:
+                        print type_of_lst
+                        list_text += paragraph_text
+                        if type_of_lst=='bullet':
+                            self._parsed += self.unordered_list(list_text)
+                        else:
+                            self._parsed += self.ordered_list(list_text)
+
+                        list_started_flag = False
+                        list_text = ''
+
+                # you're still in a list, the next one is not a list or the next one is a different type
+                # you're still in a list, the next one is a list, and the next is not of a different type
+
+
+    def get_lst_style(self,wcilvl):
+        lvl=wcilvl.parent.find('w:numid')['w:val']
         numid=self.numbering.findAll('w:num')
         for id in numid:
             if id['w:numid']==lvl:
                 abstractid=id.find('w:abstractnumid')['w:val']
                 style_information=self.numbering.findAll("w:abstractnum",{"w:abstractnumid":abstractid})
-                return style_information
-
+                type_of_lst=style_information[0].find('w:numfmt')['w:val']
+                return type_of_lst
         #return style and maybe? indent
         # if decminal, put a ul around it
             #marker=wcp.parent['w:ilvl':val]
@@ -143,11 +174,11 @@ class DocxParser:
 
     @abstractmethod
     def ordered_list(self, text):
-        pass
+        return text
 
     @abstractmethod
     def unordered_list(self, text):
-         pass
+         return text
 
     @abstractmethod
     def list_element(self,text):

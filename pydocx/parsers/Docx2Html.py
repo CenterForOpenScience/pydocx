@@ -24,10 +24,10 @@ class Docx2Html(DocxParser):
         return "<li>{text}</li>".format(text=text)
 
     def ordered_list(self, text):
-        return '<ol>' + text + '</ol>'
+        return "<ol>{text}</ol>".format(text=text)
 
     def unordered_list(self, text):
-        return '<ul>' + text + '</ul>'
+        return "<ul>{text}</ul>".format(text=text)
 
     def bold(self, text):
         return '<b>' + self.escape(text) + '</b>'

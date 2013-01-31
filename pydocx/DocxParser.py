@@ -48,11 +48,16 @@ class DocxParser:
 
                 wcilvl = wcr.parent.find('w:ilvl')
                 if wcilvl:
+                    #print wcilvl.parent.parent.parent #why is this going through two loops?
+                    type_of_lst={}
                     lvl=wcilvl.parent.find('w:numid')['w:val']
-                    self.get_lst_style(lvl)
+                    style_information=self.get_lst_style(lvl)
+                    for information in style_information:
+                        type_of_lst[run_text]=information.find('w:numfmt')['w:val']
+                        break
+                    print type_of_lst
                     #create a function that takes in lvl and returns the style
                     run_text = self.list_element(run_text)
-
                 wcins = wcr.find_parent('w:ins')
                 if wcins:
                     author = wcins['w:author']
@@ -65,7 +70,13 @@ class DocxParser:
                 self._parsed += self.paragraph(paragraph_text)
 
     def get_lst_style(self,lvl):
-        print self.numbering.findAll("w:lvl",{"w:ilvl":lvl})
+        numid=self.numbering.findAll('w:num')
+        for id in numid:
+            if id['w:numid']==lvl:
+                abstractid=id.find('w:abstractnumid')['w:val']
+                style_information=self.numbering.findAll("w:abstractnum",{"w:abstractnumid":abstractid})
+                return style_information
+
         #return style and maybe? indent
         # if decminal, put a ul around it
             #marker=wcp.parent['w:ilvl':val]

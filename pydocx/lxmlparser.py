@@ -24,44 +24,50 @@ def get_parsed():
         if el.tag=='{%s}p' %namespace:
             for wp in el.iter():
                 if wp.tag =='{%s}ins' %namespace:
-                    for text in wp.iter():
-                        if text.tag =='{%s}t' %namespace:
-                            run_text +='<div class=insert>'+text.text+'</div>'
+                    for text in wp.iterchildren():
+                        if text not in visited_els:
+                            run_text +='<div class=insert>'+get_text(text,namespace,visited_els)+'</div>'
                             visited_els.append(text)
-                            break
-                if wp.tag=='{%s}r' %namespace:
-                    if wp.find('{%s}tab' %namespace) is not None:
-                        run_text+='%nbsp'
-                    if wp.find('{%s}rPr' %namespace) is not None:
-                        for tag in wp.iter():
-                            if tag.find('{%s}u' %namespace) is not None:
-                                if wp.find('{%s}t' %namespace) is not None:
-                                    run_text+='<u>' + wp.find('{%s}t' %namespace).text +'</u>'
-                                    visited_els.append(wp.find('{%s}t' %namespace))
-                                    break
-                    if wp.find('{%s}rPr' %namespace) is not None:
-                        for tag in wp.iter():
-                            if tag.find('{%s}i' %namespace) is not None:
-                                if wp.find('{%s}t' %namespace) is not None:
-                                    run_text+='<i>' + wp.find('{%s}t' %namespace).text +'</i>'
-                                    visited_els.append(wp.find('{%s}t' %namespace))
-                                    break
-                    if wp.find('{%s}rPr' %namespace) is not None:
-                        for tag in wp.iter():
-                            if tag.find('{%s}b' %namespace) is not None:
-                                if wp.find('{%s}t' %namespace) is not None:
-                                    run_text+='<b>' + wp.find('{%s}t' %namespace).text +'</b>'
-                                    visited_els.append(wp.find('{%s}t' %namespace))
-                                    break
-                    if wp.find('{%s}t' %namespace) is not None and wp.find('{%s}t' %namespace) not in visited_els:
-                        run_text+=wp.find('{%s}t' %namespace).text
+                if wp.tag=='{%s}r' %namespace and wp not in visited_els:
+                    run_text+=get_text(wp,namespace,visited_els)
+                    visited_els.append(wp)
                 if not el.getchildren():
                     run_text+='<br>'
-
-            else:
-                pass
-
+                if wp.tag == '{%s}ilvl' %namespace:
+                    for wp in el.iter():
+                        if wp not in visited_els and get_text(wp,namespace,visited_els) :
+                            run_text+='<li>' + get_text(wp,namespace,visited_els) + '</li>'
+                            visited_els.append(wp)
     return run_text
 
+
+def get_text(wp,namespace,visited_els):
+    run_text=''
+    if wp.find('{%s}tab' %namespace) is not None:
+        run_text+='%nbsp'
+    if wp.find('{%s}rPr' %namespace) is not None:
+        for tag in wp.iter():
+            if tag.find('{%s}u' %namespace) is not None:
+                if wp.find('{%s}t' %namespace) is not None:
+                    run_text+='<u>' + wp.find('{%s}t' %namespace).text +'</u>'
+                    visited_els.append(wp.find('{%s}t' %namespace))
+                    break
+    if wp.find('{%s}rPr' %namespace) is not None:
+        for tag in wp.iter():
+            if tag.find('{%s}i' %namespace) is not None:
+                if wp.find('{%s}t' %namespace) is not None:
+                    run_text+='<i>' + wp.find('{%s}t' %namespace).text +'</i>'
+                    visited_els.append(wp.find('{%s}t' %namespace))
+                    break
+    if wp.find('{%s}rPr' %namespace) is not None:
+        for tag in wp.iter():
+            if tag.find('{%s}b' %namespace) is not None:
+                if wp.find('{%s}t' %namespace) is not None:
+                    run_text+='<b>' + wp.find('{%s}t' %namespace).text +'</b>'
+                    visited_els.append(wp.find('{%s}t' %namespace))
+                    break
+    if wp.find('{%s}t' %namespace) is not None and wp.find('{%s}t' %namespace) not in visited_els:
+        run_text+=wp.find('{%s}t' %namespace).text
+    return run_text
 
 print get_parsed()

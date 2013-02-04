@@ -15,6 +15,8 @@ def get_parsed():
         numbering= f.read('word/numbering.xml')
     parser=etree.XMLParser(ns_clean=True)
     tree=etree.parse('/Users/samportnow/Documents/pydocx/helloworld/word/document.xml',parser)
+    numbering_tree=etree.parse('/Users/samportnow/Documents/pydocx/helloworld/word/numbering.xml',parser)
+    numbering_namespace=numbering_tree.getroot().nsmap['w']
     namespace=tree.getroot().nsmap['w']
     #rpr is run properties for the paragraph mark
     paragraph=''

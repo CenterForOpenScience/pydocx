@@ -1,148 +1,144 @@
 from abc import abstractmethod, ABCMeta
-from bs4 import BeautifulSoup
 import zipfile
+import logging
+import xml.etree.ElementTree as ElementTree
+from xml.etree.ElementTree import Element
 
-class DocxParser:
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("NewParser")
+
+def remove_namespaces(document):
+    root = ElementTree.fromstring(document)
+    for child in root.iter():
+        child.tag = child.tag.split("}")[1]
+        child.attrib = {k.split("}")[1]:v for k,v in child.attrib.items()}
+    return ElementTree.tostring(root)
+
+# Add some helper functions to Element to make it slightly more readable
+
+def has_child(self, tag):
+    return True if self.find(tag) is not None else False
+
+def has_child_all(self, tag):
+    return True if self.find('.//' + tag) is not None else False
+
+def find_all(self, tag):
+    return self.find('.//' + tag)
+
+def findall_all(self, tag):
+    return self.findall('.//' + tag)
+
+setattr(Element, 'has_child', has_child)
+setattr(Element, 'has_child_all', has_child_all)
+setattr(Element, 'find_all', find_all)
+setattr(Element, 'findall_all', findall_all)
+
+# End helpers
+
+class NewParser:
     __metaclass__ = ABCMeta
 
     def __init__(self, path):
-        document = None
+        self._parsed = ''
+        self.in_list = False
+
+        document = ''
         with zipfile.ZipFile(path) as f:
             document = f.read('word/document.xml')
             numbering= f.read('word/numbering.xml')
-        self.document = BeautifulSoup(document)
-        self.numbering = BeautifulSoup(numbering)
-        self._parsed = ''
-        self.parse()
 
-    def _inside(self, el):
-        pass
+        root = ElementTree.fromstring(remove_namespaces(document))
+        self.parse_begin(root)
 
-    def parse(self):
-        # TODO Convert the beautiful soup code to cElementTree
-        self._parsed = ''
-        list_started_flag = False
-        list_text = ''
-        for wcp in self.document.find_all('w:p'):
-            paragraph_text = ''
-            for wcr in wcp.find_all('w:r'):
-                run_text = ''
-                text = ''
-                text = wcr.find('w:t').text if wcr.find('w:t') else ''
-                # Inner text dealings
+    def parse_begin(self, el):
+        self._parsed += self.parse_lists(el)
 
-                wcrpr = wcr.find('w:rpr')
-                if wcrpr and wcrpr.find('w:i'):
-                    run_text += self.italics(text)
-                if wcrpr and wcrpr.find('w:b'):
-                    run_text += self.bold(text)
-                if wcrpr and wcrpr.find('w:u'):
-                    run_text += self.underline(text)
+    def parse_lists(self, el):
+        parsed = ''
 
-                if not run_text:
-                    # TODO escape(text)
-                    run_text = text
+        p_list = el.findall_all('p')
 
-                # Outside applies to text
+        list_started = False
+        list_chunks = []
+        index_start = 0
+        index_end = 1
 
-                if wcr.find('w:tab'):
-                    run_text = self.tab() + run_text
-
-                wcilvl = wcp.find('w:ilvl')
-                if wcilvl and not wcr.find('w:rpr'):
-                    list_started_flag = True
-                    type_of_lst=self.get_lst_style(wcilvl)
-                    run_text = self.list_element(run_text)
-                wcins = wcr.find_parent('w:ins')
-                if wcins:
-                    author = wcins['w:author']
-                    date = wcins['w:date']
-                    run_text = self.insertion(run_text, author, date)
-                paragraph_text += run_text
-            #if you are in a list, if sibling is not the same and
-
-            is_wcp_a_list = True if wcp.find('w:ilvl') else False
-            wcp_list = wcp.find('w:ilvl')
-            if not list_started_flag:
-                if not paragraph_text:
-                    self._parsed += self.linebreak()
-                else:
-                    self._parsed += self.paragraph(paragraph_text)
+        for i, el in enumerate(p_list):
+            if not list_started and el.has_child_all('ilvl'):
+                list_started = True
+                list_chunks.append(p_list[index_start:index_end])
+                index_start = i
+                index_end = i+1
+            elif list_started and not el.has_child_all('ilvl'):
+                list_started = False
+                list_chunks.append(p_list[index_start:index_end])
+                index_start = i
+                index_end = i+1
             else:
-                if is_wcp_a_list:
-                    if wcp.nextSibling:
-                        is_sibling_is_list = wcp.nextSibling.find('w:ilvl')
-                        if is_sibling_is_list:
-                            is_sibling_list_same_type = self.get_lst_style(wcp.nextSibling.find('w:ilvl')) == self.get_lst_style(wcp_list)
-                        if not is_sibling_is_list or not is_sibling_list_same_type:
-                            list_text += paragraph_text
-                            if type_of_lst=='bullet':
-                                self._parsed += self.unordered_list(list_text)
-                            else:
-                                self._parsed += self.ordered_list(list_text)
-                            list_started_flag = False
-                            list_text = ''
-                        else:
-                            list_text += paragraph_text
-                    else:
-                        print type_of_lst
-                        list_text += paragraph_text
-                        if type_of_lst=='bullet':
-                            self._parsed += self.unordered_list(list_text)
-                        else:
-                            self._parsed += self.ordered_list(list_text)
+                index_end = i+1
+        list_chunks.append(p_list[index_start:index_end])
+        for chunk in list_chunks:
+            chunk_parsed = ''
+            for el in chunk:
+                chunk_parsed += self.parse(el)
+            if chunk[0].has_child_all('ilvl'):
+                parsed += self.unordered_list(chunk_parsed)
+            else:
+                parsed += chunk_parsed
 
-                        list_started_flag = False
-                        list_text = ''
+        return parsed
 
-                # you're still in a list, the next one is not a list or the next one is a different type
-                # you're still in a list, the next one is a list, and the next is not of a different type
+    def parse(self, el):
+        parsed = ''
+        for child in el:
+            parsed += self.parse(child)
 
+        if el.tag == 'ilvl':
+            self.in_list = True
 
-    def get_lst_style(self,wcilvl):
-        lvl=wcilvl.parent.find('w:numid')['w:val']
-        numid=self.numbering.findAll('w:num')
-        for id in numid:
-            if id['w:numid']==lvl:
-                abstractid=id.find('w:abstractnumid')['w:val']
-                style_information=self.numbering.findAll("w:abstractnum",{"w:abstractnumid":abstractid})
-                type_of_lst=style_information[0].find('w:numfmt')['w:val']
-                return type_of_lst
-        #return style and maybe? indent
-        # if decminal, put a ul around it
-            #marker=wcp.parent['w:ilvl':val]
-#            for wcr in wcp.find_all('w:r'):
-#
-#                wcrpr = wcr.find('w:rpr')
-#
-#                if wcrpr and wcrpr.find('w:b') and not wcp.find('w:ins'):
-#                    paragraph_text+=self.bold(text)
-#                if wcrpr and wcrpr.find('w:u') and not wcp.find('w:ins'):
-#                    paragraph_text+=self.underline(text)
-#                if wcp and wcp.find('w:ins'):
-#                    author=''
-#                    date=''
-#                    for ins in wcp.find_all('w:ins'):
-#                        author= ins['w:author']
-#                        date=ins['w:date']
-#                        if ins.find('w:t'):
-#                            text=ins.find('w:t').text
-#                            try:
-#                                paragraph_text+=self.insertion(text,author,date)
-#                            except:
-#                                pass
-#                        else:
-#                            self._parsed+=self.linebreak()
-#                elif not (wcrpr and wcrpr.find('w:i') or wcrpr and wcrpr.find('w:b') or wcrpr and wcrpr.find('w:u') or wcp and wcp.find('w:ins') ):
-#                    paragraph_text += text
-#            if not paragraph_text:
-#                self._parsed += self.linebreak()
-#            else:
-#                self._parsed += self.paragraph(paragraph_text)
+        if el.tag == 'r':
+            return self.parse_r(el)
+        elif el.tag == 'p':
+            return self.parse_p(el, parsed)
+        else:
+            return parsed
+
+    def parse_p(self, el, text):
+        parsed = text
+        if self.in_list:
+            self.in_list = False
+            parsed = self.list_element(parsed)
+        elif not el.has_child_all('t'):
+            parsed = self.linebreak()
+        else:
+            parsed = self.paragraph(parsed)
+        return parsed
+
+    def parse_r(self, el):
+        if el.has_child('t'):
+            text = self.escape(el.find('t').text)
+            rpr = el.find('rPr')
+            if rpr is not None:
+                fns = []
+                if rpr.has_child('b'):
+                    fns.append(self.bold)
+                if rpr.has_child('i'):
+                    fns.append(self.italics)
+                if rpr.has_child('u'):
+                    fns.append(self.underline)
+                for fn in fns:
+                    text = fn(text)
+            return text
+        else:
+            return ''
 
     @property
     def parsed(self):
         return self._parsed
+
+    @property
+    def escape(self, text):
+        return text
 
     @abstractmethod
     def linebreak(self):
@@ -178,7 +174,7 @@ class DocxParser:
 
     @abstractmethod
     def unordered_list(self, text):
-         return text
+        return text
 
     @abstractmethod
     def list_element(self,text):

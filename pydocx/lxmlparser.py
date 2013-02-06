@@ -62,7 +62,6 @@ def get_parsed():
                             else:
                                 run_text +='<li>' +  get_text(lst, namespace, visited_els) + '</li>'
                                 visited_els.append(lst)
-
     print running_text
     return run_text
 

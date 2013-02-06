@@ -35,7 +35,7 @@ setattr(Element, 'findall_all', findall_all)
 
 # End helpers
 
-class NewParser:
+class DocxParser:
     __metaclass__ = ABCMeta
 
     def __init__(self, path):
@@ -45,10 +45,19 @@ class NewParser:
         document = ''
         with zipfile.ZipFile(path) as f:
             document = f.read('word/document.xml')
-            numbering= f.read('word/numbering.xml')
+            try:
+                numbering= f.read('word/numbering.xml')
+            except:
+                pass
 
-        root = ElementTree.fromstring(remove_namespaces(document))
-        self.parse_begin(root)
+        self.root = ElementTree.fromstring(remove_namespaces(document))
+        print self.root.findall_all('commentReference') #can find this, but has no children?
+
+        try:
+            self.numbering_root = ElementTree.fromstring(remove_namespaces(numbering))
+        except:
+            pass
+        self.parse_begin(self.root)
 
     def parse_begin(self, el):
         self._parsed += self.parse_lists(el)
@@ -59,12 +68,19 @@ class NewParser:
         p_list = el.findall_all('p')
 
         list_started = False
+        list_type = ''
         list_chunks = []
         index_start = 0
         index_end = 1
-
         for i, el in enumerate(p_list):
             if not list_started and el.has_child_all('ilvl'):
+                list_started = True
+                list_type = self.get_list_style(el.find_all('numId').attrib['val'])
+                list_chunks.append(p_list[index_start:index_end])
+                index_start = i
+                index_end = i+1
+            elif list_started and el.has_child_all('ilvl') and not list_type == self.get_list_style(el.find_all('numId').attrib['val']):
+                list_type = self.get_list_style(el.find_all('numId').attrib['val'])
                 list_started = True
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
@@ -82,7 +98,11 @@ class NewParser:
             for el in chunk:
                 chunk_parsed += self.parse(el)
             if chunk[0].has_child_all('ilvl'):
-                parsed += self.unordered_list(chunk_parsed)
+                lst_style = self.get_list_style(chunk[0].find_all('numId').attrib['val'])
+                if lst_style['val'] == 'bullet':
+                    parsed += self.unordered_list(chunk_parsed)
+                else:
+                    parsed += self.ordered_list(chunk_parsed)
             else:
                 parsed += chunk_parsed
 
@@ -95,11 +115,13 @@ class NewParser:
 
         if el.tag == 'ilvl':
             self.in_list = True
-
+            ## This starts the returns
         if el.tag == 'r':
             return self.parse_r(el)
         elif el.tag == 'p':
             return self.parse_p(el, parsed)
+        elif el.tag == 'ins':
+            return self.insertion(parsed, '', '')
         else:
             return parsed
 
@@ -115,8 +137,14 @@ class NewParser:
         return parsed
 
     def parse_r(self, el):
+        is_deleted = False
+        text = None
         if el.has_child('t'):
             text = self.escape(el.find('t').text)
+        elif el.has_child('delText'):
+            text = self.escape(el.find('delText').text)
+            is_deleted = True
+        if text:
             rpr = el.find('rPr')
             if rpr is not None:
                 fns = []
@@ -128,9 +156,27 @@ class NewParser:
                     fns.append(self.underline)
                 for fn in fns:
                     text = fn(text)
+            if is_deleted:
+                text = self.deletion(text,'','')
             return text
         else:
             return ''
+
+    def get_list_style(self, numval):
+
+        ids = self.numbering_root.findall_all('num')
+        for id in ids:
+            if id.attrib['numId'] == numval:
+                abstractid=id.find('abstractNumId')
+                abstractid=abstractid.attrib['val']
+                style_information=self.numbering_root.findall_all('abstractNum')
+                for info in style_information:
+                    if info.attrib['abstractNumId'] == abstractid:
+                        for i in info.iter():
+                            if i.find('numFmt') is not None:
+                                return i.find('numFmt').attrib
+
+
 
     @property
     def parsed(self):
@@ -150,6 +196,10 @@ class NewParser:
 
     @abstractmethod
     def insertion(self, text, author, date):
+        return text
+
+    @abstractmethod
+    def deletion(self, text, author, date):
         return text
 
     @abstractmethod
@@ -179,3 +229,4 @@ class NewParser:
     @abstractmethod
     def list_element(self,text):
         return text
+

@@ -9,7 +9,7 @@ class Docx2Html(DocxParser):
         self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
-        return '<html><head><style>.insert{{color:red}}</style></head><body>{}</body></html>'.format(self._parsed)
+        return '<html><head><style>.insert{{color:red}}.delete{{color:red; text-decoration:line-through}}</style></head><body>{}</body></html>'.format(self._parsed)
 
     def escape(self, text):
         return  xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -22,6 +22,9 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return "<span class='insert' author='{author}' date='{date}'>{text}</span>".format(author=author, date=date, text=text)
+
+    def deletion(self, text, author, date):
+        return "<span class='delete' author='{author}' date='{date}'>{text}</span>".format(author=author, date=date, text=text)
 
     def list_element(self, text):
         return "<li>{text}</li>".format(text=text)

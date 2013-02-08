@@ -32,6 +32,7 @@ setattr(Element, 'has_child', has_child)
 setattr(Element, 'has_child_all', has_child_all)
 setattr(Element, 'find_all', find_all)
 setattr(Element, 'findall_all', findall_all)
+setattr(Element, 'parent', None)
 
 # End helpers
 
@@ -44,17 +45,27 @@ class DocxParser:
 
         document = ''
         with zipfile.ZipFile(path) as f:
-            document = f.read('word/document.xml')
+            self.document_text = f.read('word/document.xml')
             try:
-                numbering= f.read('word/numbering.xml')
+                self.numbering_text = f.read('word/numbering.xml')
+            except:
+                pass
+            try:
+                self.comment_text  = f.read('word/comments.xml')
             except:
                 pass
 
-        self.root = ElementTree.fromstring(remove_namespaces(document))
-        print self.root.findall_all('commentReference') #can find this, but has no children?
-
+        self.root = ElementTree.fromstring(remove_namespaces(self.document_text))
+        def add_parent(el):
+            for child in el.getchildren():
+                setattr(child, 'parent', el)
+                add_parent(child)
+        add_parent(self.root)
+        self.comment_store = None
+        self.numbering_store = None
+        self.ignore_current = False
         try:
-            self.numbering_root = ElementTree.fromstring(remove_namespaces(numbering))
+            self.numbering_root = ElementTree.fromstring(remove_namespaces(self.numbering_text))
         except:
             pass
         self.parse_begin(self.root)
@@ -62,11 +73,10 @@ class DocxParser:
     def parse_begin(self, el):
         self._parsed += self.parse_lists(el)
 
+### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-
         p_list = el.findall_all('p')
-
         list_started = False
         list_type = ''
         list_chunks = []
@@ -112,6 +122,13 @@ class DocxParser:
         parsed = ''
         for child in el:
             parsed += self.parse(child)
+        if not self.ignore_current and el.parent.parent.parent is not None and el.parent.parent.parent.tag == 'tbl':
+            self.ignore_current = True
+            return self.table(self.parse(el.parent.parent.parent))
+        if el.tag == 'commentReference':
+            id = el.attrib['id']
+            print self.get_comments(id)
+            #TODO div for comment reference and styling
 
         if el.tag == 'ilvl':
             self.in_list = True
@@ -122,6 +139,10 @@ class DocxParser:
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
+        elif el.tag == 'tr':
+            return self.table_row(parsed)
+        elif el.tag == 'tc':
+            return self.table_cell(parsed)
         else:
             return parsed
 
@@ -163,7 +184,6 @@ class DocxParser:
             return ''
 
     def get_list_style(self, numval):
-
         ids = self.numbering_root.findall_all('num')
         for id in ids:
             if id.attrib['numId'] == numval:
@@ -176,7 +196,17 @@ class DocxParser:
                             if i.find('numFmt') is not None:
                                 return i.find('numFmt').attrib
 
-
+    def get_comments(self, doc_id):
+        if self.comment_store is None:
+            # TODO throw appropriate error
+            comment_root = ElementTree.fromstring(remove_namespaces(self.comment_text))
+            ids_and_info = {}
+            information = {}
+            ids = comment_root.findall_all('comment')
+            for id in ids:
+                ids_and_info[id.attrib['id']] = {"author": id.attrib['author'],"date": id.attrib['date'],"text" : id.findall_all('t')[0].text}
+            self.comment_store = ids_and_info
+        return self.comment_store[doc_id]
 
     @property
     def parsed(self):
@@ -230,3 +260,14 @@ class DocxParser:
     def list_element(self,text):
         return text
 
+    @abstractmethod
+    def table(self, text):
+        return text
+
+    @abstractmethod
+    def table_row(self, text):
+        return text
+
+    @abstractmethod
+    def table_cell(self, text):
+        return text

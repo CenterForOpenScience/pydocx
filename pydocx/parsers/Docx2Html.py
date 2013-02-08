@@ -46,3 +46,12 @@ class Docx2Html(DocxParser):
 
     def tab(self):
         return '&nbsp&nbsp&nbsp&nbsp' #### insert before the text right?? so got the text and just do an insert at the beginning!
+
+    def table(self, text):
+        return '<table>' + text + '</table>'
+
+    def table_row(self, text):
+        return '<tr>' + text + '</tr>'
+
+    def table_cell(self, text):
+        return '<td>' + text + '</td>'

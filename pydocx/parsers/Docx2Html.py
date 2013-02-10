@@ -9,7 +9,8 @@ class Docx2Html(DocxParser):
         self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
-        return '<html><head><style>.insert{{color:red}}.delete{{color:red; text-decoration:line-through}}</style></head><body>{}</body></html>'.format(self._parsed)
+        return '<html><head><style>.insert{{color:red}}.delete{{color:red; text-decoration:line-through}}' \
+               '.center{{text-align:center}}.right{{text-align:right}}</style></head><body>{}</body></html>'.format(self._parsed)
 
     def escape(self, text):
         return  xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -55,3 +56,15 @@ class Docx2Html(DocxParser):
 
     def table_cell(self, text):
         return '<td>' + text + '</td>'
+
+    def page_break(self):
+        return '<hr>'
+
+    def center_justify(self,text):
+        return "<div class = 'center'>" + text + '</div>'
+
+    def right_justify(self,text):
+        return "<div class = 'right'>" + text + '</div>'
+
+    def indent(self, text, right, left, firstLine):
+        return "<div style = 'margin-left:{}pt'>{}</div>".format(left,text)

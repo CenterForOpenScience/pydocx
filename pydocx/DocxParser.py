@@ -64,6 +64,7 @@ class DocxParser:
         self.comment_store = None
         self.numbering_store = None
         self.ignore_current = False
+        self.elements = []
         try:
             self.numbering_root = ElementTree.fromstring(remove_namespaces(self.numbering_text))
         except:
@@ -113,6 +114,8 @@ class DocxParser:
                     parsed += self.unordered_list(chunk_parsed)
                 else:
                     parsed += self.ordered_list(chunk_parsed)
+            elif chunk[0].has_child_all('br'):
+                parsed += self.page_break()
             else:
                 parsed += chunk_parsed
 
@@ -129,20 +132,24 @@ class DocxParser:
             id = el.attrib['id']
             print self.get_comments(id)
             #TODO div for comment reference and styling
-
+        if el.tag == 'br' and el.attrib['type'] == 'page':
+            #TODO figure out what parsed is getting overwritten
+            return self.page_break()
         if el.tag == 'ilvl':
             self.in_list = True
             ## This starts the returns
-        if el.tag == 'r':
+        elif el.tag == 'tr':
+            return self.table_row(parsed)
+        elif el.tag == 'tc':
+            self.elements.append(el)
+            return self.table_cell(parsed)
+        if el.tag == 'r' and el not in self.elements:
+            self.elements.append(el)
             return self.parse_r(el)
         elif el.tag == 'p':
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
-        elif el.tag == 'tr':
-            return self.table_row(parsed)
-        elif el.tag == 'tc':
-            return self.table_cell(parsed)
         else:
             return parsed
 
@@ -151,11 +158,13 @@ class DocxParser:
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed)
-        elif not el.has_child_all('t'):
+        elif not el.has_child_all('t') and el.parent.tag != 'tc':
             parsed = self.linebreak()
-        else:
+        elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)
         return parsed
+
+
 
     def parse_r(self, el):
         is_deleted = False
@@ -177,6 +186,33 @@ class DocxParser:
                     fns.append(self.underline)
                 for fn in fns:
                     text = fn(text)
+            ppr = el.parent.find ('pPr')
+            if ppr is not None:
+                jc = ppr.find('jc')
+                if jc is not None:
+                    if jc.attrib['val'] == 'right':
+                        text = self.right_justify(text)
+                    if jc.attrib['val'] == 'center':
+                        text = self.center_justify(text)
+                ind = ppr.find('ind')
+                if ind is not None:
+                    print ind.attrib
+                    right = None
+                    left = None
+                    firstLine = None
+                    if 'right' in ind.attrib:
+                        right = ind.attrib['right']
+                        right = int(right)/20
+                        right = str(right)
+                    if 'left' in ind.attrib:
+                        left = ind.attrib['left']
+                        left = int(left)/20
+                        left = str(left)
+                    if 'firstLine' in ind.attrib:
+                        firstLine = ind.attrib['firstLine']
+                        firstLine = int(firstLine)/20
+                        firstLine = str(firstLine)
+                    text = self.indent(text, right, left, firstLine)
             if is_deleted:
                 text = self.deletion(text,'','')
             return text
@@ -271,3 +307,21 @@ class DocxParser:
     @abstractmethod
     def table_cell(self, text):
         return text
+
+    @abstractmethod
+    def page_break(self):
+        return True
+
+    @abstractmethod
+    def right_justify(self,text):
+        return text
+
+    @abstractmethod
+    def center_justify(self,text):
+        return text
+
+    @abstractmethod
+    def indent(self, text, left = None, right = None, firstLine = None):
+        return text
+
+    #TODO JUSTIFIED JUSTIFIED TEXT

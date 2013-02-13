@@ -163,7 +163,7 @@ class DocxParser:
         if el.tag == 'br' and el.attrib['type'] == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        if el.tag == 'ilvl' and el not in self.visited:
+        if el.tag == 'ilvl' and el not in self.visited: #add it to the list so we don't repeat!
             self.in_list = True
             self.visited.append(el)
             ## This starts the returns

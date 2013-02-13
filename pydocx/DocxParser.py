@@ -33,6 +33,7 @@ setattr(Element, 'has_child_all', has_child_all)
 setattr(Element, 'find_all', find_all)
 setattr(Element, 'findall_all', findall_all)
 setattr(Element, 'parent', None)
+setattr(Element, 'parent_list', [])
 
 # End helpers
 
@@ -61,10 +62,25 @@ class DocxParser:
                 setattr(child, 'parent', el)
                 add_parent(child)
         add_parent(self.root)
+        def create_parent_list(el, tmp = []):
+            for child in el:
+                tmp.append(el)
+                tmp = create_parent_list(child, tmp)
+            el.parent_list = tmp[:]
+            try:
+                tmp.pop()
+            except:
+                tmp=[]
+            return tmp
+
+        create_parent_list(self.root)
+
         self.comment_store = None
         self.numbering_store = None
         self.ignore_current = False
         self.elements = []
+        self.tables_seen = []
+        self.visited = []
         try:
             self.numbering_root = ElementTree.fromstring(remove_namespaces(self.numbering_text))
         except:
@@ -77,7 +93,12 @@ class DocxParser:
 ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-        p_list = el.findall_all('p')
+        first_p = el.find_all('p')
+        children = []
+        for child in first_p.parent:
+            if child.tag == 'p' or child.tag == 'tbl':
+                children.append(child)
+        p_list = children
         list_started = False
         list_type = ''
         list_chunks = []
@@ -123,20 +144,28 @@ class DocxParser:
 
     def parse(self, el):
         parsed = ''
+        if not self.ignore_current:
+            tmp_d = {tmpel.tag:i for i, tmpel in enumerate(el.parent_list)}
+            if 'tbl' in tmp_d and el.parent_list[tmp_d['tbl']] not in self.tables_seen:
+                self.ignore_current = True
+                self.tables_seen.append(el.parent_list[tmp_d['tbl']])
+                tmpout = self.table(self.parse(el.parent_list[tmp_d['tbl']]))
+                self.ignore_current = False
+                return tmpout
+
         for child in el:
             parsed += self.parse(child)
-        if not self.ignore_current and el.parent.parent.parent is not None and el.parent.parent.parent.tag == 'tbl':
-            self.ignore_current = True
-            return self.table(self.parse(el.parent.parent.parent))
+
+
         if el.tag == 'commentReference':
             id = el.attrib['id']
-            print self.get_comments(id)
             #TODO div for comment reference and styling
         if el.tag == 'br' and el.attrib['type'] == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        if el.tag == 'ilvl':
+        if el.tag == 'ilvl' and el not in self.visited:
             self.in_list = True
+            self.visited.append(el)
             ## This starts the returns
         elif el.tag == 'tr':
             return self.table_row(parsed)
@@ -158,7 +187,7 @@ class DocxParser:
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed)
-        elif not el.has_child_all('t') and el.parent.tag != 'tc':
+        elif not el.has_child_all('t') and 'tbl' not in [i.tag for i in el.parent_list]:
             parsed = self.linebreak()
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)
@@ -196,7 +225,6 @@ class DocxParser:
                         text = self.center_justify(text)
                 ind = ppr.find('ind')
                 if ind is not None:
-                    print ind.attrib
                     right = None
                     left = None
                     firstLine = None

@@ -8,5 +8,5 @@ with open('test.html', 'w') as f:
 with open('testxml.html','w') as f:
     f.write(BeautifulSoup(ElementTree.tostring(Docx2Html('helloworld.docx').root)).prettify())
 
-print docx2html('helloworld.docx')
+#print docx2html('helloworld.docx')
 #print docx2markdown('helloworld.docx')

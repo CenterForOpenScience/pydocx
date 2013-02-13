@@ -1,4 +1,5 @@
 from pydocx.DocxParser import DocxParser
+from pydocx.NewDocxParser import Parser
 
 import xml.sax.saxutils
 
@@ -49,7 +50,7 @@ class Docx2Html(DocxParser):
         return '&nbsp&nbsp&nbsp&nbsp' #### insert before the text right?? so got the text and just do an insert at the beginning!
 
     def table(self, text):
-        return '<table>' + text + '</table>'
+        return '<table border=1>' + text + '</table>'
 
     def table_row(self, text):
         return '<tr>' + text + '</tr>'

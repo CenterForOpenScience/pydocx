@@ -801,8 +801,8 @@ def test_fall_back():
     assert html == 'success'
 
 
-@mock.patch('docx2html.core.read_html_file')
-@mock.patch('docx2html.core.get_zip_file_handler')
+#@mock.patch('docx2html.core.read_html_file')
+#@mock.patch('docx2html.core.get_zip_file_handler')
 def test_html_files(patch_zip_handler, patch_read):
     raise SkipTest('This test is not yet passing')
 

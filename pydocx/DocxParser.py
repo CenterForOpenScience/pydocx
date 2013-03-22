@@ -7,23 +7,31 @@ from xml.etree.ElementTree import Element
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
+
 def remove_namespaces(document):
     root = ElementTree.fromstring(document)
     for child in root.iter():
         child.tag = child.tag.split("}")[1]
-        child.attrib = {k.split("}")[1]:v for k,v in child.attrib.items()}
+        child.attrib = dict(
+            (k.split("}")[1], v)
+            for k, v in child.attrib.items()
+        )
     return ElementTree.tostring(root)
 
 # Add some helper functions to Element to make it slightly more readable
 
+
 def has_child(self, tag):
     return True if self.find(tag) is not None else False
+
 
 def has_child_all(self, tag):
     return True if self.find('.//' + tag) is not None else False
 
+
 def find_all(self, tag):
     return self.find('.//' + tag)
+
 
 def findall_all(self, tag):
     return self.findall('.//' + tag)
@@ -164,8 +172,13 @@ class DocxParser:
     def parse(self, el):
         parsed = ''
         if not self.ignore_current:
-            tmp_d = {tmpel.tag:i for i, tmpel in enumerate(el.parent_list)}
-            if 'tbl' in tmp_d and el.parent_list[tmp_d['tbl']] not in self.tables_seen:
+            tmp_d = dict(
+                (tmpel.tag, i)
+                for i, tmpel in enumerate(el.parent_list)
+            )
+            if (
+                    'tbl' in tmp_d and
+                    el.parent_list[tmp_d['tbl']] not in self.tables_seen):
                 self.ignore_current = True
                 self.tables_seen.append(el.parent_list[tmp_d['tbl']])
                 tmpout = self.table(self.parse(el.parent_list[tmp_d['tbl']]))

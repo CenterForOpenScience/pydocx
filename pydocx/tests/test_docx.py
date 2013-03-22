@@ -76,25 +76,6 @@ def test_extract_html():
           </tr>
         </table>
     </body></html>
-
-    <html><body>
-        <p>Simple text</p>
-        <ol data-list-type="decimal">
-            <li>one</li>
-            <li>two</li>
-            <li>three</li>
-        </ol>
-        <table>
-            <tr>
-                <td>Cell1</td>
-                <td>Cell2</td>
-            </tr>
-            <tr>
-                <td>Cell3</td>
-                <td>cell4</td>
-            </tr>
-        </table>
-        <tr><td></td><td></td></tr><tr><td></td><td></td></tr></body></html>
     ''')
 
 

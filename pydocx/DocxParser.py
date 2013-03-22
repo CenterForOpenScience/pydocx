@@ -191,9 +191,16 @@ class DocxParser:
                     'tbl' in tmp_d and
                     el.parent_list[tmp_d['tbl']] not in self.tables_seen):
                 self.ignore_current = True
-                self.tables_seen.append(el.parent_list[tmp_d['tbl']])
-                tmpout = self.table(self.parse(el.parent_list[tmp_d['tbl']]))
+                tbl = el.parent_list[tmp_d['tbl']]
+                self.tables_seen.append(tbl)
+                tmpout = self.table(self.parse(tbl))
                 self.ignore_current = False
+
+                # Need to keep track of visited trs and tcs
+                self.visited.extend(
+                    e for e in el_iter(tbl)
+                    if e.tag in ['tr', 'tc']
+                )
                 return tmpout
 
         for child in el:
@@ -202,14 +209,15 @@ class DocxParser:
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        # add it to the list so we don't repeat!
+        # Add it to the list so we don't repeat!
         if el.tag == 'ilvl' and el not in self.visited:
             self.in_list = True
             self.visited.append(el)
             ## This starts the returns
-        elif el.tag == 'tr':
+        # Do not do the tr or tc a second time
+        elif el.tag == 'tr' and el not in self.visited:
             return self.table_row(parsed)
-        elif el.tag == 'tc':
+        elif el.tag == 'tc' and el not in self.visited:
             self.elements.append(el)
             return self.table_cell(parsed)
         if el.tag == 'r' and el not in self.elements:

@@ -53,16 +53,19 @@ class DocxParser:
         self._parsed = ''
         self.in_list = False
 
-        with zipfile.ZipFile(path) as f:
+        f = zipfile.ZipFile(path)
+        try:
             self.document_text = f.read('word/document.xml')
             try:
                 self.numbering_text = f.read('word/numbering.xml')
-            except:
+            except zipfile.BadZipfile:
                 pass
             try:
                 self.comment_text = f.read('word/comments.xml')
-            except:
+            except zipfile.BadZipfile:
                 pass
+        finally:
+            f.close()
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),

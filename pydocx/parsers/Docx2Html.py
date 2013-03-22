@@ -11,11 +11,21 @@ class Docx2Html(DocxParser):
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
         return (
-            '<html><head><style>.insert{{color:red}}.delete'
-            '{{color:red; text-decoration:line-through}}.center'
-            '{{text-align:center}}.right{{text-align:right}}'
-            '</style></head><body>{content}</body></html>'
-        ).format(content=self._parsed)
+            '<html>{head}<body>{content}</body></html>'
+        ).format(
+            head=self.head(),
+            content=self._parsed,
+        )
+
+    def head(self):
+        return '<head>{style}</head>'.format(
+            style=self.style(),
+        )
+
+    def style(self):
+        return '<style>.insert{{color:red}}.delete'
+        '{{color:red; text-decoration:line-through}}.center'
+        '{{text-align:center}}.right{{text-align:right}}</style>'
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -41,7 +51,7 @@ class Docx2Html(DocxParser):
     def list_element(self, text):
         return "<li>{text}</li>".format(text=text)
 
-    def ordered_list(self, text):
+    def ordered_list(self, text, list_style):
         return "<ol>{text}</ol>".format(text=text)
 
     def unordered_list(self, text):

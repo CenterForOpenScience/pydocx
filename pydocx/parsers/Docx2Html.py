@@ -1,5 +1,4 @@
 from pydocx.DocxParser import DocxParser
-from pydocx.NewDocxParser import Parser
 
 import xml.sax.saxutils
 

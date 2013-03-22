@@ -2,6 +2,7 @@ from pydocx.DocxParser import DocxParser
 
 import xml.sax.saxutils
 
+
 class Docx2Html(DocxParser):
 
     @property
@@ -9,11 +10,15 @@ class Docx2Html(DocxParser):
         self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
-        return '<html><head><style>.insert{{color:red}}.delete{{color:red; text-decoration:line-through}}' \
-               '.center{{text-align:center}}.right{{text-align:right}}</style></head><body>{}</body></html>'.format(self._parsed)
+        return (
+            '<html><head><style>.insert{{color:red}}.delete'
+            '{{color:red; text-decoration:line-through}}.center'
+            '{{text-align:center}}.right{{text-align:right}}'
+            '</style></head><body>{}</body></html>'
+        ).format(self._parsed)
 
     def escape(self, text):
-        return  xml.sax.saxutils.quoteattr(text)[1:-1]
+        return xml.sax.saxutils.quoteattr(text)[1:-1]
 
     def linebreak(self, pre=None):
         return '<br />'
@@ -22,10 +27,16 @@ class Docx2Html(DocxParser):
         return '<p>' + text + '</p>'
 
     def insertion(self, text, author, date):
-        return "<span class='insert' author='{author}' date='{date}'>{text}</span>".format(author=author, date=date, text=text)
+        return (
+            "<span class='insert' author='{author}' "
+            "date='{date}'>{text}</span>"
+        ).format(author=author, date=date, text=text)
 
     def deletion(self, text, author, date):
-        return "<span class='delete' author='{author}' date='{date}'>{text}</span>".format(author=author, date=date, text=text)
+        return (
+            "<span class='delete' author='{author}' "
+            "date='{date}'>{text}</span>"
+        ).format(author=author, date=date, text=text)
 
     def list_element(self, text):
         return "<li>{text}</li>".format(text=text)
@@ -42,11 +53,13 @@ class Docx2Html(DocxParser):
     def italics(self, text):
         return '<i>' + text + '</i>'
 
-    def underline(self,text):
+    def underline(self, text):
         return '<u>' + text + '</u>'
 
     def tab(self):
-        return '&nbsp&nbsp&nbsp&nbsp' #### insert before the text right?? so got the text and just do an insert at the beginning!
+        # Insert before the text right?? So got the text and just do an insert
+        # at the beginning!
+        return '&nbsp&nbsp&nbsp&nbsp'
 
     def table(self, text):
         return '<table border=1>' + text + '</table>'
@@ -60,11 +73,11 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr>'
 
-    def center_justify(self,text):
+    def center_justify(self, text):
         return "<div class = 'center'>" + text + '</div>'
 
-    def right_justify(self,text):
+    def right_justify(self, text):
         return "<div class = 'right'>" + text + '</div>'
 
     def indent(self, text, right, left, firstLine):
-        return "<div style = 'margin-left:{}pt'>{}</div>".format(left,text)
+        return "<div style = 'margin-left:{}pt'>{}</div>".format(left, text)

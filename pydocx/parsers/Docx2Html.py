@@ -14,8 +14,8 @@ class Docx2Html(DocxParser):
             '<html><head><style>.insert{{color:red}}.delete'
             '{{color:red; text-decoration:line-through}}.center'
             '{{text-align:center}}.right{{text-align:right}}'
-            '</style></head><body>{}</body></html>'
-        ).format(self._parsed)
+            '</style></head><body>{content}</body></html>'
+        ).format(content=self._parsed)
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -80,4 +80,7 @@ class Docx2Html(DocxParser):
         return "<div class = 'right'>" + text + '</div>'
 
     def indent(self, text, right, left, firstLine):
-        return "<div style = 'margin-left:{}pt'>{}</div>".format(left, text)
+        return "<div style = 'margin-left:{left}pt'>{text}</div>".format(
+            left=left,
+            text=text,
+        )

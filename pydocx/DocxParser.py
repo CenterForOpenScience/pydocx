@@ -2,7 +2,7 @@ from abc import abstractmethod, ABCMeta
 import zipfile
 import logging
 import xml.etree.ElementTree as ElementTree
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import _ElementInterface
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
@@ -10,7 +10,7 @@ logger = logging.getLogger("NewParser")
 
 def remove_namespaces(document):
     root = ElementTree.fromstring(document)
-    for child in root.iter():
+    for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[1], v)
@@ -36,12 +36,20 @@ def find_all(self, tag):
 def findall_all(self, tag):
     return self.findall('.//' + tag)
 
-setattr(Element, 'has_child', has_child)
-setattr(Element, 'has_child_all', has_child_all)
-setattr(Element, 'find_all', find_all)
-setattr(Element, 'findall_all', findall_all)
-setattr(Element, 'parent', None)
-setattr(Element, 'parent_list', [])
+
+def el_iter(el):
+    try:
+        return el.iter()
+    except AttributeError:
+        return el.findall('.//*')
+
+
+setattr(_ElementInterface, 'has_child', has_child)
+setattr(_ElementInterface, 'has_child_all', has_child_all)
+setattr(_ElementInterface, 'find_all', find_all)
+setattr(_ElementInterface, 'findall_all', findall_all)
+setattr(_ElementInterface, 'parent', None)
+setattr(_ElementInterface, 'parent_list', [])
 
 # End helpers
 
@@ -290,7 +298,7 @@ class DocxParser:
                 )
                 for info in style_information:
                     if info.attrib['abstractNumId'] == abstractid:
-                        for i in info.iter():
+                        for i in el_iter(info):
                             if i.find('numFmt') is not None:
                                 return i.find('numFmt').attrib
 

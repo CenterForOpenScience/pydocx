@@ -37,6 +37,7 @@ setattr(Element, 'parent_list', [])
 
 # End helpers
 
+
 class DocxParser:
     __metaclass__ = ABCMeta
 
@@ -44,7 +45,6 @@ class DocxParser:
         self._parsed = ''
         self.in_list = False
 
-        document = ''
         with zipfile.ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
             try:
@@ -52,17 +52,23 @@ class DocxParser:
             except:
                 pass
             try:
-                self.comment_text  = f.read('word/comments.xml')
+                self.comment_text = f.read('word/comments.xml')
             except:
                 pass
 
-        self.root = ElementTree.fromstring(remove_namespaces(self.document_text))
+        self.root = ElementTree.fromstring(
+            remove_namespaces(self.document_text),
+        )
+
         def add_parent(el):
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
         add_parent(self.root)
-        def create_parent_list(el, tmp = []):
+
+        def create_parent_list(el, tmp=None):
+            if tmp is None:
+                tmp = []
             for child in el:
                 tmp.append(el)
                 tmp = create_parent_list(child, tmp)
@@ -70,7 +76,7 @@ class DocxParser:
             try:
                 tmp.pop()
             except:
-                tmp=[]
+                tmp = []
             return tmp
 
         create_parent_list(self.root)
@@ -82,7 +88,9 @@ class DocxParser:
         self.tables_seen = []
         self.visited = []
         try:
-            self.numbering_root = ElementTree.fromstring(remove_namespaces(self.numbering_text))
+            self.numbering_root = ElementTree.fromstring(
+                remove_namespaces(self.numbering_text),
+            )
         except:
             pass
         self.parse_begin(self.root)
@@ -107,12 +115,21 @@ class DocxParser:
         for i, el in enumerate(p_list):
             if not list_started and el.has_child_all('ilvl'):
                 list_started = True
-                list_type = self.get_list_style(el.find_all('numId').attrib['val'])
+                list_type = self.get_list_style(
+                    el.find_all('numId').attrib['val'],
+                )
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
                 index_end = i+1
-            elif list_started and el.has_child_all('ilvl') and not list_type == self.get_list_style(el.find_all('numId').attrib['val']):
-                list_type = self.get_list_style(el.find_all('numId').attrib['val'])
+            elif (
+                    list_started and
+                    el.has_child_all('ilvl') and
+                    not list_type == self.get_list_style(
+                        el.find_all('numId').attrib['val']
+                    )):
+                list_type = self.get_list_style(
+                    el.find_all('numId').attrib['val'],
+                )
                 list_started = True
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
@@ -130,7 +147,9 @@ class DocxParser:
             for el in chunk:
                 chunk_parsed += self.parse(el)
             if chunk[0].has_child_all('ilvl'):
-                lst_style = self.get_list_style(chunk[0].find_all('numId').attrib['val'])
+                lst_style = self.get_list_style(
+                    chunk[0].find_all('numId').attrib['val'],
+                )
                 if lst_style['val'] == 'bullet':
                     parsed += self.unordered_list(chunk_parsed)
                 else:
@@ -156,14 +175,11 @@ class DocxParser:
         for child in el:
             parsed += self.parse(child)
 
-
-        if el.tag == 'commentReference':
-            id = el.attrib['id']
-            #TODO div for comment reference and styling
         if el.tag == 'br' and el.attrib['type'] == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        if el.tag == 'ilvl' and el not in self.visited: #add it to the list so we don't repeat!
+        # add it to the list so we don't repeat!
+        if el.tag == 'ilvl' and el not in self.visited:
             self.in_list = True
             self.visited.append(el)
             ## This starts the returns
@@ -187,13 +203,13 @@ class DocxParser:
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed)
-        elif not el.has_child_all('t') and 'tbl' not in [i.tag for i in el.parent_list]:
+        elif (
+                not el.has_child_all('t') and
+                'tbl' not in [i.tag for i in el.parent_list]):
             parsed = self.linebreak()
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)
         return parsed
-
-
 
     def parse_r(self, el):
         is_deleted = False
@@ -215,7 +231,7 @@ class DocxParser:
                     fns.append(self.underline)
                 for fn in fns:
                     text = fn(text)
-            ppr = el.parent.find ('pPr')
+            ppr = el.parent.find('pPr')
             if ppr is not None:
                 jc = ppr.find('jc')
                 if jc is not None:
@@ -242,18 +258,20 @@ class DocxParser:
                         firstLine = str(firstLine)
                     text = self.indent(text, right, left, firstLine)
             if is_deleted:
-                text = self.deletion(text,'','')
+                text = self.deletion(text, '', '')
             return text
         else:
             return ''
 
     def get_list_style(self, numval):
         ids = self.numbering_root.findall_all('num')
-        for id in ids:
-            if id.attrib['numId'] == numval:
-                abstractid=id.find('abstractNumId')
-                abstractid=abstractid.attrib['val']
-                style_information=self.numbering_root.findall_all('abstractNum')
+        for _id in ids:
+            if _id.attrib['numId'] == numval:
+                abstractid = _id.find('abstractNumId')
+                abstractid = abstractid.attrib['val']
+                style_information = self.numbering_root.findall_all(
+                    'abstractNum',
+                )
                 for info in style_information:
                     if info.attrib['abstractNumId'] == abstractid:
                         for i in info.iter():
@@ -263,12 +281,17 @@ class DocxParser:
     def get_comments(self, doc_id):
         if self.comment_store is None:
             # TODO throw appropriate error
-            comment_root = ElementTree.fromstring(remove_namespaces(self.comment_text))
+            comment_root = ElementTree.fromstring(
+                remove_namespaces(self.comment_text),
+            )
             ids_and_info = {}
-            information = {}
             ids = comment_root.findall_all('comment')
-            for id in ids:
-                ids_and_info[id.attrib['id']] = {"author": id.attrib['author'],"date": id.attrib['date'],"text" : id.findall_all('t')[0].text}
+            for _id in ids:
+                ids_and_info[_id.attrib['id']] = {
+                    "author": _id.attrib['author'],
+                    "date": _id.attrib['date'],
+                    "text": _id.findall_all('t')[0].text,
+                }
             self.comment_store = ids_and_info
         return self.comment_store[doc_id]
 
@@ -305,7 +328,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def underline(self,text):
+    def underline(self, text):
         return text
 
     @abstractmethod
@@ -321,7 +344,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def list_element(self,text):
+    def list_element(self, text):
         return text
 
     @abstractmethod
@@ -341,15 +364,15 @@ class DocxParser:
         return True
 
     @abstractmethod
-    def right_justify(self,text):
+    def right_justify(self, text):
         return text
 
     @abstractmethod
-    def center_justify(self,text):
+    def center_justify(self, text):
         return text
 
     @abstractmethod
-    def indent(self, text, left = None, right = None, firstLine = None):
+    def indent(self, text, left=None, right=None, firstLine=None):
         return text
 
     #TODO JUSTIFIED JUSTIFIED TEXT

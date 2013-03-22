@@ -66,11 +66,11 @@ class DocxParser:
             self.document_text = f.read('word/document.xml')
             try:
                 self.numbering_text = f.read('word/numbering.xml')
-            except zipfile.BadZipfile:
+            except KeyError:
                 pass
             try:
                 self.comment_text = f.read('word/comments.xml')
-            except zipfile.BadZipfile:
+            except KeyError:
                 pass
         finally:
             f.close()
@@ -172,7 +172,7 @@ class DocxParser:
                 if lst_style['val'] == 'bullet':
                     parsed += self.unordered_list(chunk_parsed)
                 else:
-                    parsed += self.ordered_list(chunk_parsed)
+                    parsed += self.ordered_list(chunk_parsed, lst_style['val'])
             elif chunk[0].has_child_all('br'):
                 parsed += self.page_break()
             else:
@@ -199,7 +199,7 @@ class DocxParser:
         for child in el:
             parsed += self.parse(child)
 
-        if el.tag == 'br' and el.attrib['type'] == 'page':
+        if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
         # add it to the list so we don't repeat!
@@ -216,6 +216,8 @@ class DocxParser:
             self.elements.append(el)
             return self.parse_r(el)
         elif el.tag == 'p':
+            if el.parent.tag == 'tc':
+                return parsed
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -223,14 +225,12 @@ class DocxParser:
             return parsed
 
     def parse_p(self, el, text):
+        if text == '':
+            return ''
         parsed = text
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed)
-        elif (
-                not el.has_child_all('t') and
-                'tbl' not in [i.tag for i in el.parent_list]):
-            parsed = self.linebreak()
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)
         return parsed

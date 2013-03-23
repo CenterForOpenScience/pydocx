@@ -9,15 +9,15 @@ __author__ = 'samportnow'
     # visited already.
     #if el in visited_nodes:
         #continue
-with zipfile.ZipFile('/Users/samportnow/Documents/pydocx/helloworld.docx') as f:
-    document = f.read('word/document.xml')
-    numbering= f.read('word/numbering.xml')
-parser=etree.XMLParser(ns_clean=True)
-document=StringIO(document)
-numbering=StringIO(numbering)
-numbering_tree=etree.parse(numbering,parser)
-numbering_namespace=numbering_tree.getroot().nsmap['w']
-visited_els=[]
+#with zipfile.ZipFile('/Users/samportnow/Documents/pydocx/helloworld.docx') as f:
+#    document = f.read('word/document.xml')
+#    numbering= f.read('word/numbering.xml')
+#parser=etree.XMLParser(ns_clean=True)
+#document=StringIO(document)
+#numbering=StringIO(numbering)
+#numbering_tree=etree.parse(numbering,parser)
+#numbering_namespace=numbering_tree.getroot().nsmap['w']
+#visited_els=[]
 
 def get_parsed():
     parser=etree.XMLParser(ns_clean=True)
@@ -108,4 +108,4 @@ def get_list_style(numval):
                         if i.find('{%s}numFmt' %numbering_namespace) is not None:
                             return i.find('{%s}numFmt' %numbering_namespace).attrib
 
-print get_parsed()
+#print get_parsed()

@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
-def remove_namespaces(document): ##remove namespaces
+def remove_namespaces(document):  # remove namespaces
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
@@ -21,24 +21,26 @@ def remove_namespaces(document): ##remove namespaces
 # Add some helper functions to Element to make it slightly more readable
 
 
-def has_child(self, tag): #determine if current element has a child. stop at first child.
+# determine if current element has a child. stop at first child.
+def has_child(self, tag):
     return True if self.find(tag) is not None else False
 
 
-def has_child_all(self, tag): #determine if there is a child ahead in the element tree.
+# determine if there is a child ahead in the element tree.
+def has_child_all(self, tag):
                               # get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
 
-def find_all(self, tag): #find the first occurrence of a tag.
+def find_all(self, tag):  # find the first occurrence of a tag.
     return self.find('.//' + tag)
 
 
-def findall_all(self, tag): #find all occurrences of a tag
+def findall_all(self, tag):  # find all occurrences of a tag
     return self.findall('.//' + tag)
 
 
-def el_iter(el): #go through all elements
+def el_iter(el):  # go through all elements
     try:
         return el.iter()
     except AttributeError:
@@ -78,17 +80,17 @@ class DocxParser:
             f.close()
 
         self.root = ElementTree.fromstring(
-            remove_namespaces(self.document_text), #remove the namespaces
+            remove_namespaces(self.document_text),  # remove the namespaces
         )
 
-        def add_parent(el): #if a parent, make that an attribute
+        def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
 
-        add_parent(self.root) #create the parent attributes
+        add_parent(self.root)  # create the parent attributes
 
-        def create_parent_list(el, tmp=None): #make a list of parents
+        def create_parent_list(el, tmp=None):  # make a list of parents
             if tmp is None:
                 tmp = []
             for child in el:
@@ -101,7 +103,7 @@ class DocxParser:
                 tmp = []
             return tmp
 
-        create_parent_list(self.root) #create that parent list
+        create_parent_list(self.root)  # create that parent list
 
         #all blank when we init
         self.comment_store = None
@@ -116,38 +118,44 @@ class DocxParser:
             )
         except:
             pass
-        self.parse_begin(self.root) #begin to parse
+        self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
-        self._parsed += self.parse_lists(el) #start out wth lists
+        self._parsed += self.parse_lists(el)  # start out wth lists
 
 ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-        first_p = el.find_all('p') #find first instance of p
+        first_p = el.find_all('p')  # find first instance of p
         children = []
         for child in first_p.parent:
-            if child.tag == 'p' or child.tag == 'tbl': #if it's p or tbl, append it to the children lst
+            # if it's p or tbl, append it to the children lst
+            if child.tag == 'p' or child.tag == 'tbl':
                 children.append(child)
-        p_list = children #p_list is now children
-        list_started = False #list has not started yet
+        p_list = children  # p_list is now children
+        list_started = False  # list has not started yet
         list_type = ''
         list_chunks = []
         index_start = 0
         index_end = 1
-        for i, el in enumerate(p_list): #enumerate p_list so we have a tuple of # and element
-            if not list_started and el.has_child_all('ilvl'):#if list hasn't started and the element has a child
-                list_started = True #list has child
-                list_type = self.get_list_style( #get the type of list
+        # enumerate p_list so we have a tuple of # and element
+        for i, el in enumerate(p_list):
+            # if list hasn't started and the element has a child
+            if not list_started and el.has_child_all('ilvl'):
+                list_started = True  # list has child
+                list_type = self.get_list_style(  # get the type of list
                     el.find_all('numId').attrib['val'],
                 )
-                list_chunks.append(p_list[index_start:index_end])  #append the current and next to list_chunks
+                # append the current and next to list_chunks
+                list_chunks.append(p_list[index_start:index_end])
                 index_start = i
                 index_end = i+1
             elif (
                     list_started and
                     el.has_child_all('ilvl') and
-                    not list_type == self.get_list_style( ##if the list has started and the list type has changed, change the lsit type
+                    # if the list has started and the list type has changed,
+                    # change the lsit type
+                    not list_type == self.get_list_style(
                         el.find_all('numId').attrib['val']
                     )):
                 list_type = self.get_list_style(
@@ -158,18 +166,20 @@ class DocxParser:
                 index_start = i
                 index_end = i+1
             elif list_started and not el.has_child_all('ilvl'):
-                list_started = False #if there are no more children, list start is false
+                # if there are no more children, list start is false
+                list_started = False
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
                 index_end = i+1
             else:
                 index_end = i+1
         list_chunks.append(p_list[index_start:index_end])
-        for chunk in list_chunks:   #now parse the chunks
+        for chunk in list_chunks:  # now parse the chunks
             chunk_parsed = ''
             for el in chunk:
-                chunk_parsed += self.parse(el) #start parsing the text.
-            if chunk[0].has_child_all('ilvl'): #if it has children, get the list style
+                chunk_parsed += self.parse(el)  # start parsing the text.
+            # if it has children, get the list style
+            if chunk[0].has_child_all('ilvl'):
                 lst_style = self.get_list_style(
                     chunk[0].find_all('numId').attrib['val'],
                 )
@@ -187,7 +197,7 @@ class DocxParser:
     def parse(self, el):
         parsed = ''
         if not self.ignore_current:
-            tmp_d = dict( #first step look for tables
+            tmp_d = dict(  # first step look for tables
                 (tmpel.tag, i)
                 for i, tmpel in enumerate(el.parent_list)
             )
@@ -208,7 +218,8 @@ class DocxParser:
                 return tmpout
 
         for child in el:
-            parsed += self.parse(child) #recursive. so you can get all the way to the bottom
+            # recursive. so you can get all the way to the bottom
+            parsed += self.parse(child)
 
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
@@ -219,17 +230,17 @@ class DocxParser:
             self.visited.append(el)
             ## This starts the returns
         # Do not do the tr or tc a second time
-        elif el.tag == 'tr' and el not in self.visited: ##table rows
+        elif el.tag == 'tr' and el not in self.visited:  # table rows
             return self.table_row(parsed)
-        elif el.tag == 'tc' and el not in self.visited: ##table cells
+        elif el.tag == 'tc' and el not in self.visited:  # table cells
             self.elements.append(el)
             return self.table_cell(parsed)
         if el.tag == 'r' and el not in self.elements:
             self.elements.append(el)
-            return self.parse_r(el) #parse the run
+            return self.parse_r(el)  # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
-                return parsed ##get text in the table cell
+                return parsed  # get text in the table cell
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -242,24 +253,24 @@ class DocxParser:
         parsed = text
         if self.in_list:
             self.in_list = False
-            parsed = self.list_element(parsed)  #list element
+            parsed = self.list_element(parsed)  # list element
         elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed)     #or paragraph
+            parsed = self.paragraph(parsed)  # or paragraph
         return parsed
 
-    def parse_r(self, el): #parse the running text
+    def parse_r(self, el):  # parse the running text
         is_deleted = False
         text = None
         if el.has_child('t'):
             text = self.escape(el.find('t').text)
-        elif el.has_child('delText'): #get the deleted text
+        elif el.has_child('delText'):  # get the deleted text
             text = self.escape(el.find('delText').text)
             is_deleted = True
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
                 fns = []
-                if rpr.has_child('b'): #text styling
+                if rpr.has_child('b'):  # text styling
                     fns.append(self.bold)
                 if rpr.has_child('i'):
                     fns.append(self.italics)
@@ -270,7 +281,7 @@ class DocxParser:
             ppr = el.parent.find('pPr')
             if ppr is not None:
                 jc = ppr.find('jc')
-                if jc is not None: #text alignments
+                if jc is not None:  # text alignments
                     if jc.attrib['val'] == 'right':
                         text = self.right_justify(text)
                     if jc.attrib['val'] == 'center':

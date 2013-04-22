@@ -42,6 +42,12 @@ class Docx2Html(DocxParser):
             "date='{date}'>{text}</span>"
         ).format(author=author, date=date, text=text)
 
+    def hyperlink(self, text, href):
+        return '<a href="%(href)s">%(text)s</a>' % {
+            'href': href,
+            'text': text,
+        }
+
     def deletion(self, text, author, date):
         return (
             "<span class='delete' author='{author}' "

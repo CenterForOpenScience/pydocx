@@ -261,6 +261,14 @@ class DocxParser:
             parsed = self.paragraph(parsed)  # or paragraph
         return parsed
 
+    def _is_style_on(self, el):
+        """
+        For b, i, u (bold, italics, and underline) merely having the tag is not
+        sufficient. You need to check to make sure it is not set to "false" as
+        well.
+        """
+        return el.get('val') != 'false'
+
     def parse_r(self, el):  # parse the running text
         is_deleted = False
         text = None
@@ -274,11 +282,14 @@ class DocxParser:
             if rpr is not None:
                 fns = []
                 if rpr.has_child('b'):  # text styling
-                    fns.append(self.bold)
+                    if self._is_style_on(rpr.find('b')):
+                        fns.append(self.bold)
                 if rpr.has_child('i'):
-                    fns.append(self.italics)
+                    if self._is_style_on(rpr.find('i')):
+                        fns.append(self.italics)
                 if rpr.has_child('u'):
-                    fns.append(self.underline)
+                    if self._is_style_on(rpr.find('u')):
+                        fns.append(self.underline)
                 for fn in fns:
                     text = fn(text)
             ppr = el.parent.find('pPr')

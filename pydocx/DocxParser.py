@@ -32,7 +32,8 @@ def has_child_all(self, tag):
     return True if self.find('.//' + tag) is not None else False
 
 
-def find_all(self, tag):  # find the first occurrence of a tag.
+# find the first occurrence of a tag beneath the current element
+def find_all(self, tag):
     return self.find('.//' + tag)
 
 
@@ -115,6 +116,7 @@ class DocxParser:
         self.elements = []
         self.tables_seen = []
         self.visited = []
+        self.visited_lists = []
         try:
             self.numbering_root = ElementTree.fromstring(
                 remove_namespaces(self.numbering_text),
@@ -131,6 +133,7 @@ class DocxParser:
         parsed = ''
         first_p = el.find_all('p')  # find first instance of p
         children = []
+        # go thru the children of the first parent
         for child in first_p.parent:
             # if it's p or tbl, append it to the children lst
             if child.tag == 'p' or child.tag == 'tbl':
@@ -157,7 +160,7 @@ class DocxParser:
                     list_started and
                     el.has_child_all('ilvl') and
                     # if the list has started and the list type has changed,
-                    # change the lsit type
+                    # change the list type
                     not list_type == self.get_list_style(
                         el.find_all('numId').attrib['val']
                     )):
@@ -169,7 +172,8 @@ class DocxParser:
                 index_start = i
                 index_end = i+1
             elif list_started and not el.has_child_all('ilvl'):
-                # if there are no more children, list start is false
+                # if there are no more children that are part of a list, list
+                # start is false
                 list_started = False
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
@@ -186,9 +190,13 @@ class DocxParser:
                 lst_style = self.get_list_style(
                     chunk[0].find_all('numId').attrib['val'],
                 )
-                if lst_style['val'] == 'bullet':
+                if lst_style['val'] == 'bullet' and chunk_parsed != '':
                     parsed += self.unordered_list(chunk_parsed)
-                else:
+                elif lst_style['val'] and chunk_parsed != '':
+                    # TODO Figure out what is going on here.
+                    print chunk_parsed
+                    # add the chunk to visited lists
+                    #self.visited_lists.append(chunk[0])
                     parsed += self.ordered_list(chunk_parsed, lst_style['val'])
             elif chunk[0].has_child_all('br'):
                 parsed += self.page_break()
@@ -243,7 +251,8 @@ class DocxParser:
             return self.parse_r(el)  # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
-                return parsed  # get text in the table cell
+                return parsed  # return text in the table cell
+            # parse p. parse p will return a list element or a paragraph
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -251,14 +260,15 @@ class DocxParser:
             return parsed
 
     def parse_p(self, el, text):
-        if text == '':
+        # still need to go thru empty lists!
+        if text == '' and not self.in_list:
             return ''
         parsed = text
         if self.in_list:
             self.in_list = False
-            parsed = self.list_element(parsed)  # list element
+            parsed = self.list_element(parsed)  # if list wrap in li tags
         elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed)  # or paragraph
+            parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
         return parsed
 
     def _is_style_on(self, el):

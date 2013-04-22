@@ -30,7 +30,7 @@ def has_child_all(self, tag): #determine if there is a child ahead in the elemen
     return True if self.find('.//' + tag) is not None else False
 
 
-def find_all(self, tag): #find the first occurrence of a tag.
+def find_all(self, tag): #find the first occurrence of a tag beneath the current element
     return self.find('.//' + tag)
 
 
@@ -63,7 +63,7 @@ class DocxParser:
         self._parsed = ''
         self.in_list = False
 
-        f = zipfile.ZipFile(path)
+        f = zipfile.ZipFile(path) #get the file and extract the document, the numbering, and the comments
         try:
             self.document_text = f.read('word/document.xml')
             try:
@@ -126,7 +126,7 @@ class DocxParser:
         parsed = ''
         first_p = el.find_all('p') #find first instance of p
         children = []
-        for child in first_p.parent:
+        for child in first_p.parent: #go thru the children of the first parent
             if child.tag == 'p' or child.tag == 'tbl': #if it's p or tbl, append it to the children lst
                 children.append(child)
         p_list = children #p_list is now children
@@ -147,7 +147,7 @@ class DocxParser:
             elif (
                     list_started and
                     el.has_child_all('ilvl') and
-                    not list_type == self.get_list_style( ##if the list has started and the list type has changed, change the lsit type
+                    not list_type == self.get_list_style( ##if the list has started and the list type has changed, change the list type
                         el.find_all('numId').attrib['val']
                     )):
                 list_type = self.get_list_style(
@@ -158,7 +158,7 @@ class DocxParser:
                 index_start = i
                 index_end = i+1
             elif list_started and not el.has_child_all('ilvl'):
-                list_started = False #if there are no more children, list start is false
+                list_started = False #if there are no more children that are part of a list, list start is false
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
                 index_end = i+1
@@ -229,22 +229,22 @@ class DocxParser:
             return self.parse_r(el) #parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
-                return parsed ##get text in the table cell
-            return self.parse_p(el, parsed)
+                return parsed ##return text in the table cell
+            return self.parse_p(el, parsed) #parse p. parse p will return a list element or a paragraph
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
         else:
             return parsed
 
     def parse_p(self, el, text):
-        if text == '':
+        if text == '' and not self.in_list: #still need to go thru empty lists!
             return ''
         parsed = text
         if self.in_list:
             self.in_list = False
-            parsed = self.list_element(parsed)  #list element
+            parsed = self.list_element(parsed)  #if list wrap in li tags
         elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed)     #or paragraph
+            parsed = self.paragraph(parsed)     #if paragraph wrap in p tags
         return parsed
 
     def parse_r(self, el): #parse the running text

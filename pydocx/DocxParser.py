@@ -61,10 +61,7 @@ setattr(_ElementInterface, 'parent_list', [])
 class DocxParser:
     __metaclass__ = ABCMeta
 
-    def __init__(self, path):
-        self._parsed = ''
-        self.in_list = False
-
+    def _build_root(self, path, *args, **kwargs):
         f = zipfile.ZipFile(path)
         try:
             self.document_text = f.read('word/document.xml')
@@ -82,6 +79,12 @@ class DocxParser:
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
         )
+
+    def __init__(self, *args, **kwargs):
+        self._parsed = ''
+        self.in_list = False
+
+        self._build_root(*args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():

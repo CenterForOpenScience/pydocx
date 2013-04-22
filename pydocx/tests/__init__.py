@@ -61,12 +61,13 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
-    def _build_root(self, document_xml=None, *args, **kwargs):
+    def _build_data(self, document_xml=None, *args, **kwargs):
         # Intentionally not calling super
         if document_xml is not None:
             self.root = ElementTree.fromstring(
                 remove_namespaces(document_xml),
             )
+        self.relationship_text = '<xml></xml>'
 
     def head(self):
         return ''

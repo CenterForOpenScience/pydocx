@@ -13,6 +13,7 @@ from pydocx.parsers.Docx2Html import Docx2Html
 class TestDocx2HTML(Docx2Html):
     def head(self):
         return ''
+
     def table(self, text):
         return '<table>' + text + '</table>'
 
@@ -136,7 +137,6 @@ def test_simple_list():
 
 
 def test_inline_tags():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -145,7 +145,7 @@ def test_inline_tags():
     )
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
-    <html><body><p>This sentence has some <strong>bold</strong>, some <em>italics</em> and some <strong>underline</strong>, as well as a <a href="http://www.google.com/">hyperlink</a>.</p></body></html>''')  # noqa
+    <html><body><p>This sentence has some <b>bold</b>, some <i>italics</i> and some <u>underline</u>, as well as a <a href="http://www.google.com/">hyperlink</a>.</p></body></html>''')  # noqa
 
 
 def test_unicode():
@@ -161,7 +161,6 @@ def test_unicode():
 
 
 def test_special_chars():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -798,5 +797,3 @@ def test_html_files():
 
     html = convert(file_path)
     assert html == 'test'
-
-

@@ -61,7 +61,8 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
-    def _build_data(self, document_xml=None, *args, **kwargs):
+    def _build_data(self, document_xml=None, rels_dict=None, *args, **kwargs):
+        self._test_rels_dict = rels_dict
         # Intentionally not calling super
         if document_xml is not None:
             self.root = ElementTree.fromstring(
@@ -69,12 +70,18 @@ class XMLDocx2Html(Docx2Html):
             )
         self.relationship_text = '<xml></xml>'
 
+    def _parse_rels_root(self, *args, **kwargs):
+        if self._test_rels_dict is None:
+            return {}
+        return self._test_rels_dict
+
     def head(self):
         return ''
 
 
 class _TranslationTestCase(TestCase):
     expected_output = None
+    relationship_dict = None
 
     def get_xml(self):
         raise NotImplementedError()
@@ -87,6 +94,9 @@ class _TranslationTestCase(TestCase):
         tree = self.get_xml()
 
         # Verify the final output.
-        html = XMLDocx2Html(document_xml=tree).parsed
+        html = XMLDocx2Html(
+            document_xml=tree,
+            rels_dict=self.relationship_dict,
+        ).parsed
 
         assert_html_equal(html, self.expected_output)

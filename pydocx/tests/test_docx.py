@@ -13,7 +13,6 @@ from pydocx.parsers.Docx2Html import Docx2Html
 class TestDocx2HTML(Docx2Html):
     def head(self):
         return ''
-
     def table(self, text):
         return '<table>' + text + '</table>'
 
@@ -807,3 +806,5 @@ def test_html_files():
 
     html = convert(file_path)
     assert html == 'test'
+
+

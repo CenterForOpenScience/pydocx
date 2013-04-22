@@ -82,7 +82,8 @@ class DocxParser:
             remove_namespaces(self.document_text),  # remove the namespaces
         )
 
-    def _parse_rels_root(self, tree):
+    def _parse_rels_root(self):
+        tree = ElementTree.fromstring(self.relationship_text)
         rels_dict = {}
         for el in tree:
             rId = el.get('Id')
@@ -132,9 +133,7 @@ class DocxParser:
             )
         except:
             pass
-        self.rels_dict = self._parse_rels_root(
-            ElementTree.fromstring(self.relationship_text),
-        )
+        self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):

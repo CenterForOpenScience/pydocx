@@ -110,6 +110,7 @@ class DocxParser:
         self.elements = []
         self.tables_seen = []
         self.visited = []
+        self.visited_lists = []
         try:
             self.numbering_root = ElementTree.fromstring(
                 remove_namespaces(self.numbering_text),
@@ -173,9 +174,11 @@ class DocxParser:
                 lst_style = self.get_list_style(
                     chunk[0].find_all('numId').attrib['val'],
                 )
-                if lst_style['val'] == 'bullet':
+                if lst_style['val'] == 'bullet' and chunk[0] not in self.visited_lists:
                     parsed += self.unordered_list(chunk_parsed)
-                else:
+                    self.visited_lists.append(chunk[0])
+                elif lst_style['val'] and chunk[0] not in self.visited_lists:
+                    self.visited_lists.append(chunk[0])
                     parsed += self.ordered_list(chunk_parsed, lst_style['val'])
             elif chunk[0].has_child_all('br'):
                 parsed += self.page_break()

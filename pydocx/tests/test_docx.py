@@ -370,7 +370,6 @@ def test_tables_in_lists():
 
 
 def test_track_changes_on():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -728,7 +727,6 @@ def test_list_to_header():
 
 
 def test_has_title():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -736,7 +734,10 @@ def test_has_title():
         'has_title.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '<html><body><p>Text</p></body></html>')
+    assert_html_equal(
+        actual_html,
+        '<html><body><p>Title</p><p>Text</p></body></html>',
+    )
 
 
 def test_upper_alpha_all_bold():

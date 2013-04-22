@@ -1,5 +1,5 @@
 from pydocx import *
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ElementTree
 
 

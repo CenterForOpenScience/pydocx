@@ -13,7 +13,6 @@ from pydocx.parsers.Docx2Html import Docx2Html
 class TestDocx2HTML(Docx2Html):
     def head(self):
         return ''
-
     def table(self, text):
         return '<table>' + text + '</table>'
 
@@ -117,7 +116,6 @@ def test_nested_list():
 
 
 def test_simple_list():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -800,3 +798,5 @@ def test_html_files():
 
     html = convert(file_path)
     assert html == 'test'
+
+

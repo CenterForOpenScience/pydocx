@@ -124,7 +124,7 @@ def test_nested_list():
 
 
 def test_simple_list():
-    raise SkipTest('This test is not yet passing')
+    #raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -132,6 +132,7 @@ def test_simple_list():
         'simple_lists.docx',
     )
     actual_html = convert(file_path)
+    print actual_html
     assert_html_equal(actual_html, '''
     <html><body>
         <ol data-list-type="decimal">

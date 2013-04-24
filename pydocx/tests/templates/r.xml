@@ -1,0 +1,8 @@
+<w:r>
+	<w:rPr>
+		{% if is_bold %}
+		<w:b{% if val %} w:val="{{ val }}"{% endif %}/>
+		{% endif %}
+	</w:rPr>
+	{% if text %}{% include 't.xml' %}{% endif %}
+</w:r>

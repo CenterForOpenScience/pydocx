@@ -1,12 +1,11 @@
 from abc import abstractmethod, ABCMeta
+from collections import OrderedDict
 import zipfile
 import logging
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
-
 
 def remove_namespaces(document): ##remove namespaces
     root = ElementTree.fromstring(document)
@@ -36,7 +35,6 @@ def find_all(self, tag): #find the first occurrence of a tag beneath the current
 
 def findall_all(self, tag): #find all occurrences of a tag
     return self.findall('.//' + tag)
-
 
 def el_iter(el): #go through all elements
     try:
@@ -111,6 +109,7 @@ class DocxParser:
         self.tables_seen = []
         self.visited = []
         self.visited_lists = []
+        self.lst_id = []
         self.start = False
         try:
             self.numbering_root = ElementTree.fromstring(
@@ -135,6 +134,7 @@ class DocxParser:
         list_started = False #list has not started yet
         list_type = ''
         list_chunks = []
+        count = 0
         index_start = 0
         index_end = 1
         for i, el in enumerate(p_list): #enumerate p_list so we have a tuple of # and element
@@ -167,34 +167,38 @@ class DocxParser:
             else:
                 index_end = i+1
         list_chunks.append(p_list[index_start:index_end])
-        lst_id = [] #create list of ids
         chunk_info = {}
-        lst_txt = ''
-        for chunk in list_chunks:   #now parse the chunks
-            chunk_parsed = ''
-            for el in chunk:
-                chunk_parsed += self.parse(el) #start parsing the text.
-            if chunk[0].has_child_all('ilvl'): #if it has children, get the list style
-                lst_style = self.get_list_style(
-                    chunk[0].find_all('numId').attrib['val'],
-                )
-                indent = el.find_all('ilvl').attrib['val']
+        lst_info = {}
+        ### if there is a list, group all the numIds together and sort, else just have a list of the relevant chunks!
+        for i, chunk in enumerate(list_chunks):
+            if chunk[0].has_child_all('ilvl'):
                 numId = chunk[0].find_all('numId').attrib['val']
-                chunk_info[chunk[0]] = numId
-                #probably going to want to group all similar lists together
-                if lst_style['val'] == 'bullet' and chunk_parsed != '': #check if blank
-                        parsed += self.unordered_list(chunk_parsed)
-                elif lst_style['val'] and chunk_parsed != '': #check if blank
-                    if numId in lst_id or len(lst_id) == 0:
-                            lst_txt += chunk_parsed
-                    else:
-                        parsed += self.ordered_list(lst_txt, lst_style['val'])
-                lst_id.append(numId)
-            elif chunk[0].has_child_all('br'):
-                parsed += self.page_break()
-            else:
-                parsed += chunk_parsed
+                lst_info[numId] = chunk
+                lst_info = OrderedDict(lst_info.items())
+                chunk_info[i] = lst_info
 
+            else:
+                chunk_info[i] = chunk
+        chunk_info = OrderedDict(sorted(chunk_info.items()))
+        for i, chunk in chunk_info.iteritems():
+            chunk_parsed = ''
+            if type(chunk) is not OrderedDict:
+                for el in chunk:
+                    chunk_parsed += self.parse(el)
+                parsed += chunk_parsed
+            else:
+                for chunk in chunk.itervalues():
+                    chunk_parsed = ''
+                    for el in chunk:
+                        chunk_parsed += self.parse(el)
+                    lst_style = self.get_list_style(
+                    chunk[0].find_all('numId').attrib['val'])
+                    if lst_style['val'] == 'bullet' and chunk_parsed != '': #check if blank
+                        parsed += self.unordered_list(chunk_parsed)
+                    elif lst_style['val'] and chunk_parsed != '':
+                        parsed += self.ordered_list(chunk_parsed, lst_style['val'])
+            if chunk[0].has_child_all('br'):
+                parsed += self.page_break()
         return parsed
 
     def parse(self, el):

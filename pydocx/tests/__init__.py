@@ -1,10 +1,14 @@
 #from unittest import TestCase
 import re
 
-#from docx2html.core import (
-#    MetaData,
-#    create_html,
-#)
+from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.DocxParser import (
+    remove_namespaces,
+    # We are only importing this from DocxParse since we have added methods to
+    # it there.
+    ElementTree,
+)
+from unittest import TestCase
 
 
 def assert_html_equal(actual_html, expected_html):
@@ -52,72 +56,36 @@ def collapse_html(html):
     return html.strip()
 
 
-#DEFAULT_NUMBERING_DICT = {
-#    '1': {
-#        0: 'decimal',
-#        1: 'decimal',
-#    },
-#    '2': {
-#        0: 'none',
-#        1: 'none',
-#    },
-#}
-#DEFAULT_RELATIONSHIP_DICT = {
-#    'rId3': 'fontTable.xml',
-#    'rId2': 'numbering.xml',
-#    'rId1': 'styles.xml',
-#}
-#DEFAULT_STYLES_DICT = {
-#    'style0': {
-#        'header': False,
-#        'font_size': '24',
-#        'based_on': None,
-#    },
-#}
-#DEFAULT_FONT_SIZES_DICT = {
-#    '24': None,
-#}
-#
-#
-#def image_handler(*args, **kwargs):
-#    return 'test'
-#DEFAULT_IMAGE_HANDLER = image_handler
-#DEFAULT_IMAGE_SIZES = {}
-#
-#
-## This is a base test case defining methods to generate the xml and the meta
-## data for each test case.
-#class _TranslationTestCase(TestCase):
-#    expected_output = None
-#    numbering_dict = DEFAULT_NUMBERING_DICT
-#    relationship_dict = DEFAULT_RELATIONSHIP_DICT
-#    styles_dict = DEFAULT_STYLES_DICT
-#    font_sizes_dict = DEFAULT_FONT_SIZES_DICT
-#    image_handler = DEFAULT_FONT_SIZES_DICT
-#    image_sizes = DEFAULT_IMAGE_SIZES
-#
-#    def get_xml(self):
-#        raise NotImplementedError()
-#
-#    def get_meta_data(self):
-#        return MetaData(
-#            numbering_dict=self.numbering_dict,
-#            relationship_dict=self.relationship_dict,
-#            styles_dict=self.styles_dict,
-#            font_sizes_dict=self.font_sizes_dict,
-#            image_handler=self.image_handler,
-#            image_sizes=self.image_sizes,
-#        )
-#
-#    def test_expected_output(self):
-#        if self.expected_output is None:
-#            raise AssertionError('expected_output is not defined')
-#
-#        # Create the xml
-#        tree = self.get_xml()
-#        meta_data = self.get_meta_data()
-#
-#        # Verify the final output.
-#        html = create_html(tree, meta_data)
-#
-#        assert_html_equal(html, self.expected_output)
+class XMLDocx2Html(Docx2Html):
+    """
+    Create the object without passing in a path to the document, set them
+    manually.
+    """
+    def _build_root(self, document_xml=None, *args, **kwargs):
+        # Intentionally not calling super
+        if document_xml is not None:
+            self.root = ElementTree.fromstring(
+                remove_namespaces(document_xml),
+            )
+
+    def head(self):
+        return ''
+
+
+class _TranslationTestCase(TestCase):
+    expected_output = None
+
+    def get_xml(self):
+        raise NotImplementedError()
+
+    def test_expected_output(self):
+        if self.expected_output is None:
+            raise AssertionError('expected_output is not defined')
+
+        # Create the xml
+        tree = self.get_xml()
+
+        # Verify the final output.
+        html = XMLDocx2Html(document_xml=tree).parsed
+
+        assert_html_equal(html, self.expected_output)

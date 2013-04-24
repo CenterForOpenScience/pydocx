@@ -1,9 +1,12 @@
 from abc import abstractmethod, ABCMeta
+try:
+    from collections import OrderedDict
+except ImportError:  # Python 2.6
+    from ordereddict import OrderedDict
 import zipfile
 import logging
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
@@ -117,6 +120,8 @@ class DocxParser:
         self.tables_seen = []
         self.visited = []
         self.visited_lists = []
+        self.lst_id = []
+        self.start = False
         try:
             self.numbering_root = ElementTree.fromstring(
                 remove_namespaces(self.numbering_text),
@@ -181,28 +186,44 @@ class DocxParser:
             else:
                 index_end = i+1
         list_chunks.append(p_list[index_start:index_end])
-        for chunk in list_chunks:  # now parse the chunks
-            chunk_parsed = ''
-            for el in chunk:
-                chunk_parsed += self.parse(el)  # start parsing the text.
-            # if it has children, get the list style
+        chunk_info = {}
+        lst_info = {}
+        # if there is a list, group all the numIds together and sort, else just
+        # have a list of the relevant chunks!
+        for i, chunk in enumerate(list_chunks):
             if chunk[0].has_child_all('ilvl'):
-                lst_style = self.get_list_style(
-                    chunk[0].find_all('numId').attrib['val'],
-                )
-                if lst_style['val'] == 'bullet' and chunk_parsed != '':
-                    parsed += self.unordered_list(chunk_parsed)
-                elif lst_style['val'] and chunk_parsed != '':
-                    # TODO Figure out what is going on here.
-                    print chunk_parsed
-                    # add the chunk to visited lists
-                    #self.visited_lists.append(chunk[0])
-                    parsed += self.ordered_list(chunk_parsed, lst_style['val'])
-            elif chunk[0].has_child_all('br'):
-                parsed += self.page_break()
-            else:
-                parsed += chunk_parsed
+                numId = chunk[0].find_all('numId').attrib['val']
+                lst_info[numId] = chunk
+                lst_info = OrderedDict(lst_info.items())
+                chunk_info[i] = lst_info
 
+            else:
+                chunk_info[i] = chunk
+        chunk_info = OrderedDict(sorted(chunk_info.items()))
+        for i, chunk in chunk_info.iteritems():
+            chunk_parsed = ''
+            if type(chunk) is not OrderedDict:
+                for el in chunk:
+                    chunk_parsed += self.parse(el)
+                parsed += chunk_parsed
+            else:
+                for chunk in chunk.itervalues():
+                    chunk_parsed = ''
+                    for el in chunk:
+                        chunk_parsed += self.parse(el)
+                    lst_style = self.get_list_style(
+                        chunk[0].find_all('numId').attrib['val'],
+                    )
+                    # check if blank
+                    if lst_style['val'] == 'bullet' and chunk_parsed != '':
+                        parsed += self.unordered_list(chunk_parsed)
+                    elif lst_style['val'] and chunk_parsed != '':
+                        parsed += self.ordered_list(
+                            chunk_parsed,
+                            lst_style['val'],
+                        )
+            if chunk[0].has_child_all('br'):
+                parsed += self.page_break()
         return parsed
 
     def parse(self, el):

@@ -6,7 +6,7 @@ from os import path
 from nose.plugins.skip import SkipTest
 #from nose.tools import assert_raises
 
-from pydocx.tests import collapse_html
+from pydocx.tests import assert_html_equal
 from pydocx.parsers.Docx2Html import Docx2Html
 
 
@@ -36,14 +36,6 @@ class TestDocx2HTML(Docx2Html):
 
 def convert(path):
     return TestDocx2HTML(path).parsed
-
-
-def assert_html_equal(actual_html, expected_html):
-    assert collapse_html(
-        actual_html,
-    ) == collapse_html(
-        expected_html
-    ), actual_html
 
 
 def test_extract_html():

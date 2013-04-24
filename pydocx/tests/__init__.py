@@ -68,7 +68,6 @@ class XMLDocx2Html(Docx2Html):
             self.root = ElementTree.fromstring(
                 remove_namespaces(document_xml),
             )
-        self.relationship_text = '<xml></xml>'
 
     def _parse_rels_root(self, *args, **kwargs):
         if self._test_rels_dict is None:

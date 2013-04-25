@@ -16,7 +16,7 @@ def remove_namespaces(document):  # remove namespaces
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
-            (k.split("}")[1], v)
+            (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
     return ElementTree.tostring(root)
@@ -310,6 +310,21 @@ class DocxParser:
         href = self.escape(self.rels_dict[rId])
         return self.hyperlink(text, href)
 
+    def _get_image_id(self, el):
+        # Drawings
+        blip = el.find_all('blip')
+        if blip is not None:
+            return blip.get('embed')
+        # Picts
+        imagedata = el.find_all('imagedata')
+        if imagedata is not None:
+            return imagedata.get('id')
+
+    def parse_image(self, el, text):
+        rId = self._get_image_id(el)
+        src = self.escape(self.rels_dict[rId])
+        return self.image(src)
+
     def _is_style_on(self, el):
         """
         For b, i, u (bold, italics, and underline) merely having the tag is not
@@ -320,12 +335,15 @@ class DocxParser:
 
     def parse_r(self, el):  # parse the running text
         is_deleted = False
-        text = None
-        if el.has_child('t'):
-            text = self.escape(el.find('t').text)
-        elif el.has_child('delText'):  # get the deleted text
-            text = self.escape(el.find('delText').text)
-            is_deleted = True
+        text = ''
+        for element in el:
+            if element.tag == 't':
+                text += self.escape(el.find('t').text)
+            elif element.tag == 'delText':  # get the deleted text
+                text += self.escape(el.find('delText').text)
+                is_deleted = True
+            elif element.tag in ('pict', 'drawing'):
+                text += self.parse_image(element, '')
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
@@ -428,6 +446,14 @@ class DocxParser:
     @abstractmethod
     def hyperlink(self, text, href):
         return text
+
+    @abstractmethod
+    def image_handler(self, path):
+        return path
+
+    @abstractmethod
+    def image(self, path):
+        return self.image_handler(path)
 
     @abstractmethod
     def deletion(self, text, author, date):

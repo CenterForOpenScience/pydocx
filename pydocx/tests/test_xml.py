@@ -1,5 +1,10 @@
 from pydocx.tests.document_builder import DocxBuilder as DXB
-from pydocx.tests import _TranslationTestCase
+from pydocx.tests import (
+    ElementTree,
+    XMLDocx2Html,
+    _TranslationTestCase,
+    remove_namespaces,
+)
 
 
 class BoldTestCase(_TranslationTestCase):
@@ -62,3 +67,184 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
+
+
+class ImageTestCase(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': 'media/image1.jpeg',
+        'rId1': 'media/image2.jpeg',
+    }
+    #image_sizes = {
+    #    'rId0': (4, 4),
+    #    'rId1': (4, 4),
+    #}
+    #expected_output = '''
+    #    <html>
+    #        <p>
+    #            <img src="media/image1.jpeg" height="4" width="4" />
+    #        </p>
+    #        <p>
+    #            <img src="media/image2.jpeg" height="4" width="4" />
+    #        </p>
+    #    </html>
+    #'''
+    expected_output = '''
+        <html><body>
+            <p>
+                <img src="media/image1.jpeg" />
+            </p>
+            <p>
+                <img src="media/image2.jpeg" />
+            </p>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        drawing = DXB.drawing('rId0')
+        pict = DXB.pict('rId1')
+        tags = [
+            drawing,
+            pict,
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+    def test_get_image_id(self):
+        parser = XMLDocx2Html(
+            document_xml=self.get_xml(),
+            rels_dict=self.relationship_dict,
+        )
+        tree = ElementTree.fromstring(
+            remove_namespaces(self.get_xml()),
+        )
+        els = []
+        els.extend(tree.findall_all('drawing'))
+        els.extend(tree.findall_all('pict'))
+        image_ids = []
+        for el in els:
+            image_ids.append(parser._get_image_id(el))
+        expected = [
+            'rId0',
+            'rId1',
+        ]
+        self.assertEqual(
+            set(image_ids),
+            set(expected),
+        )
+#
+#    #@mock.patch('docx2html.core._get_image_size_from_image')
+#    def test_missing_size(self, patched_item):
+#        def side_effect(*args, **kwargs):
+#            return (6, 6)
+#        patched_item.side_effect = side_effect
+#        tree = self.get_xml()
+#        meta_data = copy(self.get_meta_data())
+#        del meta_data.image_sizes['rId1']
+#
+#        html = create_html(tree, meta_data)
+#
+#        # Show that the height and width were grabbed from the actual image.
+#        assert_html_equal(html, '''
+#            <html>
+#                <p>
+#                    <img src="media/image1.jpeg" height="4" width="4" />
+#                </p>
+#                <p>
+#                    <img src="media/image2.jpeg" height="6" width="6" />
+#                </p>
+#            </html>
+#        ''')
+#
+#
+#class SkipImageTestCase(_TranslationTestCase):
+#    relationship_dict = {
+#        # These are only commented out because ``get_relationship_info``
+#        strips
+#        # them out, however since we have image_sizes I want to show that they
+#        # are intentionally not added to the ``relationship_dict``
+#        #'rId0': 'media/image1.svg',
+#        #'rId1': 'media/image2.emf',
+#        #'rId2': 'media/image3.wmf',
+#    }
+#    image_sizes = {
+#        'rId0': (4, 4),
+#        'rId1': (4, 4),
+#        'rId2': (4, 4),
+#    }
+#    expected_output = '<html></html>'
+#
+#    @staticmethod
+#    def image_handler(image_id, relationship_dict):
+#        return relationship_dict.get(image_id)
+#
+#    def get_xml(self):
+#        tags = [
+#            DXB.drawing('rId2'),
+#            DXB.drawing('rId3'),
+#            DXB.drawing('rId4'),
+#        ]
+#        body = ''
+#        for el in tags:
+#            body += el
+#
+#        xml = DXB.xml(body)
+#        return xml
+#
+#    def test_get_relationship_info(self):
+#        tree = self.get_xml()
+#        media = {
+#            'media/image1.svg': 'test',
+#            'media/image2.emf': 'test',
+#            'media/image3.wmf': 'test',
+#        }
+#        relationship_info = get_relationship_info(
+#            tree,
+#            media,
+#            self.image_sizes,
+#        )
+#        self.assertEqual(relationship_info, {})
+#
+#
+#class ImageNoSizeTestCase(_TranslationTestCase):
+#    relationship_dict = {
+#        'rId0': os.path.join(
+#            os.path.abspath(os.path.dirname(__file__)),
+#            '..',
+#            'fixtures',
+#            'bullet_go_gray.png',
+#        )
+#    }
+#    image_sizes = {
+#        'rId0': (0, 0),
+#    }
+#    expected_output = '''
+#        <html>
+#            <p>
+#                <img src="%s" />
+#            </p>
+#        </html>
+#    ''' % relationship_dict['rId0']
+#
+#    @staticmethod
+#    def image_handler(image_id, relationship_dict):
+#        return relationship_dict.get(image_id)
+#
+#    def get_xml(self):
+#        drawing = DXB.drawing('rId0')
+#        tags = [
+#            drawing,
+#        ]
+#        body = ''
+#        for el in tags:
+#            body += el
+#
+#        xml = DXB.xml(body)
+#        return xml
+#
+#    def test_convert_image(self):
+#        convert_image(self.relationship_dict['rId0'],
+#        self.image_sizes['rId0'])

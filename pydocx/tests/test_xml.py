@@ -74,34 +74,20 @@ class ImageTestCase(_TranslationTestCase):
         'rId0': 'media/image1.jpeg',
         'rId1': 'media/image2.jpeg',
     }
-    #image_sizes = {
-    #    'rId0': (4, 4),
-    #    'rId1': (4, 4),
-    #}
-    #expected_output = '''
-    #    <html>
-    #        <p>
-    #            <img src="media/image1.jpeg" height="4" width="4" />
-    #        </p>
-    #        <p>
-    #            <img src="media/image2.jpeg" height="4" width="4" />
-    #        </p>
-    #    </html>
-    #'''
     expected_output = '''
         <html><body>
             <p>
-                <img src="media/image1.jpeg" />
+                <img src="media/image1.jpeg" height="20px" width="40px" />
             </p>
             <p>
-                <img src="media/image2.jpeg" />
+                <img src="media/image2.jpeg" height="21pt" width="41pt" />
             </p>
         </body></html>
     '''
 
     def get_xml(self):
-        drawing = DXB.drawing('rId0')
-        pict = DXB.pict('rId1')
+        drawing = DXB.drawing(height=20, width=40, r_id='rId0')
+        pict = DXB.pict(height=21, width=41, r_id='rId1')
         tags = [
             drawing,
             pict,
@@ -135,29 +121,29 @@ class ImageTestCase(_TranslationTestCase):
             set(image_ids),
             set(expected),
         )
-#
-#    #@mock.patch('docx2html.core._get_image_size_from_image')
-#    def test_missing_size(self, patched_item):
-#        def side_effect(*args, **kwargs):
-#            return (6, 6)
-#        patched_item.side_effect = side_effect
-#        tree = self.get_xml()
-#        meta_data = copy(self.get_meta_data())
-#        del meta_data.image_sizes['rId1']
-#
-#        html = create_html(tree, meta_data)
-#
-#        # Show that the height and width were grabbed from the actual image.
-#        assert_html_equal(html, '''
-#            <html>
-#                <p>
-#                    <img src="media/image1.jpeg" height="4" width="4" />
-#                </p>
-#                <p>
-#                    <img src="media/image2.jpeg" height="6" width="6" />
-#                </p>
-#            </html>
-#        ''')
+
+    def test_get_image_sizes(self):
+        parser = XMLDocx2Html(
+            document_xml=self.get_xml(),
+            rels_dict=self.relationship_dict,
+        )
+        tree = ElementTree.fromstring(
+            remove_namespaces(self.get_xml()),
+        )
+        els = []
+        els.extend(tree.findall_all('drawing'))
+        els.extend(tree.findall_all('pict'))
+        image_ids = []
+        for el in els:
+            image_ids.append(parser._get_image_size(el))
+        expected = [
+            ('40px', '20px'),
+            ('41pt', '21pt'),
+        ]
+        self.assertEqual(
+            set(image_ids),
+            set(expected),
+        )
 #
 #
 #class SkipImageTestCase(_TranslationTestCase):

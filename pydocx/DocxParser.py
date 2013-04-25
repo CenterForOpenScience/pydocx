@@ -11,6 +11,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
+EMUS_PER_PIXEL = 9525
+
+
 def remove_namespaces(document):  # remove namespaces
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
@@ -320,10 +323,31 @@ class DocxParser:
         if imagedata is not None:
             return imagedata.get('id')
 
+    def _get_image_size(self, el):
+        sizes = el.find_all('ext')
+        if sizes is not None:
+            x = int(sizes.get('cx')) / EMUS_PER_PIXEL
+            y = int(sizes.get('cy')) / EMUS_PER_PIXEL
+            return (
+                '%dpx' % x,
+                '%dpx' % y,
+            )
+        shape = el.find_all('shape')
+        if shape is not None:
+            styles = shape.get('style').split(';')
+            for s in styles:
+                if s.startswith('height:'):
+                    y = s.split(':')[1]
+                if s.startswith('width:'):
+                    x = s.split(':')[1]
+            return x, y
+        return 0, 0
+
     def parse_image(self, el, text):
+        x, y = self._get_image_size(el)
         rId = self._get_image_id(el)
         src = self.escape(self.rels_dict[rId])
-        return self.image(src)
+        return self.image(src, x, y)
 
     def _is_style_on(self, el):
         """
@@ -452,7 +476,7 @@ class DocxParser:
         return path
 
     @abstractmethod
-    def image(self, path):
+    def image(self, path, x, y):
         return self.image_handler(path)
 
     @abstractmethod

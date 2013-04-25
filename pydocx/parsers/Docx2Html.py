@@ -51,11 +51,18 @@ class Docx2Html(DocxParser):
     def image_handler(self, path):
         return path
 
-    def image(self, path):
+    def image(self, path, x, y):
         src = self.image_handler(path)
         if not src:
             return ''
-        return '<img src="%s" />' % src
+        if all([x, y]):
+            return '<img src="%s" height="%s" width="%s" />' % (
+                src,
+                y,
+                x,
+            )
+        else:
+            return '<img src="%s" />' % src
 
     def deletion(self, text, author, date):
         return (

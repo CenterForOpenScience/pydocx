@@ -48,6 +48,15 @@ class Docx2Html(DocxParser):
             'text': text,
         }
 
+    def image_handler(self, path):
+        return path
+
+    def image(self, path):
+        src = self.image_handler(path)
+        if not src:
+            return ''
+        return '<img src="%s" />' % src
+
     def deletion(self, text, author, date):
         return (
             "<span class='delete' author='{author}' "

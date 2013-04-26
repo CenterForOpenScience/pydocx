@@ -152,8 +152,8 @@ class ImageTestCase(_TranslationTestCase):
             remove_namespaces(self.get_xml()),
         )
         els = []
-        els.extend(tree.findall_all('drawing'))
-        els.extend(tree.findall_all('pict'))
+        els.extend(tree.find_all('drawing'))
+        els.extend(tree.find_all('pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_id(el))
@@ -175,8 +175,8 @@ class ImageTestCase(_TranslationTestCase):
             remove_namespaces(self.get_xml()),
         )
         els = []
-        els.extend(tree.findall_all('drawing'))
-        els.extend(tree.findall_all('pict'))
+        els.extend(tree.find_all('drawing'))
+        els.extend(tree.find_all('pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_size(el))

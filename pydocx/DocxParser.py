@@ -44,7 +44,7 @@ def find_first(self, tag):
     return self.find('.//' + tag)
 
 
-def findall_all(self, tag):  # find all occurrences of a tag
+def find_all(self, tag):  # find all occurrences of a tag
     return self.findall('.//' + tag)
 
 
@@ -59,9 +59,8 @@ def el_iter(el):  # go through all elements
 setattr(_ElementInterface, 'has_child', has_child)
 setattr(_ElementInterface, 'has_child_all', has_child_all)
 setattr(_ElementInterface, 'find_first', find_first)
-setattr(_ElementInterface, 'findall_all', findall_all)
+setattr(_ElementInterface, 'find_all', find_all)
 setattr(_ElementInterface, 'parent', None)
-setattr(_ElementInterface, 'parent_list', [])
 
 # End helpers
 
@@ -111,25 +110,9 @@ class DocxParser:
 
         add_parent(self.root)  # create the parent attributes
 
-        def create_parent_list(el, tmp=None):  # make a list of parents
-            if tmp is None:
-                tmp = []
-            for child in el:
-                tmp.append(el)
-                tmp = create_parent_list(child, tmp)
-            el.parent_list = tmp[:]
-            try:
-                tmp.pop()
-            except:
-                tmp = []
-            return tmp
-
-        create_parent_list(self.root)  # create that parent list
-
         #all blank when we init
         self.comment_store = None
         self.numbering_store = None
-        self.ignore_current = False
         self.elements = []
         self.tables_seen = []
         self.visited = []
@@ -151,13 +134,12 @@ class DocxParser:
 ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-        first_p = el.find_first('p')  # find first instance of p
-        children = []
-        # go thru the children of the first parent
-        for child in first_p.parent:
-            # if it's p or tbl, append it to the children lst
-            if child.tag == 'p' or child.tag == 'tbl':
-                children.append(child)
+        body = el.find_first('body')
+        children = [
+            child for child in body.getchildren()
+            if child.tag in ['p', 'tbl']
+        ]
+
         p_list = children  # p_list is now children
         list_started = False  # list has not started yet
         list_type = ''
@@ -243,26 +225,6 @@ class DocxParser:
 
     def parse(self, el):
         parsed = ''
-        if not self.ignore_current:
-            tmp_d = dict(  # first step look for tables
-                (tmpel.tag, i)
-                for i, tmpel in enumerate(el.parent_list)
-            )
-            if (
-                    'tbl' in tmp_d and
-                    el.parent_list[tmp_d['tbl']] not in self.tables_seen):
-                self.ignore_current = True
-                tbl = el.parent_list[tmp_d['tbl']]
-                self.tables_seen.append(tbl)
-                tmpout = self.table(self.parse(tbl))
-                self.ignore_current = False
-
-                # Need to keep track of visited table rows and table cells
-                self.visited.extend(
-                    e for e in el_iter(tbl)
-                    if e.tag in ['tr', 'tc']
-                )
-                return tmpout
 
         for child in el:
             # recursive. so you can get all the way to the bottom
@@ -277,6 +239,8 @@ class DocxParser:
             self.visited.append(el)
             ## This starts the returns
         # Do not do the tr or tc a second time
+        elif el.tag == 'tbl':
+            return self.table(parsed)
         elif el.tag == 'tr' and el not in self.visited:  # table rows
             return self.table_row(parsed)
         elif el.tag == 'tc' and el not in self.visited:  # table cells
@@ -437,12 +401,12 @@ class DocxParser:
             return ''
 
     def get_list_style(self, numval):
-        ids = self.numbering_root.findall_all('num')
+        ids = self.numbering_root.find_all('num')
         for _id in ids:
             if _id.attrib['numId'] == numval:
                 abstractid = _id.find('abstractNumId')
                 abstractid = abstractid.attrib['val']
-                style_information = self.numbering_root.findall_all(
+                style_information = self.numbering_root.find_all(
                     'abstractNum',
                 )
                 for info in style_information:
@@ -458,12 +422,12 @@ class DocxParser:
                 remove_namespaces(self.comment_text),
             )
             ids_and_info = {}
-            ids = comment_root.findall_all('comment')
+            ids = comment_root.find_all('comment')
             for _id in ids:
                 ids_and_info[_id.attrib['id']] = {
                     "author": _id.attrib['author'],
                     "date": _id.attrib['date'],
-                    "text": _id.findall_all('t')[0].text,
+                    "text": _id.find_all('t')[0].text,
                 }
             self.comment_store = ids_and_info
         return self.comment_store[doc_id]

@@ -1,3 +1,6 @@
+import os
+from nose.plugins.skip import SkipTest
+
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
     ElementTree,
@@ -183,93 +186,60 @@ class ImageTestCase(_TranslationTestCase):
             set(image_ids),
             set(expected),
         )
-#
-#
-#class SkipImageTestCase(_TranslationTestCase):
-#    relationship_dict = {
-#        # These are only commented out because ``get_relationship_info``
-#        strips
-#        # them out, however since we have image_sizes I want to show that they
-#        # are intentionally not added to the ``relationship_dict``
-#        #'rId0': 'media/image1.svg',
-#        #'rId1': 'media/image2.emf',
-#        #'rId2': 'media/image3.wmf',
-#    }
-#    image_sizes = {
-#        'rId0': (4, 4),
-#        'rId1': (4, 4),
-#        'rId2': (4, 4),
-#    }
-#    expected_output = '<html></html>'
-#
-#    @staticmethod
-#    def image_handler(image_id, relationship_dict):
-#        return relationship_dict.get(image_id)
-#
-#    def get_xml(self):
-#        tags = [
-#            DXB.drawing('rId2'),
-#            DXB.drawing('rId3'),
-#            DXB.drawing('rId4'),
-#        ]
-#        body = ''
-#        for el in tags:
-#            body += el
-#
-#        xml = DXB.xml(body)
-#        return xml
-#
-#    def test_get_relationship_info(self):
-#        tree = self.get_xml()
-#        media = {
-#            'media/image1.svg': 'test',
-#            'media/image2.emf': 'test',
-#            'media/image3.wmf': 'test',
-#        }
-#        relationship_info = get_relationship_info(
-#            tree,
-#            media,
-#            self.image_sizes,
-#        )
-#        self.assertEqual(relationship_info, {})
-#
-#
-#class ImageNoSizeTestCase(_TranslationTestCase):
-#    relationship_dict = {
-#        'rId0': os.path.join(
-#            os.path.abspath(os.path.dirname(__file__)),
-#            '..',
-#            'fixtures',
-#            'bullet_go_gray.png',
-#        )
-#    }
-#    image_sizes = {
-#        'rId0': (0, 0),
-#    }
-#    expected_output = '''
-#        <html>
-#            <p>
-#                <img src="%s" />
-#            </p>
-#        </html>
-#    ''' % relationship_dict['rId0']
-#
-#    @staticmethod
-#    def image_handler(image_id, relationship_dict):
-#        return relationship_dict.get(image_id)
-#
-#    def get_xml(self):
-#        drawing = DXB.drawing('rId0')
-#        tags = [
-#            drawing,
-#        ]
-#        body = ''
-#        for el in tags:
-#            body += el
-#
-#        xml = DXB.xml(body)
-#        return xml
-#
-#    def test_convert_image(self):
-#        convert_image(self.relationship_dict['rId0'],
-#        self.image_sizes['rId0'])
+
+
+class ImageNotInRelsDictTestCase(_TranslationTestCase):
+    relationship_dict = {
+        # 'rId0': 'media/image1.jpeg',
+    }
+    expected_output = '''
+        <html><body>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        drawing = DXB.drawing(height=20, width=40, r_id='rId0')
+        body = drawing
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class ImageNoSizeTestCase(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'fixtures',
+            'bullet_go_gray.png',
+        )
+    }
+    image_sizes = {
+        'rId0': (0, 0),
+    }
+    expected_output = '''
+        <html>
+            <p>
+                <img src="%s" />
+            </p>
+        </html>
+    ''' % relationship_dict['rId0']
+
+    @staticmethod
+    def image_handler(image_id, relationship_dict):
+        return relationship_dict.get(image_id)
+
+    def get_xml(self):
+        raise SkipTest(
+            'Since we are not using PIL, we do not need this test yet.',
+        )
+        drawing = DXB.drawing('rId0')
+        tags = [
+            drawing,
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml

@@ -310,7 +310,10 @@ class DocxParser:
 
     def parse_hyperlink(self, el, text):
         rId = el.get('id')
-        href = self.escape(self.rels_dict[rId])
+        href = self.rels_dict.get(rId)
+        if not href:
+            return text
+        href = self.escape(href)
         return self.hyperlink(text, href)
 
     def _get_image_id(self, el):

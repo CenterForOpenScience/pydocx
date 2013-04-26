@@ -321,23 +321,37 @@ class DocxParser:
         # Drawings
         blip = el.find_first('blip')
         if blip is not None:
+            # On drawing tags the id is actually whatever is returned from the
+            # embed attribute on the blip tag. Thanks a lot Microsoft.
             return blip.get('embed')
         # Picts
         imagedata = el.find_first('imagedata')
         if imagedata is not None:
             return imagedata.get('id')
 
+    def _convert_image_size(self, size):
+        return size / EMUS_PER_PIXEL
+
     def _get_image_size(self, el):
+        """
+        If we can't find a height or width, return 0 for whichever is not
+        found, then rely on the `image` handler to strip those attributes. This
+        functionality can change once we integrate PIL.
+        """
         sizes = el.find_first('ext')
         if sizes is not None:
-            x = int(sizes.get('cx')) / EMUS_PER_PIXEL
-            y = int(sizes.get('cy')) / EMUS_PER_PIXEL
+            x = self._convert_image_size(int(sizes.get('cx')))
+            y = self._convert_image_size(int(sizes.get('cy')))
             return (
                 '%dpx' % x,
                 '%dpx' % y,
             )
         shape = el.find_first('shape')
         if shape is not None:
+            # If either of these are not set, rely on the method `image` to not
+            # use either of them.
+            x = 0
+            y = 0
             styles = shape.get('style').split(';')
             for s in styles:
                 if s.startswith('height:'):
@@ -347,10 +361,13 @@ class DocxParser:
             return x, y
         return 0, 0
 
-    def parse_image(self, el, text):
+    def parse_image(self, el):
         x, y = self._get_image_size(el)
         rId = self._get_image_id(el)
-        src = self.escape(self.rels_dict[rId])
+        src = self.rels_dict.get(rId)
+        if not src:
+            return ''
+        src = self.escape(src)
         return self.image(src, x, y)
 
     def _is_style_on(self, el):
@@ -371,7 +388,7 @@ class DocxParser:
                 text += self.escape(el.find('delText').text)
                 is_deleted = True
             elif element.tag in ('pict', 'drawing'):
-                text += self.parse_image(element, '')
+                text += self.parse_image(element)
         if text:
             rpr = el.find('rPr')
             if rpr is not None:

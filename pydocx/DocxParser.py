@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
+# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 
 
@@ -39,7 +40,7 @@ def has_child_all(self, tag):
 
 
 # find the first occurrence of a tag beneath the current element
-def find_all(self, tag):
+def find_first(self, tag):
     return self.find('.//' + tag)
 
 
@@ -57,7 +58,7 @@ def el_iter(el):  # go through all elements
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
 setattr(_ElementInterface, 'has_child_all', has_child_all)
-setattr(_ElementInterface, 'find_all', find_all)
+setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'findall_all', findall_all)
 setattr(_ElementInterface, 'parent', None)
 setattr(_ElementInterface, 'parent_list', [])
@@ -150,7 +151,7 @@ class DocxParser:
 ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-        first_p = el.find_all('p')  # find first instance of p
+        first_p = el.find_first('p')  # find first instance of p
         children = []
         # go thru the children of the first parent
         for child in first_p.parent:
@@ -169,7 +170,7 @@ class DocxParser:
             if not list_started and el.has_child_all('ilvl'):
                 list_started = True  # list has child
                 list_type = self.get_list_style(  # get the type of list
-                    el.find_all('numId').attrib['val'],
+                    el.find_first('numId').attrib['val'],
                 )
                 # append the current and next to list_chunks
                 list_chunks.append(p_list[index_start:index_end])
@@ -181,10 +182,10 @@ class DocxParser:
                     # if the list has started and the list type has changed,
                     # change the list type
                     not list_type == self.get_list_style(
-                        el.find_all('numId').attrib['val']
+                        el.find_first('numId').attrib['val']
                     )):
                 list_type = self.get_list_style(
-                    el.find_all('numId').attrib['val'],
+                    el.find_first('numId').attrib['val'],
                 )
                 list_started = True
                 list_chunks.append(p_list[index_start:index_end])
@@ -206,7 +207,7 @@ class DocxParser:
         # have a list of the relevant chunks!
         for i, chunk in enumerate(list_chunks):
             if chunk[0].has_child_all('ilvl'):
-                numId = chunk[0].find_all('numId').attrib['val']
+                numId = chunk[0].find_first('numId').attrib['val']
                 lst_info[numId] = chunk
                 lst_info = OrderedDict(lst_info.items())
                 chunk_info[i] = lst_info
@@ -226,7 +227,7 @@ class DocxParser:
                     for el in chunk:
                         chunk_parsed += self.parse(el)
                     lst_style = self.get_list_style(
-                        chunk[0].find_all('numId').attrib['val'],
+                        chunk[0].find_first('numId').attrib['val'],
                     )
                     # check if blank
                     if lst_style['val'] == 'bullet' and chunk_parsed != '':
@@ -318,16 +319,16 @@ class DocxParser:
 
     def _get_image_id(self, el):
         # Drawings
-        blip = el.find_all('blip')
+        blip = el.find_first('blip')
         if blip is not None:
             return blip.get('embed')
         # Picts
-        imagedata = el.find_all('imagedata')
+        imagedata = el.find_first('imagedata')
         if imagedata is not None:
             return imagedata.get('id')
 
     def _get_image_size(self, el):
-        sizes = el.find_all('ext')
+        sizes = el.find_first('ext')
         if sizes is not None:
             x = int(sizes.get('cx')) / EMUS_PER_PIXEL
             y = int(sizes.get('cy')) / EMUS_PER_PIXEL
@@ -335,7 +336,7 @@ class DocxParser:
                 '%dpx' % x,
                 '%dpx' % y,
             )
-        shape = el.find_all('shape')
+        shape = el.find_first('shape')
         if shape is not None:
             styles = shape.get('style').split(';')
             for s in styles:

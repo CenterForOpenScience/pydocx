@@ -65,7 +65,7 @@ setattr(_ElementInterface, 'parent_list', [])
 class DocxParser:
     __metaclass__ = ABCMeta
 
-    def _build_root(self, path, *args, **kwargs):
+    def _build_data(self, path, *args, **kwargs):
         f = zipfile.ZipFile(path)
         try:
             self.document_text = f.read('word/document.xml')
@@ -77,6 +77,7 @@ class DocxParser:
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
                 pass
+            self.relationship_text = f.read('word/_rels/document.xml.rels')
         finally:
             f.close()
 
@@ -84,11 +85,20 @@ class DocxParser:
             remove_namespaces(self.document_text),  # remove the namespaces
         )
 
+    def _parse_rels_root(self):
+        tree = ElementTree.fromstring(self.relationship_text)
+        rels_dict = {}
+        for el in tree:
+            rId = el.get('Id')
+            target = el.get('Target')
+            rels_dict[rId] = target
+        return rels_dict
+
     def __init__(self, *args, **kwargs):
         self._parsed = ''
         self.in_list = False
 
-        self._build_root(*args, **kwargs)
+        self._build_data(*args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -128,6 +138,7 @@ class DocxParser:
             )
         except:
             pass
+        self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
@@ -277,6 +288,8 @@ class DocxParser:
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
+        elif el.tag == 'hyperlink':
+            return self.parse_hyperlink(el, parsed)
         else:
             return parsed
 
@@ -291,6 +304,14 @@ class DocxParser:
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
         return parsed
+
+    def parse_hyperlink(self, el, text):
+        rId = el.get('id')
+        href = self.rels_dict.get(rId)
+        if not href:
+            return text
+        href = self.escape(href)
+        return self.hyperlink(text, href)
 
     def _is_style_on(self, el):
         """
@@ -405,6 +426,10 @@ class DocxParser:
 
     @abstractmethod
     def insertion(self, text, author, date):
+        return text
+
+    @abstractmethod
+    def hyperlink(self, text, href):
         return text
 
     @abstractmethod

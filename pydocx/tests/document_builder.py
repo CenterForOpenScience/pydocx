@@ -1,4 +1,5 @@
 from jinja2 import Environment, PackageLoader
+from pydocx.DocxParser import EMUS_PER_PIXEL
 
 templates = {
     'drawing': 'drawing.xml',
@@ -122,14 +123,24 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def drawing(self, r_id):
+    def drawing(self, height, width, r_id):
         template = env.get_template(templates['drawing'])
-        return template.render(r_id=r_id)
+        kwargs = {
+            'r_id': r_id,
+            'height': height * EMUS_PER_PIXEL,
+            'width': width * EMUS_PER_PIXEL,
+        }
+        return template.render(**kwargs)
 
     @classmethod
-    def pict(self, r_id=None):
+    def pict(self, height, width, r_id=None):
         template = env.get_template(templates['pict'])
-        return template.render(r_id=r_id)
+        kwargs = {
+            'r_id': r_id,
+            'height': height,
+            'width': width,
+        }
+        return template.render(**kwargs)
 
     @classmethod
     def sectPr_tag(self, p_tag):

@@ -265,7 +265,6 @@ def test_nested_table_rowspan():
 
 
 def test_nested_tables():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -275,28 +274,28 @@ def test_nested_tables():
     actual_html = convert(file_path)
     # Find out why br tag is there.
     assert_html_equal(actual_html, '''
+
     <html><body>
         <table>
-          <tr>
-            <td>AAA</td>
-            <td>BBB</td>
-          </tr>
-          <tr>
-            <td>CCC</td>
-            <td>
-              <table>
-                <tr>
-                  <td>DDD</td>
-                  <td>EEE</td>
-                </tr>
-                <tr>
-                  <td>FFF</td>
-                  <td>GGG</td>
-                </tr>
-              </table>
-              <br />
-            </td>
-          </tr>
+            <tr>
+                <td>AAA</td>
+                <td>BBB</td>
+            </tr>
+            <tr>
+                <td>CCC</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>DDD</td>
+                            <td>EEE</td>
+                        </tr>
+                        <tr>
+                            <td>FFF</td>
+                            <td>GGG</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
         </table>
     </body></html>
     ''')

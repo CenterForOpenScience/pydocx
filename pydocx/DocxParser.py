@@ -11,12 +11,16 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
+# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
+EMUS_PER_PIXEL = 9525
+
+
 def remove_namespaces(document):  # remove namespaces
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
-            (k.split("}")[1], v)
+            (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
     return ElementTree.tostring(root)
@@ -36,7 +40,7 @@ def has_child_all(self, tag):
 
 
 # find the first occurrence of a tag beneath the current element
-def find_all(self, tag):
+def find_first(self, tag):
     return self.find('.//' + tag)
 
 
@@ -54,7 +58,7 @@ def el_iter(el):  # go through all elements
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
 setattr(_ElementInterface, 'has_child_all', has_child_all)
-setattr(_ElementInterface, 'find_all', find_all)
+setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'findall_all', findall_all)
 setattr(_ElementInterface, 'parent', None)
 setattr(_ElementInterface, 'parent_list', [])
@@ -147,7 +151,7 @@ class DocxParser:
 ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
-        first_p = el.find_all('p')  # find first instance of p
+        first_p = el.find_first('p')  # find first instance of p
         children = []
         # go thru the children of the first parent
         for child in first_p.parent:
@@ -166,7 +170,7 @@ class DocxParser:
             if not list_started and el.has_child_all('ilvl'):
                 list_started = True  # list has child
                 list_type = self.get_list_style(  # get the type of list
-                    el.find_all('numId').attrib['val'],
+                    el.find_first('numId').attrib['val'],
                 )
                 # append the current and next to list_chunks
                 list_chunks.append(p_list[index_start:index_end])
@@ -178,10 +182,10 @@ class DocxParser:
                     # if the list has started and the list type has changed,
                     # change the list type
                     not list_type == self.get_list_style(
-                        el.find_all('numId').attrib['val']
+                        el.find_first('numId').attrib['val']
                     )):
                 list_type = self.get_list_style(
-                    el.find_all('numId').attrib['val'],
+                    el.find_first('numId').attrib['val'],
                 )
                 list_started = True
                 list_chunks.append(p_list[index_start:index_end])
@@ -203,7 +207,7 @@ class DocxParser:
         # have a list of the relevant chunks!
         for i, chunk in enumerate(list_chunks):
             if chunk[0].has_child_all('ilvl'):
-                numId = chunk[0].find_all('numId').attrib['val']
+                numId = chunk[0].find_first('numId').attrib['val']
                 lst_info[numId] = chunk
                 lst_info = OrderedDict(lst_info.items())
                 chunk_info[i] = lst_info
@@ -223,7 +227,7 @@ class DocxParser:
                     for el in chunk:
                         chunk_parsed += self.parse(el)
                     lst_style = self.get_list_style(
-                        chunk[0].find_all('numId').attrib['val'],
+                        chunk[0].find_first('numId').attrib['val'],
                     )
                     # check if blank
                     if lst_style['val'] == 'bullet' and chunk_parsed != '':
@@ -313,6 +317,59 @@ class DocxParser:
         href = self.escape(href)
         return self.hyperlink(text, href)
 
+    def _get_image_id(self, el):
+        # Drawings
+        blip = el.find_first('blip')
+        if blip is not None:
+            # On drawing tags the id is actually whatever is returned from the
+            # embed attribute on the blip tag. Thanks a lot Microsoft.
+            return blip.get('embed')
+        # Picts
+        imagedata = el.find_first('imagedata')
+        if imagedata is not None:
+            return imagedata.get('id')
+
+    def _convert_image_size(self, size):
+        return size / EMUS_PER_PIXEL
+
+    def _get_image_size(self, el):
+        """
+        If we can't find a height or width, return 0 for whichever is not
+        found, then rely on the `image` handler to strip those attributes. This
+        functionality can change once we integrate PIL.
+        """
+        sizes = el.find_first('ext')
+        if sizes is not None:
+            x = self._convert_image_size(int(sizes.get('cx')))
+            y = self._convert_image_size(int(sizes.get('cy')))
+            return (
+                '%dpx' % x,
+                '%dpx' % y,
+            )
+        shape = el.find_first('shape')
+        if shape is not None:
+            # If either of these are not set, rely on the method `image` to not
+            # use either of them.
+            x = 0
+            y = 0
+            styles = shape.get('style').split(';')
+            for s in styles:
+                if s.startswith('height:'):
+                    y = s.split(':')[1]
+                if s.startswith('width:'):
+                    x = s.split(':')[1]
+            return x, y
+        return 0, 0
+
+    def parse_image(self, el):
+        x, y = self._get_image_size(el)
+        rId = self._get_image_id(el)
+        src = self.rels_dict.get(rId)
+        if not src:
+            return ''
+        src = self.escape(src)
+        return self.image(src, x, y)
+
     def _is_style_on(self, el):
         """
         For b, i, u (bold, italics, and underline) merely having the tag is not
@@ -323,12 +380,15 @@ class DocxParser:
 
     def parse_r(self, el):  # parse the running text
         is_deleted = False
-        text = None
-        if el.has_child('t'):
-            text = self.escape(el.find('t').text)
-        elif el.has_child('delText'):  # get the deleted text
-            text = self.escape(el.find('delText').text)
-            is_deleted = True
+        text = ''
+        for element in el:
+            if element.tag == 't':
+                text += self.escape(el.find('t').text)
+            elif element.tag == 'delText':  # get the deleted text
+                text += self.escape(el.find('delText').text)
+                is_deleted = True
+            elif element.tag in ('pict', 'drawing'):
+                text += self.parse_image(element)
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
@@ -431,6 +491,14 @@ class DocxParser:
     @abstractmethod
     def hyperlink(self, text, href):
         return text
+
+    @abstractmethod
+    def image_handler(self, path):
+        return path
+
+    @abstractmethod
+    def image(self, path, x, y):
+        return self.image_handler(path)
 
     @abstractmethod
     def deletion(self, text, author, date):

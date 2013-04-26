@@ -39,7 +39,7 @@
 							<pic:spPr bwMode="auto">
 								<a:xfrm>
 									<a:off x="0" y="0"/>
-									<a:ext cx="1537970" cy="354965"/>
+									<a:ext cx="{{ width }}" cy="{{ height }}"/>
 								</a:xfrm>
 								<a:prstGeom prst="rect">
 									<a:avLst/>

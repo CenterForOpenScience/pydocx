@@ -5,6 +5,7 @@ except ImportError:  # Python 2.6
     from ordereddict import OrderedDict
 import zipfile
 import logging
+from contextlib import contextmanager
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
 logging.basicConfig(level=logging.DEBUG)
@@ -65,28 +66,42 @@ setattr(_ElementInterface, 'parent', None)
 # End helpers
 
 
+@contextmanager
+def ZipFile(path):  # This is not needed in python 3.2+
+    f = zipfile.ZipFile(path)
+    yield f
+    f.close()
+
+
 class DocxParser:
     __metaclass__ = ABCMeta
 
     def _build_data(self, path, *args, **kwargs):
-        f = zipfile.ZipFile(path)
-        try:
+        with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
-            try:
+            try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
-                pass
-            try:
+                self.numbering_text = None
+            try:  # Only present if there are comments
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
-                pass
+                self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
-        finally:
-            f.close()
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
         )
+        self.numbering_root = None
+        if self.numbering_text:
+            self.numbering_root = ElementTree.fromstring(
+                remove_namespaces(self.numbering_text),
+            )
+        self.comment_root = None
+        if self.comment_text:
+            self.comment_root = ElementTree.fromstring(
+                remove_namespaces(self.comment_text),
+            )
 
     def _parse_rels_root(self):
         tree = ElementTree.fromstring(self.relationship_text)
@@ -112,19 +127,8 @@ class DocxParser:
 
         #all blank when we init
         self.comment_store = None
-        self.numbering_store = None
         self.elements = []
-        self.tables_seen = []
         self.visited = []
-        self.visited_lists = []
-        self.lst_id = []
-        self.start = False
-        try:
-            self.numbering_root = ElementTree.fromstring(
-                remove_namespaces(self.numbering_text),
-            )
-        except:
-            pass
         self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
@@ -416,20 +420,19 @@ class DocxParser:
                                 return i.find('numFmt').attrib
 
     def get_comments(self, doc_id):
-        if self.comment_store is None:
-            # TODO throw appropriate error
-            comment_root = ElementTree.fromstring(
-                remove_namespaces(self.comment_text),
-            )
-            ids_and_info = {}
-            ids = comment_root.find_all('comment')
-            for _id in ids:
-                ids_and_info[_id.attrib['id']] = {
-                    "author": _id.attrib['author'],
-                    "date": _id.attrib['date'],
-                    "text": _id.find_all('t')[0].text,
-                }
-            self.comment_store = ids_and_info
+        if self.comment_root is None:
+            return ''
+        if self.comment_store is not None:
+            return self.comment_store[doc_id]
+        ids_and_info = {}
+        ids = self.comment_root.find_all('comment')
+        for _id in ids:
+            ids_and_info[_id.attrib['id']] = {
+                "author": _id.attrib['author'],
+                "date": _id.attrib['date'],
+                "text": _id.find_all('t')[0].text,
+            }
+        self.comment_store = ids_and_info
         return self.comment_store[doc_id]
 
     @property

@@ -274,7 +274,6 @@ def test_nested_tables():
     actual_html = convert(file_path)
     # Find out why br tag is there.
     assert_html_equal(actual_html, '''
-
     <html><body>
         <table>
             <tr>

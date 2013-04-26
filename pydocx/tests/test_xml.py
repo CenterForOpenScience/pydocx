@@ -1,4 +1,6 @@
 import os
+from itertools import chain
+
 from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
@@ -241,5 +243,108 @@ class ImageNoSizeTestCase(_TranslationTestCase):
         for el in tags:
             body += el
 
+        xml = DXB.xml(body)
+        return xml
+
+
+class TableTag(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <table>
+                <tr>
+                    <td>AAA</td>
+                    <td>BBB</td>
+                </tr>
+                <tr>
+                    <td>CCC</td>
+                    <td>DDD</td>
+                </tr>
+            </table>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=2, num_columns=2, text=chain(
+            [DXB.p_tag('AAA')],
+            [DXB.p_tag('BBB')],
+            [DXB.p_tag('CCC')],
+            [DXB.p_tag('DDD')],
+        ))
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
+class NestedTableTag(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <table>
+            <tr>
+                <td>AAA</td>
+                <td>BBB</td>
+            </tr>
+            <tr>
+                <td>CCC</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td>DDD</td>
+                            <td>EEE</td>
+                        </tr>
+                        <tr>
+                            <td>FFF</td>
+                            <td>GGG</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        nested_table = DXB.table(num_rows=2, num_columns=2, text=chain(
+            [DXB.p_tag('DDD')],
+            [DXB.p_tag('EEE')],
+            [DXB.p_tag('FFF')],
+            [DXB.p_tag('GGG')],
+        ))
+        table = DXB.table(num_rows=2, num_columns=2, text=chain(
+            [DXB.p_tag('AAA')],
+            [DXB.p_tag('BBB')],
+            [DXB.p_tag('CCC')],
+            [nested_table],
+        ))
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
+class TableWithInvalidTag(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <table>
+                <tr>
+                    <td>AAA</td>
+                    <td>BBB</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>DDD</td>
+                </tr>
+            </table>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=2, num_columns=2, text=chain(
+            [DXB.p_tag('AAA')],
+            [DXB.p_tag('BBB')],
+            # This tag may have CCC in it, however this tag has no meaning
+            # pertaining to content.
+            ['<w:invalidTag>CCC</w:invalidTag>'],
+            [DXB.p_tag('DDD')],
+        ))
+        body = table
         xml = DXB.xml(body)
         return xml

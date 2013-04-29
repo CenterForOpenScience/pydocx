@@ -77,6 +77,9 @@ class XMLDocx2Html(Docx2Html):
     def head(self):
         return ''
 
+    def table(self, text):
+        return '<table>' + text + '</table>'
+
 
 class _TranslationTestCase(TestCase):
     expected_output = None

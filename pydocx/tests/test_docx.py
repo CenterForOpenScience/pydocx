@@ -72,7 +72,6 @@ def test_extract_html():
 
 
 def test_nested_list():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',

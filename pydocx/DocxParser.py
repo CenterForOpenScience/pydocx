@@ -56,12 +56,26 @@ def el_iter(el):  # go through all elements
         return el.findall('.//*')
 
 
+def find_parent_by_tag(self, tag):
+    el = self
+    while el.parent:
+        el = el.parent
+        if el.tag == tag:
+            return el
+    return None
+
+
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
 setattr(_ElementInterface, 'has_child_all', has_child_all)
 setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'find_all', find_all)
+setattr(_ElementInterface, 'find_parent_by_tag', find_parent_by_tag)
 setattr(_ElementInterface, 'parent', None)
+setattr(_ElementInterface, 'is_first_list_item', False)
+setattr(_ElementInterface, 'is_last_list_item', False)
+setattr(_ElementInterface, 'next', None)
+setattr(_ElementInterface, 'previous', None)
 
 # End helpers
 
@@ -71,6 +85,11 @@ def ZipFile(path):  # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
+
+
+@contextmanager
+def create_list():
+    yield ['<ol>', '</ol>']
 
 
 class DocxParser:
@@ -133,7 +152,43 @@ class DocxParser:
         self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
-        self._parsed += self.parse_lists(el)  # start out wth lists
+        # Find the first and last li elements
+        list_elements = el.find_all('numId')
+        num_ids = set([i.attrib['val'] for i in list_elements])
+        list_elements = el.find_all('ilvl')
+        ilvls = set([i.attrib['val'] for i in list_elements])
+        elements = [i.find_parent_by_tag('p') for i in list_elements]
+        for num_id in num_ids:
+            for ilvl in ilvls:
+                filtered_list_elements = [
+                    i for i in elements
+                    if (
+                        i.find_first('numId').attrib['val'] == num_id and
+                        i.find_first('ilvl').attrib['val'] == ilvl)
+                ]
+                if not filtered_list_elements:
+                    continue
+                first_el = filtered_list_elements[0]
+                first_el.is_first_list_item = True
+                last_el = filtered_list_elements[-1]
+                last_el.is_last_list_item = True
+
+        body = el.find_first('body')
+        children = [
+            child for child in body.getchildren()
+            if child.tag in ['p', 'tbl']
+        ]
+        for i in range(len(children)):
+            try:
+                if children[i - 1]:
+                    children[i].previous = children[i - 1]
+                if children[i + 1]:
+                    children[i].next = children[i + 1]
+            except IndexError:
+                pass
+
+        #self._parsed += self.parse_lists(el)  # start out wth lists
+        self._parsed += self.parse(el)
 
 ### parse table function and is_table flag
     def parse_lists(self, el):
@@ -143,6 +198,17 @@ class DocxParser:
             child for child in body.getchildren()
             if child.tag in ['p', 'tbl']
         ]
+
+        # Find the first and last li elements
+        list_elements = el.find_all('numId')
+        num_ids = set([i.attrib['val'] for i in list_elements])
+        for num_id in num_ids:
+            filtered_list_elements = [
+                i for i in list_elements
+                if i.attrib['val'] == num_id
+            ]
+            filtered_list_elements[0].is_first_list_item = True
+            filtered_list_elements[-1].is_last_list_item = True
 
         p_list = children  # p_list is now children
         list_started = False  # list has not started yet
@@ -228,12 +294,16 @@ class DocxParser:
         return parsed
 
     def parse(self, el):
+        if el in self.visited:
+            return ''
         parsed = ''
 
         for child in el:
             # recursive. so you can get all the way to the bottom
             parsed += self.parse(child)
 
+        if el.is_first_list_item:
+            self.visited.append(el)
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
@@ -244,11 +314,12 @@ class DocxParser:
             ## This starts the returns
         # Do not do the tr or tc a second time
         elif el.tag == 'tbl':
+            self.visited.append(el)
             return self.table(parsed)
-        elif el.tag == 'tr' and el not in self.visited:  # table rows
+        elif el.tag == 'tr':  # table rows
             return self.table_row(parsed)
-        elif el.tag == 'tc' and el not in self.visited:  # table cells
-            self.elements.append(el)
+        elif el.tag == 'tc':  # table cells
+            #self.elements.append(el)
             return self.table_cell(parsed)
         if el.tag == 'r' and el not in self.elements:
             self.elements.append(el)
@@ -273,6 +344,10 @@ class DocxParser:
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed)  # if list wrap in li tags
+            if el.is_first_list_item:
+                parsed = '<ol>' + parsed
+            if el.is_last_list_item:
+                parsed = parsed + '</ol>'
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
         return parsed

@@ -1,7 +1,7 @@
 pydocx
 ======
 
-[![Build Status](https://travis-ci.org/OpenScienceFramework/pydocx.png)](https://travis-ci.org/OpenScienceFramework/pydocx)
+[![Build Status](https://travis-ci.org/OpenScienceFramework/pydocx.png?branch=master)](https://travis-ci.org/OpenScienceFramework/pydocx)
 
 Convert a docx (OOXML) file to HTML, LaTeX, MD, etc. by implementing a few abstract methods, and we'll provide some reasonable default examples.
 

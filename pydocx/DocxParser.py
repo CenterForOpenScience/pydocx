@@ -333,12 +333,20 @@ class DocxParser:
 
     def parse_list(self, el, text):
         parsed = self.parse_p(el, text)
+        num_id = el.find_first('numId').attrib['val']
         next_el = el.next
         while next_el and not next_el.is_last_list_item:
+            current_num_id = next_el.find_first('numId')
+            #print current_num_id.attrib['val']
+            if current_num_id is not None:
+                if current_num_id.attrib['val'] != num_id:
+                    break
             parsed += self.parse(next_el)
             next_el = next_el.next
-        if next_el:
-            parsed += self.parse(next_el)
+        if next_el is not None:
+            last_num_id = next_el.find_first('numId')
+            if last_num_id is not None and last_num_id.attrib['val'] == num_id:
+                parsed += self.parse(next_el)
 
         lst_style = self.get_list_style(
             el.find_first('numId').attrib['val'],

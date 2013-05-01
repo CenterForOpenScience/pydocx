@@ -36,7 +36,7 @@ def has_child(self, tag):
 
 # determine if there is a child ahead in the element tree.
 def has_child_all(self, tag):
-                              # get child. stop at first child.
+# get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
 
@@ -47,6 +47,13 @@ def find_first(self, tag):
 
 def find_all(self, tag):  # find all occurrences of a tag
     return self.findall('.//' + tag)
+
+
+def find_next(self, tag, count):
+    if self.find_all(tag)[-1] == self.find_all(tag)[count]:
+        return None
+    else:
+        return self.find_all(tag)[count + 1]
 
 
 def el_iter(el):  # go through all elements
@@ -62,9 +69,10 @@ setattr(_ElementInterface, 'has_child_all', has_child_all)
 setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'find_all', find_all)
 setattr(_ElementInterface, 'parent', None)
+setattr(_ElementInterface, 'find_next', find_next)
+
 
 # End helpers
-
 
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
@@ -129,13 +137,15 @@ class DocxParser:
         self.comment_store = None
         self.elements = []
         self.visited = []
+        self.visited_els = []
+        self.count = 0
         self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
         self._parsed += self.parse_lists(el)  # start out wth lists
 
-### parse table function and is_table flag
+    ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
         body = el.find_first('body')
@@ -168,8 +178,7 @@ class DocxParser:
                     # if the list has started and the list type has changed,
                     # change the list type
                     not list_type == self.get_list_style(
-                        el.find_first('numId').attrib['val']
-                    )):
+                        el.find_first('numId').attrib['val'])):
                 list_type = self.get_list_style(
                     el.find_first('numId').attrib['val'],
                 )
@@ -223,13 +232,10 @@ class DocxParser:
                             chunk_parsed,
                             lst_style['val'],
                         )
-            if chunk[0].has_child_all('br'):
-                parsed += self.page_break()
         return parsed
 
     def parse(self, el):
         parsed = ''
-
         for child in el:
             # recursive. so you can get all the way to the bottom
             parsed += self.parse(child)
@@ -237,7 +243,7 @@ class DocxParser:
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        # Add it to the list so we don't repeat!
+            # Add it to the list so we don't repeat!
         if el.tag == 'ilvl' and el not in self.visited:
             self.in_list = True
             self.visited.append(el)
@@ -255,8 +261,16 @@ class DocxParser:
             return self.parse_r(el)  # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
+                if (
+                        el.parent.find_next('p', self.count) is not None and
+                        not len(el.parent.find_all('tc')) > 0):
+                    parsed += self.break_tag()
+                    self.count += 1
+                    self.visited_els.append(el)
+                else:
+                    self.count = 0
                 return parsed  # return text in the table cell
-            # parse p. parse p will return a list element or a paragraph
+                # parse p. parse p will return a list element or a paragraph
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -349,14 +363,21 @@ class DocxParser:
     def parse_r(self, el):  # parse the running text
         is_deleted = False
         text = ''
+        count = 0
         for element in el:
-            if element.tag == 't':
+            if element.tag == 't' and el not in self.visited_els:
                 text += self.escape(el.find('t').text)
+                self.visited_els.append(el)
             elif element.tag == 'delText':  # get the deleted text
                 text += self.escape(el.find('delText').text)
                 is_deleted = True
             elif element.tag in ('pict', 'drawing'):
                 text += self.parse_image(element)
+            elif element.tag == 'br':
+                text += self.break_tag()
+                if len(el.parent.find_all('t')) > 0:
+                    text += self.escape(el.parent.find_next('t', count).text)
+                count += 1
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
@@ -525,6 +546,4 @@ class DocxParser:
 
     @abstractmethod
     def indent(self, text, left=None, right=None, firstLine=None):
-        return text
-
-    #TODO JUSTIFIED JUSTIFIED TEXT
+        return text        # TODO JUSTIFIED JUSTIFIED TEXT

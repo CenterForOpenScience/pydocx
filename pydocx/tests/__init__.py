@@ -83,7 +83,10 @@ class XMLDocx2Html(Docx2Html):
         return self._test_rels_dict
 
     def get_list_style(self, num_id, ilvl):
-        return self.numbering_dict[num_id][ilvl]
+        try:
+            return self.numbering_dict[num_id][ilvl]
+        except KeyError:
+            return 'decimal'
 
     def head(self):
         return ''

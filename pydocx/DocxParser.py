@@ -241,7 +241,8 @@ class DocxParser:
             if not list_started and el.has_child_deep('ilvl'):
                 list_started = True  # list has child
                 list_type = self.get_list_style(  # get the type of list
-                    el.find_first('numId').attrib['val'],
+                    el.num_id,
+                    el.ilvl,
                 )
                 # append the current and next to list_chunks
                 list_chunks.append(p_list[index_start:index_end])
@@ -253,9 +254,10 @@ class DocxParser:
                     # if the list has started and the list type has changed,
                     # change the list type
                     not list_type == self.get_list_style(
-                        el.find_first('numId').attrib['val'])):
+                        el.num_id, el.ilvl)):
                 list_type = self.get_list_style(
-                    el.find_first('numId').attrib['val'],
+                    el.num_id,
+                    el.ilvl,
                 )
                 list_started = True
                 list_chunks.append(p_list[index_start:index_end])
@@ -297,15 +299,16 @@ class DocxParser:
                     for el in chunk:
                         chunk_parsed += self.parse(el)
                     lst_style = self.get_list_style(
-                        chunk[0].find_first('numId').attrib['val'],
+                        chunk[0].num_id,
+                        chunk[0].ilvl,
                     )
                     # check if blank
-                    if lst_style['val'] == 'bullet' and chunk_parsed != '':
+                    if lst_style == 'bullet' and chunk_parsed != '':
                         parsed += self.unordered_list(chunk_parsed)
-                    elif lst_style['val'] and chunk_parsed != '':
+                    elif lst_style and chunk_parsed != '':
                         parsed += self.ordered_list(
                             chunk_parsed,
-                            lst_style['val'],
+                            lst_style,
                         )
         return parsed
 
@@ -373,15 +376,16 @@ class DocxParser:
                 parsed += self.parse(next_el)
 
         lst_style = self.get_list_style(
-            el.find_first('numId').attrib['val'],
+            el.num_id,
+            el.ilvl,
         )
         # check if blank
-        if lst_style['val'] == 'bullet' and parsed != '':
+        if lst_style == 'bullet' and parsed != '':
             return self.unordered_list(parsed)
-        elif lst_style['val'] and parsed != '':
+        elif lst_style and parsed != '':
             return self.ordered_list(
                 parsed,
-                lst_style['val'],
+                lst_style,
             )
 
     def parse_p(self, el, text):
@@ -529,20 +533,23 @@ class DocxParser:
         else:
             return ''
 
-    def get_list_style(self, numval):
+    def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')
         for _id in ids:
-            if _id.attrib['numId'] == numval:
-                abstractid = _id.find('abstractNumId')
-                abstractid = abstractid.attrib['val']
-                style_information = self.numbering_root.find_all(
-                    'abstractNum',
-                )
-                for info in style_information:
-                    if info.attrib['abstractNumId'] == abstractid:
-                        for i in el_iter(info):
-                            if i.find('numFmt') is not None:
-                                return i.find('numFmt').attrib
+            if _id.attrib['numId'] != num_id:
+                continue
+            abstractid = _id.find('abstractNumId')
+            abstractid = abstractid.attrib['val']
+            style_information = self.numbering_root.find_all(
+                'abstractNum',
+            )
+            for info in style_information:
+                if info.attrib['abstractNumId'] == abstractid:
+                    for i in el_iter(info):
+                        if 'ilvl' in i.attrib and i.attrib['ilvl'] != ilvl:
+                            continue
+                        if i.find('numFmt') is not None:
+                            return i.find('numFmt').attrib['val']
 
     def get_comments(self, doc_id):
         if self.comment_root is None:

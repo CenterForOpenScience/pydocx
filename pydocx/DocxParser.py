@@ -89,16 +89,12 @@ setattr(_ElementInterface, 'find_next', find_next)
 # End helpers
 
 
+
 @contextmanager
 def ZipFile(path): # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
-
-
-@contextmanager
-def create_list():
-    yield ['<ol>', '</ol>']
 
 
 class DocxParser:
@@ -157,47 +153,14 @@ class DocxParser:
         self.comment_store = None
         self.elements = []
         self.visited = []
+        self.visited_els = []
+        self.count = 0
         self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root) # begin to parse
 
+
     def parse_begin(self, el):
-        # Find the first and last li elements
-        list_elements = el.find_all('numId')
-        num_ids = set([i.attrib['val'] for i in list_elements])
-        list_elements = el.find_all('ilvl')
-        ilvls = set([i.attrib['val'] for i in list_elements])
-        elements = [i.find_parent_by_tag('p') for i in list_elements]
-        for num_id in num_ids:
-            for ilvl in ilvls:
-                filtered_list_elements = [
-                i for i in elements
-                if (
-                    i.find_first('numId').attrib['val'] == num_id and
-                    i.find_first('ilvl').attrib['val'] == ilvl)
-                ]
-                if not filtered_list_elements:
-                    continue
-                first_el = filtered_list_elements[0]
-                first_el.is_first_list_item = True
-                last_el = filtered_list_elements[-1]
-                last_el.is_last_list_item = True
-
-        body = el.find_first('body')
-        children = [
-        child for child in body.getchildren()
-        if child.tag in ['p', 'tbl']
-        ]
-        for i in range(len(children)):
-            try:
-                if children[i - 1]:
-                    children[i].previous = children[i - 1]
-                if children[i + 1]:
-                    children[i].next = children[i + 1]
-            except IndexError:
-                pass
-
-        #self._parsed += self.parse_lists(el) # start out wth lists
-        self._parsed += self.parse(el)
+        self._parsed += self.parse_lists(el) # start out wth lists
 
     ### parse table function and is_table flag
     def parse_lists(self, el):
@@ -207,17 +170,6 @@ class DocxParser:
         child for child in body.getchildren()
         if child.tag in ['p', 'tbl']
         ]
-
-        # Find the first and last li elements
-        list_elements = el.find_all('numId')
-        num_ids = set([i.attrib['val'] for i in list_elements])
-        for num_id in num_ids:
-            filtered_list_elements = [
-            i for i in list_elements
-            if i.attrib['val'] == num_id
-            ]
-            filtered_list_elements[0].is_first_list_item = True
-            filtered_list_elements[-1].is_last_list_item = True
 
         p_list = children # p_list is now children
         list_started = False # list has not started yet
@@ -298,21 +250,17 @@ class DocxParser:
                             chunk_parsed,
                             lst_style['val'],
                         )
-            if chunk[0].has_child_all('br'):
-                parsed += self.page_break()
+#            if chunk[0].has_child_all('br'):
+#                parsed += self.page_break()
         return parsed
 
     def parse(self, el):
-        if el in self.visited:
-            return ''
         parsed = ''
         count = 0
         for child in el:
             # recursive. so you can get all the way to the bottom
             parsed += self.parse(child)
 
-        if el.is_first_list_item:
-            self.visited.append(el)
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
@@ -323,21 +271,23 @@ class DocxParser:
             ## This starts the returns
         # Do not do the tr or tc a second time
         elif el.tag == 'tbl':
-            self.visited.append(el)
             return self.table(parsed)
-        elif el.tag == 'tr': # table rows
+        elif el.tag == 'tr' and el not in self.visited: # table rows
             return self.table_row(parsed)
-        elif el.tag == 'tc': # table cells
-            #self.elements.append(el)
+        elif el.tag == 'tc' and el not in self.visited: # table cells
+            self.elements.append(el)
             return self.table_cell(parsed)
         if el.tag == 'r' and el not in self.elements:
             self.elements.append(el)
             return self.parse_r(el) # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
-                if el.parent.find_next('p', count) is not None:
+                if el.parent.find_next('p', self.count) is not None and not len(el.parent.find_all('tc')) > 0:
                     parsed += self.break_tag()
-                    count += 1
+                    self.count += 1
+                    self.visited_els.append(el)
+                else:
+                    self.count = 0
                 return parsed # return text in the table cell
                 # parse p. parse p will return a list element or a paragraph
             return self.parse_p(el, parsed)
@@ -356,10 +306,6 @@ class DocxParser:
         if self.in_list:
             self.in_list = False
             parsed = self.list_element(parsed) # if list wrap in li tags
-            if el.is_first_list_item:
-                parsed = '<ol>' + parsed
-            if el.is_last_list_item:
-                parsed = parsed + '</ol>'
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed) # if paragraph wrap in p tags
         return parsed
@@ -436,16 +382,21 @@ well.
     def parse_r(self, el): # parse the running text
         is_deleted = False
         text = ''
+        count = 0
         for element in el:
-            if element.tag == 'br':
-                text += self.break_tag()
-            if element.tag == 't':
+            if element.tag == 't' and el not in self.visited_els:
                 text += self.escape(el.find('t').text)
+                self.visited_els.append(el)
             elif element.tag == 'delText': # get the deleted text
                 text += self.escape(el.find('delText').text)
                 is_deleted = True
             elif element.tag in ('pict', 'drawing'):
                 text += self.parse_image(element)
+            elif element.tag == 'br':
+                text += self.break_tag()
+                if len(el.parent.find_all('t')) > 0:
+                    text += self.escape(el.parent.find_next('t', count).text)
+                count +=1
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
@@ -614,6 +565,4 @@ well.
 
     @abstractmethod
     def indent(self, text, left=None, right=None, firstLine=None):
-        return text
-
-        #TODO JUSTIFIED JUSTIFIED TEXT
+        return text        #TODO JUSTIFIED JUSTIFIED TEXT

@@ -81,6 +81,9 @@ setattr(_ElementInterface, 'find_parent_by_tag', find_parent_by_tag)
 setattr(_ElementInterface, 'parent', None)
 setattr(_ElementInterface, 'is_first_list_item', False)
 setattr(_ElementInterface, 'is_last_list_item', False)
+setattr(_ElementInterface, 'is_list_item', False)
+setattr(_ElementInterface, 'ilvl', None)
+setattr(_ElementInterface, 'num_id', None)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'previous', None)
 setattr(_ElementInterface, 'find_next', find_next)
@@ -93,11 +96,6 @@ def ZipFile(path):  # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
-
-
-@contextmanager
-def create_list():
-    yield ['<ol>', '</ol>']
 
 
 class DocxParser:
@@ -161,20 +159,32 @@ class DocxParser:
         self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
-    def parse_begin(self, el):
-        # Find the first and last li elements
+    def _set_list_attributes(self, el):
         list_elements = el.find_all('numId')
-        num_ids = set([i.attrib['val'] for i in list_elements])
-        list_elements = el.find_all('ilvl')
-        ilvls = set([i.attrib['val'] for i in list_elements])
-        elements = [i.find_parent_by_tag('p') for i in list_elements]
+        for li in list_elements:
+            parent = li.find_parent_by_tag('p')
+            parent.is_list_item = True
+            parent.num_id = parent.find_first('numId').attrib['val']
+            parent.ilvl = parent.find_first('ilvl').attrib['val']
+
+    def parse_begin(self, el):
+        self._set_list_attributes(el)
+
+        # Find the first and last li elements
+        body = el.find_first('body')
+        list_elements = [
+            child for child in body.getchildren()
+            if child.tag == 'p' and child.is_list_item
+        ]
+        num_ids = set([i.num_id for i in list_elements])
+        ilvls = set([i.ilvl for i in list_elements])
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
-                    i for i in elements
+                    i for i in list_elements
                     if (
-                        i.find_first('numId').attrib['val'] == num_id and
-                        i.find_first('ilvl').attrib['val'] == ilvl)
+                        i.num_id == num_id and
+                        i.ilvl == ilvl)
                 ]
                 if not filtered_list_elements:
                     continue
@@ -183,7 +193,6 @@ class DocxParser:
                 last_el = filtered_list_elements[-1]
                 last_el.is_last_list_item = True
 
-        body = el.find_first('body')
         children = [
             child for child in body.getchildren()
             if child.tag in ['p', 'tbl']
@@ -347,19 +356,20 @@ class DocxParser:
 
     def parse_list(self, el, text):
         parsed = self.parse_p(el, text)
-        num_id = el.find_first('numId').attrib['val']
+        num_id = el.num_id
         next_el = el.next
         while next_el and not next_el.is_last_list_item:
-            current_num_id = next_el.find_first('numId')
-            #print current_num_id.attrib['val']
-            if current_num_id is not None:
-                if current_num_id.attrib['val'] != num_id:
-                    break
+            current_num_id = None
+            if next_el.is_list_item:
+                current_num_id = next_el.num_id
+
+            # Check to see if we need to break out of this loop.
+            if current_num_id != num_id:
+                break
             parsed += self.parse(next_el)
             next_el = next_el.next
         if next_el is not None:
-            last_num_id = next_el.find_first('numId')
-            if last_num_id is not None and last_num_id.attrib['val'] == num_id:
+            if next_el.num_id == num_id:
                 parsed += self.parse(next_el)
 
         lst_style = self.get_list_style(
@@ -379,7 +389,7 @@ class DocxParser:
         if text == '' and not self.in_list:
             return ''
         parsed = text
-        if el.has_child_deep('ilvl'):
+        if el.is_list_item:
             parsed = self.list_element(parsed)  # if list wrap in li tags
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)  # if paragraph wrap in p tags

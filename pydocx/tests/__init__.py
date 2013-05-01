@@ -61,8 +61,16 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
-    def _build_data(self, document_xml=None, rels_dict=None, *args, **kwargs):
+    def _build_data(
+            self,
+            document_xml=None,
+            rels_dict=None,
+            numbering_dict=None,
+            *args, **kwargs):
         self._test_rels_dict = rels_dict
+        if numbering_dict is None:
+            numbering_dict = {}
+        self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:
             self.root = ElementTree.fromstring(
@@ -74,16 +82,49 @@ class XMLDocx2Html(Docx2Html):
             return {}
         return self._test_rels_dict
 
+    def get_list_style(self, num_id, ilvl):
+        return self.numbering_dict[num_id][ilvl]
+
     def head(self):
         return ''
 
     def table(self, text):
         return '<table>' + text + '</table>'
 
+    def ordered_list(self, text, list_style):
+        list_type_conversions = {
+            'decimal': 'decimal',
+            'decimalZero': 'decimal-leading-zero',
+            'upperRoman': 'upper-roman',
+            'lowerRoman': 'lower-roman',
+            'upperLetter': 'upper-alpha',
+            'lowerLetter': 'lower-alpha',
+            'ordinal': 'decimal',
+            'cardinalText': 'decimal',
+            'ordinalText': 'decimal',
+        }
+        return '<ol data-list-type="{list_style}">{text}</ol>'.format(
+            list_style=list_type_conversions.get(list_style, 'decimal'),
+            text=text,
+        )
+
+
+DEFAULT_NUMBERING_DICT = {
+    '1': {
+        '0': 'decimal',
+        '1': 'decimal',
+    },
+    '2': {
+        '0': 'none',
+        '1': 'none',
+    },
+}
+
 
 class _TranslationTestCase(TestCase):
     expected_output = None
     relationship_dict = None
+    numbering_dict = DEFAULT_NUMBERING_DICT
 
     def get_xml(self):
         raise NotImplementedError()
@@ -99,6 +140,7 @@ class _TranslationTestCase(TestCase):
         html = XMLDocx2Html(
             document_xml=tree,
             rels_dict=self.relationship_dict,
+            numbering_dict=self.numbering_dict,
         ).parsed
 
         assert_html_equal(html, self.expected_output)

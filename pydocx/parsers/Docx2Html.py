@@ -118,3 +118,7 @@ class Docx2Html(DocxParser):
             left=left,
             text=text,
         )
+
+    def break_tag(self):
+        return '<br/>'
+

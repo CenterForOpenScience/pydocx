@@ -614,7 +614,6 @@ def test_fake_headings_by_length():
 
 
 def test_shift_enter():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -627,16 +626,16 @@ def test_shift_enter():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
     <html><body>
-        <p>AAA<br />BBB</p>
+        <p>AAA<br/>BBB</p>
         <p>CCC</p>
         <ol data-list-type="decimal">
-            <li>DDD<br />EEE</li>
+            <li>DDD<br/>EEE</li>
             <li>FFF</li>
         </ol>
         <table>
             <tr>
-                <td>GGG<br />HHH</td>
-                <td>III<br />JJJ</td>
+                <td>GGG<br/>HHH</td>
+                <td>III<br/>JJJ</td>
             </tr>
             <tr>
                 <td>KKK</td>

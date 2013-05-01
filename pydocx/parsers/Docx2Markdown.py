@@ -1,5 +1,6 @@
 from pydocx.DocxParser import DocxParser
 
+
 class Docx2Markdown(DocxParser):
     def escape(self, text):
         return text
@@ -17,8 +18,9 @@ class Docx2Markdown(DocxParser):
         return '**' + text + '**'
 
     def italics(self, text):
-        # TODO do we need a "pre" variable, so I can check for *italics**italics* and turn it into *italicsitatlics*?
+        # TODO do we need a "pre" variable, so I can check for
+        # *italics**italics* and turn it into *italicsitatlics*?
         return '*' + text + '*'
 
     def underline(self, text):
-        return '***' +text + '***'
+        return '***' + text + '***'

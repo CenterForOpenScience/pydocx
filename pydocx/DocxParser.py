@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 try:
     from collections import OrderedDict
-except ImportError: # Python 2.6
+except ImportError:  # Python 2.6
     from ordereddict import OrderedDict
 import zipfile
 import logging
@@ -16,13 +16,13 @@ logger = logging.getLogger("NewParser")
 EMUS_PER_PIXEL = 9525
 
 
-def remove_namespaces(document): # remove namespaces
+def remove_namespaces(document):  # remove namespaces
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[-1], v)
-                for k, v in child.attrib.items()
+            for k, v in child.attrib.items()
         )
     return ElementTree.tostring(root)
 
@@ -45,8 +45,9 @@ def find_first(self, tag):
     return self.find('.//' + tag)
 
 
-def find_all(self, tag): # find all occurrences of a tag
+def find_all(self, tag):  # find all occurrences of a tag
     return self.findall('.//' + tag)
+
 
 def find_next(self, tag, count):
     if self.find_all(tag)[-1] == self.find_all(tag)[count]:
@@ -55,12 +56,11 @@ def find_next(self, tag, count):
         return self.find_all(tag)[count + 1]
 
 
-def el_iter(el): # go through all elements
+def el_iter(el):  # go through all elements
     try:
         return el.iter()
     except AttributeError:
         return el.findall('.//*')
-
 
 
 def find_parent_by_tag(self, tag):
@@ -88,10 +88,8 @@ setattr(_ElementInterface, 'find_next', find_next)
 
 # End helpers
 
-
-
 @contextmanager
-def ZipFile(path): # This is not needed in python 3.2+
+def ZipFile(path):  # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
@@ -103,18 +101,18 @@ class DocxParser:
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
-            try: # Only present if there are lists
+            try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
                 self.numbering_text = None
-            try: # Only present if there are comments
+            try:  # Only present if there are comments
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
 
         self.root = ElementTree.fromstring(
-            remove_namespaces(self.document_text), # remove the namespaces
+            remove_namespaces(self.document_text),  # remove the namespaces
         )
         self.numbering_root = None
         if self.numbering_text:
@@ -142,12 +140,12 @@ class DocxParser:
 
         self._build_data(*args, **kwargs)
 
-        def add_parent(el): # if a parent, make that an attribute
+        def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
 
-        add_parent(self.root) # create the parent attributes
+        add_parent(self.root)  # create the parent attributes
 
         #all blank when we init
         self.comment_store = None
@@ -156,23 +154,22 @@ class DocxParser:
         self.visited_els = []
         self.count = 0
         self.rels_dict = self._parse_rels_root()
-        self.parse_begin(self.root) # begin to parse
-
+        self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
-        self._parsed += self.parse_lists(el) # start out wth lists
+        self._parsed += self.parse_lists(el)  # start out wth lists
 
     ### parse table function and is_table flag
     def parse_lists(self, el):
         parsed = ''
         body = el.find_first('body')
         children = [
-        child for child in body.getchildren()
-        if child.tag in ['p', 'tbl']
+            child for child in body.getchildren()
+            if child.tag in ['p', 'tbl']
         ]
 
-        p_list = children # p_list is now children
-        list_started = False # list has not started yet
+        p_list = children  # p_list is now children
+        list_started = False  # list has not started yet
         list_type = ''
         list_chunks = []
         index_start = 0
@@ -181,8 +178,8 @@ class DocxParser:
         for i, el in enumerate(p_list):
             # if list hasn't started and the element has a child
             if not list_started and el.has_child_all('ilvl'):
-                list_started = True # list has child
-                list_type = self.get_list_style( # get the type of list
+                list_started = True  # list has child
+                list_type = self.get_list_style(  # get the type of list
                     el.find_first('numId').attrib['val'],
                 )
                 # append the current and next to list_chunks
@@ -190,13 +187,12 @@ class DocxParser:
                 index_start = i
                 index_end = i+1
             elif (
-                list_started and
-                el.has_child_all('ilvl') and
-                # if the list has started and the list type has changed,
-                # change the list type
-                not list_type == self.get_list_style(
-                    el.find_first('numId').attrib['val']
-                )):
+                    list_started and
+                    el.has_child_all('ilvl') and
+                    # if the list has started and the list type has changed,
+                    # change the list type
+                    not list_type == self.get_list_style(
+                        el.find_first('numId').attrib['val'])):
                 list_type = self.get_list_style(
                     el.find_first('numId').attrib['val'],
                 )
@@ -256,7 +252,6 @@ class DocxParser:
 
     def parse(self, el):
         parsed = ''
-        count = 0
         for child in el:
             # recursive. so you can get all the way to the bottom
             parsed += self.parse(child)
@@ -272,23 +267,25 @@ class DocxParser:
         # Do not do the tr or tc a second time
         elif el.tag == 'tbl':
             return self.table(parsed)
-        elif el.tag == 'tr' and el not in self.visited: # table rows
+        elif el.tag == 'tr' and el not in self.visited:  # table rows
             return self.table_row(parsed)
-        elif el.tag == 'tc' and el not in self.visited: # table cells
+        elif el.tag == 'tc' and el not in self.visited:  # table cells
             self.elements.append(el)
             return self.table_cell(parsed)
         if el.tag == 'r' and el not in self.elements:
             self.elements.append(el)
-            return self.parse_r(el) # parse the run
+            return self.parse_r(el)  # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
-                if el.parent.find_next('p', self.count) is not None and not len(el.parent.find_all('tc')) > 0:
+                if (
+                        el.parent.find_next('p', self.count) is not None and
+                        not len(el.parent.find_all('tc')) > 0):
                     parsed += self.break_tag()
                     self.count += 1
                     self.visited_els.append(el)
                 else:
                     self.count = 0
-                return parsed # return text in the table cell
+                return parsed  # return text in the table cell
                 # parse p. parse p will return a list element or a paragraph
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
@@ -305,9 +302,9 @@ class DocxParser:
         parsed = text
         if self.in_list:
             self.in_list = False
-            parsed = self.list_element(parsed) # if list wrap in li tags
+            parsed = self.list_element(parsed)  # if list wrap in li tags
         elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed) # if paragraph wrap in p tags
+            parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
         return parsed
 
     def parse_hyperlink(self, el, text):
@@ -346,7 +343,7 @@ functionality can change once we integrate PIL.
             return (
                 '%dpx' % x,
                 '%dpx' % y,
-                )
+            )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not
@@ -373,13 +370,13 @@ functionality can change once we integrate PIL.
 
     def _is_style_on(self, el):
         """
-For b, i, u (bold, italics, and underline) merely having the tag is not
-sufficient. You need to check to make sure it is not set to "false" as
-well.
-"""
+        For b, i, u (bold, italics, and underline) merely having the tag is not
+        sufficient. You need to check to make sure it is not set to "false" as
+        well.
+        """
         return el.get('val') != 'false'
 
-    def parse_r(self, el): # parse the running text
+    def parse_r(self, el):  # parse the running text
         is_deleted = False
         text = ''
         count = 0
@@ -387,7 +384,7 @@ well.
             if element.tag == 't' and el not in self.visited_els:
                 text += self.escape(el.find('t').text)
                 self.visited_els.append(el)
-            elif element.tag == 'delText': # get the deleted text
+            elif element.tag == 'delText':  # get the deleted text
                 text += self.escape(el.find('delText').text)
                 is_deleted = True
             elif element.tag in ('pict', 'drawing'):
@@ -396,12 +393,12 @@ well.
                 text += self.break_tag()
                 if len(el.parent.find_all('t')) > 0:
                     text += self.escape(el.parent.find_next('t', count).text)
-                count +=1
+                count += 1
         if text:
             rpr = el.find('rPr')
             if rpr is not None:
                 fns = []
-                if rpr.has_child('b'): # text styling
+                if rpr.has_child('b'):  # text styling
                     if self._is_style_on(rpr.find('b')):
                         fns.append(self.bold)
                 if rpr.has_child('i'):
@@ -415,7 +412,7 @@ well.
             ppr = el.parent.find('pPr')
             if ppr is not None:
                 jc = ppr.find('jc')
-                if jc is not None: # text alignments
+                if jc is not None:  # text alignments
                     if jc.attrib['val'] == 'right':
                         text = self.right_justify(text)
                     if jc.attrib['val'] == 'center':
@@ -471,7 +468,7 @@ well.
                 "author": _id.attrib['author'],
                 "date": _id.attrib['date'],
                 "text": _id.find_all('t')[0].text,
-                }
+            }
         self.comment_store = ids_and_info
         return self.comment_store[doc_id]
 
@@ -565,4 +562,4 @@ well.
 
     @abstractmethod
     def indent(self, text, left=None, right=None, firstLine=None):
-        return text        #TODO JUSTIFIED JUSTIFIED TEXT
+        return text        # TODO JUSTIFIED JUSTIFIED TEXT

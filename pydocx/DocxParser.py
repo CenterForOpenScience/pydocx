@@ -35,7 +35,7 @@ def has_child(self, tag):
 
 
 # determine if there is a child ahead in the element tree.
-def has_child_all(self, tag):
+def has_child_deep(self, tag):
                               # get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
@@ -67,7 +67,7 @@ def find_parent_by_tag(self, tag):
 
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
-setattr(_ElementInterface, 'has_child_all', has_child_all)
+setattr(_ElementInterface, 'has_child_deep', has_child_deep)
 setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'find_all', find_all)
 setattr(_ElementInterface, 'find_parent_by_tag', find_parent_by_tag)
@@ -219,7 +219,7 @@ class DocxParser:
         # enumerate p_list so we have a tuple of # and element
         for i, el in enumerate(p_list):
             # if list hasn't started and the element has a child
-            if not list_started and el.has_child_all('ilvl'):
+            if not list_started and el.has_child_deep('ilvl'):
                 list_started = True  # list has child
                 list_type = self.get_list_style(  # get the type of list
                     el.find_first('numId').attrib['val'],
@@ -230,7 +230,7 @@ class DocxParser:
                 index_end = i+1
             elif (
                     list_started and
-                    el.has_child_all('ilvl') and
+                    el.has_child_deep('ilvl') and
                     # if the list has started and the list type has changed,
                     # change the list type
                     not list_type == self.get_list_style(
@@ -243,7 +243,7 @@ class DocxParser:
                 list_chunks.append(p_list[index_start:index_end])
                 index_start = i
                 index_end = i+1
-            elif list_started and not el.has_child_all('ilvl'):
+            elif list_started and not el.has_child_deep('ilvl'):
                 # if there are no more children that are part of a list, list
                 # start is false
                 list_started = False
@@ -258,7 +258,7 @@ class DocxParser:
         # if there is a list, group all the numIds together and sort, else just
         # have a list of the relevant chunks!
         for i, chunk in enumerate(list_chunks):
-            if chunk[0].has_child_all('ilvl'):
+            if chunk[0].has_child_deep('ilvl'):
                 numId = chunk[0].find_first('numId').attrib['val']
                 lst_info[numId] = chunk
                 lst_info = OrderedDict(lst_info.items())
@@ -289,13 +289,14 @@ class DocxParser:
                             chunk_parsed,
                             lst_style['val'],
                         )
-            if chunk[0].has_child_all('br'):
+            if chunk[0].has_child_deep('br'):
                 parsed += self.page_break()
         return parsed
 
     def parse(self, el):
         if el in self.visited:
             return ''
+        self.visited.append(el)
         parsed = ''
 
         for child in el:
@@ -303,18 +304,12 @@ class DocxParser:
             parsed += self.parse(child)
 
         if el.is_first_list_item:
-            self.visited.append(el)
+            return self.parse_list(el, parsed)
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        # Add it to the list so we don't repeat!
-        if el.tag == 'ilvl' and el not in self.visited:
-            self.in_list = True
-            self.visited.append(el)
-            ## This starts the returns
         # Do not do the tr or tc a second time
-        elif el.tag == 'tbl':
-            self.visited.append(el)
+        if el.tag == 'tbl':
             return self.table(parsed)
         elif el.tag == 'tr':  # table rows
             return self.table_row(parsed)
@@ -336,18 +331,34 @@ class DocxParser:
         else:
             return parsed
 
+    def parse_list(self, el, text):
+        parsed = self.parse_p(el, text)
+        next_el = el.next
+        while next_el and not next_el.is_last_list_item:
+            parsed += self.parse(next_el)
+            next_el = next_el.next
+        if next_el:
+            parsed += self.parse(next_el)
+
+        lst_style = self.get_list_style(
+            el.find_first('numId').attrib['val'],
+        )
+        # check if blank
+        if lst_style['val'] == 'bullet' and parsed != '':
+            return self.unordered_list(parsed)
+        elif lst_style['val'] and parsed != '':
+            return self.ordered_list(
+                parsed,
+                lst_style['val'],
+            )
+
     def parse_p(self, el, text):
         # still need to go thru empty lists!
         if text == '' and not self.in_list:
             return ''
         parsed = text
-        if self.in_list:
-            self.in_list = False
+        if el.has_child_deep('ilvl'):
             parsed = self.list_element(parsed)  # if list wrap in li tags
-            if el.is_first_list_item:
-                parsed = '<ol>' + parsed
-            if el.is_last_list_item:
-                parsed = parsed + '</ol>'
         elif el.parent not in self.elements:
             parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
         return parsed

@@ -63,26 +63,12 @@ def el_iter(el):  # go through all elements
         return el.findall('.//*')
 
 
-def find_parent_by_tag(self, tag):
-    el = self
-    while el.parent:
-        el = el.parent
-        if el.tag == tag:
-            return el
-    return None
-
-
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
 setattr(_ElementInterface, 'has_child_all', has_child_all)
 setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'find_all', find_all)
-setattr(_ElementInterface, 'find_parent_by_tag', find_parent_by_tag)
 setattr(_ElementInterface, 'parent', None)
-setattr(_ElementInterface, 'is_first_list_item', False)
-setattr(_ElementInterface, 'is_last_list_item', False)
-setattr(_ElementInterface, 'next', None)
-setattr(_ElementInterface, 'previous', None)
 setattr(_ElementInterface, 'find_next', find_next)
 
 
@@ -332,10 +318,10 @@ class DocxParser:
 
     def _get_image_size(self, el):
         """
-If we can't find a height or width, return 0 for whichever is not
-found, then rely on the `image` handler to strip those attributes. This
-functionality can change once we integrate PIL.
-"""
+        If we can't find a height or width, return 0 for whichever is not
+        found, then rely on the `image` handler to strip those attributes. This
+        functionality can change once we integrate PIL.
+        """
         sizes = el.find_first('ext')
         if sizes is not None:
             x = self._convert_image_size(int(sizes.get('cx')))

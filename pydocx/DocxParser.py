@@ -232,8 +232,6 @@ class DocxParser:
                             chunk_parsed,
                             lst_style['val'],
                         )
-#            if chunk[0].has_child_all('br'):
-#                parsed += self.page_break()
         return parsed
 
     def parse(self, el):
@@ -308,7 +306,7 @@ class DocxParser:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
             return blip.get('embed')
-            # Picts
+        # Picts
         imagedata = el.find_first('imagedata')
         if imagedata is not None:
             return imagedata.get('id')

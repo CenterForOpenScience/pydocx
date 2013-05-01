@@ -139,7 +139,6 @@ class DocxParser:
 
     def __init__(self, *args, **kwargs):
         self._parsed = ''
-        self.in_list = False
 
         self._build_data(*args, **kwargs)
 
@@ -156,6 +155,7 @@ class DocxParser:
         self.visited = []
         self.visited_els = []
         self.count = 0
+        self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
         self.parse_begin(self.root)  # begin to parse
 
@@ -322,7 +322,10 @@ class DocxParser:
             parsed += self.parse(child)
 
         if el.is_first_list_item:
-            return self.parse_list(el, parsed)
+            self.list_depth += 1
+            parsed_list = self.parse_list(el, parsed)
+            self.list_depth -= 1
+            return parsed_list
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
@@ -360,20 +363,23 @@ class DocxParser:
     def parse_list(self, el, text):
         parsed = self.parse_p(el, text)
         num_id = el.num_id
+        ilvl = el.ilvl
         next_el = el.next
-        while next_el and not next_el.is_last_list_item:
+        while next_el and next_el.num_id == num_id and next_el.ilvl >= ilvl:
+            if next_el in self.visited:
+                next_el = next_el.next
+                continue
+
             current_num_id = None
             if next_el.is_list_item:
                 current_num_id = next_el.num_id
+                ilvl = next_el.ilvl
 
             # Check to see if we need to break out of this loop.
             if current_num_id != num_id:
                 break
             parsed += self.parse(next_el)
             next_el = next_el.next
-        if next_el is not None:
-            if next_el.num_id == num_id:
-                parsed += self.parse(next_el)
 
         lst_style = self.get_list_style(
             el.num_id,
@@ -390,13 +396,30 @@ class DocxParser:
 
     def parse_p(self, el, text):
         # still need to go thru empty lists!
-        if text == '' and not self.in_list:
+        if text == '':
             return ''
         parsed = text
         if el.is_list_item:
-            parsed = self.list_element(parsed)  # if list wrap in li tags
+            next_el_parsed = ''
+            if el.next:
+                next_el = el.next
+                if (
+                        next_el.num_id and
+                        not next_el.is_list_item or
+                        (
+                            next_el.is_first_list_item and
+                            next_el.num_id == el.num_id and
+                            next_el.ilvl >= el.ilvl
+                        )):
+                    next_el_parsed = self.parse(next_el)
+            parsed = self.list_element(
+                parsed + next_el_parsed,
+            )  # if list wrap in li tags
         elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
+            if self.list_depth == 0:
+                parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
+            else:
+                parsed = self.break_tag() + parsed
         return parsed
 
     def parse_hyperlink(self, el, text):

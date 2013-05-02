@@ -402,7 +402,6 @@ def _copy_file_to_tmp_dir(file_path, filename):
 
 
 def test_split_headers():
-    raise SkipTest('This test is not yet passing')
     filename = 'split_header.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
@@ -417,7 +416,7 @@ def test_split_headers():
 
     actual_html = convert(new_file_path)
     assert_html_equal(actual_html, '''
-    <html><body><h2>AAA</h2><p>BBB</p><h2>CCC</h2></body></html>
+    <html><body><h1>AAA</h1><p>BBB</p><h1>CCC</h1></body></html>
     ''')
 
 

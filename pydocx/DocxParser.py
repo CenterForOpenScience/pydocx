@@ -147,7 +147,6 @@ class DocxParser:
 
         #all blank when we init
         self.comment_store = None
-        self.elements = []
         self.visited = []
         self.visited_els = []
         self.count = 0
@@ -224,10 +223,8 @@ class DocxParser:
         elif el.tag == 'tr':  # table rows
             return self.table_row(parsed)
         elif el.tag == 'tc':  # table cells
-            #self.elements.append(el)
             return self.table_cell(parsed)
-        if el.tag == 'r' and el not in self.elements:
-            self.elements.append(el)
+        if el.tag == 'r' and el:
             return self.parse_r(el)  # parse the run
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
@@ -288,7 +285,7 @@ class DocxParser:
             el.num_id,
             el.ilvl,
         )
-        # check if blank
+
         self.list_depth -= 1
         if lst_style == 'bullet' and parsed != '':
             return self.unordered_list(parsed)
@@ -299,7 +296,6 @@ class DocxParser:
             )
 
     def parse_p(self, el, text):
-        # still need to go thru empty lists!
         if text == '':
             return ''
         parsed = text
@@ -320,7 +316,7 @@ class DocxParser:
             parsed = self.list_element(
                 parsed + next_el_parsed,
             )  # if list wrap in li tags
-        elif el.parent not in self.elements:
+        else:
             if self.list_depth == 0:
                 parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
             else:

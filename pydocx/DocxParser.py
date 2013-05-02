@@ -209,7 +209,7 @@ class DocxParser:
         self.visited.append(el)
         parsed = ''
         for child in el:
-            # recursive. so you can get all the way to the bottom
+            # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
 
         if el.is_first_list_item:
@@ -257,21 +257,23 @@ class DocxParser:
             # Bail if next_el is not an element
             if next_el is None:
                 return False
-            # If next_il is not a list item then roll it into the list by
+            # If next_el is not a list item then roll it into the list by
             # returning True.
             if not next_el.is_list_item:
                 return True
             # If the num ids are the same and the new ilvl is the same or
-            # larger than the previous return True.
+            # larger than the previous return True, else False.
             return next_el.num_id == num_id and next_el.ilvl >= ilvl
 
         while continue_loop(next_el, num_id, ilvl):
             if next_el in self.visited:
+                # Early continue for elements we have already visited.
                 next_el = next_el.next
                 continue
 
             current_num_id = None
             if next_el.is_list_item:
+                # Reset the num_id and the ilvl
                 current_num_id = next_el.num_id
                 ilvl = next_el.ilvl
 
@@ -281,12 +283,14 @@ class DocxParser:
             parsed += self.parse(next_el)
             next_el = next_el.next
 
+        # Get the list style for the pending list.
         lst_style = self.get_list_style(
             el.num_id,
             el.ilvl,
         )
 
         self.list_depth -= 1
+        # Create the actual list and return it.
         if lst_style == 'bullet' and parsed != '':
             return self.unordered_list(parsed)
         elif lst_style and parsed != '':
@@ -299,28 +303,37 @@ class DocxParser:
         if text == '':
             return ''
         parsed = text
-        if el.is_list_item:
+        if not el.is_list_item:
+            # No p tags in li tags
             if self.list_depth == 0:
-                return self.parse_list(el, parsed)
-            next_el_parsed = ''
-            if el.next:
-                next_el = el.next
-                if (
-                        self.list_depth > 0 and
-                        not next_el.is_list_item or
-                        (
-                            next_el.is_first_list_item and
-                            next_el.num_id == el.num_id
-                        )):
-                    next_el_parsed = self.parse(next_el)
-            parsed = self.list_element(
-                parsed + next_el_parsed,
-            )  # if list wrap in li tags
-        else:
-            if self.list_depth == 0:
-                parsed = self.paragraph(parsed)  # if paragraph wrap in p tags
+                parsed = self.paragraph(parsed)
             else:
+                # Instead break separate
                 parsed = self.break_tag() + parsed
+            return parsed
+
+        # If for whatever reason we are not currently in a list, then start
+        # a list here.
+        if self.list_depth == 0:
+            return self.parse_list(el, parsed)
+        next_el_parsed = ''
+        if el.next is not None:
+            next_el = el.next
+            if (
+                    not next_el.is_list_item or
+                    (
+                        # This is starting a new nested list
+                        next_el.is_first_list_item and
+                        next_el.num_id == el.num_id
+                    )):
+                # Get the contents of the next el and append it to the
+                # contents of the current el (that way things like tables
+                # are actually in the li tag instead of in the ol/ul tag).
+                next_el_parsed = self.parse(next_el)
+        # Create the actual li element
+        parsed = self.list_element(
+            parsed + next_el_parsed,
+        )
         return parsed
 
     def parse_hyperlink(self, el, text):

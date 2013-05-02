@@ -1,8 +1,4 @@
 from abc import abstractmethod, ABCMeta
-try:
-    from collections import OrderedDict
-except ImportError:  # Python 2.6
-    from ordereddict import OrderedDict
 import zipfile
 import logging
 from contextlib import contextmanager
@@ -206,111 +202,7 @@ class DocxParser:
             except IndexError:
                 pass
 
-        #self._parsed += self.parse_lists(el)  # start out wth lists
         self._parsed += self.parse(el)
-
-    ### parse table function and is_table flag
-    def parse_lists(self, el):
-        parsed = ''
-        body = el.find_first('body')
-        children = [
-            child for child in body.getchildren()
-            if child.tag in ['p', 'tbl']
-        ]
-
-        # Find the first and last li elements
-        list_elements = el.find_all('numId')
-        num_ids = set([i.attrib['val'] for i in list_elements])
-        for num_id in num_ids:
-            filtered_list_elements = [
-                i for i in list_elements
-                if i.attrib['val'] == num_id
-            ]
-            filtered_list_elements[0].is_first_list_item = True
-            filtered_list_elements[-1].is_last_list_item = True
-
-        p_list = children  # p_list is now children
-        list_started = False  # list has not started yet
-        list_type = ''
-        list_chunks = []
-        index_start = 0
-        index_end = 1
-        # enumerate p_list so we have a tuple of # and element
-        for i, el in enumerate(p_list):
-            # if list hasn't started and the element has a child
-            if not list_started and el.has_child_deep('ilvl'):
-                list_started = True  # list has child
-                list_type = self.get_list_style(  # get the type of list
-                    el.num_id,
-                    el.ilvl,
-                )
-                # append the current and next to list_chunks
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            elif (
-                    list_started and
-                    el.has_child_deep('ilvl') and
-                    # if the list has started and the list type has changed,
-                    # change the list type
-                    not list_type == self.get_list_style(
-                        el.num_id, el.ilvl)):
-                list_type = self.get_list_style(
-                    el.num_id,
-                    el.ilvl,
-                )
-                list_started = True
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            elif list_started and not el.has_child_deep('ilvl'):
-                # if there are no more children that are part of a list, list
-                # start is false
-                list_started = False
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            else:
-                index_end = i+1
-        list_chunks.append(p_list[index_start:index_end])
-        chunk_info = {}
-        lst_info = {}
-        # if there is a list, group all the numIds together and sort, else just
-        # have a list of the relevant chunks!
-        for i, chunk in enumerate(list_chunks):
-            if chunk[0].has_child_deep('ilvl'):
-                numId = chunk[0].find_first('numId').attrib['val']
-                lst_info[numId] = chunk
-                lst_info = OrderedDict(lst_info.items())
-                chunk_info[i] = lst_info
-
-            else:
-                chunk_info[i] = chunk
-        chunk_info = OrderedDict(sorted(chunk_info.items()))
-        for i, chunk in chunk_info.iteritems():
-            chunk_parsed = ''
-            if type(chunk) is not OrderedDict:
-                for el in chunk:
-                    chunk_parsed += self.parse(el)
-                parsed += chunk_parsed
-            else:
-                for chunk in chunk.itervalues():
-                    chunk_parsed = ''
-                    for el in chunk:
-                        chunk_parsed += self.parse(el)
-                    lst_style = self.get_list_style(
-                        chunk[0].num_id,
-                        chunk[0].ilvl,
-                    )
-                    # check if blank
-                    if lst_style == 'bullet' and chunk_parsed != '':
-                        parsed += self.unordered_list(chunk_parsed)
-                    elif lst_style and chunk_parsed != '':
-                        parsed += self.ordered_list(
-                            chunk_parsed,
-                            lst_style,
-                        )
-        return parsed
 
     def parse(self, el):
         if el in self.visited:

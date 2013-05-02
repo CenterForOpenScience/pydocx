@@ -173,7 +173,6 @@ def test_special_chars():
 
 
 def test_table_col_row_span():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -195,11 +194,12 @@ def test_table_col_row_span():
           <td>DDD</td>
         </tr>
         <tr>
-          <td>EEE</td>
+          <td><div class='right'>EEE</div></td>
+
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
-          <td>GGG</td>
+          <td><div class='right'>GGG</div></td>
         </tr>
       </table>
       <table>

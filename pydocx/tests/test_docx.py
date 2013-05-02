@@ -326,7 +326,6 @@ def test_list_in_table():
 
 
 def test_tables_in_lists():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -338,7 +337,7 @@ def test_tables_in_lists():
     <html><body>
         <ol data-list-type="decimal">
             <li>AAA</li>
-            <li>BBB<br />
+            <li>BBB
                 <table>
                     <tr>
                         <td>CCC</td>

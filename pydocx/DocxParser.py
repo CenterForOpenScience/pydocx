@@ -25,23 +25,32 @@ def remove_namespaces(document):  # remove namespaces
 # Add some helper functions to Element to make it slightly more readable
 
 
-# determine if current element has a child. stop at first child.
 def has_child(self, tag):
+    """
+    Determine if current element has a child. Stop at first child.
+    """
     return True if self.find(tag) is not None else False
 
 
-# determine if there is a child ahead in the element tree.
-def has_child_deep(self, tag):
-# get child. stop at first child.
+def has_descendant_with_tag(self, tag):
+    """
+    Determine if there is a child ahead in the element tree.
+    """
+    # Get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
 
-# find the first occurrence of a tag beneath the current element
 def find_first(self, tag):
+    """
+    Find the first occurrence of a tag beneath the current element.
+    """
     return self.find('.//' + tag)
 
 
-def find_all(self, tag):  # find all occurrences of a tag
+def find_all(self, tag):
+    """
+    Find all occurrences of a tag
+    """
     return self.findall('.//' + tag)
 
 
@@ -52,14 +61,20 @@ def find_next(self, tag, count):
         return self.find_all(tag)[count + 1]
 
 
-def el_iter(el):  # go through all elements
+def el_iter(el):
+    """
+    Go through all elements
+    """
     try:
         return el.iter()
     except AttributeError:
         return el.findall('.//*')
 
 
-def find_parent_by_tag(self, tag):
+def find_ancestor_with_tag(self, tag):
+    """
+    Find the first ancestor with that is a `tag`.
+    """
     el = self
     while el.parent:
         el = el.parent
@@ -70,10 +85,10 @@ def find_parent_by_tag(self, tag):
 
 #make all of these attributes of _ElementInterface
 setattr(_ElementInterface, 'has_child', has_child)
-setattr(_ElementInterface, 'has_child_deep', has_child_deep)
+setattr(_ElementInterface, 'has_descendant_with_tag', has_descendant_with_tag)
 setattr(_ElementInterface, 'find_first', find_first)
 setattr(_ElementInterface, 'find_all', find_all)
-setattr(_ElementInterface, 'find_parent_by_tag', find_parent_by_tag)
+setattr(_ElementInterface, 'find_ancestor_with_tag', find_ancestor_with_tag)
 setattr(_ElementInterface, 'parent', None)
 setattr(_ElementInterface, 'is_first_list_item', False)
 setattr(_ElementInterface, 'is_last_list_item', False)
@@ -170,14 +185,15 @@ class DocxParser:
     def _set_list_attributes(self, el):
         list_elements = el.find_all('numId')
         for li in list_elements:
-            parent = li.find_parent_by_tag('p')
+            parent = li.find_ancestor_with_tag('p')
             parent.is_list_item = True
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']
 
     def _set_first_list_item(self, num_ids, ilvls, list_elements):
-        # Find first list elements. Mark all first list elements regardless of
-        # where they occur at.
+        # Lists are grouped by having the same `num_id` and `ilvl`. The first
+        # list item is the first list item found for each `num_id` and `ilvl`
+        # combination.
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
@@ -193,7 +209,9 @@ class DocxParser:
 
     def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if
-        # it is in the root of the document.
+        # it is in the root of the document. This is only used to ensure that
+        # once a root level list is finished we do not roll in the rest of the
+        # non list elements into the first root level list.
         for num_id in num_ids:
             filtered_list_elements = [
                 i for i in list_elements
@@ -236,8 +254,15 @@ class DocxParser:
         children = [
             child for child in body.getchildren()
             if child.tag in ['p', 'tbl'] and
-            child.has_child_deep('t')
+            # getchildren only grabs root level elements, so we don't have to
+            # worry about table rows/table cells.
+            (
+                child.has_descendant_with_tag('t') or
+                child.has_descendant_with_tag('pict') or
+                child.has_descendant_with_tag('drawing')
+            )
         ]
+        # Populate the `next` attribute for the all child elements.
         for i in range(len(children)):
             try:
                 if children[i + 1]:
@@ -310,6 +335,13 @@ class DocxParser:
             return parsed
 
     def parse_list(self, el, text):
+        """
+        All the meat of building the list is done in _parse_list, however we
+        call this method for two reasons: It is the naming convention we are
+        following. And we need a reliable way to raise and lower the list_depth
+        (which is used to determine if we are in a list). I could have done
+        this in _parse_list, however it seemed cleaner to do it here.
+        """
         self.list_depth += 1
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
@@ -321,7 +353,7 @@ class DocxParser:
         ilvl = el.ilvl
         next_el = el.next
 
-        def continue_loop(next_el, num_id, ilvl):
+        def is_same_list(next_el, num_id, ilvl):
             # Bail if next_el is not an element
             if next_el is None:
                 return False
@@ -331,39 +363,46 @@ class DocxParser:
             # returning True.
             if not next_el.is_list_item:
                 return True
-            # If the num ids are the same and the new ilvl is the same or
-            # larger than the previous return True, else False.
-            return next_el.num_id == num_id and next_el.ilvl >= ilvl
+            if next_el.num_id != num_id:
+                # The next element is a new list entirely
+                return False
+            if next_el.ilvl < ilvl:
+                # The next element is de-indented, so this is really the last
+                # element in the list
+                return False
+            return True
 
-        while continue_loop(next_el, num_id, ilvl):
+        while is_same_list(next_el, num_id, ilvl):
             if next_el in self.visited:
                 # Early continue for elements we have already visited.
                 next_el = next_el.next
                 continue
 
-            current_num_id = None
             if next_el.is_list_item:
-                # Reset the num_id and the ilvl
-                current_num_id = next_el.num_id
+                # Reset the ilvl
                 ilvl = next_el.ilvl
 
-            # Check to see if we need to break out of this loop.
-            if current_num_id != num_id:
-                break
             parsed += self.parse(next_el)
             next_el = next_el.next
 
-        def _parse_last_el(last_el, first_el):
+        def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
+            # Different list
             if last_el.num_id != first_el.num_id:
                 return False
+            # Will be handled when the ilvls do match (nesting issue)
             if last_el.ilvl != first_el.ilvl:
                 return False
+            # We only care about last items that have not been parsed before
+            # (first list items are always parsed at the beginning of this
+            # method.)
             return not last_el.is_first_list_item and last_el.is_last_list_item
-        if _parse_last_el(next_el, el):
+        if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
+        # If the list has no content, then we don't need to worry about the
+        # list styling, because it will be stripped out.
         if parsed == '':
             return parsed
 
@@ -396,7 +435,8 @@ class DocxParser:
             return parsed
 
         # If for whatever reason we are not currently in a list, then start
-        # a list here.
+        # a list here. This will only happen if the num_id/ilvl combinations
+        # between lists is not well formed.
         if self.list_depth == 0:
             return self.parse_list(el, parsed)
         next_el_parsed = ''

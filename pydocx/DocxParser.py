@@ -259,6 +259,11 @@ class DocxParser:
 
     def parse_list(self, el, text):
         self.list_depth += 1
+        parsed = self._parse_list(el, text)
+        self.list_depth -= 1
+        return parsed
+
+    def _parse_list(self, el, text):
         parsed = self.parse_p(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
@@ -316,7 +321,6 @@ class DocxParser:
             el.ilvl,
         )
 
-        self.list_depth -= 1
         # Create the actual list and return it.
         if lst_style == 'bullet':
             return self.unordered_list(parsed)

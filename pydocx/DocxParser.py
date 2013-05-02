@@ -257,7 +257,19 @@ class DocxParser:
         num_id = el.num_id
         ilvl = el.ilvl
         next_el = el.next
-        while next_el and next_el.num_id == num_id and next_el.ilvl >= ilvl:
+
+        def continue_loop(next_el, num_id, ilvl):
+            # Bail if next_el is not an element
+            if next_el is None:
+                return False
+            # If next_il is not a list item then roll it into the list by
+            # returning True.
+            if not next_el.is_list_item:
+                return True
+            # If the num ids are the same and the new ilvl is the same or
+            # larger than the previous return True.
+            return next_el.num_id == num_id and next_el.ilvl >= ilvl
+        while continue_loop(next_el, num_id, ilvl):
             if next_el in self.visited:
                 next_el = next_el.next
                 continue
@@ -296,7 +308,7 @@ class DocxParser:
             if el.next:
                 next_el = el.next
                 if (
-                        next_el.num_id and
+                        self.list_depth > 0 and
                         not next_el.is_list_item or
                         (
                             next_el.is_first_list_item and

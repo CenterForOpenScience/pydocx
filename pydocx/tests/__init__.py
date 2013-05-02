@@ -88,6 +88,9 @@ class XMLDocx2Html(Docx2Html):
         except KeyError:
             return 'decimal'
 
+    def _parse_styles(self):
+        return {}
+
     def head(self):
         return ''
 

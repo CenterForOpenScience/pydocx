@@ -348,3 +348,200 @@ class TableWithInvalidTag(_TranslationTestCase):
         body = table
         xml = DXB.xml(body)
         return xml
+
+
+class SimpleListTestCase(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <ol data-list-type="lower-alpha">
+                <li>AAA</li>
+                <li>BBB</li>
+                <li>CCC</li>
+            </ol>
+        </body></html>
+    '''
+
+    # Ensure its not failing somewhere and falling back to decimal
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', 0, 1),
+            ('CCC', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml
+
+
+class SingleListItemTestCase(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <ol data-list-type="lower-alpha">
+                <li>AAA</li>
+            </ol>
+        </body></html>
+    '''
+
+    # Ensure its not failing somewhere and falling back to decimal
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml
+
+
+class ListWithContinuationTestCase(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <ol data-list-type="decimal">
+                <li>AAA<br/>BBB</li>
+                <li>CCC
+                    <table>
+                        <tr>
+                            <td>DDD</td>
+                            <td>EEE</td>
+                        </tr>
+                        <tr>
+                            <td>FFF</td>
+                            <td>GGG</td>
+                        </tr>
+                    </table>
+                </li>
+                <li>HHH</li>
+            </ol>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=2, num_columns=2, text=chain(
+            [DXB.p_tag('DDD')],
+            [DXB.p_tag('EEE')],
+            [DXB.p_tag('FFF')],
+            [DXB.p_tag('GGG')],
+        ))
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=1),
+            DXB.p_tag('BBB'),
+            DXB.li(text='CCC', ilvl=0, numId=1),
+            table,
+            DXB.li(text='HHH', ilvl=0, numId=1),
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class MangledIlvlTestCase(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA</li>
+        </ol>
+        <ol data-list-type="decimal">
+            <li>BBB
+                <ol data-list-type="decimal">
+                    <li>CCC</li>
+                </ol>
+            </li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 2),
+            ('BBB', 1, 1),
+            ('CCC', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml
+
+
+class SeperateListsTestCase(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA</li>
+        </ol>
+        <ol data-list-type="decimal">
+            <li>BBB</li>
+        </ol>
+        <ol data-list-type="decimal">
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 2),
+            # Because AAA and CCC are part of the same list (same list id)
+            # and BBB is different, these need to be split into three
+            # lists (or lose everything from BBB and after.
+            ('BBB', 0, 1),
+            ('CCC', 0, 2),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml
+
+
+class InvalidIlvlOrderTestCase(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA
+                <ol data-list-type="decimal">
+                    <li>BBB
+                        <ol data-list-type="decimal">
+                            <li>CCC</li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        tags = [
+            DXB.li(text='AAA', ilvl=1, numId=1),
+            DXB.li(text='BBB', ilvl=3, numId=1),
+            DXB.li(text='CCC', ilvl=2, numId=1),
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml

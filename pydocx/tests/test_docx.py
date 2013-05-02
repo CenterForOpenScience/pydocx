@@ -646,7 +646,6 @@ def test_shift_enter():
 
 
 def test_lists_with_styles():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',

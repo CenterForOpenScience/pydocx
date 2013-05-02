@@ -81,7 +81,6 @@ setattr(_ElementInterface, 'is_list_item', False)
 setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
 setattr(_ElementInterface, 'next', None)
-setattr(_ElementInterface, 'previous', None)
 setattr(_ElementInterface, 'find_next', find_next)
 
 
@@ -173,6 +172,9 @@ class DocxParser:
         ]
         num_ids = set([i.num_id for i in list_elements])
         ilvls = set([i.ilvl for i in list_elements])
+
+        # Find first list elements. Mark all first list elements regardless of
+        # where they occur at.
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
@@ -185,17 +187,26 @@ class DocxParser:
                     continue
                 first_el = filtered_list_elements[0]
                 first_el.is_first_list_item = True
-                last_el = filtered_list_elements[-1]
-                last_el.is_last_list_item = True
+        # Find last list elements. Only mark list tags as the last list tag if
+        # it is in the root of the document.
+        for num_id in num_ids:
+            filtered_list_elements = [
+                i for i in list_elements
+                if i.num_id == num_id
+            ]
+            if not filtered_list_elements:
+                continue
+            last_el = filtered_list_elements[-1]
+            last_el.is_last_list_item = True
 
+        # We only care about children if they have text in them.
         children = [
             child for child in body.getchildren()
-            if child.tag in ['p', 'tbl']
+            if child.tag in ['p', 'tbl'] and
+            child.has_child_deep('t')
         ]
         for i in range(len(children)):
             try:
-                if children[i - 1]:
-                    children[i].previous = children[i - 1]
                 if children[i + 1]:
                     children[i].next = children[i + 1]
             except IndexError:
@@ -257,6 +268,8 @@ class DocxParser:
             # Bail if next_el is not an element
             if next_el is None:
                 return False
+            if next_el.is_last_list_item:
+                return False
             # If next_el is not a list item then roll it into the list by
             # returning True.
             if not next_el.is_list_item:
@@ -282,6 +295,17 @@ class DocxParser:
                 break
             parsed += self.parse(next_el)
             next_el = next_el.next
+
+        def _parse_last_el(last_el, first_el):
+            if last_el is None:
+                return False
+            if last_el.num_id != first_el.num_id:
+                return False
+            if last_el.ilvl != first_el.ilvl:
+                return False
+            return not last_el.is_first_list_item and last_el.is_last_list_item
+        if _parse_last_el(next_el, el):
+            parsed += self.parse(next_el)
 
         # Get the list style for the pending list.
         lst_style = self.get_list_style(
@@ -318,18 +342,20 @@ class DocxParser:
             return self.parse_list(el, parsed)
         next_el_parsed = ''
         if el.next is not None:
-            next_el = el.next
-            if (
-                    not next_el.is_list_item or
-                    (
-                        # This is starting a new nested list
-                        next_el.is_first_list_item and
-                        next_el.num_id == el.num_id
-                    )):
+            def _parse_next_element_first(el):
+                next_el = el.next
+                if not next_el.is_list_item and not el.is_last_list_item:
+                    return True
+                if next_el.is_first_list_item:
+                    if next_el.num_id == el.num_id:
+                        return True
+                return False
+
+            if _parse_next_element_first(el):
                 # Get the contents of the next el and append it to the
                 # contents of the current el (that way things like tables
                 # are actually in the li tag instead of in the ol/ul tag).
-                next_el_parsed = self.parse(next_el)
+                next_el_parsed = self.parse(el.next)
         # Create the actual li element
         parsed = self.list_element(
             parsed + next_el_parsed,

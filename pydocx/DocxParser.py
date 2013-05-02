@@ -214,10 +214,7 @@ class DocxParser:
             parsed += self.parse(child)
 
         if el.is_first_list_item:
-            self.list_depth += 1
-            parsed_list = self.parse_list(el, parsed)
-            self.list_depth -= 1
-            return parsed_list
+            return self.parse_list(el, parsed)
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
@@ -253,6 +250,7 @@ class DocxParser:
             return parsed
 
     def parse_list(self, el, text):
+        self.list_depth += 1
         parsed = self.parse_p(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
@@ -290,6 +288,7 @@ class DocxParser:
             el.ilvl,
         )
         # check if blank
+        self.list_depth -= 1
         if lst_style == 'bullet' and parsed != '':
             return self.unordered_list(parsed)
         elif lst_style and parsed != '':
@@ -304,6 +303,8 @@ class DocxParser:
             return ''
         parsed = text
         if el.is_list_item:
+            if self.list_depth == 0:
+                return self.parse_list(el, parsed)
             next_el_parsed = ''
             if el.next:
                 next_el = el.next

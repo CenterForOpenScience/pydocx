@@ -414,8 +414,8 @@ class ListWithContinuationTestCase(_TranslationTestCase):
     expected_output = '''
         <html><body>
             <ol data-list-type="decimal">
-                <li>AAA<br />BBB</li>
-                <li>CCC<br />
+                <li>AAA<br/>BBB</li>
+                <li>CCC
                     <table>
                         <tr>
                             <td>DDD</td>

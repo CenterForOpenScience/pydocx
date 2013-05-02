@@ -267,6 +267,7 @@ class DocxParser:
             # If the num ids are the same and the new ilvl is the same or
             # larger than the previous return True.
             return next_el.num_id == num_id and next_el.ilvl >= ilvl
+
         while continue_loop(next_el, num_id, ilvl):
             if next_el in self.visited:
                 next_el = next_el.next
@@ -313,8 +314,7 @@ class DocxParser:
                         not next_el.is_list_item or
                         (
                             next_el.is_first_list_item and
-                            next_el.num_id == el.num_id and
-                            next_el.ilvl >= el.ilvl
+                            next_el.num_id == el.num_id
                         )):
                     next_el_parsed = self.parse(next_el)
             parsed = self.list_element(

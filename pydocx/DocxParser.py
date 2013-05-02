@@ -91,7 +91,7 @@ setattr(_ElementInterface, 'find_all', find_all)
 setattr(_ElementInterface, 'find_ancestor_with_tag', find_ancestor_with_tag)
 setattr(_ElementInterface, 'parent', None)
 setattr(_ElementInterface, 'is_first_list_item', False)
-setattr(_ElementInterface, 'is_last_list_item', False)
+setattr(_ElementInterface, 'is_last_list_item_in_root', False)
 setattr(_ElementInterface, 'is_list_item', False)
 setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
@@ -215,7 +215,7 @@ class DocxParser:
             if not filtered_list_elements:
                 continue
             last_el = filtered_list_elements[-1]
-            last_el.is_last_list_item = True
+            last_el.is_last_list_item_in_root = True
 
         # We only care about children if they have text in them.
         children = [
@@ -274,6 +274,8 @@ class DocxParser:
                     self.count = 0
                 return parsed  # return text in the table cell
                 # parse p. parse p will return a list element or a paragraph
+            if el.is_list_item:
+                return self.parse_list_item(el, parsed)
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -296,7 +298,7 @@ class DocxParser:
         return parsed
 
     def _parse_list(self, el, text):
-        parsed = self.parse_p(el, text)
+        parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
         next_el = el.next
@@ -305,7 +307,7 @@ class DocxParser:
             # Bail if next_el is not an element
             if next_el is None:
                 return False
-            if next_el.is_last_list_item:
+            if next_el.is_last_list_item_in_root:
                 return False
             # If next_el is not a list item then roll it into the list by
             # returning True.
@@ -345,7 +347,10 @@ class DocxParser:
             # We only care about last items that have not been parsed before
             # (first list items are always parsed at the beginning of this
             # method.)
-            return not last_el.is_first_list_item and last_el.is_last_list_item
+            return (
+                not last_el.is_first_list_item and
+                last_el.is_last_list_item_in_root
+            )
         if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
@@ -373,25 +378,29 @@ class DocxParser:
         if text == '':
             return ''
         parsed = text
-        if not el.is_list_item:
-            # No p tags in li tags
-            if self.list_depth == 0:
-                parsed = self.paragraph(parsed)
-            else:
-                # Instead break separate
-                parsed = self.break_tag() + parsed
-            return parsed
+        # No p tags in li tags
+        if self.list_depth == 0:
+            parsed = self.paragraph(parsed)
+        else:
+            # Instead break separate
+            parsed = self.break_tag() + parsed
+        return parsed
 
+    def parse_list_item(self, el, text):
         # If for whatever reason we are not currently in a list, then start
         # a list here. This will only happen if the num_id/ilvl combinations
         # between lists is not well formed.
+        parsed = text
         if self.list_depth == 0:
             return self.parse_list(el, parsed)
         next_el_parsed = ''
         if el.next is not None:
             def _parse_next_element_first(el):
                 next_el = el.next
-                if not next_el.is_list_item and not el.is_last_list_item:
+                if (
+                        not next_el.is_list_item and
+                        not el.is_last_list_item_in_root
+                ):
                     return True
                 if next_el.is_first_list_item:
                     if next_el.num_id == el.num_id:

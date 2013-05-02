@@ -307,6 +307,9 @@ class DocxParser:
         if _parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
+        if parsed == '':
+            return parsed
+
         # Get the list style for the pending list.
         lst_style = self.get_list_style(
             el.num_id,
@@ -315,9 +318,9 @@ class DocxParser:
 
         self.list_depth -= 1
         # Create the actual list and return it.
-        if lst_style == 'bullet' and parsed != '':
+        if lst_style == 'bullet':
             return self.unordered_list(parsed)
-        elif lst_style and parsed != '':
+        else:
             return self.ordered_list(
                 parsed,
                 lst_style,

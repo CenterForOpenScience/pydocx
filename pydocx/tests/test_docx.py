@@ -369,7 +369,6 @@ def test_track_changes_on():
 
 
 def test_headers():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -379,11 +378,11 @@ def test_headers():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
     <html><body>
-        <h2>This is an H1</h2>
-        <h3>This is an H2</h3>
-        <h4>This is an H3</h4>
-        <h5>This is an H4</h5>
-        <h6>This is an H5</h6>
+        <h1>This is an H1</h1>
+        <h2>This is an H2</h2>
+        <h3>This is an H3</h3>
+        <h4>This is an H4</h4>
+        <h5>This is an H5</h5>
         <h6>This is an H6</h6>
         <h6>This is an H7</h6>
         <h6>This is an H8</h6>

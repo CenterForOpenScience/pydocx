@@ -175,18 +175,7 @@ class DocxParser:
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']
 
-    def parse_begin(self, el):
-        self._set_list_attributes(el)
-
-        # Find the first and last li elements
-        body = el.find_first('body')
-        list_elements = [
-            child for child in body.getchildren()
-            if child.tag == 'p' and child.is_list_item
-        ]
-        num_ids = set([i.num_id for i in list_elements])
-        ilvls = set([i.ilvl for i in list_elements])
-
+    def _set_first_list_item(self, num_ids, ilvls, list_elements):
         # Find first list elements. Mark all first list elements regardless of
         # where they occur at.
         for num_id in num_ids:
@@ -201,6 +190,8 @@ class DocxParser:
                     continue
                 first_el = filtered_list_elements[0]
                 first_el.is_first_list_item = True
+
+    def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if
         # it is in the root of the document.
         for num_id in num_ids:
@@ -213,11 +204,7 @@ class DocxParser:
             last_el = filtered_list_elements[-1]
             last_el.is_last_list_item = True
 
-        list_elements = [
-            child for child in body.getchildren()
-            if child.is_list_item
-        ]
-
+    def _set_headers(self, list_elements):
         # These are the styles for headers and what the html tag should be if
         # we have one.
         headers = {
@@ -244,6 +231,7 @@ class DocxParser:
                 # Prime the heading_value
                 list_item.heading_value = headers[style.lower()]
 
+    def _set_next(self, body):
         # We only care about children if they have text in them.
         children = [
             child for child in body.getchildren()
@@ -256,6 +244,23 @@ class DocxParser:
                     children[i].next = children[i + 1]
             except IndexError:
                 pass
+
+    def parse_begin(self, el):
+        self._set_list_attributes(el)
+
+        # Find the first and last li elements
+        body = el.find_first('body')
+        list_elements = [
+            child for child in body.getchildren()
+            if child.is_list_item
+        ]
+        num_ids = set([i.num_id for i in list_elements])
+        ilvls = set([i.ilvl for i in list_elements])
+
+        self._set_first_list_item(num_ids, ilvls, list_elements)
+        self._set_last_list_item(num_ids, list_elements)
+        self._set_headers(list_elements)
+        self._set_next(body)
 
         self._parsed += self.parse(el)
 

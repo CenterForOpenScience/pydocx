@@ -461,10 +461,11 @@ class MangledIlvlTestCase(_TranslationTestCase):
             <li>AAA</li>
         </ol>
         <ol data-list-type="decimal">
-            <li>BBB</li>
-        </ol>
-        <ol data-list-type="decimal">
-            <li>CCC</li>
+            <li>BBB
+                <ol data-list-type="decimal">
+                    <li>CCC</li>
+                </ol>
+            </li>
         </ol>
     </body></html>
     '''
@@ -521,10 +522,11 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
         <ol data-list-type="decimal">
             <li>AAA
                 <ol data-list-type="decimal">
-                    <li>BBB</li>
-                </ol>
-                <ol data-list-type="decimal">
-                    <li>CCC</li>
+                    <li>BBB
+                        <ol data-list-type="decimal">
+                            <li>CCC</li>
+                        </ol>
+                    </li>
                 </ol>
             </li>
         </ol>

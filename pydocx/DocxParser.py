@@ -277,7 +277,7 @@ class DocxParser:
                     row = str(rowspan)
             if el.find_first('gridSpan') is not None:
                 col = el.find_first('gridSpan').attrib['val']
-            if not (el.find_first('vMerge') is not None and 'val' not in el.find_first('vMerge').attrib):
+            if not (el.find_first('vMerge') is not None and 'continue' in el.find_first('vMerge').attrib['val']):
                 return self.table_cell(parsed, col, row)
         if el.tag == 'r' and el not in self.elements:
             self.elements.append(el)
@@ -489,7 +489,7 @@ well.
                     rels['tc'] = child
                     rels['col'] = j
                     rels['row'] = i
-                    if child.find_first('vMerge') is not None and 'val' not in child.find_first('vMerge').attrib:
+                    if child.find_first('vMerge') is not None and 'continue' == child.find_first('vMerge').attrib['val']:
                         rels['vmerge'] = True
                     else:
                         rels['vmerge'] = False

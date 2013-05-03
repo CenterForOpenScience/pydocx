@@ -95,7 +95,7 @@ setattr(_ElementInterface, 'is_last_list_item_in_root', False)
 setattr(_ElementInterface, 'is_list_item', False)
 setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
-setattr(_ElementInterface, 'heading_value', None)
+setattr(_ElementInterface, 'heading_level', None)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'find_next', find_next)
 
@@ -245,8 +245,8 @@ class DocxParser:
                 list_item.is_list_item = False
                 list_item.is_first_list_item = False
                 list_item.is_last_list_item = False
-                # Prime the heading_value
-                list_item.heading_value = headers[style.lower()]
+                # Prime the heading_level
+                list_item.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
         # We only care about children if they have text in them.
@@ -297,10 +297,10 @@ class DocxParser:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
 
-        if el.is_first_list_item:
+        if el.heading_level:
+            return self.heading(parsed, el.heading_level)
+        elif el.is_first_list_item:
             return self.parse_list(el, parsed)
-        elif el.heading_value:
-            return self.heading(parsed, el.heading_value)
         elif el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
@@ -654,7 +654,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def heading(self, text, heading_value):
+    def heading(self, text, heading_level):
         return text
 
     @abstractmethod

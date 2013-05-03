@@ -1,11 +1,4 @@
 from abc import abstractmethod, ABCMeta
-<<<<<<< HEAD
-try:
-    from collections import OrderedDict
-except ImportError: # Python 2.6
-    from ordereddict import OrderedDict
-=======
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
 import zipfile
 import logging
 from contextlib import contextmanager
@@ -34,34 +27,30 @@ def remove_namespaces(document): # remove namespaces
 
 def has_child(self, tag):
     """
-    Determine if current element has a child. Stop at first child.
-    """
+Determine if current element has a child. Stop at first child.
+"""
     return True if self.find(tag) is not None else False
 
 
 def has_descendant_with_tag(self, tag):
     """
-    Determine if there is a child ahead in the element tree.
-    """
+Determine if there is a child ahead in the element tree.
+"""
     # Get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
 
 def find_first(self, tag):
     """
-    Find the first occurrence of a tag beneath the current element.
-    """
+Find the first occurrence of a tag beneath the current element.
+"""
     return self.find('.//' + tag)
 
 
-<<<<<<< HEAD
-def find_all(self, tag): # find all occurrences of a tag
-=======
 def find_all(self, tag):
     """
-    Find all occurrences of a tag
-    """
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
+Find all occurrences of a tag
+"""
     return self.findall('.//' + tag)
 
 
@@ -72,14 +61,10 @@ def find_next(self, tag, count):
         return self.find_all(tag)[count + 1]
 
 
-<<<<<<< HEAD
-def el_iter(el): # go through all elements
-=======
 def el_iter(el):
     """
-    Go through all elements
-    """
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
+Go through all elements
+"""
     try:
         return el.iter()
     except AttributeError:
@@ -88,8 +73,8 @@ def el_iter(el):
 
 def find_ancestor_with_tag(self, tag):
     """
-    Find the first ancestor with that is a `tag`.
-    """
+Find the first ancestor with that is a `tag`.
+"""
     el = self
     while el.parent:
         el = el.parent
@@ -112,6 +97,9 @@ setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'find_next', find_next)
+setattr(_ElementInterface, 'vmerge_continue', None)
+setattr(_ElementInterface, 'row', None)
+setattr(_ElementInterface, 'col', None)
 
 
 # End helpers
@@ -178,7 +166,6 @@ class DocxParser:
         self.comment_store = None
         self.visited = []
         self.visited_els = []
-        self.merges = 0
         self.count = 0
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
@@ -192,18 +179,26 @@ class DocxParser:
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']
 
+    def _set_table_attributes(self, el):
+        tables = el.find_all('tbl')
+        for table in tables:
+            rows = table.find_all('tr')
+            if rows is not None:
+                for i, row in enumerate(rows):
+                    for j, child in enumerate(row.find_all('tc')):
+                        child.row = i
+                        child.column = j
+                        if child.find_first('vMerge') is not None and 'continue' == child.find_first('vMerge').attrib['val']:
+                            child.vmerge_continue = True
     def parse_begin(self, el):
-<<<<<<< HEAD
-        self._parsed += self.parse_lists(el) # start out wth lists
-=======
         self._set_list_attributes(el)
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
+        self._set_table_attributes(el)
 
         # Find the first and last li elements
         body = el.find_first('body')
         list_elements = [
-            child for child in body.getchildren()
-            if child.tag == 'p' and child.is_list_item
+        child for child in body.getchildren()
+        if child.tag == 'p' and child.is_list_item
         ]
         num_ids = set([i.num_id for i in list_elements])
         ilvls = set([i.ilvl for i in list_elements])
@@ -214,23 +209,23 @@ class DocxParser:
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
-                    i for i in list_elements
-                    if (
-                        i.num_id == num_id and
-                        i.ilvl == ilvl)
+                i for i in list_elements
+                if (
+                    i.num_id == num_id and
+                    i.ilvl == ilvl)
                 ]
                 if not filtered_list_elements:
                     continue
                 first_el = filtered_list_elements[0]
                 first_el.is_first_list_item = True
-        # Find last list elements. Only mark list tags as the last list tag if
+            # Find last list elements. Only mark list tags as the last list tag if
         # it is in the root of the document. This is only used to ensure that
         # once a root level list is finished we do not roll in the rest of the
         # non list elements into the first root level list.
         for num_id in num_ids:
             filtered_list_elements = [
-                i for i in list_elements
-                if i.num_id == num_id
+            i for i in list_elements
+            if i.num_id == num_id
             ]
             if not filtered_list_elements:
                 continue
@@ -239,123 +234,31 @@ class DocxParser:
 
         # We only care about children if they have text in them.
         children = [
-<<<<<<< HEAD
         child for child in body.getchildren()
-        if child.tag in ['p', 'tbl']
-=======
-            child for child in body.getchildren()
-            if child.tag in ['p', 'tbl'] and
-            # getchildren only grabs root level elements, so we don't have to
-            # worry about table rows/table cells.
-            (
-                child.has_descendant_with_tag('t') or
-                child.has_descendant_with_tag('pict') or
-                child.has_descendant_with_tag('drawing')
-            )
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
+        if child.tag in ['p', 'tbl'] and
+        # getchildren only grabs root level elements, so we don't have to
+        # worry about table rows/table cells.
+           (
+               child.has_descendant_with_tag('t') or
+               child.has_descendant_with_tag('pict') or
+               child.has_descendant_with_tag('drawing')
+               )
         ]
         # Populate the `next` attribute for the all child elements.
         for i in range(len(children)):
             try:
-                if children[i + 1]:
+                if children[i + 1] is not None:
                     children[i].next = children[i + 1]
             except IndexError:
                 pass
 
-<<<<<<< HEAD
-        p_list = children # p_list is now children
-        list_started = False # list has not started yet
-        list_type = ''
-        list_chunks = []
-        index_start = 0
-        index_end = 1
-        # enumerate p_list so we have a tuple of # and element
-        for i, el in enumerate(p_list):
-            # if list hasn't started and the element has a child
-            if not list_started and el.has_child_all('ilvl'):
-                list_started = True # list has child
-                list_type = self.get_list_style( # get the type of list
-                    el.find_first('numId').attrib['val'],
-                )
-                # append the current and next to list_chunks
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            elif (
-                list_started and
-                el.has_child_all('ilvl') and
-                # if the list has started and the list type has changed,
-                # change the list type
-                not list_type == self.get_list_style(
-                    el.find_first('numId').attrib['val'])):
-                list_type = self.get_list_style(
-                    el.find_first('numId').attrib['val'],
-                )
-                list_started = True
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            elif list_started and not el.has_child_all('ilvl'):
-                # if there are no more children that are part of a list, list
-                # start is false
-                list_started = False
-                list_chunks.append(p_list[index_start:index_end])
-                index_start = i
-                index_end = i+1
-            else:
-                index_end = i+1
-        list_chunks.append(p_list[index_start:index_end])
-        chunk_info = {}
-        lst_info = {}
-        # if there is a list, group all the numIds together and sort, else just
-        # have a list of the relevant chunks!
-        for i, chunk in enumerate(list_chunks):
-            if chunk[0].has_child_all('ilvl'):
-                numId = chunk[0].find_first('numId').attrib['val']
-                lst_info[numId] = chunk
-                lst_info = OrderedDict(lst_info.items())
-                chunk_info[i] = lst_info
-
-            else:
-                chunk_info[i] = chunk
-        chunk_info = OrderedDict(sorted(chunk_info.items()))
-        for i, chunk in chunk_info.iteritems():
-            chunk_parsed = ''
-            if type(chunk) is not OrderedDict:
-                for el in chunk:
-                    chunk_parsed += self.parse(el)
-                parsed += chunk_parsed
-            else:
-                for chunk in chunk.itervalues():
-                    chunk_parsed = ''
-                    for el in chunk:
-                        chunk_parsed += self.parse(el)
-                    lst_style = self.get_list_style(
-                        chunk[0].find_first('numId').attrib['val'],
-                    )
-                    # check if blank
-                    if lst_style['val'] == 'bullet' and chunk_parsed != '':
-                        parsed += self.unordered_list(chunk_parsed)
-                    elif lst_style['val'] and chunk_parsed != '':
-                        parsed += self.ordered_list(
-                            chunk_parsed,
-                            lst_style['val'],
-                        )
-        return parsed
-=======
         self._parsed += self.parse(el)
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
 
     def parse(self, el):
         if el in self.visited:
             return ''
         self.visited.append(el)
         parsed = ''
-        col = ''
-        row = ''
-        table = []
-        current_row = 0
-        current_col = 0
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
@@ -365,43 +268,32 @@ class DocxParser:
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
-        # Do not do the tr or tc a second time
+            # Do not do the tr or tc a second time
         if el.tag == 'tbl':
             return self.table(parsed)
-<<<<<<< HEAD
-        elif el.tag == 'tr' and el not in self.visited:# table rows
+        elif el.tag == 'tr': # table rows
             return self.table_row(parsed)
-        elif el.tag == 'tc' and el not in self.visited:# table cells
-            table = self.get_table_info(el.parent.parent)
-            self.elements.append(el)
-            rowspan = 0
-            for i, tc in enumerate(table):
-                if tc['tc'] == el:
-                    rowspan = 1
-                    current_row = tc['row']
-                    current_col = tc['col']
-                if tc['row'] > current_row and tc['col'] == current_col:
-                    if tc['vmerge'] == True:
-                        rowspan += 1
-                    else:
-                        rowspan = 0
-                if rowspan > 1:
-                    row = str(rowspan)
+        elif el.tag == 'tc': # table cells
+            current_row = el.row
+            current_col = el.col
+            col = ''
+            row_tbl = ''
+            rowspan = 1
+            for row in el.parent.parent:
+                for tc in row:
+                    if tc.row > current_row and tc.col == current_col:
+                        if tc.vmerge_continue == True and el.find_first('vMerge') is not None and 'restart' in el.find_first('vMerge').attrib['val']:
+                            rowspan += 1
+                        else:
+                            rowspan = 1
+                    if rowspan > 1:
+                        row_tbl = str(rowspan)
             if el.find_first('gridSpan') is not None:
                 col = el.find_first('gridSpan').attrib['val']
             if not (el.find_first('vMerge') is not None and 'continue' in el.find_first('vMerge').attrib['val']):
-                return self.table_cell(parsed, col, row)
-        if el.tag == 'r' and el not in self.elements:
-            self.elements.append(el)
+                return self.table_cell(parsed, col, row_tbl)
+        if el.tag == 'r' and el is not None:
             return self.parse_r(el) # parse the run
-=======
-        elif el.tag == 'tr':  # table rows
-            return self.table_row(parsed)
-        elif el.tag == 'tc':  # table cells
-            return self.table_cell(parsed)
-        if el.tag == 'r' and el:
-            return self.parse_r(el)  # parse the run
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
         elif el.tag == 'p':
             if el.parent.tag == 'tc':
                 if (
@@ -426,12 +318,12 @@ class DocxParser:
 
     def parse_list(self, el, text):
         """
-        All the meat of building the list is done in _parse_list, however we
-        call this method for two reasons: It is the naming convention we are
-        following. And we need a reliable way to raise and lower the list_depth
-        (which is used to determine if we are in a list). I could have done
-        this in _parse_list, however it seemed cleaner to do it here.
-        """
+All the meat of building the list is done in _parse_list, however we
+call this method for two reasons: It is the naming convention we are
+following. And we need a reliable way to raise and lower the list_depth
+(which is used to determine if we are in a list). I could have done
+this in _parse_list, however it seemed cleaner to do it here.
+"""
         self.list_depth += 1
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
@@ -449,7 +341,7 @@ class DocxParser:
                 return False
             if next_el.is_last_list_item_in_root:
                 return False
-            # If next_el is not a list item then roll it into the list by
+                # If next_el is not a list item then roll it into the list by
             # returning True.
             if not next_el.is_list_item:
                 return True
@@ -478,19 +370,19 @@ class DocxParser:
         def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
-            # Different list
+                # Different list
             if last_el.num_id != first_el.num_id:
                 return False
-            # Will be handled when the ilvls do match (nesting issue)
+                # Will be handled when the ilvls do match (nesting issue)
             if last_el.ilvl != first_el.ilvl:
                 return False
-            # We only care about last items that have not been parsed before
+                # We only care about last items that have not been parsed before
             # (first list items are always parsed at the beginning of this
             # method.)
             return (
                 not last_el.is_first_list_item and
                 last_el.is_last_list_item_in_root
-            )
+                )
         if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
@@ -518,13 +410,6 @@ class DocxParser:
         if text == '':
             return ''
         parsed = text
-<<<<<<< HEAD
-        if self.in_list:
-            self.in_list = False
-            parsed = self.list_element(parsed) # if list wrap in li tags
-        elif el.parent not in self.elements:
-            parsed = self.paragraph(parsed) # if paragraph wrap in p tags
-=======
         # No p tags in li tags
         if self.list_depth == 0:
             parsed = self.paragraph(parsed)
@@ -545,9 +430,9 @@ class DocxParser:
             def _parse_next_element_first(el):
                 next_el = el.next
                 if (
-                        not next_el.is_list_item and
-                        not el.is_last_list_item_in_root
-                ):
+                    not next_el.is_list_item and
+                    not el.is_last_list_item_in_root
+                    ):
                     return True
                 if next_el.is_first_list_item:
                     if next_el.num_id == el.num_id:
@@ -559,11 +444,10 @@ class DocxParser:
                 # contents of the current el (that way things like tables
                 # are actually in the li tag instead of in the ol/ul tag).
                 next_el_parsed = self.parse(el.next)
-        # Create the actual li element
+            # Create the actual li element
         parsed = self.list_element(
             parsed + next_el_parsed,
         )
->>>>>>> 0606b23ef9b94946e1d33e35453f9c2e462df091
         return parsed
 
     def parse_hyperlink(self, el, text):
@@ -733,25 +617,6 @@ well.
                 }
         self.comment_store = ids_and_info
         return self.comment_store[doc_id]
-
-    def get_table_info(self, el):
-        rows = el.find_all('tr')
-        rels_list =  []
-        if rows is not None:
-            for i, row in enumerate(rows):
-                for j, child in enumerate(row.find_all('tc')):
-                    rels = {}
-                    rels['tc'] = child
-                    rels['col'] = j
-                    rels['row'] = i
-                    if child.find_first('vMerge') is not None and 'continue' == child.find_first('vMerge').attrib['val']:
-                        rels['vmerge'] = True
-                    else:
-                        rels['vmerge'] = False
-                    rels_list.append(rels)
-        return rels_list
-
-
 
     @property
     def parsed(self):

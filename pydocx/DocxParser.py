@@ -95,6 +95,7 @@ setattr(_ElementInterface, 'is_last_list_item_in_root', False)
 setattr(_ElementInterface, 'is_list_item', False)
 setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
+setattr(_ElementInterface, 'heading_level', None)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'find_next', find_next)
 
@@ -114,6 +115,7 @@ class DocxParser:
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
+            self.styles_text = f.read('word/styles.xml')
             try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
@@ -137,6 +139,16 @@ class DocxParser:
             self.comment_root = ElementTree.fromstring(
                 remove_namespaces(self.comment_text),
             )
+
+    def _parse_styles(self):
+        tree = ElementTree.fromstring(
+            remove_namespaces(self.styles_text),
+        )
+        result = {}
+        for style in tree.find_all('style'):
+            style_val = style.find_first('name').attrib['val']
+            result[style.attrib['styleId']] = style_val
+        return result
 
     def _parse_rels_root(self):
         tree = ElementTree.fromstring(self.relationship_text)
@@ -166,6 +178,7 @@ class DocxParser:
         self.count = 0
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
+        self.styles_dict = self._parse_styles()
         self.parse_begin(self.root)  # begin to parse
 
     def _set_list_attributes(self, el):
@@ -176,18 +189,7 @@ class DocxParser:
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']
 
-    def parse_begin(self, el):
-        self._set_list_attributes(el)
-
-        # Find the first and last li elements
-        body = el.find_first('body')
-        list_elements = [
-            child for child in body.getchildren()
-            if child.tag == 'p' and child.is_list_item
-        ]
-        num_ids = set([i.num_id for i in list_elements])
-        ilvls = set([i.ilvl for i in list_elements])
-
+    def _set_first_list_item(self, num_ids, ilvls, list_elements):
         # Lists are grouped by having the same `num_id` and `ilvl`. The first
         # list item is the first list item found for each `num_id` and `ilvl`
         # combination.
@@ -203,6 +205,8 @@ class DocxParser:
                     continue
                 first_el = filtered_list_elements[0]
                 first_el.is_first_list_item = True
+
+    def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if
         # it is in the root of the document. This is only used to ensure that
         # once a root level list is finished we do not roll in the rest of the
@@ -217,6 +221,34 @@ class DocxParser:
             last_el = filtered_list_elements[-1]
             last_el.is_last_list_item_in_root = True
 
+    def _set_headers(self, list_elements):
+        # These are the styles for headers and what the html tag should be if
+        # we have one.
+        headers = {
+            'heading 1': 'h1',
+            'heading 2': 'h2',
+            'heading 3': 'h3',
+            'heading 4': 'h4',
+            'heading 5': 'h5',
+            'heading 6': 'h6',
+            'heading 7': 'h6',
+            'heading 8': 'h6',
+            'heading 9': 'h6',
+            'heading 10': 'h6',
+        }
+        for list_item in list_elements:
+            style = list_item.find_first('pStyle').attrib['val']
+            style = self.styles_dict.get(style)
+            # Check to see if this list item is actually a header.
+            if style and style.lower() in headers:
+                # Set all the list item variables back to false.
+                list_item.is_list_item = False
+                list_item.is_first_list_item = False
+                list_item.is_last_list_item = False
+                # Prime the heading_level
+                list_item.heading_level = headers[style.lower()]
+
+    def _set_next(self, body):
         # We only care about children if they have text in them.
         children = [
             child for child in body.getchildren()
@@ -237,6 +269,23 @@ class DocxParser:
             except IndexError:
                 pass
 
+    def parse_begin(self, el):
+        self._set_list_attributes(el)
+
+        # Find the first and last li elements
+        body = el.find_first('body')
+        list_elements = [
+            child for child in body.getchildren()
+            if child.is_list_item
+        ]
+        num_ids = set([i.num_id for i in list_elements])
+        ilvls = set([i.ilvl for i in list_elements])
+
+        self._set_first_list_item(num_ids, ilvls, list_elements)
+        self._set_last_list_item(num_ids, list_elements)
+        self._set_headers(list_elements)
+        self._set_next(body)
+
         self._parsed += self.parse(el)
 
     def parse(self, el):
@@ -248,13 +297,15 @@ class DocxParser:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
 
-        if el.is_first_list_item:
+        if el.heading_level:
+            return self.heading(parsed, el.heading_level)
+        elif el.is_first_list_item:
             return self.parse_list(el, parsed)
-        if el.tag == 'br' and el.attrib.get('type') == 'page':
+        elif el.tag == 'br' and el.attrib.get('type') == 'page':
             #TODO figure out what parsed is getting overwritten
             return self.page_break()
         # Do not do the tr or tc a second time
-        if el.tag == 'tbl':
+        elif el.tag == 'tbl':
             return self.table(parsed)
         elif el.tag == 'tr':  # table rows
             return self.table_row(parsed)
@@ -600,6 +651,10 @@ class DocxParser:
 
     @abstractmethod
     def paragraph(self, text):
+        return text
+
+    @abstractmethod
+    def heading(self, text, heading_level):
         return text
 
     @abstractmethod

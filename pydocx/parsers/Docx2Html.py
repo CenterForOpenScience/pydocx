@@ -36,6 +36,12 @@ class Docx2Html(DocxParser):
     def paragraph(self, text, pre=None):
         return '<p>' + text + '</p>'
 
+    def heading(self, text, heading_value):
+        return '<%(tag)s>%(text)s</%(tag)s>' % {
+            'tag': heading_value,
+            'text': text,
+        }
+
     def insertion(self, text, author, date):
         return (
             "<span class='insert' author='{author}' "

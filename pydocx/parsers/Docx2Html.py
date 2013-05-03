@@ -101,30 +101,28 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text, col = '', row = ''):
+    def table_cell(self, text, col='', row=''):
         if col and row:
-            return '''<td colspan="{col}" rowspan="{row}">{text}</td>'''.format(
-            col = col,
-            row = row,
-            text = text,
+            return '<td colspan="{col}" rowspan="{row}">{text}</td>'.format(
+                col=col,
+                row=row,
+                text=text,
             )
         elif col:
-            return '''<td colspan="{col}">{text}</td>'''.format(
-                col = col,
-                text = text,
+            return '<td colspan="{col}">{text}</td>'.format(
+                col=col,
+                text=text,
             )
         elif row:
-            return '''<td rowspan="{row}">{text}</td>'''.format(
-                row = row,
-                text = text,
+            return '<td rowspan="{row}">{text}</td>'.format(
+                row=row,
+                text=text,
             )
         else:
-            return '''<td>{text}</td>'''.format(
-                row = row,
-                text = text,
+            return '<td>{text}</td>'.format(
+                row=row,
+                text=text,
             )
-
-
 
     def page_break(self):
         return '<hr>'

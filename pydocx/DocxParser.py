@@ -146,7 +146,6 @@ class DocxParser:
         )
         result = {}
         for style in tree.find_all('style'):
-            #print ElementTree.tostring(style)
             style_val = style.find_first('name').attrib['val']
             result[style.attrib['styleId']] = style_val
         return result

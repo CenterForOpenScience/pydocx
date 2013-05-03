@@ -84,11 +84,11 @@ def test_nested_list():
         <ol data-list-type="decimal">
             <li>one</li>
             <li>two</li>
-            <li>three
+            <li>three<br/>
                 <ol data-list-type="decimal">
                     <li>AAA</li>
                     <li>BBB</li>
-                    <li>CCC
+                    <li>CCC<br/>
                         <ol data-list-type="decimal">
                             <li>alpha</li>
                         </ol>
@@ -98,14 +98,14 @@ def test_nested_list():
             <li>four</li>
         </ol>
         <ol data-list-type="decimal">
-            <li>xxx
+            <li>xxx<br/>
                 <ol data-list-type="decimal">
                     <li>yyy</li>
                 </ol>
             </li>
         </ol>
         <ul>
-            <li>www
+            <li>www<br/>
                 <ul>
                     <li>zzz</li>
                 </ul>
@@ -337,7 +337,7 @@ def test_tables_in_lists():
     <html><body>
         <ol data-list-type="decimal">
             <li>AAA</li>
-            <li>BBB
+            <li>BBB<br/>
                 <table>
                     <tr>
                         <td>CCC</td>
@@ -656,12 +656,12 @@ def test_lists_with_styles():
     <html><body>
         <ol data-list-type="decimal">
             <li>AAA</li>
-            <li>BBB
+            <li>BBB<br/>
                 <ol data-list-type="lower-roman">
                     <li>CCC</li>
-                    <li>DDD
+                    <li>DDD<br/>
                         <ol data-list-type="upper-alpha">
-                            <li>EEE
+                            <li>EEE<br/>
                                 <ol data-list-type="lower-alpha">
                                     <li>FFF</li>
                                 </ol>

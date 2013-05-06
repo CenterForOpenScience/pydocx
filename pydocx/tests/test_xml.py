@@ -415,7 +415,7 @@ class ListWithContinuationTestCase(_TranslationTestCase):
         <html><body>
             <ol data-list-type="decimal">
                 <li>AAA<br/>BBB</li>
-                <li>CCC<br/>
+                <li>CCC
                     <table>
                         <tr>
                             <td>DDD</td>
@@ -458,13 +458,12 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
     expected_output = '''
         <html><body>
             <ol data-list-type="decimal">
-                <li>AAA<br/>
+                <li>AAA
                     <table>
                         <tr>
                             <td>BBB</td>
                         </tr>
                     </table>
-                    <br/>
                     <table>
                         <tr>
                             <td>CCC</td>
@@ -504,7 +503,7 @@ class MangledIlvlTestCase(_TranslationTestCase):
             <li>AAA</li>
         </ol>
         <ol data-list-type="decimal">
-            <li>BBB<br/>
+            <li>BBB
                 <ol data-list-type="decimal">
                     <li>CCC</li>
                 </ol>
@@ -563,9 +562,9 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA
                 <ol data-list-type="decimal">
-                    <li>BBB<br/>
+                    <li>BBB
                         <ol data-list-type="decimal">
                             <li>CCC</li>
                         </ol>

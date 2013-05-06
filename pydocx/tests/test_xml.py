@@ -640,7 +640,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
     def get_xml(self):
         table = DXB.p_tag('AAA')
 
-        for _ in range(30):
+        for _ in range(50):
             table = DXB.table(num_rows=1, num_columns=1, text=chain(
                 [table],
             ))

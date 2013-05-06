@@ -311,22 +311,21 @@ class DocxParser:
             return self.table_row(parsed)
         elif el.tag == 'tc':  # table cells
             return self.table_cell(parsed)
-        if el.tag == 'r' and el:
+        elif el.tag == 'r' and el:
             return self.parse_r(el)  # parse the run
+        elif el.is_list_item:
+            return self.parse_list_item(el, parsed)
+        elif el.tag == 'p' and el.parent.tag == 'tc':
+            if (
+                    el.parent.find_next('p', self.count) is not None and
+                    not len(el.parent.find_all('tc')) > 0):
+                parsed += self.break_tag()
+                self.count += 1
+                self.visited_els.append(el)
+            else:
+                self.count = 0
+            return parsed  # return text in the table cell
         elif el.tag == 'p':
-            if el.parent.tag == 'tc':
-                if (
-                        el.parent.find_next('p', self.count) is not None and
-                        not len(el.parent.find_all('tc')) > 0):
-                    parsed += self.break_tag()
-                    self.count += 1
-                    self.visited_els.append(el)
-                else:
-                    self.count = 0
-                return parsed  # return text in the table cell
-                # parse p. parse p will return a list element or a paragraph
-            if el.is_list_item:
-                return self.parse_list_item(el, parsed)
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.insertion(parsed, '', '')
@@ -432,9 +431,6 @@ class DocxParser:
         # No p tags in li tags
         if self.list_depth == 0:
             parsed = self.paragraph(parsed)
-        else:
-            # Instead break separate
-            parsed = self.break_tag() + parsed
         return parsed
 
     def parse_list_item(self, el, text):
@@ -444,30 +440,48 @@ class DocxParser:
         parsed = text
         if self.list_depth == 0:
             return self.parse_list(el, parsed)
-        next_el_parsed = ''
-        if el.next is not None:
-            def _parse_next_element_first(el):
-                next_el = el.next
-                if (
-                        not next_el.is_list_item and
-                        not el.is_last_list_item_in_root
-                ):
-                    return True
-                if next_el.is_first_list_item:
-                    if next_el.num_id == el.num_id:
-                        return True
-                return False
 
-            if _parse_next_element_first(el):
-                # Get the contents of the next el and append it to the
-                # contents of the current el (that way things like tables
-                # are actually in the li tag instead of in the ol/ul tag).
-                next_el_parsed = self.parse(el.next)
+        def _should_parse_next_as_content(el):
+            """
+            Get the contents of the next el and append it to the
+            contents of the current el (that way things like tables
+            are actually in the li tag instead of in the ol/ul tag).
+            """
+            next_el = el.next
+            if next_el is None:
+                return False
+            if (
+                    not next_el.is_list_item and
+                    not el.is_last_list_item_in_root
+            ):
+                return True
+            if next_el.is_first_list_item:
+                if next_el.num_id == el.num_id:
+                    return True
+            return False
+
+        def _should_append_break_tag(next_el, previous_is_p):
+            if next_el.is_list_item:
+                return False
+            if not previous_is_p:
+                return False
+            if next_el.tag != 'p':
+                return False
+            return True
+        previous_is_p = el.tag == 'p'
+
+        while el:
+            if _should_parse_next_as_content(el):
+                el = el.next
+                next_elements_content = self.parse(el)
+                if _should_append_break_tag(el, previous_is_p):
+                    parsed += self.break_tag()
+                parsed += next_elements_content
+                previous_is_p = el.tag == 'p'
+            else:
+                break
         # Create the actual li element
-        parsed = self.list_element(
-            parsed + next_el_parsed,
-        )
-        return parsed
+        return self.list_element(parsed)
 
     def parse_hyperlink(self, el, text):
         rId = el.get('id')

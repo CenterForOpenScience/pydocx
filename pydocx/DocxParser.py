@@ -10,6 +10,7 @@ logger = logging.getLogger("NewParser")
 
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
+USE_ALIGNMENTS = False
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -90,6 +91,7 @@ setattr(_ElementInterface, 'ilvl', None)
 setattr(_ElementInterface, 'num_id', None)
 setattr(_ElementInterface, 'heading_level', None)
 setattr(_ElementInterface, 'is_in_table', False)
+setattr(_ElementInterface, 'previous', None)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
@@ -267,32 +269,40 @@ class DocxParser:
                 list_item.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
-        # We only care about children if they have text in them.
         def _get_children(el):
-            return [
-                child for child in el.getchildren()
-                if child.tag in ['p', 'tbl'] and
-                # getchildren only grabs root level elements, so we don't have
-                # to worry about table rows/table cells.
-                (
-                    child.has_descendant_with_tag('t') or
-                    child.has_descendant_with_tag('pict') or
-                    child.has_descendant_with_tag('drawing')
-                )
-            ]
+            # We only care about children if they have text in them.
+            children = []
+            for child in el.getchildren():
+                if child.tag not in ['p', 'tbl']:
+                    continue
+                has_descendant_with_tag = False
+                if child.has_descendant_with_tag('t'):
+                    has_descendant_with_tag = True
+                if child.has_descendant_with_tag('pict'):
+                    has_descendant_with_tag = True
+                if child.has_descendant_with_tag('drawing'):
+                    has_descendant_with_tag = True
+                if has_descendant_with_tag:
+                    children.append(child)
+            return children
 
         def _assign_next(children):
-            # Populate the `next` attribute for the all child elements.
+            # Populate the `next` attribute for all the child elements.
             for i in range(len(children)):
                 try:
                     if children[i + 1]:
                         children[i].next = children[i + 1]
                 except IndexError:
                     pass
+                try:
+                    if children[i - 1]:
+                        children[i].previous = children[i - 1]
+                except IndexError:
+                    pass
         # Assign next for everything in the root.
         _assign_next(_get_children(body))
 
-        # In addition set next for everything in tables cells.
+        # In addition set next for everything in table cells.
         for tc in body.find_all('tc'):
             _assign_next(_get_children(tc))
 
@@ -326,41 +336,50 @@ class DocxParser:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
 
-        if el.heading_level:
-            return self.heading(parsed, el.heading_level)
-        elif el.is_first_list_item:
-            return self.parse_list(el, parsed)
-        elif el.tag == 'br' and el.attrib.get('type') == 'page':
-            #TODO figure out what parsed is getting overwritten
-            return self.page_break()
+        if el.tag == 'br' and el.attrib.get('type') == 'page':
+            return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
-            return self.table(parsed)
+            return self.parse_table(el, parsed)
         elif el.tag == 'tr':
-            return self.table_row(parsed)
+            return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
             return self.parse_table_cell(el, parsed)
         elif el.tag == 'r':
             return self.parse_r(el, parsed)
         elif el.tag == 't':
-            return self.escape(el.text)
+            return self.parse_t(el, parsed)
         elif el.tag == 'br':
-            return self.break_tag()
+            return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
-            return self.deletion(el.text, '', '')
-        elif el.is_list_item:
-            return self.parse_list_item(el, parsed)
-        elif el.is_in_table:
-            return self.parse_table_cell_contents(el, parsed)
+            return self.parse_deletion(el, parsed)
         elif el.tag == 'p':
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
-            return self.insertion(parsed, '', '')
+            return self.parse_insertion(el, parsed)
         elif el.tag == 'hyperlink':
             return self.parse_hyperlink(el, parsed)
         elif el.tag in ('pict', 'drawing'):
             return self.parse_image(el)
         else:
             return parsed
+
+    def parse_page_break(self, el, text):
+        #TODO figure out what parsed is getting overwritten
+        return self.page_break()
+
+    def parse_table(self, el, text):
+        return self.table(text)
+
+    def parse_table_row(self, el, text):
+        return self.table_row(text)
+
+    def parse_table_cell(self, el, text):
+        v_merge = el.find_first('vMerge')
+        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+            return ''
+        colspan = self.get_colspan(el)
+        rowspan = self._get_rowspan(el, v_merge)
+        return self.table_cell(text, colspan, rowspan)
 
     def parse_list(self, el, text):
         """
@@ -457,11 +476,35 @@ class DocxParser:
     def parse_p(self, el, text):
         if text == '':
             return ''
+        if el.is_first_list_item:
+            return self.parse_list(el, text)
+        if el.heading_level:
+            return self.parse_heading(el, text)
+        if el.is_list_item:
+            return self.parse_list_item(el, text)
+        if el.is_in_table:
+            return self.parse_table_cell_contents(el, text)
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
             parsed = self.paragraph(parsed)
         return parsed
+
+    def _should_append_break_tag(self, next_el):
+        if next_el.is_list_item:
+            return False
+        if next_el.previous is None:
+            return False
+        if next_el.previous.is_last_list_item_in_root:
+            return False
+        if next_el.previous.tag != 'p':
+            return False
+        if next_el.tag != 'p':
+            return False
+        return True
+
+    def parse_heading(self, el, parsed):
+        return self.heading(parsed, el.heading_level)
 
     def parse_list_item(self, el, text):
         # If for whatever reason we are not currently in a list, then start
@@ -471,7 +514,12 @@ class DocxParser:
         if self.list_depth == 0:
             return self.parse_list(el, parsed)
 
-        def _parse_next_element_first(el):
+        def _should_parse_next_as_content(el):
+            """
+            Get the contents of the next el and append it to the
+            contents of the current el (that way things like tables
+            are actually in the li tag instead of in the ol/ul tag).
+            """
             next_el = el.next
             if next_el is None:
                 return False
@@ -485,21 +533,20 @@ class DocxParser:
                     return True
             return False
 
-        parsed_tags = [parsed]
         while el:
-            if _parse_next_element_first(el):
-                # Get the contents of the next el and append it to the
-                # contents of the current el (that way things like tables
-                # are actually in the li tag instead of in the ol/ul tag).
-                parsed_tags.append(self.parse(el.next))
+            if _should_parse_next_as_content(el):
                 el = el.next
+                next_elements_content = self.parse(el)
+                if not next_elements_content:
+                    continue
+                print next_elements_content
+                if self._should_append_break_tag(el):
+                    parsed += self.break_tag()
+                parsed += next_elements_content
             else:
                 break
         # Create the actual li element
-        parsed = self.list_element(
-            self.break_tag().join(p for p in parsed_tags if p),
-        )
-        return parsed
+        return self.list_element(parsed)
 
     def _get_rowspan(self, el, v_merge):
         current_row = el.row_index
@@ -541,31 +588,27 @@ class DocxParser:
             return ''
         return el.find_first('gridSpan').attrib['val']
 
-    def parse_table_cell(self, el, parsed):
-        v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'continue' in v_merge.attrib['val']:
-            return ''
-        colspan = self.get_colspan(el)
-        rowspan = self._get_rowspan(el, v_merge)
-        return self.table_cell(parsed, colspan, rowspan)
-
     def parse_table_cell_contents(self, el, text):
         parsed = text
 
-        def _parse_next_element_first(el):
+        def _should_parse_next_as_content(el):
             next_el = el.next
             if next_el is None:
                 return False
             if next_el.is_in_table:
                 return True
-        parsed_tags = [parsed]
         while el:
-            if _parse_next_element_first(el):
-                parsed_tags.append(self.parse(el.next))
+            if _should_parse_next_as_content(el):
                 el = el.next
+                next_elements_content = self.parse(el)
+                if not next_elements_content:
+                    continue
+                if self._should_append_break_tag(el):
+                    parsed += self.break_tag()
+                parsed += next_elements_content
             else:
                 break
-        return self.break_tag().join(p for p in parsed_tags if p)
+        return parsed
 
     def parse_hyperlink(self, el, text):
         rId = el.get('id')
@@ -636,27 +679,43 @@ class DocxParser:
         """
         return el.get('val') != 'false'
 
-    def parse_r(self, el, parsed):  # parse the running text
+    def parse_t(self, el, parsed):
+        return self.escape(el.text)
+
+    def parse_break_tag(self, el, parsed):
+        return self.break_tag()
+
+    def parse_deletion(self, el, parsed):
+        return self.deletion(el.text, '', '')
+
+    def parse_insertion(self, el, parsed):
+        return self.insertion(parsed, '', '')
+
+    def parse_r(self, el, parsed):
+        """
+        Parse the running text.
+        """
         text = parsed
         if not text:
             return ''
-        rpr = el.find('rPr')
-        if rpr is None:
+        run_tag_property = el.find('rPr')
+        if run_tag_property is None:
             return text
 
         fns = []
-        if rpr.has_child('b'):  # text styling
-            if self._is_style_on(rpr.find('b')):
+        if run_tag_property.has_child('b'):  # text styling
+            if self._is_style_on(run_tag_property.find('b')):
                 fns.append(self.bold)
-        if rpr.has_child('i'):
-            if self._is_style_on(rpr.find('i')):
+        if run_tag_property.has_child('i'):
+            if self._is_style_on(run_tag_property.find('i')):
                 fns.append(self.italics)
-        if rpr.has_child('u'):
-            if self._is_style_on(rpr.find('u')):
+        if run_tag_property.has_child('u'):
+            if self._is_style_on(run_tag_property.find('u')):
                 fns.append(self.underline)
         for fn in fns:
             text = fn(text)
-        return text  # Lets not mess with indent until its tested.
+        if not USE_ALIGNMENTS:
+            return text  # Lets not mess with indent until its tested.
 
         ppr = el.parent.find('pPr')
         if ppr is not None:

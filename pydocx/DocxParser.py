@@ -92,8 +92,8 @@ setattr(_ElementInterface, 'heading_level', None)
 setattr(_ElementInterface, 'is_in_table', False)
 setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
-setattr(_ElementInterface, 'row', None)
-setattr(_ElementInterface, 'col', None)
+setattr(_ElementInterface, 'row_index', None)
+setattr(_ElementInterface, 'column_index', None)
 
 
 # End helpers
@@ -187,17 +187,18 @@ class DocxParser:
         tables = el.find_all('tbl')
         for table in tables:
             rows = table.find_all('tr')
-            if rows is not None:
-                for i, row in enumerate(rows):
-                    for j, child in enumerate(row.find_all('tc')):
-                        child.row = i
-                        child.column = j
-                        v_merge = child.find_first('vMerge')
-                        if (
-                                v_merge is not None and
-                                'continue' == v_merge.attrib['val']
-                        ):
-                            child.vmerge_continue = True
+            if rows is None:
+                continue
+            for i, row in enumerate(rows):
+                for j, child in enumerate(row.find_all('tc')):
+                    child.row_index = i
+                    child.column_index = j
+                    v_merge = child.find_first('vMerge')
+                    if (
+                            v_merge is not None and
+                            'continue' == v_merge.attrib['val']
+                    ):
+                        child.vmerge_continue = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -500,33 +501,53 @@ class DocxParser:
         )
         return parsed
 
-    def parse_table_cell(self, el, parsed):
-        current_row = el.row
-        current_col = el.col
-        col = ''
-        row_tbl = ''
+    def _get_rowspan(self, el, v_merge):
+        current_row = el.row_index
+        current_col = el.column_index
         rowspan = 1
+        result = ''
+
         tbl = el.find_ancestor_with_tag('tbl')
-        for tc in tbl.find_all('tc'):
-            if tc.row > current_row and tc.col == current_col:
-                if (
-                    tc.vmerge_continue and
-                    el.find_first('vMerge') is not None and
-                    'restart' in el.find_first('vMerge').attrib['val']
-                ):
-                    rowspan += 1
-                else:
-                    rowspan = 1
+        # We only want table cells that have a higher row_index that is greater
+        # than the current_row and that are on the current_col
+        tcs = [
+            tc for tc in tbl.find_all('tc')
+            if tc.row_index >= current_row and
+            tc.column_index == current_col
+        ]
+        restart_in_v_merge = False
+        if v_merge is not None:
+            restart_in_v_merge = 'restart' in v_merge.attrib['val']
+
+        def increment_rowspan(tc):
+            if not restart_in_v_merge:
+                return False
+            if not tc.vmerge_continue:
+                return False
+            return True
+
+        for tc in tcs:
+            if increment_rowspan(tc):
+                rowspan += 1
+            else:
+                rowspan = 1
             if rowspan > 1:
-                row_tbl = str(rowspan)
-        if el.find_first('gridSpan') is not None:
-            col = el.find_first('gridSpan').attrib['val']
-        if not (
-                el.find_first('vMerge') is not None and
-                'continue' in el.find_first('vMerge').attrib['val']
-        ):
-            return self.table_cell(parsed, col, row_tbl)
-        return ''
+                result = rowspan
+        return str(result)
+
+    def get_colspan(self, el):
+        grid_span = el.find_first('gridSpan')
+        if grid_span is None:
+            return ''
+        return el.find_first('gridSpan').attrib['val']
+
+    def parse_table_cell(self, el, parsed):
+        v_merge = el.find_first('vMerge')
+        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+            return ''
+        colspan = self.get_colspan(el)
+        rowspan = self._get_rowspan(el, v_merge)
+        return self.table_cell(parsed, colspan, rowspan)
 
     def parse_table_cell_contents(self, el, text):
         parsed = text

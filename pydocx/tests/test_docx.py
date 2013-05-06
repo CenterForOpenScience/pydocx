@@ -193,12 +193,11 @@ def test_table_col_row_span():
           <td>DDD</td>
         </tr>
         <tr>
-          <td><div class='right'>EEE</div></td>
-
+          <td>EEE</td>
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
-          <td><div class='right'>GGG</div></td>
+          <td>GGG</td>
         </tr>
       </table>
       <table>

@@ -681,7 +681,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 4, total_time
+            assert total_time < 5, total_time
 
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):

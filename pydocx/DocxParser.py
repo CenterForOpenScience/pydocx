@@ -408,7 +408,7 @@ class DocxParser:
                 return False
             if next_el.is_last_list_item_in_root:
                 return False
-                # If next_el is not a list item then roll it into the list by
+            # If next_el is not a list item then roll it into the list by
             # returning True.
             if not next_el.is_list_item:
                 return True

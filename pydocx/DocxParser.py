@@ -449,7 +449,12 @@ class DocxParser:
         if self.list_depth == 0:
             return self.parse_list(el, parsed)
 
-        def _parse_next_element_first(el):
+        def _should_parse_next_as_content(el):
+            """
+            Get the contents of the next el and append it to the
+            contents of the current el (that way things like tables
+            are actually in the li tag instead of in the ol/ul tag).
+            """
             next_el = el.next
             if next_el is None:
                 return False
@@ -463,21 +468,28 @@ class DocxParser:
                     return True
             return False
 
-        parsed_tags = [parsed]
+        def _should_append_break_tag(next_el, previous_is_p):
+            if next_el.is_list_item:
+                return False
+            if not previous_is_p:
+                return False
+            if next_el.tag != 'p':
+                return False
+            return True
+        previous_is_p = el.tag == 'p'
+
         while el:
-            if _parse_next_element_first(el):
-                # Get the contents of the next el and append it to the
-                # contents of the current el (that way things like tables
-                # are actually in the li tag instead of in the ol/ul tag).
-                parsed_tags.append(self.parse(el.next))
+            if _should_parse_next_as_content(el):
                 el = el.next
+                next_elements_content = self.parse(el)
+                if _should_append_break_tag(el, previous_is_p):
+                    parsed += self.break_tag()
+                parsed += next_elements_content
+                previous_is_p = el.tag == 'p'
             else:
                 break
         # Create the actual li element
-        parsed = self.list_element(
-            self.break_tag().join(p for p in parsed_tags if p),
-        )
-        return parsed
+        return self.list_element(parsed)
 
     def parse_table_cell(self, el, text):
         parsed = text

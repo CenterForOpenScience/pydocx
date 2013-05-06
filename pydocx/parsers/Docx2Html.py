@@ -107,17 +107,27 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text):
-        return '<td>' + text + '</td>'
+    def table_cell(self, text, col='', row=''):
+        slug = '<td'
+        if col:
+            slug += ' colspan="%(colspan)s"'
+        if row:
+            slug += ' rowspan="%(rowspan)s"'
+        slug += '>%(text)s</td>'
+        return slug % {
+            'colspan': col,
+            'rowspan': row,
+            'text': text,
+        }
 
     def page_break(self):
         return '<hr>'
 
     def center_justify(self, text):
-        return "<div class = 'center'>" + text + '</div>'
+        return "<div class='center'>" + text + '</div>'
 
     def right_justify(self, text):
-        return "<div class = 'right'>" + text + '</div>'
+        return "<div class='right'>" + text + '</div>'
 
     def indent(self, text, right, left, firstLine):
         return "<div style = 'margin-left:{left}pt'>{text}</div>".format(

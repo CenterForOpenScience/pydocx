@@ -93,6 +93,9 @@ setattr(_ElementInterface, 'heading_level', None)
 setattr(_ElementInterface, 'is_in_table', False)
 setattr(_ElementInterface, 'previous', None)
 setattr(_ElementInterface, 'next', None)
+setattr(_ElementInterface, 'vmerge_continue', None)
+setattr(_ElementInterface, 'row_index', None)
+setattr(_ElementInterface, 'column_index', None)
 
 
 # End helpers
@@ -174,6 +177,12 @@ class DocxParser:
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.root)  # begin to parse
 
+    def _filter_children(self, element, tags):
+        return [
+            el for el in element.getchildren()
+            if el.tag in tags
+        ]
+
     def _set_list_attributes(self, el):
         list_elements = el.find_all('numId')
         for li in list_elements:
@@ -181,6 +190,24 @@ class DocxParser:
             parent.is_list_item = True
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']
+
+    def _set_table_attributes(self, el):
+        tables = el.find_all('tbl')
+        for table in tables:
+            rows = self._filter_children(table, ['tr'])
+            if rows is None:
+                continue
+            for i, row in enumerate(rows):
+                tcs = self._filter_children(row, ['tc'])
+                for j, child in enumerate(tcs):
+                    child.row_index = i
+                    child.column_index = j
+                    v_merge = child.find_first('vMerge')
+                    if (
+                            v_merge is not None and
+                            'continue' == v_merge.attrib['val']
+                    ):
+                        child.vmerge_continue = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -198,7 +225,8 @@ class DocxParser:
                     i for i in list_elements
                     if (
                         i.num_id == num_id and
-                        i.ilvl == ilvl)
+                        i.ilvl == ilvl
+                    )
                 ]
                 if not filtered_list_elements:
                     continue
@@ -251,9 +279,7 @@ class DocxParser:
         def _get_children(el):
             # We only care about children if they have text in them.
             children = []
-            for child in el.getchildren():
-                if child.tag not in ['p', 'tbl']:
-                    continue
+            for child in self._filter_children(el, ['p', 'tbl']):
                 has_descendant_with_tag = False
                 if child.has_descendant_with_tag('t'):
                     has_descendant_with_tag = True
@@ -287,6 +313,7 @@ class DocxParser:
 
     def parse_begin(self, el):
         self._set_list_attributes(el)
+        self._set_table_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements
@@ -352,7 +379,12 @@ class DocxParser:
         return self.table_row(text)
 
     def parse_table_cell(self, el, text):
-        return self.table_cell(text)
+        v_merge = el.find_first('vMerge')
+        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+            return ''
+        colspan = self.get_colspan(el)
+        rowspan = self._get_rowspan(el, v_merge)
+        return self.table_cell(text, colspan, rowspan)
 
     def parse_list(self, el, text):
         """
@@ -520,6 +552,46 @@ class DocxParser:
                 break
         # Create the actual li element
         return self.list_element(parsed)
+
+    def _get_rowspan(self, el, v_merge):
+        current_row = el.row_index
+        current_col = el.column_index
+        rowspan = 1
+        result = ''
+
+        tbl = el.find_ancestor_with_tag('tbl')
+        # We only want table cells that have a higher row_index that is greater
+        # than the current_row and that are on the current_col
+        tcs = [
+            tc for tc in tbl.find_all('tc')
+            if tc.row_index >= current_row and
+            tc.column_index == current_col
+        ]
+        restart_in_v_merge = False
+        if v_merge is not None:
+            restart_in_v_merge = 'restart' in v_merge.attrib['val']
+
+        def increment_rowspan(tc):
+            if not restart_in_v_merge:
+                return False
+            if not tc.vmerge_continue:
+                return False
+            return True
+
+        for tc in tcs:
+            if increment_rowspan(tc):
+                rowspan += 1
+            else:
+                rowspan = 1
+            if rowspan > 1:
+                result = rowspan
+        return str(result)
+
+    def get_colspan(self, el):
+        grid_span = el.find_first('gridSpan')
+        if grid_span is None:
+            return ''
+        return el.find_first('gridSpan').attrib['val']
 
     def parse_table_cell_contents(self, el, text):
         parsed = text
@@ -806,4 +878,4 @@ class DocxParser:
 
     @abstractmethod
     def indent(self, text, left=None, right=None, firstLine=None):
-        return text        # TODO JUSTIFIED JUSTIFIED TEXT
+        return text  # TODO JUSTIFIED JUSTIFIED TEXT

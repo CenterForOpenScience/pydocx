@@ -460,9 +460,7 @@ class DocxParser:
                     return True
             return False
 
-        previous_is_p = el.tag == 'p'
-
-        def _should_append_break_tag(previous_is_p, next_el):
+        def _should_append_break_tag(next_el, previous_is_p):
             if next_el.is_list_item:
                 return False
             if not previous_is_p:
@@ -470,12 +468,13 @@ class DocxParser:
             if next_el.tag != 'p':
                 return False
             return True
+        previous_is_p = el.tag == 'p'
 
         while el:
             if _should_parse_next_as_content(el):
                 el = el.next
                 next_elements_content = self.parse(el)
-                if _should_append_break_tag(previous_is_p, el):
+                if _should_append_break_tag(el, previous_is_p):
                     parsed += self.break_tag()
                 parsed += next_elements_content
                 previous_is_p = el.tag == 'p'

@@ -172,7 +172,6 @@ def test_special_chars():
 
 
 def test_table_col_row_span():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -229,7 +228,6 @@ def test_table_col_row_span():
 
 
 def test_nested_table_rowspan():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -255,7 +253,6 @@ def test_nested_table_rowspan():
                             <td>EEE</td>
                         </tr>
                     </table>
-                    <br />
                 </td>
             </tr>
         </table>

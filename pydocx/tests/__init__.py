@@ -1,5 +1,6 @@
 #from unittest import TestCase
 import re
+from contextlib import contextmanager
 
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.DocxParser import (
@@ -131,13 +132,22 @@ class _TranslationTestCase(TestCase):
     expected_output = None
     relationship_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
+    run_expected_output = True
 
     def get_xml(self):
         raise NotImplementedError()
 
+    @contextmanager
+    def toggle_run_expected_output(self):
+        self.run_expected_output = not self.run_expected_output
+        yield
+        self.run_expected_output = not self.run_expected_output
+
     def test_expected_output(self):
         if self.expected_output is None:
-            raise AssertionError('expected_output is not defined')
+            raise NotImplementedError('expected_output is not defined')
+        if not self.run_expected_output:
+            return
 
         # Create the xml
         tree = self.get_xml()

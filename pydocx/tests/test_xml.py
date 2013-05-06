@@ -359,7 +359,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
                     <ol data-list-type="decimal">
                         <li>AAA</li>
                         <li>BBB</li>
-                    </ol><br/>
+                    </ol>
                     CCC<br/>
                     DDD
                 </td>

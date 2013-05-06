@@ -4,5 +4,6 @@
 		<w:b{% if val %} w:val="{{ val }}"{% endif %}/>
 		{% endif %}
 	</w:rPr>
+	{% if include_linebreak %}<w:br/>{% endif %}
 	{% if text %}{% include 't.xml' %}{% endif %}
 </w:r>

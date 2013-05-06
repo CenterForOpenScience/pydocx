@@ -114,6 +114,27 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
         return xml
 
 
+class HyperlinkWithBreakTestCase(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': 'www.google.com',
+    }
+
+    expected_output = '''
+    <html><body>
+        <p><a href="www.google.com">link<br/></a></p>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        run_tags = []
+        run_tags.append(DXB.r_tag('link'))
+        run_tags.append(DXB.r_tag(None, include_linebreak=True))
+        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
+        body = DXB.p_tag(run_tags)
+        xml = DXB.xml(body)
+        return xml
+
+
 class ImageTestCase(_TranslationTestCase):
     relationship_dict = {
         'rId0': 'media/image1.jpeg',
@@ -661,3 +682,37 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
             assert total_time < 4, total_time
+
+
+class NonStandardTextTagsTestCase(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <p><span class='insert' author='' date=''>insert </span>
+        smarttag</p>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        run_tags = [DXB.r_tag(i) for i in 'insert ']
+        insert_tag = DXB.insert_tag(run_tags)
+        run_tags = [DXB.r_tag(i) for i in 'smarttag']
+        smart_tag = DXB.smart_tag(run_tags)
+
+        run_tags = [insert_tag, smart_tag]
+        body = DXB.p_tag(run_tags)
+        xml = DXB.xml(body)
+        return xml
+
+
+class RTagWithNoText(_TranslationTestCase):
+    expected_output = '<html><body></body></html>'
+
+    def get_xml(self):
+        p_tag = DXB.p_tag(None)  # No text
+        run_tags = [p_tag]
+        # The bug is only present in a hyperlink
+        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
+        body = DXB.p_tag(run_tags)
+
+        xml = DXB.xml(body)
+        return xml

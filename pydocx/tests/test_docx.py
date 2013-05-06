@@ -84,11 +84,11 @@ def test_nested_list():
         <ol data-list-type="decimal">
             <li>one</li>
             <li>two</li>
-            <li>three
+            <li>three<br/>
                 <ol data-list-type="decimal">
                     <li>AAA</li>
                     <li>BBB</li>
-                    <li>CCC
+                    <li>CCC<br/>
                         <ol data-list-type="decimal">
                             <li>alpha</li>
                         </ol>
@@ -98,14 +98,14 @@ def test_nested_list():
             <li>four</li>
         </ol>
         <ol data-list-type="decimal">
-            <li>xxx
+            <li>xxx<br/>
                 <ol data-list-type="decimal">
                     <li>yyy</li>
                 </ol>
             </li>
         </ol>
         <ul>
-            <li>www
+            <li>www<br/>
                 <ul>
                     <li>zzz</li>
                 </ul>
@@ -300,7 +300,6 @@ def test_nested_tables():
 
 
 def test_list_in_table():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -337,7 +336,7 @@ def test_tables_in_lists():
     <html><body>
         <ol data-list-type="decimal">
             <li>AAA</li>
-            <li>BBB
+            <li>BBB<br/>
                 <table>
                     <tr>
                         <td>CCC</td>
@@ -369,7 +368,6 @@ def test_track_changes_on():
 
 
 def test_headers():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
@@ -379,11 +377,11 @@ def test_headers():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
     <html><body>
-        <h2>This is an H1</h2>
-        <h3>This is an H2</h3>
-        <h4>This is an H3</h4>
-        <h5>This is an H4</h5>
-        <h6>This is an H5</h6>
+        <h1>This is an H1</h1>
+        <h2>This is an H2</h2>
+        <h3>This is an H3</h3>
+        <h4>This is an H4</h4>
+        <h5>This is an H5</h5>
         <h6>This is an H6</h6>
         <h6>This is an H7</h6>
         <h6>This is an H8</h6>
@@ -403,7 +401,6 @@ def _copy_file_to_tmp_dir(file_path, filename):
 
 
 def test_split_headers():
-    raise SkipTest('This test is not yet passing')
     filename = 'split_header.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
@@ -418,7 +415,7 @@ def test_split_headers():
 
     actual_html = convert(new_file_path)
     assert_html_equal(actual_html, '''
-    <html><body><h2>AAA</h2><p>BBB</p><h2>CCC</h2></body></html>
+    <html><body><h1>AAA</h1><p>BBB</p><h1>CCC</h1></body></html>
     ''')
 
 
@@ -656,12 +653,12 @@ def test_lists_with_styles():
     <html><body>
         <ol data-list-type="decimal">
             <li>AAA</li>
-            <li>BBB
+            <li>BBB<br/>
                 <ol data-list-type="lower-roman">
                     <li>CCC</li>
-                    <li>DDD
+                    <li>DDD<br/>
                         <ol data-list-type="upper-alpha">
-                            <li>EEE
+                            <li>EEE<br/>
                                 <ol data-list-type="lower-alpha">
                                     <li>FFF</li>
                                 </ol>

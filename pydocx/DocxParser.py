@@ -314,41 +314,45 @@ class DocxParser:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
 
-        if el.heading_level:
-            return self.heading(parsed, el.heading_level)
-        elif el.is_first_list_item:
-            return self.parse_list(el, parsed)
-        elif el.tag == 'br' and el.attrib.get('type') == 'page':
-            #TODO figure out what parsed is getting overwritten
-            return self.page_break()
+        if el.tag == 'br' and el.attrib.get('type') == 'page':
+            return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
-            return self.table(parsed)
+            return self.parse_table(el, parsed)
         elif el.tag == 'tr':
-            return self.table_row(parsed)
+            return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
-            return self.table_cell(parsed)
+            return self.parse_table_cell(el, parsed)
         elif el.tag == 'r':
             return self.parse_r(el, parsed)
         elif el.tag == 't':
-            return self.escape(el.text)
+            return self.parse_t(el, parsed)
         elif el.tag == 'br':
-            return self.break_tag()
+            return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
-            return self.deletion(el.text, '', '')
-        elif el.is_list_item:
-            return self.parse_list_item(el, parsed)
-        elif el.is_in_table:
-            return self.parse_table_cell(el, parsed)
+            return self.parse_deletion(el, parsed)
         elif el.tag == 'p':
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
-            return self.insertion(parsed, '', '')
+            return self.parse_insertion(el, parsed)
         elif el.tag == 'hyperlink':
             return self.parse_hyperlink(el, parsed)
         elif el.tag in ('pict', 'drawing'):
             return self.parse_image(el)
         else:
             return parsed
+
+    def parse_page_break(self, el, text):
+        #TODO figure out what parsed is getting overwritten
+        return self.page_break()
+
+    def parse_table(self, el, text):
+        return self.table(text)
+
+    def parse_table_row(self, el, text):
+        return self.table_row(text)
+
+    def parse_table_cell(self, el, text):
+        return self.table_cell(text)
 
     def parse_list(self, el, text):
         """
@@ -362,7 +366,7 @@ class DocxParser:
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
         if el.is_in_table:
-            return self.parse_table_cell(el, parsed)
+            return self.parse_table_cell_contents(el, parsed)
         return parsed
 
     def _parse_list(self, el, text):
@@ -445,6 +449,14 @@ class DocxParser:
     def parse_p(self, el, text):
         if text == '':
             return ''
+        if el.is_first_list_item:
+            return self.parse_list(el, text)
+        if el.heading_level:
+            return self.parse_heading(el, text)
+        if el.is_list_item:
+            return self.parse_list_item(el, text)
+        if el.is_in_table:
+            return self.parse_table_cell_contents(el, text)
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
@@ -463,6 +475,9 @@ class DocxParser:
         if next_el.tag != 'p':
             return False
         return True
+
+    def parse_heading(self, el, parsed):
+        return self.heading(parsed, el.heading_level)
 
     def parse_list_item(self, el, text):
         # If for whatever reason we are not currently in a list, then start
@@ -506,7 +521,7 @@ class DocxParser:
         # Create the actual li element
         return self.list_element(parsed)
 
-    def parse_table_cell(self, el, text):
+    def parse_table_cell_contents(self, el, text):
         parsed = text
 
         def _should_parse_next_as_content(el):
@@ -596,6 +611,18 @@ class DocxParser:
         well.
         """
         return el.get('val') != 'false'
+
+    def parse_t(self, el, parsed):
+        return self.escape(el.text)
+
+    def parse_break_tag(self, el, parsed):
+        return self.break_tag()
+
+    def parse_deletion(self, el, parsed):
+        return self.deletion(el.text, '', '')
+
+    def parse_insertion(self, el, parsed):
+        return self.insertion(parsed, '', '')
 
     def parse_r(self, el, parsed):
         """

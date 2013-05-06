@@ -417,10 +417,10 @@ class DocxParser:
         def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
-                # Different list
+            # Different list
             if last_el.num_id != first_el.num_id:
                 return False
-                # Will be handled when the ilvls do match (nesting issue)
+            # Will be handled when the ilvls do match (nesting issue)
             if last_el.ilvl != first_el.ilvl:
                 return False
             # We only care about last items that have not been parsed before
@@ -561,7 +561,7 @@ class DocxParser:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
             return blip.get('embed')
-            # Picts
+        # Picts
         imagedata = el.find_first('imagedata')
         if imagedata is not None:
             return imagedata.get('id')

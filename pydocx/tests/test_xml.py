@@ -1,4 +1,5 @@
 import os
+import time
 from itertools import chain
 
 from nose.plugins.skip import SkipTest
@@ -629,3 +630,31 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class DeeplyNestedTableTestCase(_TranslationTestCase):
+    expected_output = '''
+    '''
+    run_expected_output = False
+
+    def get_xml(self):
+        table = DXB.p_tag('AAA')
+
+        for _ in range(30):
+            table = DXB.table(num_rows=1, num_columns=1, text=chain(
+                [table],
+            ))
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+    def test_performance(self):
+        with self.toggle_run_expected_output():
+            start_time = time.time()
+            try:
+                self.test_expected_output()
+            except AssertionError:
+                pass
+            end_time = time.time()
+            total_time = end_time - start_time
+            assert total_time < 1, total_time

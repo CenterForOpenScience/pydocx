@@ -297,6 +297,7 @@ class DocxParser:
 
     def parse_begin(self, el):
         self._set_list_attributes(el)
+        self._set_table_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements
@@ -335,51 +336,8 @@ class DocxParser:
             return self.table(parsed)
         elif el.tag == 'tr':
             return self.table_row(parsed)
-        #elif el.tag == 'tc':  # table cells
-        #    current_row = el.row
-        #    current_col = el.col
-        #    col = ''
-        #    row_tbl = ''
-        #    rowspan = 1
-        #    for row in el.parent.parent:
-        #        for tc in row:
-        #            if tc.row > current_row and tc.col == current_col:
-        #                if (
-        #                    tc.vmerge_continue and
-        #                    el.find_first('vMerge') is not None and
-        #                    'restart' in el.find_first('vMerge').attrib['val']
-        #                ):
-        #                    rowspan += 1
-        #                else:
-        #                    rowspan = 1
-        #            if rowspan > 1:
-        #                row_tbl = str(rowspan)
-        #    if el.find_first('gridSpan') is not None:
-        #        col = el.find_first('gridSpan').attrib['val']
-        #    if not (
-        #            el.find_first('vMerge') is not None and
-        #            'continue' in el.find_first('vMerge').attrib['val']
-        #    ):
-        #        return self.table_cell(parsed, col, row_tbl)
-        #if el.tag == 'r' and el is not None:
-        #    return self.parse_r(el)  # parse the run
-        #elif el.tag == 'p':
-        #    if el.parent.tag == 'tc':
-        #        if (
-        #            el.parent.find_next('p', self.count) is not None and
-        #            not len(el.parent.find_all('tc')) > 0
-        #        ):
-        #            parsed += self.break_tag()
-        #            self.count += 1
-        #            self.visited_els.append(el)
-        #        else:
-        #            self.count = 0
-        #        return parsed  # return text in the table cell
-        #        # parse p. parse p will return a list element or a paragraph
-        #    if el.is_list_item:
-        #        return self.parse_list_item(el, parsed)
         elif el.tag == 'tc':
-            return self.table_cell(parsed)
+            return self.parse_table_cell(el, parsed)
         elif el.tag == 'r':
             return self.parse_r(el, parsed)
         elif el.tag == 't':
@@ -391,7 +349,7 @@ class DocxParser:
         elif el.is_list_item:
             return self.parse_list_item(el, parsed)
         elif el.is_in_table:
-            return self.parse_table_cell(el, parsed)
+            return self.parse_table_cell_contents(el, parsed)
         elif el.tag == 'p':
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
@@ -405,17 +363,17 @@ class DocxParser:
 
     def parse_list(self, el, text):
         """
-All the meat of building the list is done in _parse_list, however we
-call this method for two reasons: It is the naming convention we are
-following. And we need a reliable way to raise and lower the list_depth
-(which is used to determine if we are in a list). I could have done
-this in _parse_list, however it seemed cleaner to do it here.
-"""
+        All the meat of building the list is done in _parse_list, however we
+        call this method for two reasons: It is the naming convention we are
+        following. And we need a reliable way to raise and lower the list_depth
+        (which is used to determine if we are in a list). I could have done
+        this in _parse_list, however it seemed cleaner to do it here.
+        """
         self.list_depth += 1
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
         if el.is_in_table:
-            return self.parse_table_cell(el, parsed)
+            return self.parse_table_cell_contents(el, parsed)
         return parsed
 
     def _parse_list(self, el, text):
@@ -542,7 +500,35 @@ this in _parse_list, however it seemed cleaner to do it here.
         )
         return parsed
 
-    def parse_table_cell(self, el, text):
+    def parse_table_cell(self, el, parsed):
+        current_row = el.row
+        current_col = el.col
+        col = ''
+        row_tbl = ''
+        rowspan = 1
+        tbl = el.find_ancestor_with_tag('tbl')
+        for tc in tbl.find_all('tc'):
+            if tc.row > current_row and tc.col == current_col:
+                if (
+                    tc.vmerge_continue and
+                    el.find_first('vMerge') is not None and
+                    'restart' in el.find_first('vMerge').attrib['val']
+                ):
+                    rowspan += 1
+                else:
+                    rowspan = 1
+            if rowspan > 1:
+                row_tbl = str(rowspan)
+        if el.find_first('gridSpan') is not None:
+            col = el.find_first('gridSpan').attrib['val']
+        if not (
+                el.find_first('vMerge') is not None and
+                'continue' in el.find_first('vMerge').attrib['val']
+        ):
+            return self.table_cell(parsed, col, row_tbl)
+        return ''
+
+    def parse_table_cell_contents(self, el, text):
         parsed = text
 
         def _parse_next_element_first(el):
@@ -585,10 +571,10 @@ this in _parse_list, however it seemed cleaner to do it here.
 
     def _get_image_size(self, el):
         """
-If we can't find a height or width, return 0 for whichever is not
-found, then rely on the `image` handler to strip those attributes. This
-functionality can change once we integrate PIL.
-"""
+        If we can't find a height or width, return 0 for whichever is not
+        found, then rely on the `image` handler to strip those attributes. This
+        functionality can change once we integrate PIL.
+        """
         sizes = el.find_first('ext')
         if sizes is not None:
             x = self._convert_image_size(int(sizes.get('cx')))

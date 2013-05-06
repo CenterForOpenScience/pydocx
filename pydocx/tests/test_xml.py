@@ -350,6 +350,48 @@ class TableWithInvalidTag(_TranslationTestCase):
         return xml
 
 
+class TableWithListAndParagraph(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <table>
+            <tr>
+                <td>
+                    <ol data-list-type="decimal">
+                        <li>AAA</li>
+                        <li>BBB</li>
+                    </ol>
+                    CCC<br/>
+                    DDD
+                </td>
+            </tr>
+        </table>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        els = [
+            lis,
+            DXB.p_tag('CCC'),
+            DXB.p_tag('DDD'),
+        ]
+        td = ''
+        for el in els:
+            td += el
+        table = DXB.table(num_rows=1, num_columns=1, text=chain(
+            [td],
+        ))
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
 class SimpleListTestCase(_TranslationTestCase):
     expected_output = '''
         <html><body>

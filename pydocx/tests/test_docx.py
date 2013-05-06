@@ -300,7 +300,6 @@ def test_nested_tables():
 
 
 def test_list_in_table():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',

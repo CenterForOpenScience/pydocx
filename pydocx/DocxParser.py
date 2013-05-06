@@ -177,7 +177,7 @@ class DocxParser:
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.root)  # begin to parse
 
-    def _filter_chrildren(self, element, tags):
+    def _filter_children(self, element, tags):
         return [
             el for el in element.getchildren()
             if el.tag in tags
@@ -194,11 +194,11 @@ class DocxParser:
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
         for table in tables:
-            rows = self._filter_chrildren(table, ['tr'])
+            rows = self._filter_children(table, ['tr'])
             if rows is None:
                 continue
             for i, row in enumerate(rows):
-                tcs = self._filter_chrildren(row, ['tc'])
+                tcs = self._filter_children(row, ['tc'])
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
@@ -279,7 +279,7 @@ class DocxParser:
         def _get_children(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_chrildren(el, ['p', 'tbl']):
+            for child in self._filter_children(el, ['p', 'tbl']):
                 has_descendant_with_tag = False
                 if child.has_descendant_with_tag('t'):
                     has_descendant_with_tag = True

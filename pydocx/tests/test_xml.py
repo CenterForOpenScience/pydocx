@@ -454,6 +454,48 @@ class ListWithContinuationTestCase(_TranslationTestCase):
         return xml
 
 
+class ListWithMultipleContinuationTestCase(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+            <ol data-list-type="decimal">
+                <li>AAA
+                    <table>
+                        <tr>
+                            <td>BBB</td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <td>CCC</td>
+                        </tr>
+                    </table>
+                </li>
+                <li>DDD</li>
+            </ol>
+        </body></html>
+    '''
+
+    def get_xml(self):
+        table1 = DXB.table(num_rows=1, num_columns=1, text=chain(
+            [DXB.p_tag('BBB')],
+        ))
+        table2 = DXB.table(num_rows=1, num_columns=1, text=chain(
+            [DXB.p_tag('CCC')],
+        ))
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=1),
+            table1,
+            table2,
+            DXB.li(text='DDD', ilvl=0, numId=1),
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+
 class MangledIlvlTestCase(_TranslationTestCase):
     expected_output = '''
     <html><body>

@@ -5,6 +5,8 @@ python:
 script: ./run_tests.sh
 install:
   - pip install -r requirements.txt
+env:
+  - TRAVIS_EXECUTE_PERFORMANCE=1
 notifications:
   email:
     - jason.louard.ward@gmail.com

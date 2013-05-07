@@ -6,12 +6,12 @@ import xml.sax.saxutils
 class Docx2Html(DocxParser):
 
     @property
-    def parsed(self):
+    def parsed(self, width = '', height = ''):
         self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
         return (
-            '<html>{head}<body>{content}</body></html>'
+            "<html>{head}<body><div class='container'>{content}</div></body></html>"
         ).format(
             head=self.head(),
             content=self._parsed,
@@ -23,9 +23,11 @@ class Docx2Html(DocxParser):
         )
 
     def style(self):
-        return '<style>.insert{{color:red}}.delete'
-        '{{color:red; text-decoration:line-through}}.center'
-        '{{text-align:center}}.right{{text-align:right}}</style>'
+        return '''<style>.insert{{color:red}}.delete
+        {{color:red; text-decoration:line-through}}.center
+        {{text-align:center}}.right{{text-align:right}}
+        .container{{width:{width}px; margin:0px auto;
+        }}</style>'''.format(width = (self.width * (4/3)))
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -129,11 +131,18 @@ class Docx2Html(DocxParser):
     def right_justify(self, text):
         return "<div class='right'>" + text + '</div>'
 
-    def indent(self, text, right, left, firstLine):
-        return "<div style = 'margin-left:{left}pt'>{text}</div>".format(
-            left=left,
-            text=text,
-        )
+    def indent(self, text, right = '', left = '', firstLine = '', just = ''):
+        if left or right is not None:
+            if left is None:
+                left = ''
+            elif right is None:
+                right = ''
+            return "<div class='{just}' style = 'margin-left:{left}px; margin-right:{right}px'>{text}</div>".format(
+            left = left,
+            right = right,
+            just = just,
+            text = text,
+            )
 
     def break_tag(self):
         return '<br/>'

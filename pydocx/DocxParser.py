@@ -10,7 +10,7 @@ logger = logging.getLogger("NewParser")
 
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
-USE_ALIGNMENTS = False
+USE_ALIGNMENTS = True
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -159,13 +159,18 @@ class DocxParser:
 
     def __init__(self, *args, **kwargs):
         self._parsed = ''
-
+        self.height = 0
+        self.width = 0
         self._build_data(*args, **kwargs)
+
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
+
+        self.height =int(self.root.find_first('pgSz').attrib['h'])/20
+        self.width = int(self.root.find_first('pgSz').attrib['w'])/20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -182,6 +187,7 @@ class DocxParser:
             el for el in element.getchildren()
             if el.tag in tags
         ]
+
 
     def _set_list_attributes(self, el):
         list_elements = el.find_all('numId')
@@ -705,49 +711,51 @@ class DocxParser:
             return ''
         run_tag_property = el.find('rPr')
         if run_tag_property is None:
-            return text
-
-        fns = []
-        if run_tag_property.has_child('b'):  # text styling
-            if self._is_style_on(run_tag_property.find('b')):
-                fns.append(self.bold)
-        if run_tag_property.has_child('i'):
-            if self._is_style_on(run_tag_property.find('i')):
-                fns.append(self.italics)
-        if run_tag_property.has_child('u'):
-            if self._is_style_on(run_tag_property.find('u')):
-                fns.append(self.underline)
-        for fn in fns:
-            text = fn(text)
-        if not USE_ALIGNMENTS:
-            return text  # Lets not mess with indent until its tested.
-
+            pass # this is returning and not going through. replacing from return text to pass
+        else:
+            fns = []
+            if run_tag_property.has_child('b'):  # text styling
+                if self._is_style_on(run_tag_property.find('b')):
+                    fns.append(self.bold)
+            if run_tag_property.has_child('i'):
+                if self._is_style_on(run_tag_property.find('i')):
+                    fns.append(self.italics)
+            if run_tag_property.has_child('u'):
+                if self._is_style_on(run_tag_property.find('u')):
+                    fns.append(self.underline)
+            for fn in fns:
+                text = fn(text)
         ppr = el.parent.find('pPr')
+        just = ''
         if ppr is not None:
             jc = ppr.find('jc')
             if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
-                    text = self.right_justify(text)
-                if jc.attrib['val'] == 'center':
-                    text = self.center_justify(text)
+                    just = 'right'
+                elif jc.attrib['val'] == 'center':
+                    just = 'center'
             ind = ppr.find('ind')
+            right = ''
+            left = ''
+            firstLine = ''
             if ind is not None:
                 right = None
                 left = None
                 firstLine = None
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
-                    right = int(right)/20
+                    right = (int(right)/20) * float(4)/float(3)
                     right = str(right)
                 if 'left' in ind.attrib:
                     left = ind.attrib['left']
-                    left = int(left)/20
+                    left = (int(left)/20) * float(4)/float(3)
                     left = str(left)
                 if 'firstLine' in ind.attrib:
                     firstLine = ind.attrib['firstLine']
                     firstLine = int(firstLine)/20
                     firstLine = str(firstLine)
-                text = self.indent(text, right, left, firstLine)
+            if jc is not None or ind is not None:
+                text = self.indent(text, right, left, firstLine, just)
         return text
 
     def get_list_style(self, num_id, ilvl):

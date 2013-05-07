@@ -96,7 +96,8 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-
+setattr(_ElementInterface, 'last_text', None)
+setattr(_ElementInterface, 'preserve', None)
 
 # End helpers
 
@@ -114,6 +115,10 @@ class DocxParser:
         with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
+            try:
+                self.fonts = f.read('/word/fontTable.xml')
+            except:
+                self.fonts = None
             try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
@@ -148,6 +153,9 @@ class DocxParser:
             result[style.attrib['styleId']] = style_val
         return result
 
+    def _parse_fonts(self):
+        print self.fonts
+
     def _parse_rels_root(self):
         tree = ElementTree.fromstring(self.relationship_text)
         rels_dict = {}
@@ -159,8 +167,7 @@ class DocxParser:
 
     def __init__(self, *args, **kwargs):
         self._parsed = ''
-        self.height = 0
-        self.width = 0
+        self.page_width = 0
         self._build_data(*args, **kwargs)
 
 
@@ -169,13 +176,14 @@ class DocxParser:
                 setattr(child, 'parent', el)
                 add_parent(child)
 
-        self.height =int(self.root.find_first('pgSz').attrib['h'])/20
-        self.width = int(self.root.find_first('pgSz').attrib['w'])/20
+        #divide by 20 to get to pt
+        self.page_width = int(self.root.find_first('pgSz').attrib['w'])/20
 
         add_parent(self.root)  # create the parent attributes
 
         #all blank when we init
         self.comment_store = None
+        self.justify = False
         self.visited = []
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
@@ -214,6 +222,15 @@ class DocxParser:
                             'continue' == v_merge.attrib['val']
                     ):
                         child.vmerge_continue = True
+
+    def _set_text_attributes(self, el):
+        # find the ppr. look thru all the elements within and find the text
+        #if it's the last item in the list, it's the last text
+        ppr = el.find_all('pPr')
+        for el in ppr:
+            for i, t in enumerate(el.parent.find_all('t')):
+                if i == (len(el.parent.find_all('t')) - 1):
+                    t.last_text = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -320,6 +337,7 @@ class DocxParser:
     def parse_begin(self, el):
         self._set_list_attributes(el)
         self._set_table_attributes(el)
+        self._set_text_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements
@@ -710,9 +728,7 @@ class DocxParser:
         if not text:
             return ''
         run_tag_property = el.find('rPr')
-        if run_tag_property is None:
-            pass # this is returning and not going through. replacing from return text to pass
-        else:
+        if run_tag_property is not None:
             fns = []
             if run_tag_property.has_child('b'):  # text styling
                 if self._is_style_on(run_tag_property.find('b')):
@@ -727,7 +743,10 @@ class DocxParser:
                 text = fn(text)
         ppr = el.parent.find('pPr')
         just = ''
+        num_elements = 0
+        count = 0
         if ppr is not None:
+            num_elements = len(el.parent.find_all('t'))
             jc = ppr.find('jc')
             if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
@@ -744,6 +763,7 @@ class DocxParser:
                 firstLine = None
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
+                    # divide by 20 to get to pt. multiply by (4/3) to get to px
                     right = (int(right)/20) * float(4)/float(3)
                     right = str(right)
                 if 'left' in ind.attrib:
@@ -752,10 +772,12 @@ class DocxParser:
                     left = str(left)
                 if 'firstLine' in ind.attrib:
                     firstLine = ind.attrib['firstLine']
-                    firstLine = int(firstLine)/20
+                    firstLine = (int(firstLine)/20) * float(4)/float(3)
                     firstLine = str(firstLine)
-            if jc is not None or ind is not None:
-                text = self.indent(text, right, left, firstLine, just)
+            if (jc is not None or ind is not None) and 'space' not in el.find('t').attrib:
+                text = self.indent(text, just, firstLine, left, right)
+            if el.find('t').last_text == True and (jc is not None or ind is not None):
+                text += '</div>' #there should be a better way to do this!
         return text
 
     def get_list_style(self, num_id, ilvl):
@@ -877,13 +899,5 @@ class DocxParser:
         return True
 
     @abstractmethod
-    def right_justify(self, text):
-        return text
-
-    @abstractmethod
-    def center_justify(self, text):
-        return text
-
-    @abstractmethod
-    def indent(self, text, left=None, right=None, firstLine=None):
+    def indent(self, text, left = '', right = '', firstLine = ''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT

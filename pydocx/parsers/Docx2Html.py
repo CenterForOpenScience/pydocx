@@ -6,12 +6,12 @@ import xml.sax.saxutils
 class Docx2Html(DocxParser):
 
     @property
-    def parsed(self, width = '', height = ''):
+    def parsed(self):
         self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
         self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
         self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
         return (
-            "<html>{head}<body><div class='container'>{content}</div></body></html>"
+            "<html>{head}<body>{content}</body></html>"
         ).format(
             head=self.head(),
             content=self._parsed,
@@ -26,8 +26,8 @@ class Docx2Html(DocxParser):
         return '''<style>.insert{{color:red}}.delete
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
-        .container{{width:{width}px; margin:0px auto;
-        }}</style>'''.format(width = (self.width * (4/3)))
+        body{{width:{width}px; margin:0px auto;
+        }}</style>'''.format(width = (self.page_width * (4/3))) #multiple by (4/3) to get to px
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -125,24 +125,26 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr>'
 
-    def center_justify(self, text):
-        return "<div class='center'>" + text + '</div>'
-
-    def right_justify(self, text):
-        return "<div class='right'>" + text + '</div>'
-
-    def indent(self, text, right = '', left = '', firstLine = '', just = ''):
-        if left or right is not None:
-            if left is None:
-                left = ''
-            elif right is None:
-                right = ''
-            return "<div class='{just}' style = 'margin-left:{left}px; margin-right:{right}px'>{text}</div>".format(
-            left = left,
-            right = right,
-            just = just,
-            text = text,
-            )
+    def indent(self, text, just= '', firstLine = '', left = '', right = ''):
+        slug = '<div'
+        if just:
+            slug += " class='%(just)s"
+        if firstLine or left or right:
+            slug += "' style ="
+        if firstLine:
+            slug += "'text-indent:%(firstLine)spx;"
+        if left:
+            slug += "'margin-left:%(left)spx;"
+        if right:
+            slug += "'margin-right:%(right)spx;"
+        slug += "'>%(text)s"
+        return slug % {
+            'text': text,
+            'just':just,
+            'firstLine': firstLine,
+            'left':left,
+            'right': right,
+            }
 
     def break_tag(self):
         return '<br/>'

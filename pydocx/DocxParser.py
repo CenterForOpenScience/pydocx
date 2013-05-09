@@ -173,9 +173,11 @@ class DocxParser:
                 add_parent(child)
 
         #divide by 20 to get to pt (Office works in 20th's of a point)
-        #see http://msdn.microsoft.com/en-us/library/documentformat
-        # .openxml.wordprocessing.indentation.aspx
-        if self.root.find_first('pgSz'):
+        """
+        see http://msdn.microsoft.com/en-us/library/documentformat
+        .openxml.wordprocessing.indentation.aspx
+        """
+        if self.root.find_first('pgSz') is not None:
             self.page_width = int(self.root.
                                   find_first('pgSz').attrib['w']) / 20
 
@@ -355,7 +357,6 @@ class DocxParser:
         self._parsed += self.parse(el)
 
     def parse(self, el):
-        comment = {}
         if el in self.visited:
             return ''
         self.visited.append(el)
@@ -376,10 +377,6 @@ class DocxParser:
             return self.parse_r(el, parsed)
         elif el.tag == 't':
             return self.parse_t(el, parsed)
-        elif el.tag == 'commentRangeStart':
-            ##COMMENTS ARE HERE!
-            comment = self.get_comments(el.attrib['id'])
-            return self.comment(parsed, comment)
         elif el.tag == 'br':
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
@@ -801,22 +798,6 @@ class DocxParser:
                         if i.find('numFmt') is not None:
                             return i.find('numFmt').attrib['val']
 
-    def get_comments(self, doc_id):
-        if self.comment_root is None:
-            return ''
-        if self.comment_store is not None:
-            return self.comment_store[doc_id]
-        ids_and_info = {}
-        ids = self.comment_root.find_all('comment')
-        for _id in ids:
-            ids_and_info[_id.attrib['id']] = {
-                "author": _id.attrib['author'],
-                "date": _id.attrib['date'],
-                "text": _id.find_all('t')[0].text,
-            }
-        self.comment_store = ids_and_info
-        return self.comment_store[doc_id]
-
     @property
     def parsed(self):
         return self._parsed
@@ -904,7 +885,3 @@ class DocxParser:
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT
-
-    @abstractmethod
-    def comment(self, text, comment):
-        return text

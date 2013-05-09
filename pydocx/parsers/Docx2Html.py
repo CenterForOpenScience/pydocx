@@ -1,6 +1,7 @@
 from pydocx.DocxParser import DocxParser
 
 import xml.sax.saxutils
+import textwrap
 
 
 class Docx2Html(DocxParser):
@@ -23,13 +24,12 @@ class Docx2Html(DocxParser):
         )
 
     def style(self):
-        return '''<style>.insert{{color:red}}.delete
+        return textwrap.dedent('''<style>.insert{{color:red}}.delete
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
         body{{width:{width}px; margin:0px auto;
-        }}</style>'''.format(width=(self.page_width
-                                    * (4 / 3)))
+        }}</style>''').format(width=(self.page_width * (4 / 3)))
         #multiple by (4/3) to get to px
 
     def escape(self, text):

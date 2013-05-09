@@ -171,7 +171,6 @@ class DocxParser:
         self.page_width = 0
         self._build_data(*args, **kwargs)
 
-
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
@@ -179,7 +178,7 @@ class DocxParser:
 
         #divide by 20 to get to pt
         if self.root.find_first('pgSz'):
-            self.page_width = int(self.root.find_first('pgSz').attrib['w'])/20
+            self.page_width = int(self.root.find_first('pgSz').attrib['w']) / 20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -197,7 +196,6 @@ class DocxParser:
             el for el in element.getchildren()
             if el.tag in tags
         ]
-
 
     def _set_list_attributes(self, el):
         list_elements = el.find_all('numId')
@@ -749,10 +747,7 @@ class DocxParser:
                 text = fn(text)
         ppr = el.parent.find('pPr')
         just = ''
-        num_elements = 0
-        count = 0
         if ppr is not None:
-            num_elements = len(el.parent.find_all('t'))
             jc = ppr.find('jc')
             if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
@@ -772,20 +767,20 @@ class DocxParser:
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
                     # divide by 20 to get to pt. multiply by (4/3) to get to px
-                    right = (int(right)/20) * float(4)/float(3)
+                    right = (int(right) / 20) * float(4) / float(3)
                     right = str(right)
                 if 'left' in ind.attrib:
                     left = ind.attrib['left']
-                    left = (int(left)/20) * float(4)/float(3)
+                    left = (int(left) / 20) * float(4) / float(3)
                     left = str(left)
                 if 'firstLine' in ind.attrib:
                     firstLine = ind.attrib['firstLine']
-                    firstLine = (int(firstLine)/20) * float(4)/float(3)
+                    firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
             if jc is not None or ind is not None:
                 if 'space' not in el.find('t').attrib or el.parent.is_in_table:
                     text = self.indent(text, just, firstLine, left, right)
-                if el.find('t').last_text == True:
+                if el.find('t').last_text is True:
                     text += '</div>'
         return text
 
@@ -908,7 +903,7 @@ class DocxParser:
         return True
 
     @abstractmethod
-    def indent(self, text, left = '', right = '', firstLine = ''):
+    def indent(self, text, left='', right='', firstLine=''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT
 
     @abstractmethod

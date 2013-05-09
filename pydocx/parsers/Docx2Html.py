@@ -18,8 +18,7 @@ class Docx2Html(DocxParser):
         )
 
     def head(self):
-        return "<head>{style}<link href='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' " \
-               "rel='stylesheet'></head>".format(
+        return "<head>{style}</head>".format(
             style=self.style(),
         )
 
@@ -29,7 +28,7 @@ class Docx2Html(DocxParser):
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
         body{{width:{width}px; margin:0px auto;
-        }}</style>'''.format(width = (self.page_width * (4/3))) #multiple by (4/3) to get to px
+        }}</style>'''.format(width=(self.page_width * (4 / 3))) #multiple by (4/3) to get to px
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -127,7 +126,7 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr>'
 
-    def indent(self, text, just= '', firstLine = '', left = '', right = ''):
+    def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
         if just:
             slug += " class='%(just)s"
@@ -142,17 +141,16 @@ class Docx2Html(DocxParser):
         slug += "'>%(text)s"
         return slug % {
             'text': text,
-            'just':just,
+            'just': just,
             'firstLine': firstLine,
-            'left':left,
+            'left': left,
             'right': right,
-            }
+        }
 
     def break_tag(self):
         return '<br/>'
 
-
     def comment(self, text, comment):
-        print comment
-        return "<span class = 'comment' rel = 'popover' data-content = '{date} {text} {author}' data-original-title='Comment'>comment </span>".format(date = comment['date'],
-        text = comment['text'], author = comment['author'])
+        return '''<span class = 'comment' rel = 'popover' data-content = '{date} {text} {author}'
+        data-original-title='Comment'>comment
+        </span>'''.format(date=comment['date'], text=comment['text'], author=comment['author'])

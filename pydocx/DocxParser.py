@@ -96,7 +96,7 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-setattr(_ElementInterface, 'is_last_text', None)
+setattr(_ElementInterface, 'is_last_text', False)
 
 # End helpers
 
@@ -774,9 +774,10 @@ class DocxParser:
                     firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
             if jc is not None or ind is not None:
-                if 'space' not in el.find('t').attrib or el.parent.is_in_table:
+                t_el = el.find('t')
+                if 'space' not in t_el.attrib or el.parent.is_in_table:
                     text = self.indent(text, just, firstLine, left, right)
-                if el.find('t').is_last_text is True:
+                if t_el.is_last_text:
                     text += '</div>'
         return text
 

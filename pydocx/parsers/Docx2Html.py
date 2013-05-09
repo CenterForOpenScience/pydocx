@@ -28,7 +28,9 @@ class Docx2Html(DocxParser):
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
         body{{width:{width}px; margin:0px auto;
-        }}</style>'''.format(width=(self.page_width * (4 / 3))) #multiple by (4/3) to get to px
+        }}</style>'''.format(width=(self.page_width
+                                    * (4 / 3)))
+        #multiple by (4/3) to get to px
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -151,6 +153,8 @@ class Docx2Html(DocxParser):
         return '<br/>'
 
     def comment(self, text, comment):
-        return '''<span class = 'comment' rel = 'popover' data-content = '{date} {text} {author}'
+        return '''<span class = 'comment' rel = 'popover'
+        data-content = '{date} {text} {author}'
         data-original-title='Comment'>comment
-        </span>'''.format(date=comment['date'], text=comment['text'], author=comment['author'])
+        </span>'''.format(date=comment['date'],
+                          text=comment['text'], author=comment['author'])

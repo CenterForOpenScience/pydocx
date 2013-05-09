@@ -716,7 +716,8 @@ def test_has_title():
     actual_html = convert(file_path)
     assert_html_equal(
         actual_html,
-        "<html><body><p>Title</p><p><div class='left'>Text</div></p></body></html>",
+        '''<html><body><p>Title</p>
+        <p><div class='left'>Text</div></p></body></html>''',
     )
 
 
@@ -737,6 +738,7 @@ def test_upper_alpha_all_bold():
     </body></html>
     ''')
 
+
 def test_justification():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
@@ -746,14 +748,18 @@ def test_justification():
     )
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
-    <html><body><p><div class='center'>Center Justified</div></p>
-    <p><div class='right'>Right justified</div></p><p>
-    <div class='right' style ='margin-right:96.0px;'>Right justified and pushed in from right
-    </div></p><p><div class='center' style ='margin-left:252.0px;'margin-right:96.0px;'>
-    Center justified and pushed in from left and it is great and it is the coolest thing of
-    all time and I like it and I think it is cool</div></p><p><div'
-    style ='margin-left:252.0px;'margin-right:96.0px;'>Left justified and pushed in from left</div></p></body></html>
+<html><body><p><div class='center'>Center Justified</div>
+</p><p><div class='right'>Right justified</div></p>
+<p><div class='right' style ='margin-right:96.0px;'>
+Right justified and pushed in from right</div></p>
+<p><div class='center' style ='margin-left:252.0px;'margin-right:96.0px;'>
+Center justified and pushed in from left and it is
+great and it is the coolest thing of all time and I like it and
+I think it is cool</div></p><p>
+<div' style ='margin-left:252.0px;'margin-right:96.0px;'>
+Left justified and pushed in from left</div></p></body></html>
 ''')
+
 
 def _converter(*args, **kwargs):
     # Having a converter that does nothing is the same as if abiword fails to

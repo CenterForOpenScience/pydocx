@@ -737,8 +737,6 @@ def test_upper_alpha_all_bold():
     </body></html>
     ''')
 
-
-
 def test_justification():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

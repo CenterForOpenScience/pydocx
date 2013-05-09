@@ -96,8 +96,7 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-setattr(_ElementInterface, 'last_text', None)
-setattr(_ElementInterface, 'preserve', None)
+setattr(_ElementInterface, 'is_last_text', None)
 
 # End helpers
 
@@ -118,7 +117,7 @@ class DocxParser:
             self.styles_text = f.read('word/styles.xml')
             try:
                 self.fonts = f.read('/word/fontTable.xml')
-            except:
+            except KeyError:
                 self.fonts = None
             try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
@@ -173,7 +172,9 @@ class DocxParser:
                 setattr(child, 'parent', el)
                 add_parent(child)
 
-        #divide by 20 to get to pt
+        #divide by 20 to get to pt (Office works in 20th's of a point)
+        #see http://msdn.microsoft.com/en-us/library/documentformat
+        # .openxml.wordprocessing.indentation.aspx
         if self.root.find_first('pgSz'):
             self.page_width = int(self.root.
                                   find_first('pgSz').attrib['w']) / 20
@@ -182,7 +183,6 @@ class DocxParser:
 
         #all blank when we init
         self.comment_store = None
-        self.justify = False
         self.visited = []
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
@@ -224,11 +224,11 @@ class DocxParser:
     def _set_text_attributes(self, el):
         # find the ppr. look thru all the elements within and find the text
         #if it's the last item in the list, it's the last text
-        ppr = el.find_all('pPr')
-        for el in ppr:
+        paragraph_tag_property = el.find_all('pPr')
+        for el in paragraph_tag_property:
             for i, t in enumerate(el.parent.find_all('t')):
                 if i == (len(el.parent.find_all('t')) - 1):
-                    t.last_text = True
+                    t.is_last_text = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -744,10 +744,10 @@ class DocxParser:
                     fns.append(self.underline)
             for fn in fns:
                 text = fn(text)
-        ppr = el.parent.find('pPr')
+        paragraph_tag_property = el.parent.find('pPr')
         just = ''
-        if ppr is not None:
-            jc = ppr.find('jc')
+        if paragraph_tag_property is not None:
+            jc = paragraph_tag_property.find('jc')
             if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
                     just = 'right'
@@ -755,7 +755,7 @@ class DocxParser:
                     just = 'center'
                 elif jc.attrib['val'] == 'left':
                     just = 'left'
-            ind = ppr.find('ind')
+            ind = paragraph_tag_property.find('ind')
             right = ''
             left = ''
             firstLine = ''
@@ -779,7 +779,7 @@ class DocxParser:
             if jc is not None or ind is not None:
                 if 'space' not in el.find('t').attrib or el.parent.is_in_table:
                     text = self.indent(text, just, firstLine, left, right)
-                if el.find('t').last_text is True:
+                if el.find('t').is_last_text is True:
                     text += '</div>'
         return text
 

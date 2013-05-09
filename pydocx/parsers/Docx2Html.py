@@ -140,7 +140,7 @@ class Docx2Html(DocxParser):
             slug += "'margin-left:%(left)spx;"
         if right:
             slug += "'margin-right:%(right)spx;"
-        slug += "'>%(text)s"
+        slug += "'>%(text)s</div>"
         return slug % {
             'text': text,
             'just': just,

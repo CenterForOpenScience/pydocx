@@ -164,6 +164,7 @@ class DocxParser:
 
     def __init__(self, *args, **kwargs):
         self._parsed = ''
+        self.block_text = ''
         self.page_width = 0
         self._build_data(*args, **kwargs)
 
@@ -724,6 +725,7 @@ class DocxParser:
         """
         Parse the running text.
         """
+        block = False
         text = parsed
         if not text:
             return ''
@@ -775,11 +777,24 @@ class DocxParser:
                     firstLine = str(firstLine)
             if jc is not None or ind is not None:
                 t_el = el.find('t')
-                if 'space' not in t_el.attrib or el.parent.is_in_table:
-                    text = self.indent(text, just, firstLine, left, right)
-                if t_el.is_last_text:
-                    text += '</div>'
-        return text
+                t_els = el.find_all('t')
+                for el in t_els:
+                    if el.is_last_text:
+                        block = False
+                        self.block_text += text
+                        text = self.indent(self.block_text, just, firstLine, left, right)
+                        self.block_text = ''
+                    else:
+                        block = True
+                        self.block_text += text
+#                if 'space' not in t_el.attrib or el.parent.is_in_table:
+#                    text = self.indent(text, just, firstLine, left, right)
+#                if t_el.is_last_text:
+#                    text += '</div>'
+        if block is False:
+            return text
+        else:
+            return ''
 
     def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')

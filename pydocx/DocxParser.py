@@ -101,6 +101,7 @@ setattr(_ElementInterface, 'preserve', None)
 
 # End helpers
 
+
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
@@ -153,10 +154,6 @@ class DocxParser:
             result[style.attrib['styleId']] = style_val
         return result
 
-            ### going to want to get the ids. and then match them up to the comment range start id's in the text!
-            #'comment' tag contains the date, author, id, and initials
-            #'t' tag contains the comment
-
     def _parse_rels_root(self):
         tree = ElementTree.fromstring(self.relationship_text)
         rels_dict = {}
@@ -178,7 +175,8 @@ class DocxParser:
 
         #divide by 20 to get to pt
         if self.root.find_first('pgSz'):
-            self.page_width = int(self.root.find_first('pgSz').attrib['w']) / 20
+            self.page_width = int(self.root.
+                                  find_first('pgSz').attrib['w']) / 20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -378,7 +376,8 @@ class DocxParser:
             return self.parse_r(el, parsed)
         elif el.tag == 't':
             return self.parse_t(el, parsed)
-        elif el.tag == 'commentRangeStart': #COMMENTS ARE HERE!
+        elif el.tag == 'commentRangeStart':
+            ##COMMENTS ARE HERE!
             comment = self.get_comments(el.attrib['id'])
             return self.comment(parsed, comment)
         elif el.tag == 'br':

@@ -18,7 +18,8 @@ class Docx2Html(DocxParser):
         )
 
     def head(self):
-        return '<head>{style}</head>'.format(
+        return "<head>{style}<link href='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' " \
+               "rel='stylesheet'></head>".format(
             style=self.style(),
         )
 
@@ -26,6 +27,7 @@ class Docx2Html(DocxParser):
         return '''<style>.insert{{color:red}}.delete
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
+        .left{{text-align:left}} .comment{{color:blue}}
         body{{width:{width}px; margin:0px auto;
         }}</style>'''.format(width = (self.page_width * (4/3))) #multiple by (4/3) to get to px
 
@@ -148,3 +150,9 @@ class Docx2Html(DocxParser):
 
     def break_tag(self):
         return '<br/>'
+
+
+    def comment(self, text, comment):
+        print comment
+        return "<span class = 'comment' rel = 'popover' data-content = '{date} {text} {author}' data-original-title='Comment'>comment </span>".format(date = comment['date'],
+        text = comment['text'], author = comment['author'])

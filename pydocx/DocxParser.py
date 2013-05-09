@@ -153,8 +153,9 @@ class DocxParser:
             result[style.attrib['styleId']] = style_val
         return result
 
-    def _parse_fonts(self):
-        print self.fonts
+            ### going to want to get the ids. and then match them up to the comment range start id's in the text!
+            #'comment' tag contains the date, author, id, and initials
+            #'t' tag contains the comment
 
     def _parse_rels_root(self):
         tree = ElementTree.fromstring(self.relationship_text)
@@ -177,7 +178,8 @@ class DocxParser:
                 add_parent(child)
 
         #divide by 20 to get to pt
-        self.page_width = int(self.root.find_first('pgSz').attrib['w'])/20
+        if self.root.find_first('pgSz'):
+            self.page_width = int(self.root.find_first('pgSz').attrib['w'])/20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -357,6 +359,7 @@ class DocxParser:
         self._parsed += self.parse(el)
 
     def parse(self, el):
+        comment = {}
         if el in self.visited:
             return ''
         self.visited.append(el)
@@ -377,6 +380,9 @@ class DocxParser:
             return self.parse_r(el, parsed)
         elif el.tag == 't':
             return self.parse_t(el, parsed)
+        elif el.tag == 'commentRangeStart': #COMMENTS ARE HERE!
+            comment = self.get_comments(el.attrib['id'])
+            return self.comment(parsed, comment)
         elif el.tag == 'br':
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
@@ -753,6 +759,8 @@ class DocxParser:
                     just = 'right'
                 elif jc.attrib['val'] == 'center':
                     just = 'center'
+                elif jc.attrib['val'] == 'left':
+                    just = 'left'
             ind = ppr.find('ind')
             right = ''
             left = ''
@@ -774,10 +782,11 @@ class DocxParser:
                     firstLine = ind.attrib['firstLine']
                     firstLine = (int(firstLine)/20) * float(4)/float(3)
                     firstLine = str(firstLine)
-            if (jc is not None or ind is not None) and 'space' not in el.find('t').attrib:
-                text = self.indent(text, just, firstLine, left, right)
-            if el.find('t').last_text == True and (jc is not None or ind is not None):
-                text += '</div>' #there should be a better way to do this!
+            if jc is not None or ind is not None:
+                if 'space' not in el.find('t').attrib or el.parent.is_in_table:
+                    text = self.indent(text, just, firstLine, left, right)
+                if el.find('t').last_text == True:
+                    text += '</div>'
         return text
 
     def get_list_style(self, num_id, ilvl):
@@ -901,3 +910,7 @@ class DocxParser:
     @abstractmethod
     def indent(self, text, left = '', right = '', firstLine = ''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT
+
+    @abstractmethod
+    def comment(self, text, comment):
+        return text

@@ -776,21 +776,17 @@ class DocxParser:
                     firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
             if jc is not None or ind is not None:
-                t_el = el.find('t')
                 t_els = el.find_all('t')
                 for el in t_els:
                     if el.is_last_text:
                         block = False
                         self.block_text += text
-                        text = self.indent(self.block_text, just, firstLine, left, right)
+                        text = self.indent(self.block_text, just,
+                                           firstLine, left, right)
                         self.block_text = ''
                     else:
                         block = True
                         self.block_text += text
-#                if 'space' not in t_el.attrib or el.parent.is_in_table:
-#                    text = self.indent(text, just, firstLine, left, right)
-#                if t_el.is_last_text:
-#                    text += '</div>'
         if block is False:
             return text
         else:

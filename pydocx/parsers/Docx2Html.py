@@ -151,10 +151,3 @@ class Docx2Html(DocxParser):
 
     def break_tag(self):
         return '<br/>'
-
-    def comment(self, text, comment):
-        return '''<span class = 'comment' rel = 'popover'
-        data-content = '{date} {text} {author}'
-        data-original-title='Comment'>comment
-        </span>'''.format(date=comment['date'],
-                          text=comment['text'], author=comment['author'])

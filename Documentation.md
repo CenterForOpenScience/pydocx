@@ -1,7 +1,9 @@
 #pydocx
-	pydocx is a parser that breaks down the elements of
-	a docxfile so that the file can be converted into 
-	the markup language of your choice. 
+	pydocx is a parser that breaks down the elements of a docxfile and converts them
+	into different markup languages. Right now, HTML is supported. Markdown and LaTex
+	will be available soon. You can extend any of the available parsers to customize it
+	to your needs. You can also create your own class that inherits DocxParser
+	to create your own methods for a markup language not yet supported.
 	
 #Currently Supported
 	tables
@@ -24,36 +26,11 @@
 
 
 #Usage
-	We have written the Docx2Html class, which inherits
-	DocxParser and renders the docx document in HTML.
-	However, if you wanted to convert to markdown 
-	instead of HTML, you would simply create your own
-	class (i.e., Docx2Markdown), inherit DoxcParser, 
-	and write methods to display the elements 
-	of the file appropriately for Markdown.
-	
-	ex. 
-	
-	class Docx2Markdown(DocxParser):
-		    
-		def escape(self, text): //important if you need to escape characters that may not
-			return text			//render incorrectly in your markup language
-			 
-		def linebreak(self):    //we know that \n is the linebreak symbol for markup,
-			return '\n'			//so we override the linebreak method
 
-		def paragraph(self, text): //we know that a pargaph in markup is just the text
-			return text + '\n'	   //and \n, so we override the paragraph method
-		
-		def bold(self, text):	   		//we know that ** denotes bold in markup, so we
-			return '**' + text + '**'  	//override that method
-			
-		etc... 
+	DocxParser includes abstracts methods that each parser overwrites to satsify its own 
+	needs. The abstract methods are as follows:
 	
-	all methods that you would want to override are
-	included in the DocxParser class, as follows: 
-
-	class DocxParser:
+		class DocxParser:
 	
 		@property
 		def parsed(self):
@@ -142,4 +119,52 @@
 		@abstractmethod
 		def indent(self, text, left='', right='', firstLine=''):
 			return text
+			
+		
+	Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
+		
+	class Docx2Html(DocxParser):
+
+		def escape(self, text):
+			return xml.sax.saxutils.quoteattr(text)[1:-1] #  Escape '&', '<', and '>' so we 
+														  #  render the HTML correctly
+		def linebreak(self, pre=None):					  
+			return '<br />'								  #   return a line break
+
+		def paragraph(self, text, pre=None):			   
+			return '<p>' + text + '</p>'				  #	  add paragraph tags
+		
+        
+    However, let's say you want to add a specific style to your HTML document. In order
+    to do this, you want to make each paragraph a class	of type "my_implementation". 
+    Simply extend docx2Html and add what you need.
+    
+    Ex.
+    
+    class My_Implementation_of_Docx2Html(Docx2Html):
+    
+    	def paragraph(self, text, pre = None):
+    		return <p class = "my_implementation"> + text + '</p>'
+    		
+	
+	
+	OR, let's say FOO is your new favorite markup language. Simply customize your own 
+	new parser, overwritting the abstract methods of DocxParser
+	
+	Ex.
+	
+	class Docx2Foo(DocxParser):
+	
+		def linebreak(self):
+			return '!!!!!!!!!!!!' #  because linebreaks in are denoted by '!!!!!!!!!!!!'
+								  #  in the FOO markup langauge  :)
+		
+	
+	We have written the Docx2Html class, which inherits DocxParser and renders the docx 
+	document in HTML. 
+	
+	
+	
+	
+
 

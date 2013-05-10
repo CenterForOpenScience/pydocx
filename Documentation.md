@@ -36,17 +36,17 @@
 	
 	class Docx2Markdown(DocxParser):
 		    
-		def escape(self, text): important if you need to escape characters that may not
-			return text			render incorrectly in your markup language
+		def escape(self, text): //important if you need to escape characters that may not
+			return text			//render incorrectly in your markup language
 			 
-		def linebreak(self):    we know that \n is the linebreak symbol for markup,
-			return '\n'			so we override the linebreak method
+		def linebreak(self):    //we know that \n is the linebreak symbol for markup,
+			return '\n'			//so we override the linebreak method
 
-		def paragraph(self, text): we know that a pargaph in markup is just the text
-			return text + '\n'	   and \n, so we override the paragraph method
+		def paragraph(self, text): //we know that a pargaph in markup is just the text
+			return text + '\n'	   //and \n, so we override the paragraph method
 		
-		def bold(self, text):	   		we know that ** denotes bold in markup, so we
-			return '**' + text + '**'  	override that method
+		def bold(self, text):	   		//we know that ** denotes bold in markup, so we
+			return '**' + text + '**'  	//override that method
 			
 		etc... 
 	

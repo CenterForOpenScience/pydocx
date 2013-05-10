@@ -159,9 +159,7 @@
 			return '!!!!!!!!!!!!' #  because linebreaks in are denoted by '!!!!!!!!!!!!'
 								  #  in the FOO markup langauge  :)
 		
-	
-	We have written the Docx2Html class, which inherits DocxParser and renders the docx 
-	document in HTML. 
+
 	
 	
 	

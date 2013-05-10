@@ -10,7 +10,7 @@ logger = logging.getLogger("NewParser")
 
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
-USE_ALIGNMENTS = False
+USE_ALIGNMENTS = True
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -96,9 +96,10 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-
+setattr(_ElementInterface, 'is_last_text', False)
 
 # End helpers
+
 
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
@@ -114,6 +115,10 @@ class DocxParser:
         with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
+            try:
+                self.fonts = f.read('/word/fontTable.xml')
+            except KeyError:
+                self.fonts = None
             try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
@@ -159,13 +164,23 @@ class DocxParser:
 
     def __init__(self, *args, **kwargs):
         self._parsed = ''
-
+        self.block_text = ''
+        self.page_width = 0
         self._build_data(*args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
+
+        #divide by 20 to get to pt (Office works in 20th's of a point)
+        """
+        see http://msdn.microsoft.com/en-us/library/documentformat
+        .openxml.wordprocessing.indentation.aspx
+        """
+        if self.root.find_first('pgSz') is not None:
+            self.page_width = int(self.root.
+                                  find_first('pgSz').attrib['w']) / 20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -208,6 +223,15 @@ class DocxParser:
                             'continue' == v_merge.attrib['val']
                     ):
                         child.vmerge_continue = True
+
+    def _set_text_attributes(self, el):
+        # find the ppr. look thru all the elements within and find the text
+        #if it's the last item in the list, it's the last text
+        paragraph_tag_property = el.find_all('pPr')
+        for el in paragraph_tag_property:
+            for i, t in enumerate(el.parent.find_all('t')):
+                if i == (len(el.parent.find_all('t')) - 1):
+                    t.is_last_text = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -314,6 +338,7 @@ class DocxParser:
     def parse_begin(self, el):
         self._set_list_attributes(el)
         self._set_table_attributes(el)
+        self._set_text_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements
@@ -700,55 +725,72 @@ class DocxParser:
         """
         Parse the running text.
         """
+        block = False
         text = parsed
         if not text:
             return ''
         run_tag_property = el.find('rPr')
-        if run_tag_property is None:
-            return text
-
-        fns = []
-        if run_tag_property.has_child('b'):  # text styling
-            if self._is_style_on(run_tag_property.find('b')):
-                fns.append(self.bold)
-        if run_tag_property.has_child('i'):
-            if self._is_style_on(run_tag_property.find('i')):
-                fns.append(self.italics)
-        if run_tag_property.has_child('u'):
-            if self._is_style_on(run_tag_property.find('u')):
-                fns.append(self.underline)
-        for fn in fns:
-            text = fn(text)
-        if not USE_ALIGNMENTS:
-            return text  # Lets not mess with indent until its tested.
-
-        ppr = el.parent.find('pPr')
-        if ppr is not None:
-            jc = ppr.find('jc')
+        if run_tag_property is not None:
+            fns = []
+            if run_tag_property.has_child('b'):  # text styling
+                if self._is_style_on(run_tag_property.find('b')):
+                    fns.append(self.bold)
+            if run_tag_property.has_child('i'):
+                if self._is_style_on(run_tag_property.find('i')):
+                    fns.append(self.italics)
+            if run_tag_property.has_child('u'):
+                if self._is_style_on(run_tag_property.find('u')):
+                    fns.append(self.underline)
+            for fn in fns:
+                text = fn(text)
+        paragraph_tag_property = el.parent.find('pPr')
+        just = ''
+        if paragraph_tag_property is not None:
+            jc = paragraph_tag_property.find('jc')
             if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
-                    text = self.right_justify(text)
-                if jc.attrib['val'] == 'center':
-                    text = self.center_justify(text)
-            ind = ppr.find('ind')
+                    just = 'right'
+                elif jc.attrib['val'] == 'center':
+                    just = 'center'
+                elif jc.attrib['val'] == 'left':
+                    just = 'left'
+            ind = paragraph_tag_property.find('ind')
+            right = ''
+            left = ''
+            firstLine = ''
             if ind is not None:
                 right = None
                 left = None
                 firstLine = None
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
-                    right = int(right)/20
+                    # divide by 20 to get to pt. multiply by (4/3) to get to px
+                    right = (int(right) / 20) * float(4) / float(3)
                     right = str(right)
                 if 'left' in ind.attrib:
                     left = ind.attrib['left']
-                    left = int(left)/20
+                    left = (int(left) / 20) * float(4) / float(3)
                     left = str(left)
                 if 'firstLine' in ind.attrib:
                     firstLine = ind.attrib['firstLine']
-                    firstLine = int(firstLine)/20
+                    firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
-                text = self.indent(text, right, left, firstLine)
-        return text
+            if jc is not None or ind is not None:
+                t_els = el.find_all('t')
+                for el in t_els:
+                    if el.is_last_text:
+                        block = False
+                        self.block_text += text
+                        text = self.indent(self.block_text, just,
+                                           firstLine, left, right)
+                        self.block_text = ''
+                    else:
+                        block = True
+                        self.block_text += text
+        if block is False:
+            return text
+        else:
+            return ''
 
     def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')
@@ -767,22 +809,6 @@ class DocxParser:
                             continue
                         if i.find('numFmt') is not None:
                             return i.find('numFmt').attrib['val']
-
-    def get_comments(self, doc_id):
-        if self.comment_root is None:
-            return ''
-        if self.comment_store is not None:
-            return self.comment_store[doc_id]
-        ids_and_info = {}
-        ids = self.comment_root.find_all('comment')
-        for _id in ids:
-            ids_and_info[_id.attrib['id']] = {
-                "author": _id.attrib['author'],
-                "date": _id.attrib['date'],
-                "text": _id.find_all('t')[0].text,
-            }
-        self.comment_store = ids_and_info
-        return self.comment_store[doc_id]
 
     @property
     def parsed(self):
@@ -869,13 +895,5 @@ class DocxParser:
         return True
 
     @abstractmethod
-    def right_justify(self, text):
-        return text
-
-    @abstractmethod
-    def center_justify(self, text):
-        return text
-
-    @abstractmethod
-    def indent(self, text, left=None, right=None, firstLine=None):
+    def indent(self, text, left='', right='', firstLine=''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT

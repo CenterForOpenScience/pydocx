@@ -1,6 +1,7 @@
 pydocx
 ======
 [![Build Status](https://travis-ci.org/OpenScienceFramework/pydocx.png?branch=master)](https://travis-ci.org/OpenScienceFramework/pydocx)
+
 pydocx is a parser that breaks down the elements of a docxfile and converts them
 into different markup languages. Right now, HTML is supported. Markdown and LaTex
 will be available soon. You can extend any of the available parsers to customize it

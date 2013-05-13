@@ -23,11 +23,17 @@ lists
 * list of pragraphs
 
 justification
+
 images
+
 bold
+
 italics
+
 underline
+
 hyperlinks
+
 headings
 
 

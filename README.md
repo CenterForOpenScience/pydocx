@@ -30,7 +30,7 @@ pydocx
 
 #Usage
 
-###DocxParser includes abstracts methods that each parser overwrites to satsify its own needs. The abstract methods are as follows:
+DocxParser includes abstracts methods that each parser overwrites to satsify its own needs. The abstract methods are as follows:
 
 		class DocxParser:
 
@@ -123,7 +123,7 @@ pydocx
 			return text
 
 
-###Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
+Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
 
         class Docx2Html(DocxParser):
 
@@ -137,7 +137,7 @@ pydocx
                 return '<p>' + text + '</p>'				  #	  add paragraph tags
 
 
-###However, let's say you want to add a specific style to your HTML document. In order to do this, you want to make each paragraph a class	of type "my_implementation". Simply extend docx2Html and add what you need.
+However, let's say you want to add a specific style to your HTML document. In order to do this, you want to make each paragraph a class	of type "my_implementation". Simply extend docx2Html and add what you need.
 
         class My_Implementation_of_Docx2Html(Docx2Html):
 
@@ -146,7 +146,7 @@ pydocx
 
 
 
-###OR, let's say FOO is your new favorite markup language. Simply customize your own new parser, overwritting the abstract methods of DocxParser
+OR, let's say FOO is your new favorite markup language. Simply customize your own new parser, overwritting the abstract methods of DocxParser
 
         class Docx2Foo(DocxParser):
 

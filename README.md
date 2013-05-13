@@ -139,8 +139,6 @@ pydocx
 
 ###However, let's say you want to add a specific style to your HTML document. In order to do this, you want to make each paragraph a class	of type "my_implementation". Simply extend docx2Html and add what you need.
 
-        Ex.
-
         class My_Implementation_of_Docx2Html(Docx2Html):
 
             def paragraph(self, text, pre = None):
@@ -149,8 +147,6 @@ pydocx
 
 
 ###OR, let's say FOO is your new favorite markup language. Simply customize your own new parser, overwritting the abstract methods of DocxParser
-
-        Ex.
 
         class Docx2Foo(DocxParser):
 

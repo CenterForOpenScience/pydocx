@@ -9,23 +9,23 @@ to create your own methods for a markup language not yet supported.
 
 #Currently Supported
 
-##tables
+###tables
     *nested tables
     *rowspans
     *colspans
     *lists in tables
-##lists
+###lists
     *list styles
     *nested lists
     *list of tables
     *list of pragraphs
-##justification
-##images
-##bold
-##italics
-##underline
-##hyperlinks
-##headings
+###justification
+###images
+###bold
+###italics
+###underline
+###hyperlinks
+###headings
 
 
 #Usage

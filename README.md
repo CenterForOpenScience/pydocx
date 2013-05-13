@@ -124,7 +124,7 @@ pydocx
 			return text
 
 
-    #Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
+###Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
 
         class Docx2Html(DocxParser):
 

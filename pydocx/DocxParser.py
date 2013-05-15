@@ -569,7 +569,6 @@ class DocxParser:
                 next_elements_content = self.parse(el)
                 if not next_elements_content:
                     continue
-                print next_elements_content
                 if self._should_append_break_tag(el):
                     parsed += self.break_tag()
                 parsed += next_elements_content

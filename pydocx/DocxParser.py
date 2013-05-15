@@ -166,6 +166,8 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
+        self.col = 0
+        self.row = 0
         self._build_data(*args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute

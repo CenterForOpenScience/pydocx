@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
 from .tests import document_builder
 
+
 def has_child(self, tag):
     """
     Determine if current element has a child. Stop at first child.
@@ -91,14 +92,12 @@ class converter():
         self.set_list_attributes()
         self.parse(self.html.find_first('body'))
 
-
     def find_all_two(self, tag1, tag2, html):
         list_elements = []
         for el in html.iter():
             if el.tag == tag1 or el.tag == tag2:
                 list_elements.append(el)
         return list_elements
-
 
     def check_for_lst_parent(self, el):
         lst_parent = False
@@ -109,7 +108,6 @@ class converter():
         else:
             return lst_parent
 
-
     def set_list_attributes(self):
         ilvl = 0
         numId = -1
@@ -119,28 +117,29 @@ class converter():
             lst.getchildren()[-1].is_last_list_item = True
         for el in self.html.find_first('body').iter():
             if el.tag == 'li':
-                if self.check_for_lst_parent(el.parent) is False and el.is_first_list_item is True:
-                    numId+= 1
-                    ilvl=0
+                if self.check_for_lst_parent(el.parent) \
+                   is False and el.is_first_list_item is True:
+                    numId += 1
+                    ilvl = 0
                 if el.is_first_list_item is True:
-                    ilvl+= 1
-                el.ilvl=ilvl
+                    ilvl += 1
+                el.ilvl = ilvl
                 el.num_id = numId
-
-
 
     def parse(self, el):
         for child in el.getchildren():
                 parsed = ''
                 self.parse(child)
                 if child.tag == 'li':
-                    parsed = document_builder.DocxBuilder.li(child.text, child.ilvl, child.num_id, bold = False)
-                    print parsed
+                    parsed = document_builder.DocxBuilder.li(
+                        child.text, child.ilvl, child.num_id, bold=False)
                 if child.tag == 'p':
-                    parsed = document_builder.DocxBuilder.p_tag(child.text, self.bold)
+                    parsed = document_builder.DocxBuilder.p_tag(
+                        child.text, self.bold)
                 elif child.tag == 'b':
                     self.bold = True
                 elif child.tag == 'i':
                     pass
                 elif child.tag == 'u':
                     pass
+                return parsed

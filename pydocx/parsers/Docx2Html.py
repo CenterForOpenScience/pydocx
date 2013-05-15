@@ -19,17 +19,19 @@ class Docx2Html(DocxParser):
         return unicode(content)
 
     def head(self):
-        return "<head>{style}</head>".format(
-            style=self.style(),
-        )
+        return "<head>%(style)s</head>" % {
+            'style': self.style(),
+        }
 
     def style(self):
         return textwrap.dedent('''<style>.insert{{color:red}}.delete
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
-        body{{width:{width}px; margin:0px auto;
-        }}</style>''').format(width=(self.page_width * (4 / 3)))
+        body{{width:%(width)spx; margin:0px auto;
+        }}</style>''') % {
+            'width': (self.page_width * (4 / 3)),
+        }
         #multiple by (4/3) to get to px
 
     def escape(self, text):
@@ -49,9 +51,13 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return (
-            "<span class='insert' author='{author}' "
-            "date='{date}'>{text}</span>"
-        ).format(author=author, date=date, text=text)
+            "<span class='insert' author='%(author)s' "
+            "date='%(date)s'>%(text)s</span>"
+        ) % {
+            'author': author,
+            'date': date,
+            'text': text,
+        }
 
     def hyperlink(self, text, href):
         if text == '':
@@ -79,18 +85,28 @@ class Docx2Html(DocxParser):
 
     def deletion(self, text, author, date):
         return (
-            "<span class='delete' author='{author}' "
-            "date='{date}'>{text}</span>"
-        ).format(author=author, date=date, text=text)
+            "<span class='delete' author='%(author)s' "
+            "date='%(date)s'>%(text)s</span>"
+        ) % {
+            'author': author,
+            'date': date,
+            'text': text,
+        }
 
     def list_element(self, text):
-        return "<li>{text}</li>".format(text=text)
+        return "<li>%(text)s</li>" % {
+            'text': text,
+        }
 
     def ordered_list(self, text, list_style):
-        return "<ol>{text}</ol>".format(text=text)
+        return "<ol>%(text)s</ol>" % {
+            'text': text,
+        }
 
     def unordered_list(self, text):
-        return "<ul>{text}</ul>".format(text=text)
+        return "<ul>%(text)s</ul>" % {
+            'text': text,
+        }
 
     def bold(self, text):
         return '<b>' + text + '</b>'

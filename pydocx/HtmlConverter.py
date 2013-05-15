@@ -1,10 +1,7 @@
 __author__ = 'samportnow'
 
-import xml.etree.ElementTree as ElementTree
-from xml.etree.ElementTree import _ElementInterface
 from .tests import document_builder
 from pydocx.DocxParser import ElementTree
-
 
 
 class converter():

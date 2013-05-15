@@ -8,15 +8,15 @@ class Docx2Html(DocxParser):
 
     @property
     def parsed(self):
-        self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
-        self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
-        self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
-        return (
-            "<html>{head}<body>{content}</body></html>"
-        ).format(
-            head=self.head(),
-            content=self._parsed,
-        )
+        content = self._parsed
+        content = content.replace('<p></p><p></p>', '<br />')
+        content = content.replace('</p><br /><p>', '</p><p>')
+        content = content.replace('</p><br /><ul>', '</p><ul>')
+        content = "<html>%(head)s<body>%(content)s</body></html>" % {
+            'head': self.head(),
+            'content': content,
+        }
+        return unicode(content)
 
     def head(self):
         return "<head>{style}</head>".format(

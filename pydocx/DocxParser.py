@@ -287,8 +287,11 @@ class DocxParser:
             'heading 9': 'h6',
             'heading 10': 'h6',
         }
-        for list_item in list_elements:
-            style = list_item.find_first('pStyle').attrib['val']
+        for element in elements:
+            # This element is using the default style which is not a heading.
+            if element.find_first('pStyle') is None:
+                continue
+            style = element.find_first('pStyle').attrib['val']
             style = self.styles_dict.get(style)
 
             # Check to see if this element is actually a header.

@@ -97,6 +97,9 @@ setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
 setattr(_ElementInterface, 'is_last_text', False)
+setattr(_ElementInterface, 'lst_style', None)
+setattr(_ElementInterface, 'is_last_tc', False)
+
 
 # End helpers
 
@@ -216,6 +219,7 @@ class DocxParser:
                 continue
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
+                tcs[-1].is_last_tc = True
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
@@ -225,7 +229,6 @@ class DocxParser:
                             'continue' == v_merge.attrib['val']
                     ):
                         child.vmerge_continue = True
-
     def _set_text_attributes(self, el):
         # find the ppr. look thru all the elements within and find the text
         #if it's the last item in the list, it's the last text
@@ -367,7 +370,6 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
@@ -411,7 +413,7 @@ class DocxParser:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
-        return self.table_cell(text, colspan, rowspan)
+        return self.table_cell(text, el.is_last_tc, colspan, rowspan)
 
     def parse_list(self, el, text):
         """
@@ -432,6 +434,10 @@ class DocxParser:
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
+        el.lst_style = self.get_list_style(
+            el.num_id,
+            el.ilvl,
+        )
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -495,7 +501,6 @@ class DocxParser:
             el.num_id,
             el.ilvl,
         )
-
         # Create the actual list and return it.
         if lst_style == 'bullet':
             return self.unordered_list(parsed)
@@ -735,11 +740,17 @@ class DocxParser:
         if run_tag_property is not None:
             fns = []
             if run_tag_property.has_child('b'):  # text styling
+                self.bold_style = True
                 if self._is_style_on(run_tag_property.find('b')):
                     fns.append(self.bold)
+            else:
+                self.bold_style = False
             if run_tag_property.has_child('i'):
+                self.italic_style = True
                 if self._is_style_on(run_tag_property.find('i')):
                     fns.append(self.italics)
+            else:
+                self.italic_style = False
             if run_tag_property.has_child('u'):
                 if self._is_style_on(run_tag_property.find('u')):
                     fns.append(self.underline)
@@ -877,7 +888,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def list_element(self, text):
+    def list_element(self, text, lst_style):
         return text
 
     @abstractmethod
@@ -889,7 +900,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def table_cell(self, text):
+    def table_cell(self, text, last, col, row):
         return text
 
     @abstractmethod

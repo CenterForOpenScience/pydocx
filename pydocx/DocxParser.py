@@ -426,10 +426,29 @@ class DocxParser:
             return self.parse_table_cell_contents(el, parsed)
         return parsed
 
+    def _build_list(self, el, text):
+        # Get the list style for the pending list.
+        lst_style = self.get_list_style(
+            el.num_id,
+            el.ilvl,
+        )
+
+        parsed = text
+        # Create the actual list and return it.
+        if lst_style == 'bullet':
+            return self.unordered_list(parsed)
+        else:
+            return self.ordered_list(
+                parsed,
+                lst_style,
+            )
+
     def _parse_list(self, el, text):
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
+        if el.is_last_list_item_in_root:
+            return self._build_list(el, parsed)
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -488,20 +507,7 @@ class DocxParser:
         if parsed == '':
             return parsed
 
-        # Get the list style for the pending list.
-        lst_style = self.get_list_style(
-            el.num_id,
-            el.ilvl,
-        )
-
-        # Create the actual list and return it.
-        if lst_style == 'bullet':
-            return self.unordered_list(parsed)
-        else:
-            return self.ordered_list(
-                parsed,
-                lst_style,
-            )
+        return self._build_list(el, parsed)
 
     def parse_p(self, el, text):
         if text == '':

@@ -83,7 +83,7 @@ class Docx2Html(DocxParser):
             "date='{date}'>{text}</span>"
         ).format(author=author, date=date, text=text)
 
-    def list_element(self, text):
+    def list_element(self, text, lst_style = None):
         return "<li>{text}</li>".format(text=text)
 
     def ordered_list(self, text, list_style):
@@ -112,7 +112,7 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text, col='', row=''):
+    def table_cell(self, text, col='', row='', last = False):
         slug = '<td'
         if col:
             slug += ' colspan="%(colspan)s"'

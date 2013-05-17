@@ -311,6 +311,8 @@ class DocxParser:
                     has_descendant_with_tag = True
                 if child.has_descendant_with_tag('drawing'):
                     has_descendant_with_tag = True
+                if child.has_descendant_with_tag('delText'):
+                    has_descendant_with_tag = True
                 if has_descendant_with_tag:
                     children.append(child)
             return children

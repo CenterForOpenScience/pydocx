@@ -720,12 +720,10 @@ class RTagWithNoText(_TranslationTestCase):
 
 class SimpleTableTest(_TranslationTestCase):
     expected_output = '''
-        <html><body><table border=1><tr>
-        <td>Blank</td><td>Column 1</td>
-        <td>Column 2</td></tr><tr>
-        <td>Row 1</td><td>First</td>
-        <td>Second</td></tr><tr><td>Row 2</td>
-        <td>Third</td><td>Fourth</td></tr>
+        <html><body>
+        <table><tr><td>Blank</td><td>Column 1</td><td>Column 2</td></tr>
+        <tr><td>Row 1</td><td>First</td><td>Second</td></tr>
+        <tr><td>Row 2</td><td>Third</td><td>Fourth</td></tr>
         </table></body></html>'''
 
     def get_xml(self):
@@ -739,8 +737,7 @@ class SimpleTableTest(_TranslationTestCase):
             [DXB.p_tag('Row 2')],
             [DXB.p_tag('Third')],
             [DXB.p_tag('Fourth')],
-        ))
+        ), skip=True)
         body = table
         xml = DXB.xml(body)
-        print xml
         return xml

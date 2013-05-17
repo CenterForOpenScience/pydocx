@@ -16,6 +16,7 @@ templates = {
     'table': 'table.xml',
     'tc': 'tc.xml',
     'tr': 'tr.xml',
+    'tr_no_val': 'tr_no_val.xml'
 }
 
 env = Environment(
@@ -27,6 +28,7 @@ env = Environment(
 
 
 class DocxBuilder(object):
+
     @classmethod
     def xml(self, body):
         template = env.get_template(templates['main'])
@@ -108,7 +110,7 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def table(self, num_rows, num_columns, text):
+    def table(self, num_rows, num_columns, text, skip=False):
 
         def _tc(cell_value):
             template = env.get_template(templates['tc'])
@@ -116,7 +118,10 @@ class DocxBuilder(object):
 
         def _tr(rows, text):
             tcs = [_tc(text.next()) for _ in range(rows)]
-            template = env.get_template(templates['tr'])
+            if skip:
+                template = env.get_template(templates['tr_no_val'])
+            else:
+                template = env.get_template(templates['tr'])
             return template.render(table_cells=tcs)
 
         trs = [_tr(num_rows, text) for _ in range(num_rows)]

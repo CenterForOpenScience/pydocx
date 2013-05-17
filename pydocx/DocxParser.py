@@ -413,7 +413,7 @@ class DocxParser:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
-        return self.table_cell(text, el.is_last_tc, colspan, rowspan)
+        return self.table_cell(text, el.is_last_tc, el.column_index, el.row_index, colspan, rowspan)
 
     def parse_list(self, el, text):
         """
@@ -793,9 +793,15 @@ class DocxParser:
                 for el in t_els:
                     if el.is_last_text:
                         block = False
+                        is_table = False
                         self.block_text += text
-                        text = self.indent(self.block_text, just,
-                                           firstLine, left, right)
+                        column = 0
+                        #might need to write column to justify appropriately
+                        if el.find_ancestor_with_tag('tc') is not None:
+                            column = el.find_ancestor_with_tag('tc').column_index
+                            is_table = True
+                        text = self.indent(self.block_text,
+                            just, firstLine, left, right)
                         self.block_text = ''
                     else:
                         block = True
@@ -900,7 +906,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def table_cell(self, text, last, col, row):
+    def table_cell(self, text, last, col, row, col_index, row_index):
         return text
 
     @abstractmethod

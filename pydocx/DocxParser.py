@@ -406,7 +406,8 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+        if v_merge is not None and 'val' in v_merge.attrib and \
+           'continue' in v_merge.attrib['val']:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
@@ -593,7 +594,7 @@ class DocxParser:
             tc.column_index == current_col
         ]
         restart_in_v_merge = False
-        if v_merge is not None:
+        if v_merge is not None and 'val' in v_merge.attrib:
             restart_in_v_merge = 'restart' in v_merge.attrib['val']
 
         def increment_rowspan(tc):

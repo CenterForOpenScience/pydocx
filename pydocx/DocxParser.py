@@ -272,7 +272,7 @@ class DocxParser:
             last_el = filtered_list_elements[-1]
             last_el.is_last_list_item_in_root = True
 
-    def _set_headers(self, list_elements):
+    def _set_headers(self, elements):
         # These are the styles for headers and what the html tag should be if
         # we have one.
         headers = {
@@ -287,17 +287,21 @@ class DocxParser:
             'heading 9': 'h6',
             'heading 10': 'h6',
         }
-        for list_item in list_elements:
-            style = list_item.find_first('pStyle').attrib['val']
+        for element in elements:
+            # This element is using the default style which is not a heading.
+            if element.find_first('pStyle') is None:
+                continue
+            style = element.find_first('pStyle').attrib['val']
             style = self.styles_dict.get(style)
-            # Check to see if this list item is actually a header.
+
+            # Check to see if this element is actually a header.
             if style and style.lower() in headers:
-                # Set all the list item variables back to false.
-                list_item.is_list_item = False
-                list_item.is_first_list_item = False
-                list_item.is_last_list_item = False
+                # Set all the list item variables to false.
+                element.is_list_item = False
+                element.is_first_list_item = False
+                element.is_last_list_item = False
                 # Prime the heading_level
-                list_item.heading_level = headers[style.lower()]
+                element.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
         def _get_children(el):
@@ -352,7 +356,10 @@ class DocxParser:
 
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
-        self._set_headers(list_elements)
+        p_elements = [
+            child for child in body.find_all('p')
+        ]
+        self._set_headers(p_elements)
         self._set_next(body)
 
         self._parsed += self.parse(el)

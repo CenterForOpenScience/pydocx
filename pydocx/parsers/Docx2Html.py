@@ -112,7 +112,7 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text, col='', row='', last = False):
+    def table_cell(self, text, last, column_index, row_index, col='', row=''):
         slug = '<td'
         if col:
             slug += ' colspan="%(colspan)s"'

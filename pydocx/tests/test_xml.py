@@ -739,3 +739,29 @@ class DeleteTagInList(_TranslationTestCase):
         body += DXB.li(text='CCC', ilvl=0, numId=0)
         xml = DXB.xml(body)
         return xml
+
+
+class MissingIlvl(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                BBB
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', None, 1),  # Because why not.
+            ('CCC', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        body = lis
+        xml = DXB.xml(body)
+        return xml

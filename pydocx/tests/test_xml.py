@@ -742,4 +742,5 @@ class SimpleTableTest(_TranslationTestCase):
         ))
         body = table
         xml = DXB.xml(body)
+        print xml
         return xml

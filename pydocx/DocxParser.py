@@ -14,6 +14,7 @@ USE_ALIGNMENTS = True
 
 
 def remove_namespaces(document):  # remove namespaces
+
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
@@ -219,7 +220,7 @@ class DocxParser:
                     child.column_index = j
                     v_merge = child.find_first('vMerge')
                     if (
-                            v_merge is not None and
+                            v_merge is not None and 'val' in v_merge.attrib and
                             'continue' == v_merge.attrib['val']
                     ):
                         child.vmerge_continue = True

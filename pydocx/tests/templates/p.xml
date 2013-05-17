@@ -3,8 +3,12 @@
 		<w:pStyle w:val="style0"/>
 		{% if is_list %}
 		<w:numPr>
+			{% if ilvl != None %}
 			<w:ilvl w:val="{{ ilvl }}"/>
+			{% endif %}
+			{% if numId != None %}
 			<w:numId w:val="{{ numId }}"/>
+			{% endif %}
 		</w:numPr>
 		{% endif %}
 	</w:pPr>

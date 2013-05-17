@@ -1,4 +1,4 @@
-from pydocx import docx2html, Docx2Html, HtmlConverter, docx2markdown, Docx2Markdown, Docx2XML, docx2xml, Docx2LaTex,\
+from pydocx import docx2html, Docx2Html, docx2markdown, Docx2Markdown, docx2xml, Docx2LaTex,\
     docx2latex
 from pydocx.tests import test_xml
 from pydocx.tests import document_builder
@@ -6,12 +6,6 @@ from pydocx.tests import XMLDocx2Html
 from bs4 import BeautifulSoup
 import os
 import xml.etree.ElementTree as ElementTree
-from pydocx.tests import (
-    ElementTree,
-    XMLDocx2Html,
-    _TranslationTestCase,
-    remove_namespaces,
-    )
 
 #print BeautifulSoup(
 #    ElementTree.tostring(

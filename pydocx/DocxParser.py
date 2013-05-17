@@ -202,6 +202,9 @@ class DocxParser:
         list_elements = el.find_all('numId')
         for li in list_elements:
             parent = li.find_ancestor_with_tag('p')
+            # Deleted text in a list will have a numId but no ilvl.
+            if parent.find_first('ilvl') is None:
+                continue
             parent.is_list_item = True
             parent.num_id = parent.find_first('numId').attrib['val']
             parent.ilvl = parent.find_first('ilvl').attrib['val']

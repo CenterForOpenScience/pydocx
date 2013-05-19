@@ -171,6 +171,7 @@ class DocxParser:
         self.page_width = 0
         self.col = 0
         self.row = 0
+        self.tbl_info = []
         self._build_data(*args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
@@ -214,6 +215,7 @@ class DocxParser:
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
         for table in tables:
+            self.tbl_info = []
             rows = self._filter_children(table, ['tr'])
             if rows is None:
                 continue
@@ -225,7 +227,7 @@ class DocxParser:
                     child.column_index = j
                     v_merge = child.find_first('vMerge')
                     if (
-                            v_merge is not None and
+                            v_merge is not None and 'val' in v_merge.attrib and
                             'continue' == v_merge.attrib['val']
                     ):
                         child.vmerge_continue = True
@@ -293,7 +295,9 @@ class DocxParser:
             'heading 10': 'h6',
         }
         for list_item in list_elements:
-            style = list_item.find_first('pStyle').attrib['val']
+            style = ''
+            if list_item.find_first('pStyle'):
+                style = list_item.find_first('pStyle').attrib['val']
             style = self.styles_dict.get(style)
             # Check to see if this list item is actually a header.
             if style and style.lower() in headers:
@@ -374,6 +378,8 @@ class DocxParser:
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)
+        elif el.tag == 'tab':
+            return self.tab()
         elif el.tag == 'tr':
             return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
@@ -409,10 +415,17 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+        if v_merge is not None and 'val' in v_merge.attrib and 'continue' in v_merge.attrib['val']:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
+        width_info = el.find_first('tcW')
+        width = 0
+        if width_info is not None and width_info.attrib['type'] == 'dxa':
+            width = width_info.attrib['w']
+            width = float(width)
+            width = width/float(20)
+        self.width = width
         return self.table_cell(text, el.is_last_tc, el.column_index, el.row_index, colspan, rowspan)
 
     def parse_list(self, el, text):
@@ -600,7 +613,7 @@ class DocxParser:
             tc.column_index == current_col
         ]
         restart_in_v_merge = False
-        if v_merge is not None:
+        if v_merge is not None and 'val' in v_merge.attrib:
             restart_in_v_merge = 'restart' in v_merge.attrib['val']
 
         def increment_rowspan(tc):
@@ -791,17 +804,16 @@ class DocxParser:
             if jc is not None or ind is not None:
                 t_els = el.find_all('t')
                 for el in t_els:
+                    if el.find_ancestor_with_tag('tc') is not None:
+                        tbl_cell = el.find_ancestor_with_tag('tc')
+                        self.indent_table(just,
+                            firstLine, left, right, tbl_cell.column_index)
                     if el.is_last_text:
                         block = False
-                        is_table = False
                         self.block_text += text
-                        column = 0
-                        #might need to write column to justify appropriately
-                        if el.find_ancestor_with_tag('tc') is not None:
-                            column = el.find_ancestor_with_tag('tc').column_index
-                            is_table = True
-                        text = self.indent(self.block_text,
-                            just, firstLine, left, right)
+                        if el.find_ancestor_with_tag('tc') is None:
+                            text = self.indent(self.block_text, just,
+                            firstLine, left, right)
                         self.block_text = ''
                     else:
                         block = True
@@ -916,3 +928,7 @@ class DocxParser:
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
         return text  # TODO JUSTIFIED JUSTIFIED TEXT
+
+    @abstractmethod
+    def indent_table(self, text, just = '', left='', right='', firstLine='', column = 0):
+        return True

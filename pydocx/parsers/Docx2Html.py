@@ -151,3 +151,6 @@ class Docx2Html(DocxParser):
 
     def break_tag(self):
         return '<br/>'
+
+    def indent_table(self, text, just, left='', right='', firstLine='', column = 0):
+        return ''

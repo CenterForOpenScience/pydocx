@@ -232,7 +232,6 @@ class DocxParser:
             num_id=num_id,
             num_tables=num_tables,
         )
-        return num_id
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')

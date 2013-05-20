@@ -771,3 +771,48 @@ class MissingIlvl(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class SameNumIdInTable(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="lower-alpha">
+            <li>AAA
+                <table>
+                    <tr>
+                        <td>
+                            <ol data-list-type="lower-alpha">
+                                <li>BBB</li>
+                            </ol>
+                        </td>
+                    </tr>
+                </table>
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+    # Ensure its not failing somewhere and falling back to decimal
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li_text = [
+            ('BBB', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        table = DXB.table(num_rows=1, num_columns=1, text=chain(
+            [lis],
+        ))
+        lis = ''
+        lis += DXB.li(text='AAA', ilvl=0, numId=1)
+        lis += table
+        lis += DXB.li(text='CCC', ilvl=0, numId=1)
+        body = lis
+        xml = DXB.xml(body)
+        return xml

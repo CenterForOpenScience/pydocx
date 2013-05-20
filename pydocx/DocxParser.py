@@ -4,6 +4,8 @@ import logging
 from contextlib import contextmanager
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
+
+from pydocx.utils import NamespacedNumId
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
@@ -226,18 +228,11 @@ class DocxParser:
             if el.tag == 'tbl':
                 num_tables += 1
             el = el.parent
-        if num_tables:
-            return '%d:%s' % (
-                num_tables,
-                num_id,
-            )
+        return NamespacedNumId(
+            num_id=num_id,
+            num_tables=num_tables,
+        )
         return num_id
-
-    def _sanitize_num_id(self, el):
-        '''
-        This is only needed for determine the list style.
-        '''
-        return el.num_id.split(':')[-1]
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
@@ -530,7 +525,7 @@ class DocxParser:
 
         # Get the list style for the pending list.
         lst_style = self.get_list_style(
-            self._sanitize_num_id(el),
+            el.num_id.num_id,
             el.ilvl,
         )
 

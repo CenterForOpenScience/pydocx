@@ -4,7 +4,7 @@ from pydocx.tests import document_builder
 import xml.etree.ElementTree as ElementTree
 
 
-print docx2latex('./helloworld.docx')
+print docx2latex('/Users/samportnow/Documents/fmri-repro-130504.docx')
 #print docx2html('./pydocx/fixtures/simple.docx')
 #print BeautifulSoup(
 #    ElementTree.tostring(

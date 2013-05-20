@@ -672,14 +672,19 @@ class DocxParser:
         found, then rely on the `image` handler to strip those attributes. This
         functionality can change once we integrate PIL.
         """
+        localDpi = False
         sizes = el.find_first('ext')
         if sizes is not None:
-            x = self._convert_image_size(int(sizes.get('cx')))
-            y = self._convert_image_size(int(sizes.get('cy')))
-            return (
-                '%dpx' % x,
-                '%dpx' % y,
-            )
+            for size in sizes:
+                if size.tag == 'useLocalDpi':
+                    localDpi = True
+            if not localDpi:
+                x = self._convert_image_size(int(sizes.get('cx')))
+                y = self._convert_image_size(int(sizes.get('cy')))
+                return (
+                    '%dpx' % x,
+                    '%dpx' % y,
+                )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not

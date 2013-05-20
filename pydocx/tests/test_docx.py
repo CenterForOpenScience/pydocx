@@ -442,6 +442,23 @@ def test_has_image():
     ''')
 
 
+def test_local_dpi():
+    filename = 'localDpi.docx'
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'localDpi.docx',
+    )
+    new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
+    actual_html = convert(new_file_path)
+    assert_html_equal(actual_html, '''
+    <html><body>
+        <p><img src="media/image1.jpeg" /></p>
+    </body></html>
+    ''')
+
+
 def test_has_image_using_image_handler():
     raise SkipTest('This needs to be converted to an xml test')
     filename = 'has_image.docx'

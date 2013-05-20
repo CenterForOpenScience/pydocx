@@ -690,13 +690,18 @@ class DocxParser:
         functionality can change once we integrate PIL.
         """
         sizes = el.find_first('ext')
+        localDpi = False
         if sizes is not None:
-            x = self._convert_image_size(int(sizes.get('cx')))
-            y = self._convert_image_size(int(sizes.get('cy')))
-            return (
+            for size in sizes:
+                if size.tag == 'useLocalDpi':
+                    localDpi = True
+            if localDpi is False:
+                x = self._convert_image_size(int(sizes.get('cx')))
+                y = self._convert_image_size(int(sizes.get('cy')))
+                return (
                 '%dpx' % x,
                 '%dpx' % y,
-            )
+                )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not

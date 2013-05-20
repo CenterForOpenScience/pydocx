@@ -797,10 +797,8 @@ class DocxParser:
             right = ''
             left = ''
             firstLine = ''
+            hanging = ''
             if ind is not None:
-                right = None
-                left = None
-                firstLine = None
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
                     # divide by 20 to get to pt. multiply by (4/3) to get to px
@@ -814,6 +812,10 @@ class DocxParser:
                     firstLine = ind.attrib['firstLine']
                     firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
+                if 'hanging' in ind.attrib:
+                    hanging = ind.attrib['hanging']
+                    hanging = (int(hanging)/20)
+                    hanging = str(hanging)
             if jc is not None or ind is not None:
                 t_els = el.find_all('t')
                 for el in t_els:
@@ -826,7 +828,7 @@ class DocxParser:
                         self.block_text += text
                         if el.find_ancestor_with_tag('tc') is None:
                             text = self.indent(self.block_text, just,
-                            firstLine, left, right)
+                            firstLine, left, right, hanging)
                         self.block_text = ''
                     else:
                         block = True

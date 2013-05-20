@@ -64,7 +64,7 @@ def test_extract_html():
           </tr>
           <tr>
             <td>Cell3</td>
-            <td>cell4</td>
+            <td>Cell4</td>
           </tr>
         </table>
     </body></html>
@@ -738,6 +738,22 @@ def test_upper_alpha_all_bold():
     </body></html>
     ''')
 
+def test_simple_table():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'simple_table.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, '''
+    <html><body>
+    <table>
+    <tr><td>Cell1<br/>Cell3</td><td>Cell2<br/>And I am writing in the table</td></tr>
+    <tr><td></td><td>Cell4</td></tr>
+    </table>
+    </body></html>
+    ''')
 
 def test_justification():
     file_path = path.join(

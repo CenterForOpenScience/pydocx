@@ -18,7 +18,7 @@ from pydocx.tests import (
 #        Docx2Html('./pydocx/fixtures/simple_table.docx').root,
 #    ),
 #).prettify()
-print docx2html('./pydocx/fixtures/simple_table.docx')
+print docx2html('./pydocx/fixtures/localDpi.docx')
 
 
 #print test_table.get_xml()

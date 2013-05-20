@@ -4,6 +4,8 @@ import logging
 from contextlib import contextmanager
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
+
+from pydocx.utils import NamespacedNumId
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
@@ -206,8 +208,30 @@ class DocxParser:
             if parent.find_first('ilvl') is None:
                 continue
             parent.is_list_item = True
-            parent.num_id = parent.find_first('numId').attrib['val']
+            parent.num_id = self._generate_num_id(parent)
             parent.ilvl = parent.find_first('ilvl').attrib['val']
+
+    def _generate_num_id(self, el):
+        '''
+        Fun fact: It is possible to have a list in the root, that holds a table
+        that holds a list and for both lists to have the same numId. When this
+        happens we should namespace the nested list with the number of tables
+        it is in to ensure it is considered a new list. Otherwise all sorts of
+        terrible html gets generated.
+        '''
+        num_id = el.find_first('numId').attrib['val']
+
+        # First, go up the parent until we get None and count the number of
+        # tables there are.
+        num_tables = 0
+        while el.parent is not None:
+            if el.tag == 'tbl':
+                num_tables += 1
+            el = el.parent
+        return NamespacedNumId(
+            num_id=num_id,
+            num_tables=num_tables,
+        )
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
@@ -500,7 +524,7 @@ class DocxParser:
 
         # Get the list style for the pending list.
         lst_style = self.get_list_style(
-            el.num_id,
+            el.num_id.num_id,
             el.ilvl,
         )
 

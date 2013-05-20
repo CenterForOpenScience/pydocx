@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-=======
-from pydocx import docx2html, Docx2Html, HtmlConverter, docx2markdown, Docx2Markdown, Docx2XML, docx2xml, Docx2LaTex,\
-    docx2latex
+
+#from pydocx import docx2html, Docx2Html, HtmlConverter, docx2markdown, Docx2Markdown, Docx2XML, docx2xml, Docx2LaTex,\
+ #   docx2latex
 from pydocx.tests import test_xml
 from pydocx.tests import document_builder
 from pydocx.tests import XMLDocx2Html
@@ -34,4 +33,3 @@ print docx2html('./pydocx/fixtures/localDpi.docx')
 #            print docx2markdown('/Users/samportnow/Documents/pydocx/pydocx/fixtures/'+fi)
 #        except:
 #            print 'had to pass it'
->>>>>>> master

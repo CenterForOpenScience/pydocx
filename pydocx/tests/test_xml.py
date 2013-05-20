@@ -737,7 +737,7 @@ class SimpleTableTest(_TranslationTestCase):
             [DXB.p_tag('Row 2')],
             [DXB.p_tag('Third')],
             [DXB.p_tag('Fourth')],
-        ), skip=True)
+        ), merge=True)
         body = table
         xml = DXB.xml(body)
         return xml

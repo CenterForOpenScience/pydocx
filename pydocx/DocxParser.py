@@ -290,17 +290,18 @@ class DocxParser:
         }
         for list_item in list_elements:
             list_item_style = list_item.find_first('pStyle')
-            if list_item_style is not None:
-                style = list_item.find_first('pStyle').attrib['val']
-                style = self.styles_dict.get(style)
-            # Check to see if this list item is actually a header.
-                if style and style.lower() in headers:
-                # Set all the list item variables back to false.
-                    list_item.is_list_item = False
-                    list_item.is_first_list_item = False
-                    list_item.is_last_list_item = False
-                # Prime the heading_level
-                    list_item.heading_level = headers[style.lower()]
+            if list_item_style is None:
+                continue
+            style = list_item.find_first('pStyle').attrib['val']
+            style = self.styles_dict.get(style)
+        # Check to see if this list item is actually a header.
+            if style and style.lower() in headers:
+            # Set all the list item variables back to false.
+                list_item.is_list_item = False
+                list_item.is_first_list_item = False
+                list_item.is_last_list_item = False
+            # Prime the heading_level
+                list_item.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
         def _get_children(el):

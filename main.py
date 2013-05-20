@@ -1,13 +1,13 @@
-from pydocx import docx2html, Docx2Html
-from bs4 import BeautifulSoup
-import xml.etree.ElementTree as ElementTree
-
-
-print BeautifulSoup(
-    ElementTree.tostring(
-        Docx2Html('./pydocx/fixtures/simple_table.docx').root,
-    ),
-).prettify()
+#from pydocx import docx2html, Docx2Html
+#from bs4 import BeautifulSoup
+#import xml.etree.ElementTree as ElementTree
+#
+#
+#print BeautifulSoup(
+#    ElementTree.tostring(
+#        Docx2Html('./pydocx/fixtures/simple_table.docx').root,
+#    ),
+#).prettify()
 
 #with open('test.html', 'w') as f:
 #    f.write(docx2html('./helloworld.docx'))

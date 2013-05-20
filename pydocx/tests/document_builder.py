@@ -129,23 +129,29 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def drawing(self, height, width, r_id):
+    def drawing(self, r_id, height=0, width=0, size=False):
         template = env.get_template(templates['drawing'])
-        kwargs = {
-            'r_id': r_id,
-            'height': height * EMUS_PER_PIXEL,
-            'width': width * EMUS_PER_PIXEL,
-        }
+        if size:
+            kwargs = {'r_id': r_id}
+        else:
+            kwargs = {
+                'r_id': r_id,
+                'height': height * EMUS_PER_PIXEL,
+                'width': width * EMUS_PER_PIXEL,
+            }
         return template.render(**kwargs)
 
     @classmethod
-    def pict(self, height, width, r_id=None):
+    def pict(self, height=0, width=0, r_id=None, size=False):
         template = env.get_template(templates['pict'])
-        kwargs = {
-            'r_id': r_id,
-            'height': height,
-            'width': width,
-        }
+        if size:
+            kwargs = {'r_id': r_id}
+        else:
+            kwargs = {
+                'r_id': r_id,
+                'height': height,
+                'width': width,
+            }
         return template.render(**kwargs)
 
     @classmethod

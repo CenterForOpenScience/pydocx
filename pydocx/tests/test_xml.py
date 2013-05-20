@@ -135,6 +135,54 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
         return xml
 
 
+class ImageLocal(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': 'media/image1.jpeg'
+    }
+    expected_output = '''
+    <html><body>
+    <p><img src="media/image1.jpeg" /></p>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        drawing = DXB.drawing(r_id='rId0', size=True)
+        pict = DXB.pict(r_id='rId1', size=True)
+        tags = [
+            drawing,
+            pict,
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+    def test_get_image_id(self):
+        parser = XMLDocx2Html(
+            document_xml=self.get_xml(),
+            rels_dict=self.relationship_dict,
+        )
+        tree = ElementTree.fromstring(
+            remove_namespaces(self.get_xml()),
+        )
+        els = []
+        els.extend(tree.find_all('drawing'))
+        els.extend(tree.find_all('pict'))
+        image_ids = []
+        for el in els:
+            image_ids.append(parser._get_image_id(el))
+        expected = [
+            'rId0',
+            'rId1',
+        ]
+        self.assertEqual(
+            set(image_ids),
+            set(expected),
+        )
+
+
 class ImageTestCase(_TranslationTestCase):
     relationship_dict = {
         'rId0': 'media/image1.jpeg',

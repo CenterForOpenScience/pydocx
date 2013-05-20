@@ -220,8 +220,8 @@ class DocxParser:
                     child.column_index = j
                     v_merge = child.find_first('vMerge')
                     if (
-                            v_merge is not None and 'val' in v_merge.attrib and
-                            'continue' == v_merge.attrib['val']
+                            v_merge is not None and
+                            'continue' == v_merge.get('val', '')
                     ):
                         child.vmerge_continue = True
 
@@ -289,16 +289,18 @@ class DocxParser:
             'heading 10': 'h6',
         }
         for list_item in list_elements:
-            style = list_item.find_first('pStyle').attrib['val']
-            style = self.styles_dict.get(style)
+            list_item_style = list_item.find_first('pStyle')
+            if list_item_style is not None:
+                style = list_item.find_first('pStyle').attrib['val']
+                style = self.styles_dict.get(style)
             # Check to see if this list item is actually a header.
-            if style and style.lower() in headers:
+                if style and style.lower() in headers:
                 # Set all the list item variables back to false.
-                list_item.is_list_item = False
-                list_item.is_first_list_item = False
-                list_item.is_last_list_item = False
+                    list_item.is_list_item = False
+                    list_item.is_first_list_item = False
+                    list_item.is_last_list_item = False
                 # Prime the heading_level
-                list_item.heading_level = headers[style.lower()]
+                    list_item.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
         def _get_children(el):
@@ -406,8 +408,7 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'val' in v_merge.attrib and \
-           'continue' in v_merge.attrib['val']:
+        if v_merge is not None and 'continue' == v_merge.get('val', ''):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)

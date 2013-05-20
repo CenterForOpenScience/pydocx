@@ -441,13 +441,14 @@ def test_has_image():
     </body></html>
     ''')
 
+
 def test_local_dpi():
     filename = 'localDpi.docx'
     file_path = path.join(
-    path.abspath(path.dirname(__file__)),
-    '..',
-    'fixtures',
-    'localDpi.docx',
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'localDpi.docx',
     )
     new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
     actual_html = convert(new_file_path)

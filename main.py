@@ -1,7 +1,10 @@
-from pydocx import docx2html
+from pydocx import docx2html, docx2latex
 
 print docx2html('./pydocx/fixtures/simple_table.docx')
 
+
+with open('test.tex', 'w') as f:
+ f.write(docx2latex('/Users/samportnow/Documents/motor-dediff-prod.docx'))
 
 #print test_table.get_xml()
 

@@ -16,7 +16,6 @@ templates = {
     'table': 'table.xml',
     'tc': 'tc.xml',
     'tr': 'tr.xml',
-    'tr_no_val': 'tr_no_val.xml'
 }
 
 env = Environment(

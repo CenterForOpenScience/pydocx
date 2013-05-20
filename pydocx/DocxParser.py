@@ -671,17 +671,13 @@ class DocxParser:
         """
         localDpi = False
         sizes = el.find_first('ext')
-        if sizes is not None:
-            for size in sizes:
-                if size.tag == 'useLocalDpi':
-                    localDpi = True
-            if not localDpi:
-                x = self._convert_image_size(int(sizes.get('cx')))
-                y = self._convert_image_size(int(sizes.get('cy')))
-                return (
-                    '%dpx' % x,
-                    '%dpx' % y,
-                )
+        if sizes is not None and sizes.get('cx'):
+            x = self._convert_image_size(int(sizes.get('cx')))
+            y = self._convert_image_size(int(sizes.get('cy')))
+            return (
+                '%dpx' % x,
+                '%dpx' % y,
+            )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not

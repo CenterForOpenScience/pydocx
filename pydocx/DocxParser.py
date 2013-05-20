@@ -334,7 +334,7 @@ class DocxParser:
         def _get_children(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_children(el, ['p', 'tbl']):
+            for child in self._filter_children(el, ['p', 'tbl', 'sdt']):
                 has_descendant_with_tag = False
                 if child.has_descendant_with_tag('t'):
                     has_descendant_with_tag = True
@@ -555,15 +555,19 @@ class DocxParser:
         return parsed
 
     def _should_append_break_tag(self, next_el):
+        paragraph_like_tags = [
+            'p',
+            'sdt',
+        ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
             return False
         if next_el.previous.is_last_list_item_in_root:
             return False
-        if next_el.previous.tag != 'p':
+        if next_el.previous.tag not in paragraph_like_tags:
             return False
-        if next_el.tag != 'p':
+        if next_el.tag not in paragraph_like_tags:
             return False
         return True
 

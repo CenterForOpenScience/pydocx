@@ -10,6 +10,7 @@ templates = {
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
     'smartTag': 'smart_tag.xml',
     'style': 'style.xml',
@@ -92,6 +93,14 @@ class DocxBuilder(object):
         template = env.get_template(templates['smartTag'])
         kwargs = {
             'run_tags': run_tags,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def sdt_tag(self, p_tag):
+        template = env.get_template(templates['sdt'])
+        kwargs = {
+            'p_tag': p_tag,
         }
         return template.render(**kwargs)
 

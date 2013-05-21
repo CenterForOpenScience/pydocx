@@ -717,8 +717,6 @@ class RTagWithNoText(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
-
-<<<<<<< HEAD
 class SimpleTableTest(_TranslationTestCase):
     expected_output = '''
         <html><body>
@@ -740,7 +738,7 @@ class SimpleTableTest(_TranslationTestCase):
             [DXB.p_tag('Fourth')],
         ), skip=True)
         body = table
-=======
+
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''
     <html><body>
@@ -809,6 +807,5 @@ class SameNumIdInTable(_TranslationTestCase):
         lis += table
         lis += DXB.li(text='CCC', ilvl=0, numId=1)
         body = lis
->>>>>>> 8b4b2e53b08f60dacaa4e9df532273aade389d1e
         xml = DXB.xml(body)
         return xml

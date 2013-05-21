@@ -705,8 +705,10 @@ class DocxParser:
         """
         sizes = el.find_first('ext')
         if sizes is not None and sizes.get('cx'):
-            x = self._convert_image_size(int(sizes.get('cx')))
-            y = self._convert_image_size(int(sizes.get('cy')))
+            if sizes.get('cx'):
+                x = self._convert_image_size(int(sizes.get('cx')))
+            if sizes.get('cy'):
+                y = self._convert_image_size(int(sizes.get('cy')))
             return (
                 '%dpx' % x,
                 '%dpx' % y,

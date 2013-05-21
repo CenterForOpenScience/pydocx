@@ -121,13 +121,8 @@ class Docx2LaTex(DocxParser):
     def table_row(self, text):
         return '%s \\\\ ' % text
 
-    def table_cell(self, text, last, col_index, row_index, col='', row=''):
-        if last is True:
-            self.cols = col_index + 1
-            self.rows = row_index + 1
-            return text
-        else:
-            return '%s & ' % text
+    def table_cell(self, text, col='', row=''):
+        return '%s & ' % text
 
     def page_break(self):
         return '\\newpage '

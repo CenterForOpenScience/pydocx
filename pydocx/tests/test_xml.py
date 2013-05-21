@@ -765,6 +765,7 @@ class RTagWithNoText(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
+
 class SimpleTableTest(_TranslationTestCase):
     expected_output = '''
         <html><body>
@@ -786,6 +787,9 @@ class SimpleTableTest(_TranslationTestCase):
             [DXB.p_tag('Fourth')],
         ), merge=True)
         body = table
+        xml = DXB.xml(body)
+        return xml
+
 
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''

@@ -143,8 +143,13 @@ def test_inline_tags():
         'inline_tags.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-        <html><body><p>This sentence has some <strong>bold</strong>, some <em>italics</em> and some <span style="text-decoration: underline">underline</span>, as well as a <a href="http://www.google.com/">hyperlink</a>.</p></body></html>''')  # noqa
+    assert_html_equal(actual_html, (
+        '<html><body><p>This sentence has some <strong>bold</strong>, '
+        'some <em>italics</em> and some '
+        '<span style="text-decoration: underline">underline</span>, '
+        'as well as a <a href="http://www.google.com/">hyperlink</a>'
+        '.</p></body></html>'
+    ))
 
 
 def test_unicode():

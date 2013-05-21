@@ -143,8 +143,13 @@ def test_inline_tags():
         'inline_tags.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body><p>This sentence has some <b>bold</b>, some <i>italics</i> and some <u>underline</u>, as well as a <a href="http://www.google.com/">hyperlink</a>.</p></body></html>''')  # noqa
+    assert_html_equal(actual_html, (
+        '<html><body><p>This sentence has some <strong>bold</strong>, '
+        'some <em>italics</em> and some '
+        '<span class="pydocx-underline">underline</span>, '
+        'as well as a <a href="http://www.google.com/">hyperlink</a>'
+        '.</p></body></html>'
+    ))
 
 
 def test_unicode():
@@ -639,16 +644,16 @@ def test_shift_enter():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, '''
     <html><body>
-        <p>AAA<br/>BBB</p>
+        <p>AAA<br />BBB</p>
         <p>CCC</p>
         <ol data-list-type="decimal">
-            <li>DDD<br/>EEE</li>
+            <li>DDD<br />EEE</li>
             <li>FFF</li>
         </ol>
         <table>
             <tr>
-                <td>GGG<br/>HHH</td>
-                <td>III<br/>JJJ</td>
+                <td>GGG<br />HHH</td>
+                <td>III<br />JJJ</td>
             </tr>
             <tr>
                 <td>KKK</td>
@@ -767,7 +772,7 @@ def test_simple_table():
     assert_html_equal(actual_html, '''
     <html><body>
     <table>
-    <tr><td>Cell1<br/>Cell3</td><td>Cell2<br/>
+    <tr><td>Cell1<br />Cell3</td><td>Cell2<br />
     And I am writing in the table</td></tr>
     <tr><td></td><td>Cell4</td></tr>
     </table>

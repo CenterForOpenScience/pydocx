@@ -113,8 +113,7 @@ DocxParser includes abstracts methods that each parser overwrites to satsify its
 
 		@abstractmethod
 		def table(self, text):
-			return text
-
+			return text 
 		@abstractmethod
 		def table_row(self, text):
 			return text
@@ -162,3 +161,15 @@ OR, let's say FOO is your new favorite markup language. Simply customize your ow
             def linebreak(self):
                 return '!!!!!!!!!!!!' #  because linebreaks in are denoted by '!!!!!!!!!!!!'
                                       #  with the FOO markup langauge  :)
+
+#Styles
+
+The base parser `Docx2Html` relies on certain css class being set for certain behaviour to occur. Currently these include:
+
+* class `insert` -> Turns the text green.
+* class `delete` -> Turns the text red and draws a line through the text.
+* class `center` -> Aligns the text to the center.
+* class `right` -> Aligns the text to the right.
+* class `left` -> Aligns the text to the left.
+* class `comment` -> Turns the text blue.
+* class `pydocx-underline` -> Underlines the text.

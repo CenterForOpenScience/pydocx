@@ -16,7 +16,7 @@ from pydocx.tests import (
 class BoldTestCase(_TranslationTestCase):
     expected_output = """
         <html><body>
-            <p><b>AAA</b></p>
+            <p><strong>AAA</strong></p>
             <p>BBB</p>
         </body></html>
     """
@@ -121,7 +121,7 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
 
     expected_output = '''
     <html><body>
-        <p><a href="www.google.com">link<br/></a></p>
+        <p><a href="www.google.com">link<br /></a></p>
     </body></html>
     '''
 
@@ -382,7 +382,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
                         <li>AAA</li>
                         <li>BBB</li>
                     </ol>
-                    CCC<br/>
+                    CCC<br />
                     DDD
                 </td>
             </tr>
@@ -478,7 +478,7 @@ class ListWithContinuationTestCase(_TranslationTestCase):
     expected_output = '''
         <html><body>
             <ol data-list-type="decimal">
-                <li>AAA<br/>BBB</li>
+                <li>AAA<br />BBB</li>
                 <li>CCC
                     <table>
                         <tr>
@@ -722,7 +722,7 @@ class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='delete' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -746,7 +746,7 @@ class InsertTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='insert' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -771,7 +771,7 @@ class SmartTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>
@@ -850,7 +850,7 @@ class MissingIlvl(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>
@@ -923,7 +923,7 @@ class SDTTestCase(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>

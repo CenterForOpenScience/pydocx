@@ -9,9 +9,6 @@ class Docx2Html(DocxParser):
     @property
     def parsed(self):
         content = self._parsed
-        content = content.replace('<p></p><p></p>', '<br />')
-        content = content.replace('</p><br /><p>', '</p><p>')
-        content = content.replace('</p><br /><ul>', '</p><ul>')
         content = "<html>%(head)s<body>%(content)s</body></html>" % {
             'head': self.head(),
             'content': content,
@@ -28,6 +25,7 @@ class Docx2Html(DocxParser):
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
+        .pydocx-underline {text-decoration: underline;}
         body{{width:%(width)spx; margin:0px auto;
         }}</style>''') % {
             'width': (self.page_width * (4 / 3)),
@@ -109,13 +107,13 @@ class Docx2Html(DocxParser):
         }
 
     def bold(self, text):
-        return '<b>' + text + '</b>'
+        return '<strong>' + text + '</strong>'
 
     def italics(self, text):
-        return '<i>' + text + '</i>'
+        return '<em>' + text + '</em>'
 
     def underline(self, text):
-        return '<u>' + text + '</u>'
+        return '<span class="pydocx-underline">' + text + '</span>'
 
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert
@@ -142,7 +140,7 @@ class Docx2Html(DocxParser):
         }
 
     def page_break(self):
-        return '<hr>'
+        return '<hr />'
 
     def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
@@ -167,4 +165,4 @@ class Docx2Html(DocxParser):
         }
 
     def break_tag(self):
-        return '<br/>'
+        return '<br />'

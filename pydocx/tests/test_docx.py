@@ -166,13 +166,13 @@ def test_table_col_row_span():
         </tr>
         <tr>
           <td>
-          <div class='right'>EEE
+          <div class='pydocx-right'>EEE
           </div></td>
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
           <td>
-           <div class='right'>GGG
+           <div class='pydocx-right'>GGG
            </div></td>
         </tr>
       </table>
@@ -611,7 +611,7 @@ def test_has_title():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>Title</p>
-        <p><div class='left'>Text</div></p>
+        <p><div class='pydocx-left'>Text</div></p>
     ''')
 
 
@@ -667,18 +667,19 @@ def test_justification():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
     <p>
-        <div class='center'>Center Justified</div>
+        <div class='pydocx-center'>Center Justified</div>
     </p>
     <p>
-        <div class='right'>Right justified</div>
+        <div class='pydocx-right'>Right justified</div>
     </p>
     <p>
-        <div class='right' style='margin-right:96.0px;'>
+        <div class='pydocx-right' style='margin-right:96.0px;'>
             Right justified and pushed in from right
         </div>
     </p>
     <p>
-        <div class='center' style='margin-left:252.0px;margin-right:96.0px;'>
+        <div class='pydocx-center'
+                style='margin-left:252.0px;margin-right:96.0px;'>
             Center justified and pushed in from left and it is
             great and it is the coolest thing of all time and I like it and
             I think it is cool

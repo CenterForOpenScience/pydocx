@@ -21,12 +21,13 @@ class Docx2Html(DocxParser):
 
     def style(self):
         result = (
-            '<style>.insert {color:green;}'
-            '.delete {color:red;text-decoration:line-through;}'
-            '.center {text-align:center;}'
-            '.right {text-align:right;}'
-            '.left {text-align:left;}'
-            '.comment {color:blue;}'
+            '<style>'
+            '.pydocx-insert {color:green;}'
+            '.pydocx-delete {color:red;text-decoration:line-through;}'
+            '.pydocx-center {text-align:center;}'
+            '.pydocx-right {text-align:right;}'
+            '.pydocx-left {text-align:left;}'
+            '.pydocx-comment {color:blue;}'
             '.pydocx-underline {text-decoration: underline;}'
             'body {width:%(width)spx;margin:0px auto;}'
             '</style>'
@@ -53,7 +54,7 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return (
-            "<span class='insert' author='%(author)s' "
+            "<span class='pydocx-insert' author='%(author)s' "
             "date='%(date)s'>%(text)s</span>"
         ) % {
             'author': author,
@@ -87,7 +88,7 @@ class Docx2Html(DocxParser):
 
     def deletion(self, text, author, date):
         return (
-            "<span class='delete' author='%(author)s' "
+            "<span class='pydocx-delete' author='%(author)s' "
             "date='%(date)s'>%(text)s</span>"
         ) % {
             'author': author,
@@ -150,7 +151,7 @@ class Docx2Html(DocxParser):
     def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
         if just:
-            slug += " class='%(just)s'"
+            slug += " class='pydocx-%(just)s'"
         if firstLine or left or right:
             slug += " style='"
             if firstLine:

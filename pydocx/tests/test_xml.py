@@ -641,7 +641,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):
     expected_output = '''
-        <p><span class='insert' author='' date=''>insert </span>
+        <p><span class='pydocx-insert' author='' date=''>insert </span>
         smarttag</p>
     '''
 
@@ -675,7 +675,7 @@ class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA<br />
-                <span class='delete' author='' date=''>BBB</span>
+                <span class='pydocx-delete' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -697,7 +697,7 @@ class InsertTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA<br />
-                <span class='insert' author='' date=''>BBB</span>
+                <span class='pydocx-insert' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
         </ol>

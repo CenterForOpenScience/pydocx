@@ -15,7 +15,7 @@ from pydocx.tests import (
 
 class BoldTestCase(_TranslationTestCase):
     expected_output = """
-        <p><b>AAA</b></p>
+        <p><strong>AAA</strong></p>
         <p>BBB</p>
     """
 
@@ -106,7 +106,7 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
         'rId0': 'www.google.com',
     }
 
-    expected_output = '<p><a href="www.google.com">link<br/></a></p>'
+    expected_output = '<p><a href="www.google.com">link<br /></a></p>'
 
     def get_xml(self):
         run_tags = []
@@ -353,7 +353,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
                         <li>AAA</li>
                         <li>BBB</li>
                     </ol>
-                    CCC<br/>
+                    CCC<br />
                     DDD
                 </td>
             </tr>
@@ -443,7 +443,7 @@ class SingleListItemTestCase(_TranslationTestCase):
 class ListWithContinuationTestCase(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>BBB</li>
+            <li>AAA<br />BBB</li>
             <li>CCC
                 <table border="1">
                     <tr>
@@ -674,7 +674,7 @@ class RTagWithNoText(_TranslationTestCase):
 class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='delete' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -696,7 +696,7 @@ class DeleteTagInList(_TranslationTestCase):
 class InsertTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='insert' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -719,7 +719,7 @@ class InsertTagInList(_TranslationTestCase):
 class SmartTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>
@@ -806,7 +806,7 @@ class SimpleTableTest(_TranslationTestCase):
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>
@@ -875,7 +875,7 @@ class SameNumIdInTable(_TranslationTestCase):
 class SDTTestCase(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>

@@ -11,7 +11,17 @@ from pydocx.DocxParser import (
 )
 from unittest import TestCase
 
-STYLE = '<style>.insert {color:green;}.delete {color:red;text-decoration:line-through;}.center {text-align:center;}.right {text-align:right;}.left {text-align:left;}.comment {color:blue;}body {width:0px;margin:0px auto;}</style>'  # noqa
+STYLE = (
+    '<style>.insert {color:green;}'
+    '.delete {color:red;text-decoration:line-through;}'
+    '.center {text-align:center;}'
+    '.right {text-align:right;}'
+    '.left {text-align:left;}'
+    '.comment {color:blue;}'
+    '.pydocx-underline {text-decoration: underline;}'
+    'body {width:612px;margin:0px auto;}'
+    '</style>'
+)
 
 BASE_HTML = '''
 <html>
@@ -88,6 +98,10 @@ class XMLDocx2Html(Docx2Html):
             self.root = ElementTree.fromstring(
                 remove_namespaces(document_xml),
             )
+
+        # This is the standard page width for a word document, Also the page
+        # width that we are looking for in the test.
+        self.page_width = 612
 
     def _parse_rels_root(self, *args, **kwargs):
         if self._test_rels_dict is None:

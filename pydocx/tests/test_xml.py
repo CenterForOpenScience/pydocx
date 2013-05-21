@@ -874,14 +874,12 @@ class SameNumIdInTable(_TranslationTestCase):
 
 class SDTTestCase(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA<br/>
                 BBB
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):

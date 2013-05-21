@@ -673,14 +673,12 @@ class RTagWithNoText(_TranslationTestCase):
 
 class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA<br/>
                 <span class='delete' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -697,14 +695,12 @@ class DeleteTagInList(_TranslationTestCase):
 
 class InsertTagInList(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA<br/>
                 <span class='insert' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -722,14 +718,12 @@ class InsertTagInList(_TranslationTestCase):
 
 class SmartTagInList(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA<br/>
                 BBB
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):

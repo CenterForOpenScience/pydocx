@@ -27,6 +27,7 @@ env = Environment(
 
 
 class DocxBuilder(object):
+
     @classmethod
     def xml(self, body):
         template = env.get_template(templates['main'])
@@ -108,11 +109,11 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def table(self, num_rows, num_columns, text):
+    def table(self, num_rows, num_columns, text, merge=False):
 
         def _tc(cell_value):
             template = env.get_template(templates['tc'])
-            return template.render(p_tag=cell_value)
+            return template.render(p_tag=cell_value, merge=merge)
 
         def _tr(rows, text):
             tcs = [_tc(text.next()) for _ in range(rows)]

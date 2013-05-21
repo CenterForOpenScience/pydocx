@@ -1,6 +1,10 @@
 <w:tc>
 	<w:tcPr>
 		<w:tcW w:type="dxa" w:w="4986"/>
+        {% if merge %}
+        <w:vmerge val="restart">
+        </w:vmerge>
+        {% endif %}
 		<w:tcBorders>
 			<w:top w:color="000000" w:space="0" w:sz="2" w:val="single"/>
 			<w:left w:color="000000" w:space="0" w:sz="2" w:val="single"/>

@@ -13,6 +13,17 @@ logger = logging.getLogger("NewParser")
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
+TAGS_CONTAINING_CONTENT = (
+    't',
+    'pict',
+    'drawing',
+    'delText',
+    'ins',
+)
+TAGS_HOLDING_CONTENT_TAGS = (
+    'p',
+    'tbl',
+)
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -332,19 +343,14 @@ class DocxParser:
                 element.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
-        def _get_children(el):
+        def _get_children_with_content(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_children(el, ['p', 'tbl']):
-                has_descendant_with_tag = False
-                if child.has_descendant_with_tag('t'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('pict'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('drawing'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('delText'):
-                    has_descendant_with_tag = True
+            for child in self._filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
+                has_descendant_with_tag = any(
+                    child.has_descendant_with_tag(tag) for
+                    tag in TAGS_CONTAINING_CONTENT
+                )
                 if has_descendant_with_tag:
                     children.append(child)
             return children
@@ -363,11 +369,11 @@ class DocxParser:
                 except IndexError:
                     pass
         # Assign next for everything in the root.
-        _assign_next(_get_children(body))
+        _assign_next(_get_children_with_content(body))
 
         # In addition set next for everything in table cells.
         for tc in body.find_all('tc'):
-            _assign_next(_get_children(tc))
+            _assign_next(_get_children_with_content(tc))
 
     def parse_begin(self, el):
         self._set_list_attributes(el)

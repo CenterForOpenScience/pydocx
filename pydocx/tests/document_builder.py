@@ -2,6 +2,7 @@ from jinja2 import Environment, PackageLoader
 from pydocx.DocxParser import EMUS_PER_PIXEL
 
 templates = {
+    'delete': 'text_delete.xml',
     'drawing': 'drawing.xml',
     'hyperlink': 'hyperlink.xml',
     'insert': 'insert.xml',
@@ -28,6 +29,7 @@ env = Environment(
 
 
 class DocxBuilder(object):
+
     @classmethod
     def xml(self, body):
         template = env.get_template(templates['main'])
@@ -79,6 +81,14 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
+    def delete_tag(self, deleted_texts):
+        template = env.get_template(templates['delete'])
+        kwargs = {
+            'deleted_texts': deleted_texts,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
     def smart_tag(self, run_tags):
         template = env.get_template(templates['smartTag'])
         kwargs = {
@@ -117,11 +127,11 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def table(self, num_rows, num_columns, text):
+    def table(self, num_rows, num_columns, text, merge=False):
 
         def _tc(cell_value):
             template = env.get_template(templates['tc'])
-            return template.render(p_tag=cell_value)
+            return template.render(p_tag=cell_value, merge=merge)
 
         def _tr(rows, text):
             tcs = [_tc(text.next()) for _ in range(rows)]

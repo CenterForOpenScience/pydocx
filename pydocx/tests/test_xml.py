@@ -718,6 +718,134 @@ class RTagWithNoText(_TranslationTestCase):
         return xml
 
 
+class DeleteTagInList(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                <span class='delete' author='' date=''>BBB</span>
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        delete_tags = DXB.delete_tag(['BBB'])
+        p_tag = DXB.p_tag([delete_tags])
+
+        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body += p_tag
+        body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class InsertTagInList(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                <span class='insert' author='' date=''>BBB</span>
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        run_tags = [DXB.r_tag(i) for i in 'BBB']
+        insert_tags = DXB.insert_tag(run_tags)
+        p_tag = DXB.p_tag([insert_tags])
+
+        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body += p_tag
+        body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class SmartTagInList(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                BBB
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        run_tags = [DXB.r_tag(i) for i in 'BBB']
+        smart_tag = DXB.smart_tag(run_tags)
+        p_tag = DXB.p_tag([smart_tag])
+
+        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body += p_tag
+        body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class SingleListItem(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="lower-alpha">
+            <li>AAA</li>
+        </ol>
+        <p>BBB</p>
+    </body></html>
+    '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li = DXB.li(text='AAA', ilvl=0, numId=1)
+        p_tags = [
+            DXB.p_tag('BBB'),
+        ]
+        body = li
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class SimpleTableTest(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+        <table><tr><td>Blank</td><td>Column 1</td><td>Column 2</td></tr>
+        <tr><td>Row 1</td><td>First</td><td>Second</td></tr>
+        <tr><td>Row 2</td><td>Third</td><td>Fourth</td></tr>
+        </table></body></html>'''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=3, num_columns=3, text=chain(
+            [DXB.p_tag('Blank')],
+            [DXB.p_tag('Column 1')],
+            [DXB.p_tag('Column 2')],
+            [DXB.p_tag('Row 1')],
+            [DXB.p_tag('First')],
+            [DXB.p_tag('Second')],
+            [DXB.p_tag('Row 2')],
+            [DXB.p_tag('Third')],
+            [DXB.p_tag('Fourth')],
+        ), merge=True)
+        body = table
+
+        xml = DXB.xml(body)
+        return xml
+
+
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''
     <html><body>
@@ -740,7 +868,6 @@ class MissingIlvl(_TranslationTestCase):
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
         body = lis
-
         xml = DXB.xml(body)
         return xml
 

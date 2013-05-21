@@ -4,6 +4,8 @@ import logging
 from contextlib import contextmanager
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
+
+from pydocx.utils import NamespacedNumId
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
@@ -203,9 +205,34 @@ class DocxParser:
         list_elements = el.find_all('numId')
         for li in list_elements:
             parent = li.find_ancestor_with_tag('p')
+            # Deleted text in a list will have a numId but no ilvl.
+            if parent.find_first('ilvl') is None:
+                continue
             parent.is_list_item = True
-            parent.num_id = parent.find_first('numId').attrib['val']
+            parent.num_id = self._generate_num_id(parent)
             parent.ilvl = parent.find_first('ilvl').attrib['val']
+
+    def _generate_num_id(self, el):
+        '''
+        Fun fact: It is possible to have a list in the root, that holds a table
+        that holds a list and for both lists to have the same numId. When this
+        happens we should namespace the nested list with the number of tables
+        it is in to ensure it is considered a new list. Otherwise all sorts of
+        terrible html gets generated.
+        '''
+        num_id = el.find_first('numId').attrib['val']
+
+        # First, go up the parent until we get None and count the number of
+        # tables there are.
+        num_tables = 0
+        while el.parent is not None:
+            if el.tag == 'tbl':
+                num_tables += 1
+            el = el.parent
+        return NamespacedNumId(
+            num_id=num_id,
+            num_tables=num_tables,
+        )
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
@@ -273,7 +300,7 @@ class DocxParser:
             last_el = filtered_list_elements[-1]
             last_el.is_last_list_item_in_root = True
 
-    def _set_headers(self, list_elements):
+    def _set_headers(self, elements):
         # These are the styles for headers and what the html tag should be if
         # we have one.
         headers = {
@@ -288,17 +315,21 @@ class DocxParser:
             'heading 9': 'h6',
             'heading 10': 'h6',
         }
-        for list_item in list_elements:
-            style = list_item.find_first('pStyle').attrib['val']
+        for element in elements:
+            # This element is using the default style which is not a heading.
+            if element.find_first('pStyle') is None:
+                continue
+            style = element.find_first('pStyle').attrib['val']
             style = self.styles_dict.get(style)
-            # Check to see if this list item is actually a header.
+
+            # Check to see if this element is actually a header.
             if style and style.lower() in headers:
-                # Set all the list item variables back to false.
-                list_item.is_list_item = False
-                list_item.is_first_list_item = False
-                list_item.is_last_list_item = False
+                # Set all the list item variables to false.
+                element.is_list_item = False
+                element.is_first_list_item = False
+                element.is_last_list_item = False
                 # Prime the heading_level
-                list_item.heading_level = headers[style.lower()]
+                element.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
         def _get_children(el):
@@ -353,7 +384,10 @@ class DocxParser:
 
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
-        self._set_headers(list_elements)
+        p_elements = [
+            child for child in body.find_all('p')
+        ]
+        self._set_headers(p_elements)
         self._set_next(body)
 
         self._parsed += self.parse(el)
@@ -491,7 +525,7 @@ class DocxParser:
 
         # Get the list style for the pending list.
         lst_style = self.get_list_style(
-            el.num_id,
+            el.num_id.num_id,
             el.ilvl,
         )
 

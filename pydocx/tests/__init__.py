@@ -92,29 +92,6 @@ class XMLDocx2Html(Docx2Html):
     def _parse_styles(self):
         return {}
 
-    def head(self):
-        return ''
-
-    def table(self, text):
-        return '<table>' + text + '</table>'
-
-    def ordered_list(self, text, list_style):
-        list_type_conversions = {
-            'decimal': 'decimal',
-            'decimalZero': 'decimal-leading-zero',
-            'upperRoman': 'upper-roman',
-            'lowerRoman': 'lower-roman',
-            'upperLetter': 'upper-alpha',
-            'lowerLetter': 'lower-alpha',
-            'ordinal': 'decimal',
-            'cardinalText': 'decimal',
-            'ordinalText': 'decimal',
-        }
-        return '<ol data-list-type="{list_style}">{text}</ol>'.format(
-            list_style=list_type_conversions.get(list_style, 'decimal'),
-            text=text,
-        )
-
 
 DEFAULT_NUMBERING_DICT = {
     '1': {

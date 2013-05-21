@@ -43,8 +43,8 @@ def remove_namespaces(document):  # remove namespaces
 
 def has_child(self, tag):
     """
-Determine if current element has a child. Stop at first child.
-"""
+    Determine if current element has a child. Stop at first child.
+    """
     return True if self.find(tag) is not None else False
 
 
@@ -58,22 +58,22 @@ Determine if there is a child ahead in the element tree.
 
 def find_first(self, tag):
     """
-Find the first occurrence of a tag beneath the current element.
-"""
+    Find the first occurrence of a tag beneath the current element.
+    """
     return self.find('.//' + tag)
 
 
 def find_all(self, tag):
     """
 Find all occurrences of a tag
-"""
+    """
     return self.findall('.//' + tag)
 
 
 def el_iter(el):
     """
-Go through all elements
-"""
+    Go through all elements
+    """
     try:
         return el.iter()
     except AttributeError:
@@ -82,8 +82,8 @@ Go through all elements
 
 def find_ancestor_with_tag(self, tag):
     """
-Find the first ancestor with that is a `tag`.
-"""
+    Find the first ancestor with that is a `tag`.
+    """
     el = self
     while el.parent:
         el = el.parent
@@ -190,9 +190,9 @@ class DocxParser:
 
         #divide by 20 to get to pt (Office works in 20th's of a point)
         """
-see http://msdn.microsoft.com/en-us/library/documentformat
-.openxml.wordprocessing.indentation.aspx
-"""
+        see http://msdn.microsoft.com/en-us/library/documentformat
+        .openxml.wordprocessing.indentation.aspx
+        """
         if self.root.find_first('pgSz') is not None:
             self.page_width = int(self.root.
                                   find_first('pgSz').attrib['w']) / 20
@@ -226,12 +226,12 @@ see http://msdn.microsoft.com/en-us/library/documentformat
 
     def _generate_num_id(self, el):
         '''
-Fun fact: It is possible to have a list in the root, that holds a table
-that holds a list and for both lists to have the same numId. When this
-happens we should namespace the nested list with the number of tables
-it is in to ensure it is considered a new list. Otherwise all sorts of
-terrible html gets generated.
-'''
+        Fun fact: It is possible to have a list in the root, that holds a table
+        that holds a list and for both lists to have the same numId. When this
+        happens we should namespace the nested list with the number of tables
+        it is in to ensure it is considered a new list. Otherwise all sorts of
+        terrible html gets generated.
+        '''
         num_id = el.find_first('numId').attrib['val']
 
         # First, go up the parent until we get None and count the number of
@@ -457,12 +457,12 @@ terrible html gets generated.
 
     def parse_list(self, el, text):
         """
-All the meat of building the list is done in _parse_list, however we
-call this method for two reasons: It is the naming convention we are
-following. And we need a reliable way to raise and lower the list_depth
-(which is used to determine if we are in a list). I could have done
-this in _parse_list, however it seemed cleaner to do it here.
-"""
+        All the meat of building the list is done in _parse_list, however we
+        call this method for two reasons: It is the naming convention we are
+        following. And we need a reliable way to raise and lower the list_depth
+        (which is used to determine if we are in a list). I could have done
+        this in _parse_list, however it seemed cleaner to do it here.
+        """
         self.list_depth += 1
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
@@ -603,10 +603,10 @@ this in _parse_list, however it seemed cleaner to do it here.
 
         def _should_parse_next_as_content(el):
             """
-Get the contents of the next el and append it to the
-contents of the current el (that way things like tables
-are actually in the li tag instead of in the ol/ul tag).
-"""
+            Get the contents of the next el and append it to the
+            contents of the current el (that way things like tables
+            are actually in the li tag instead of in the ol/ul tag).
+            """
             next_el = el.next
             if next_el is None:
                 return False
@@ -721,10 +721,10 @@ are actually in the li tag instead of in the ol/ul tag).
 
     def _get_image_size(self, el):
         """
-If we can't find a height or width, return 0 for whichever is not
-found, then rely on the `image` handler to strip those attributes. This
-functionality can change once we integrate PIL.
-"""
+        If we can't find a height or width, return 0 for whichever is not
+        found, then rely on the `image` handler to strip those attributes. This
+        functionality can change once we integrate PIL.
+        """
         localDpi = False
         sizes = el.find_first('ext')
         if sizes is not None:
@@ -764,10 +764,10 @@ functionality can change once we integrate PIL.
 
     def _is_style_on(self, el):
         """
-For b, i, u (bold, italics, and underline) merely having the tag is not
-sufficient. You need to check to make sure it is not set to "false" as
-well.
-"""
+        For b, i, u (bold, italics, and underline) merely having the tag is not
+        sufficient. You need to check to make sure it is not set to "false" as
+        well.
+        """
         return el.get('val') != 'false'
 
     def parse_t(self, el, parsed):
@@ -784,8 +784,8 @@ well.
 
     def parse_r(self, el, parsed):
         """
-Parse the running text.
-"""
+        Parse the running text.
+        """
         block = False
         text = parsed
         if not text:

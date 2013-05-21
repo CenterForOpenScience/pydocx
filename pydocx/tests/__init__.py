@@ -11,6 +11,17 @@ from pydocx.DocxParser import (
 )
 from unittest import TestCase
 
+STYLE = '<style>.insert {color:green;}.delete {color:red;text-decoration:line-through;}.center {text-align:center;}.right {text-align:right;}.left {text-align:left;}.comment {color:blue;}body {width:0px;margin:0px auto;}</style>'  # noqa
+
+BASE_HTML = '''
+<html>
+    <head>
+    %s
+    </head>
+    <body>%%s</body>
+</html>
+''' % STYLE
+
 
 def assert_html_equal(actual_html, expected_html):
     assert collapse_html(
@@ -99,8 +110,8 @@ DEFAULT_NUMBERING_DICT = {
         '1': 'decimal',
     },
     '2': {
-        '0': 'none',
-        '1': 'none',
+        '0': 'lowerLetter',
+        '1': 'lowerLetter',
     },
 }
 
@@ -136,4 +147,4 @@ class _TranslationTestCase(TestCase):
             numbering_dict=self.numbering_dict,
         ).parsed
 
-        assert_html_equal(html, self.expected_output)
+        assert_html_equal(html, BASE_HTML % self.expected_output)

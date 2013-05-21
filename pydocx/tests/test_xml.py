@@ -15,10 +15,8 @@ from pydocx.tests import (
 
 class BoldTestCase(_TranslationTestCase):
     expected_output = """
-        <html><body>
             <p><b>AAA</b></p>
             <p>BBB</p>
-        </body></html>
     """
 
     def get_xml(self):
@@ -40,9 +38,7 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
     }
 
     expected_output = '''
-    <html><body>
         <p><a href="www.google.com">link</a>.</p>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -61,9 +57,7 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
     }
 
     expected_output = '''
-    <html><body>
         <p><a href="www.google.com">link</a>.</p>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -81,8 +75,6 @@ class HyperlinkNoTextTestCase(_TranslationTestCase):
     }
 
     expected_output = '''
-    <html><body>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -99,9 +91,7 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
     }
 
     expected_output = '''
-    <html><body>
         <p>link.</p>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -120,9 +110,7 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
     }
 
     expected_output = '''
-    <html><body>
         <p><a href="www.google.com">link<br/></a></p>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -141,14 +129,12 @@ class ImageTestCase(_TranslationTestCase):
         'rId1': 'media/image2.jpeg',
     }
     expected_output = '''
-        <html><body>
             <p>
                 <img src="media/image1.jpeg" height="20px" width="40px" />
             </p>
             <p>
                 <img src="media/image2.jpeg" height="21pt" width="41pt" />
             </p>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -217,8 +203,6 @@ class ImageNotInRelsDictTestCase(_TranslationTestCase):
         # 'rId0': 'media/image1.jpeg',
     }
     expected_output = '''
-        <html><body>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -271,8 +255,7 @@ class ImageNoSizeTestCase(_TranslationTestCase):
 
 class TableTag(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <table>
+            <table border="1">
                 <tr>
                     <td>AAA</td>
                     <td>BBB</td>
@@ -282,7 +265,6 @@ class TableTag(_TranslationTestCase):
                     <td>DDD</td>
                 </tr>
             </table>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -299,8 +281,7 @@ class TableTag(_TranslationTestCase):
 
 class NestedTableTag(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <table>
+        <table border="1">
             <tr>
                 <td>AAA</td>
                 <td>BBB</td>
@@ -308,7 +289,7 @@ class NestedTableTag(_TranslationTestCase):
             <tr>
                 <td>CCC</td>
                 <td>
-                    <table>
+                    <table border="1">
                         <tr>
                             <td>DDD</td>
                             <td>EEE</td>
@@ -321,7 +302,6 @@ class NestedTableTag(_TranslationTestCase):
                 </td>
             </tr>
         </table>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -344,8 +324,7 @@ class NestedTableTag(_TranslationTestCase):
 
 class TableWithInvalidTag(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <table>
+            <table border="1">
                 <tr>
                     <td>AAA</td>
                     <td>BBB</td>
@@ -355,7 +334,6 @@ class TableWithInvalidTag(_TranslationTestCase):
                     <td>DDD</td>
                 </tr>
             </table>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -374,11 +352,10 @@ class TableWithInvalidTag(_TranslationTestCase):
 
 class TableWithListAndParagraph(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <table>
+        <table border="1">
             <tr>
                 <td>
-                    <ol data-list-type="decimal">
+                    <ol list-style-type="decimal">
                         <li>AAA</li>
                         <li>BBB</li>
                     </ol>
@@ -387,7 +364,6 @@ class TableWithListAndParagraph(_TranslationTestCase):
                 </td>
             </tr>
         </table>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -416,13 +392,11 @@ class TableWithListAndParagraph(_TranslationTestCase):
 
 class SimpleListTestCase(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <ol data-list-type="lower-alpha">
+            <ol list-style-type="lowerLetter">
                 <li>AAA</li>
                 <li>BBB</li>
                 <li>CCC</li>
             </ol>
-        </body></html>
     '''
 
     # Ensure its not failing somewhere and falling back to decimal
@@ -448,11 +422,9 @@ class SimpleListTestCase(_TranslationTestCase):
 
 class SingleListItemTestCase(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <ol data-list-type="lower-alpha">
+            <ol list-style-type="lowerLetter">
                 <li>AAA</li>
             </ol>
-        </body></html>
     '''
 
     # Ensure its not failing somewhere and falling back to decimal
@@ -476,11 +448,10 @@ class SingleListItemTestCase(_TranslationTestCase):
 
 class ListWithContinuationTestCase(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <ol data-list-type="decimal">
+            <ol list-style-type="decimal">
                 <li>AAA<br/>BBB</li>
                 <li>CCC
-                    <table>
+                    <table border="1">
                         <tr>
                             <td>DDD</td>
                             <td>EEE</td>
@@ -493,7 +464,6 @@ class ListWithContinuationTestCase(_TranslationTestCase):
                 </li>
                 <li>HHH</li>
             </ol>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -520,15 +490,14 @@ class ListWithContinuationTestCase(_TranslationTestCase):
 
 class ListWithMultipleContinuationTestCase(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-            <ol data-list-type="decimal">
+            <ol list-style-type="decimal">
                 <li>AAA
-                    <table>
+                    <table border="1">
                         <tr>
                             <td>BBB</td>
                         </tr>
                     </table>
-                    <table>
+                    <table border="1">
                         <tr>
                             <td>CCC</td>
                         </tr>
@@ -536,7 +505,6 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
                 </li>
                 <li>DDD</li>
             </ol>
-        </body></html>
     '''
 
     def get_xml(self):
@@ -562,18 +530,16 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
 
 class MangledIlvlTestCase(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="lowerLetter">
             <li>AAA</li>
         </ol>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>BBB
-                <ol data-list-type="decimal">
+                <ol list-style-type="decimal">
                     <li>CCC</li>
                 </ol>
             </li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -592,17 +558,15 @@ class MangledIlvlTestCase(_TranslationTestCase):
 
 class SeperateListsTestCase(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="lowerLetter">
             <li>AAA</li>
         </ol>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>BBB</li>
         </ol>
-        <ol data-list-type="decimal">
+        <ol list-style-type="lowerLetter">
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -624,19 +588,17 @@ class SeperateListsTestCase(_TranslationTestCase):
 
 class InvalidIlvlOrderTestCase(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA
-                <ol data-list-type="decimal">
+                <ol list-style-type="decimal">
                     <li>BBB
-                        <ol data-list-type="decimal">
+                        <ol list-style-type="decimal">
                             <li>CCC</li>
                         </ol>
                     </li>
                 </ol>
             </li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -686,10 +648,8 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):
     expected_output = '''
-    <html><body>
         <p><span class='insert' author='' date=''>insert </span>
         smarttag</p>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -705,7 +665,7 @@ class NonStandardTextTagsTestCase(_TranslationTestCase):
 
 
 class RTagWithNoText(_TranslationTestCase):
-    expected_output = '<html><body></body></html>'
+    expected_output = ''
 
     def get_xml(self):
         p_tag = DXB.p_tag(None)  # No text
@@ -720,12 +680,10 @@ class RTagWithNoText(_TranslationTestCase):
 
 class SingleListItem(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="lower-alpha">
+        <ol list-style-type="lowerLetter">
             <li>AAA</li>
         </ol>
         <p>BBB</p>
-    </body></html>
     '''
 
     numbering_dict = {
@@ -748,11 +706,23 @@ class SingleListItem(_TranslationTestCase):
 
 class SimpleTableTest(_TranslationTestCase):
     expected_output = '''
-        <html><body>
-        <table><tr><td>Blank</td><td>Column 1</td><td>Column 2</td></tr>
-        <tr><td>Row 1</td><td>First</td><td>Second</td></tr>
-        <tr><td>Row 2</td><td>Third</td><td>Fourth</td></tr>
-        </table></body></html>'''
+        <table border="1">
+            <tr>
+                <td>Blank</td>
+                <td>Column 1</td>
+                <td>Column 2</td>
+            </tr>
+            <tr>
+                <td>Row 1</td>
+                <td>First</td>
+                <td>Second</td>
+            </tr>
+            <tr>
+                <td>Row 2</td>
+                <td>Third</td>
+                <td>Fourth</td>
+            </tr>
+        </table>'''
 
     def get_xml(self):
         table = DXB.table(num_rows=3, num_columns=3, text=chain(
@@ -773,14 +743,12 @@ class SimpleTableTest(_TranslationTestCase):
 
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>AAA<br/>
                 BBB
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
 
     def get_xml(self):
@@ -800,13 +768,12 @@ class MissingIlvl(_TranslationTestCase):
 
 class SameNumIdInTable(_TranslationTestCase):
     expected_output = '''
-    <html><body>
-        <ol data-list-type="lower-alpha">
+        <ol list-style-type="lowerLetter">
             <li>AAA
-                <table>
+                <table border="1">
                     <tr>
                         <td>
-                            <ol data-list-type="lower-alpha">
+                            <ol list-style-type="lowerLetter">
                                 <li>BBB</li>
                             </ol>
                         </td>
@@ -815,7 +782,6 @@ class SameNumIdInTable(_TranslationTestCase):
             </li>
             <li>CCC</li>
         </ol>
-    </body></html>
     '''
     # Ensure its not failing somewhere and falling back to decimal
     numbering_dict = {

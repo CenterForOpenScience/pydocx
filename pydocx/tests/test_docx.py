@@ -6,23 +6,12 @@ from os import path
 from nose.plugins.skip import SkipTest
 #from nose.tools import assert_raises
 
-from pydocx.tests import assert_html_equal
+from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
 
 
 def convert(path):
     return Docx2Html(path).parsed
-
-STYLE = '<style>.insert {color:green;}.delete {color:red;text-decoration:line-through;}.center {text-align:center;}.right {text-align:right;}.left {text-align:left;}.comment {color:blue;}body {width:0px;margin:0px auto;}</style>'  # noqa
-
-BASE_HTML = '''
-<html>
-    <head>
-    %s
-    </head>
-    <body>%%s</body>
-</html>
-''' % STYLE
 
 
 def test_extract_html():

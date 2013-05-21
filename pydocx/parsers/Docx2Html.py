@@ -1,7 +1,6 @@
 from pydocx.DocxParser import DocxParser
 
 import xml.sax.saxutils
-import textwrap
 
 
 class Docx2Html(DocxParser):
@@ -21,16 +20,22 @@ class Docx2Html(DocxParser):
         }
 
     def style(self):
-        return textwrap.dedent('''<style>.insert{{color:red}}.delete
-        {{color:red; text-decoration:line-through}}.center
-        {{text-align:center}}.right{{text-align:right}}
-        .left{{text-align:left}} .comment{{color:blue}}
-        .pydocx-underline {text-decoration: underline;}
-        body{{width:%(width)spx; margin:0px auto;
-        }}</style>''') % {
+        result = (
+            '<style>'
+            '.pydocx-insert {color:green;}'
+            '.pydocx-delete {color:red;text-decoration:line-through;}'
+            '.pydocx-center {text-align:center;}'
+            '.pydocx-right {text-align:right;}'
+            '.pydocx-left {text-align:left;}'
+            '.pydocx-comment {color:blue;}'
+            '.pydocx-underline {text-decoration: underline;}'
+            'body {width:%(width)spx;margin:0px auto;}'
+            '</style>'
+        ) % {
+            #multiple by (4/3) to get to px
             'width': (self.page_width * (4 / 3)),
         }
-        #multiple by (4/3) to get to px
+        return result
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -49,7 +54,7 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return (
-            "<span class='insert' author='%(author)s' "
+            "<span class='pydocx-insert' author='%(author)s' "
             "date='%(date)s'>%(text)s</span>"
         ) % {
             'author': author,
@@ -83,7 +88,7 @@ class Docx2Html(DocxParser):
 
     def deletion(self, text, author, date):
         return (
-            "<span class='delete' author='%(author)s' "
+            "<span class='pydocx-delete' author='%(author)s' "
             "date='%(date)s'>%(text)s</span>"
         ) % {
             'author': author,
@@ -97,8 +102,9 @@ class Docx2Html(DocxParser):
         }
 
     def ordered_list(self, text, list_style):
-        return "<ol>%(text)s</ol>" % {
+        return '<ol list-style-type="%(list_style)s">%(text)s</ol>' % {
             'text': text,
+            'list_style': list_style,
         }
 
     def unordered_list(self, text):
@@ -121,7 +127,7 @@ class Docx2Html(DocxParser):
         return '&nbsp&nbsp&nbsp&nbsp'
 
     def table(self, text):
-        return '<table border=1>' + text + '</table>'
+        return '<table border="1">' + text + '</table>'
 
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
@@ -145,7 +151,7 @@ class Docx2Html(DocxParser):
     def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
         if just:
-            slug += " class='%(just)s'"
+            slug += " class='pydocx-%(just)s'"
         if firstLine or left or right:
             slug += " style='"
             if firstLine:

@@ -482,6 +482,9 @@ class DocxParser:
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
+        # Everything after this point assumes the first element is not also the
+        # last. If the first element is also the last then early return by
+        # building and returning the completed list.
         if el.is_last_list_item_in_root:
             return self._build_list(el, parsed)
         next_el = el.next

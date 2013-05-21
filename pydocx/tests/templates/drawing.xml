@@ -39,8 +39,12 @@
 							<pic:spPr bwMode="auto">
 								<a:xfrm>
 									<a:off x="0" y="0"/>
-                                    {% if size %}
+                                    {% if width != None and height != None %}
 									<a:ext cx="{{ width }}" cy="{{ height }}"/>
+                                    {% elif width != None %}
+                                    <a:ext cx="{{ width }}"/>
+                                    {% elif height != None %}
+                                    <a:ext cy="{{ height }}"/>
                                     {% endif %}
 								</a:xfrm>
 								<a:prstGeom prst="rect">

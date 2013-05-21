@@ -9,11 +9,22 @@
 			<w:color w:val="000000"/>
 		</w:rPr>
 		<w:pict>
-            {%if size%}
-			<v:shape id="_x0000_i1027" type="#_x0000_t75" style="width:{{ width }}pt;height:{{ height }}pt">
+            {% if width != None and height != None %}
+			<v:shape id="_x0000_i1027" type="#_x0000_t75"
+                     style= "width:{{ width }}pt;height:{{ height }}pt">
 				{% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
 			</v:shape>
-            {%endif%}
+            {% elif width != None %}
+            <v:shape id="_x0000_i1027" type="#_x0000_t75"
+                     style= "width:{{ width }}pt;">
+                {% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
+            </v:shape>
+            {% elif height != None %}
+            <v:shape id="_x0000_i1027" type="#_x0000_t75"
+                     style= "height:{{ height }}pt;">
+                {% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
+            </v:shape>
+            {% endif %}
 		</w:pict>
 	</w:r>
 </w:p>

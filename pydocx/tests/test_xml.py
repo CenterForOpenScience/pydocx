@@ -146,8 +146,8 @@ class ImageLocal(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        drawing = DXB.drawing(r_id='rId0', size=False)
-        pict = DXB.pict(r_id='rId1', size=False)
+        drawing = DXB.drawing(r_id='rId0', width=None, height=None)
+        pict = DXB.pict(r_id='rId1', width=None, height=None)
         tags = [
             drawing,
             pict,

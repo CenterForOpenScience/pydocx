@@ -4,6 +4,8 @@ import logging
 from contextlib import contextmanager
 import xml.etree.ElementTree as ElementTree
 from xml.etree.ElementTree import _ElementInterface
+
+from pydocx.utils import NamespacedNumId
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
@@ -11,15 +13,28 @@ logger = logging.getLogger("NewParser")
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
+TAGS_CONTAINING_CONTENT = (
+    't',
+    'pict',
+    'drawing',
+    'delText',
+    'ins',
+    )
+TAGS_HOLDING_CONTENT_TAGS = (
+    'p',
+    'tbl',
+    'sdt',
+    )
 
 
-def remove_namespaces(document):  # remove namespaces
+def remove_namespaces(document): # remove namespaces
+
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[-1], v)
-            for k, v in child.attrib.items()
+                for k, v in child.attrib.items()
         )
     return ElementTree.tostring(root)
 
@@ -28,37 +43,37 @@ def remove_namespaces(document):  # remove namespaces
 
 def has_child(self, tag):
     """
-    Determine if current element has a child. Stop at first child.
-    """
+Determine if current element has a child. Stop at first child.
+"""
     return True if self.find(tag) is not None else False
 
 
 def has_descendant_with_tag(self, tag):
     """
-    Determine if there is a child ahead in the element tree.
-    """
+Determine if there is a child ahead in the element tree.
+"""
     # Get child. stop at first child.
     return True if self.find('.//' + tag) is not None else False
 
 
 def find_first(self, tag):
     """
-    Find the first occurrence of a tag beneath the current element.
-    """
+Find the first occurrence of a tag beneath the current element.
+"""
     return self.find('.//' + tag)
 
 
 def find_all(self, tag):
     """
-    Find all occurrences of a tag
-    """
+Find all occurrences of a tag
+"""
     return self.findall('.//' + tag)
 
 
 def el_iter(el):
     """
-    Go through all elements
-    """
+Go through all elements
+"""
     try:
         return el.iter()
     except AttributeError:
@@ -67,8 +82,8 @@ def el_iter(el):
 
 def find_ancestor_with_tag(self, tag):
     """
-    Find the first ancestor with that is a `tag`.
-    """
+Find the first ancestor with that is a `tag`.
+"""
     el = self
     while el.parent:
         el = el.parent
@@ -97,15 +112,12 @@ setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
 setattr(_ElementInterface, 'is_last_text', False)
-setattr(_ElementInterface, 'lst_style', None)
-setattr(_ElementInterface, 'is_last_tc', False)
-
 
 # End helpers
 
 
 @contextmanager
-def ZipFile(path):  # This is not needed in python 3.2+
+def ZipFile(path): # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
@@ -122,18 +134,18 @@ class DocxParser:
                 self.fonts = f.read('/word/fontTable.xml')
             except KeyError:
                 self.fonts = None
-            try:  # Only present if there are lists
+            try: # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
                 self.numbering_text = None
-            try:  # Only present if there are comments
+            try: # Only present if there are comments
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
 
         self.root = ElementTree.fromstring(
-            remove_namespaces(self.document_text),  # remove the namespaces
+            remove_namespaces(self.document_text), # remove the namespaces
         )
         self.numbering_root = None
         if self.numbering_text:
@@ -169,26 +181,23 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-        self.col = 0
-        self.row = 0
-        self.tbl_info = []
         self._build_data(*args, **kwargs)
 
-        def add_parent(el):  # if a parent, make that an attribute
+        def add_parent(el): # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
 
         #divide by 20 to get to pt (Office works in 20th's of a point)
         """
-        see http://msdn.microsoft.com/en-us/library/documentformat
-        .openxml.wordprocessing.indentation.aspx
-        """
+see http://msdn.microsoft.com/en-us/library/documentformat
+.openxml.wordprocessing.indentation.aspx
+"""
         if self.root.find_first('pgSz') is not None:
             self.page_width = int(self.root.
                                   find_first('pgSz').attrib['w']) / 20
 
-        add_parent(self.root)  # create the parent attributes
+        add_parent(self.root) # create the parent attributes
 
         #all blank when we init
         self.comment_store = None
@@ -196,12 +205,12 @@ class DocxParser:
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
         self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root)  # begin to parse
+        self.parse_begin(self.root) # begin to parse
 
     def _filter_children(self, element, tags):
         return [
-            el for el in element.getchildren()
-            if el.tag in tags
+        el for el in element.getchildren()
+        if el.tag in tags
         ]
 
     def _set_list_attributes(self, el):
@@ -212,28 +221,49 @@ class DocxParser:
             if parent.find_first('ilvl') is None:
                 continue
             parent.is_list_item = True
-            parent.num_id = parent.find_first('numId').attrib['val']
+            parent.num_id = self._generate_num_id(parent)
             parent.ilvl = parent.find_first('ilvl').attrib['val']
+
+    def _generate_num_id(self, el):
+        '''
+Fun fact: It is possible to have a list in the root, that holds a table
+that holds a list and for both lists to have the same numId. When this
+happens we should namespace the nested list with the number of tables
+it is in to ensure it is considered a new list. Otherwise all sorts of
+terrible html gets generated.
+'''
+        num_id = el.find_first('numId').attrib['val']
+
+        # First, go up the parent until we get None and count the number of
+        # tables there are.
+        num_tables = 0
+        while el.parent is not None:
+            if el.tag == 'tbl':
+                num_tables += 1
+            el = el.parent
+        return NamespacedNumId(
+            num_id=num_id,
+            num_tables=num_tables,
+        )
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
         for table in tables:
-            self.tbl_info = []
             rows = self._filter_children(table, ['tr'])
             if rows is None:
                 continue
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
-                tcs[-1].is_last_tc = True
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
                     v_merge = child.find_first('vMerge')
                     if (
-                            v_merge is not None and 'val' in v_merge.attrib and
-                            'continue' == v_merge.attrib['val']
-                    ):
+                        v_merge is not None and
+                        'continue' == v_merge.get('val', '')
+                        ):
                         child.vmerge_continue = True
+
     def _set_text_attributes(self, el):
         # find the ppr. look thru all the elements within and find the text
         #if it's the last item in the list, it's the last text
@@ -256,10 +286,10 @@ class DocxParser:
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
-                    i for i in list_elements
-                    if (
-                        i.num_id == num_id and
-                        i.ilvl == ilvl
+                i for i in list_elements
+                if (
+                    i.num_id == num_id and
+                    i.ilvl == ilvl
                     )
                 ]
                 if not filtered_list_elements:
@@ -274,8 +304,8 @@ class DocxParser:
         # non list elements into the first root level list.
         for num_id in num_ids:
             filtered_list_elements = [
-                i for i in list_elements
-                if i.num_id == num_id
+            i for i in list_elements
+            if i.num_id == num_id
             ]
             if not filtered_list_elements:
                 continue
@@ -296,8 +326,7 @@ class DocxParser:
             'heading 8': 'h6',
             'heading 9': 'h6',
             'heading 10': 'h6',
-        }
-        # This element is using the default style which is not a heading.
+            }
         for element in elements:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:
@@ -315,17 +344,14 @@ class DocxParser:
                 element.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
-        def _get_children(el):
+        def _get_children_with_content(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_children(el, ['p', 'tbl']):
-                has_descendant_with_tag = False
-                if child.has_descendant_with_tag('t'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('pict'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('drawing'):
-                    has_descendant_with_tag = True
+            for child in self._filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
+                has_descendant_with_tag = any(
+                    child.has_descendant_with_tag(tag) for
+                        tag in TAGS_CONTAINING_CONTENT
+                )
                 if has_descendant_with_tag:
                     children.append(child)
             return children
@@ -343,12 +369,12 @@ class DocxParser:
                         children[i].previous = children[i - 1]
                 except IndexError:
                     pass
-        # Assign next for everything in the root.
-        _assign_next(_get_children(body))
+            # Assign next for everything in the root.
+        _assign_next(_get_children_with_content(body))
 
         # In addition set next for everything in table cells.
         for tc in body.find_all('tc'):
-            _assign_next(_get_children(tc))
+            _assign_next(_get_children_with_content(tc))
 
     def parse_begin(self, el):
         self._set_list_attributes(el)
@@ -359,8 +385,8 @@ class DocxParser:
         # Find the first and last li elements
         body = el.find_first('body')
         list_elements = [
-            child for child in body.find_all('p')
-            if child.is_list_item
+        child for child in body.find_all('p')
+        if child.is_list_item
         ]
         num_ids = set([i.num_id for i in list_elements])
         ilvls = set([i.ilvl for i in list_elements])
@@ -368,7 +394,7 @@ class DocxParser:
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
         p_elements = [
-            child for child in body.find_all('p')
+        child for child in body.find_all('p')
         ]
         self._set_headers(p_elements)
         self._set_next(body)
@@ -383,12 +409,11 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
+
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)
-        elif el.tag == 'tab':
-            return self.tab()
         elif el.tag == 'tr':
             return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
@@ -424,27 +449,20 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'val' in v_merge.attrib and 'continue' in v_merge.attrib['val']:
+        if v_merge is not None and 'continue' == v_merge.get('val', ''):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
-        width_info = el.find_first('tcW')
-        width = 0
-        if width_info is not None and width_info.attrib['type'] == 'dxa':
-            width = width_info.attrib['w']
-            width = float(width)
-            width = width/float(20)
-        self.width = width
-        return self.table_cell(text, el.is_last_tc, el.column_index, el.row_index, colspan, rowspan)
+        return self.table_cell(text, colspan, rowspan)
 
     def parse_list(self, el, text):
         """
-        All the meat of building the list is done in _parse_list, however we
-        call this method for two reasons: It is the naming convention we are
-        following. And we need a reliable way to raise and lower the list_depth
-        (which is used to determine if we are in a list). I could have done
-        this in _parse_list, however it seemed cleaner to do it here.
-        """
+All the meat of building the list is done in _parse_list, however we
+call this method for two reasons: It is the naming convention we are
+following. And we need a reliable way to raise and lower the list_depth
+(which is used to determine if we are in a list). I could have done
+this in _parse_list, however it seemed cleaner to do it here.
+"""
         self.list_depth += 1
         parsed = self._parse_list(el, text)
         self.list_depth -= 1
@@ -452,14 +470,32 @@ class DocxParser:
             return self.parse_table_cell_contents(el, parsed)
         return parsed
 
+    def _build_list(self, el, text):
+        # Get the list style for the pending list.
+        lst_style = self.get_list_style(
+            el.num_id.num_id,
+            el.ilvl,
+        )
+
+        parsed = text
+        # Create the actual list and return it.
+        if lst_style == 'bullet':
+            return self.unordered_list(parsed)
+        else:
+            return self.ordered_list(
+                parsed,
+                lst_style,
+            )
+
     def _parse_list(self, el, text):
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
-        el.lst_style = self.get_list_style(
-            el.num_id,
-            el.ilvl,
-        )
+        # Everything after this point assumes the first element is not also the
+        # last. If the first element is also the last then early return by
+        # building and returning the completed list.
+        if el.is_last_list_item_in_root:
+            return self._build_list(el, parsed)
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -468,7 +504,7 @@ class DocxParser:
                 return False
             if next_el.is_last_list_item_in_root:
                 return False
-            # If next_el is not a list item then roll it into the list by
+                # If next_el is not a list item then roll it into the list by
             # returning True.
             if not next_el.is_list_item:
                 return True
@@ -497,19 +533,19 @@ class DocxParser:
         def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
-            # Different list
+                # Different list
             if last_el.num_id != first_el.num_id:
                 return False
-            # Will be handled when the ilvls do match (nesting issue)
+                # Will be handled when the ilvls do match (nesting issue)
             if last_el.ilvl != first_el.ilvl:
                 return False
-            # We only care about last items that have not been parsed before
+                # We only care about last items that have not been parsed before
             # (first list items are always parsed at the beginning of this
             # method.)
             return (
                 not last_el.is_first_list_item and
                 last_el.is_last_list_item_in_root
-            )
+                )
         if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
@@ -518,19 +554,7 @@ class DocxParser:
         if parsed == '':
             return parsed
 
-        # Get the list style for the pending list.
-        lst_style = self.get_list_style(
-            el.num_id,
-            el.ilvl,
-        )
-        # Create the actual list and return it.
-        if lst_style == 'bullet':
-            return self.unordered_list(parsed)
-        else:
-            return self.ordered_list(
-                parsed,
-                lst_style,
-            )
+        return self._build_list(el, parsed)
 
     def parse_p(self, el, text):
         if text == '':
@@ -550,15 +574,19 @@ class DocxParser:
         return parsed
 
     def _should_append_break_tag(self, next_el):
+        paragraph_like_tags = [
+            'p',
+            'sdt',
+            ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
             return False
         if next_el.previous.is_last_list_item_in_root:
             return False
-        if next_el.previous.tag != 'p':
+        if next_el.previous.tag not in paragraph_like_tags:
             return False
-        if next_el.tag != 'p':
+        if next_el.tag not in paragraph_like_tags:
             return False
         return True
 
@@ -575,17 +603,17 @@ class DocxParser:
 
         def _should_parse_next_as_content(el):
             """
-            Get the contents of the next el and append it to the
-            contents of the current el (that way things like tables
-            are actually in the li tag instead of in the ol/ul tag).
-            """
+Get the contents of the next el and append it to the
+contents of the current el (that way things like tables
+are actually in the li tag instead of in the ol/ul tag).
+"""
             next_el = el.next
             if next_el is None:
                 return False
             if (
-                    not next_el.is_list_item and
-                    not el.is_last_list_item_in_root
-            ):
+                not next_el.is_list_item and
+                not el.is_last_list_item_in_root
+                ):
                 return True
             if next_el.is_first_list_item:
                 if next_el.num_id == el.num_id:
@@ -603,7 +631,7 @@ class DocxParser:
                 parsed += next_elements_content
             else:
                 break
-        # Create the actual li element
+            # Create the actual li element
         return self.list_element(parsed)
 
     def _get_rowspan(self, el, v_merge):
@@ -616,9 +644,9 @@ class DocxParser:
         # We only want table cells that have a higher row_index that is greater
         # than the current_row and that are on the current_col
         tcs = [
-            tc for tc in tbl.find_all('tc')
-            if tc.row_index >= current_row and
-            tc.column_index == current_col
+        tc for tc in tbl.find_all('tc')
+        if tc.row_index >= current_row and
+           tc.column_index == current_col
         ]
         restart_in_v_merge = False
         if v_merge is not None and 'val' in v_merge.attrib:
@@ -683,7 +711,7 @@ class DocxParser:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
             return blip.get('embed')
-        # Picts
+            # Picts
         imagedata = el.find_first('imagedata')
         if imagedata is not None:
             return imagedata.get('id')
@@ -693,23 +721,23 @@ class DocxParser:
 
     def _get_image_size(self, el):
         """
-        If we can't find a height or width, return 0 for whichever is not
-        found, then rely on the `image` handler to strip those attributes. This
-        functionality can change once we integrate PIL.
-        """
-        sizes = el.find_first('ext')
+If we can't find a height or width, return 0 for whichever is not
+found, then rely on the `image` handler to strip those attributes. This
+functionality can change once we integrate PIL.
+"""
         localDpi = False
+        sizes = el.find_first('ext')
         if sizes is not None:
             for size in sizes:
                 if size.tag == 'useLocalDpi':
                     localDpi = True
-            if localDpi is False:
+            if not localDpi:
                 x = self._convert_image_size(int(sizes.get('cx')))
                 y = self._convert_image_size(int(sizes.get('cy')))
                 return (
-                '%dpx' % x,
-                '%dpx' % y,
-                )
+                    '%dpx' % x,
+                    '%dpx' % y,
+                    )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not
@@ -736,10 +764,10 @@ class DocxParser:
 
     def _is_style_on(self, el):
         """
-        For b, i, u (bold, italics, and underline) merely having the tag is not
-        sufficient. You need to check to make sure it is not set to "false" as
-        well.
-        """
+For b, i, u (bold, italics, and underline) merely having the tag is not
+sufficient. You need to check to make sure it is not set to "false" as
+well.
+"""
         return el.get('val') != 'false'
 
     def parse_t(self, el, parsed):
@@ -756,8 +784,8 @@ class DocxParser:
 
     def parse_r(self, el, parsed):
         """
-        Parse the running text.
-        """
+Parse the running text.
+"""
         block = False
         text = parsed
         if not text:
@@ -765,18 +793,12 @@ class DocxParser:
         run_tag_property = el.find('rPr')
         if run_tag_property is not None:
             fns = []
-            if run_tag_property.has_child('b'):  # text styling
-                self.bold_style = True
+            if run_tag_property.has_child('b'): # text styling
                 if self._is_style_on(run_tag_property.find('b')):
                     fns.append(self.bold)
-            else:
-                self.bold_style = False
             if run_tag_property.has_child('i'):
-                self.italic_style = True
                 if self._is_style_on(run_tag_property.find('i')):
                     fns.append(self.italics)
-            else:
-                self.italic_style = False
             if run_tag_property.has_child('u'):
                 if self._is_style_on(run_tag_property.find('u')):
                     fns.append(self.underline)
@@ -786,7 +808,7 @@ class DocxParser:
         just = ''
         if paragraph_tag_property is not None:
             jc = paragraph_tag_property.find('jc')
-            if jc is not None:  # text alignments
+            if jc is not None: # text alignments
                 if jc.attrib['val'] == 'right':
                     just = 'right'
                 elif jc.attrib['val'] == 'center':
@@ -797,8 +819,10 @@ class DocxParser:
             right = ''
             left = ''
             firstLine = ''
-            hanging = ''
             if ind is not None:
+                right = None
+                left = None
+                firstLine = None
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
                     # divide by 20 to get to pt. multiply by (4/3) to get to px
@@ -812,23 +836,14 @@ class DocxParser:
                     firstLine = ind.attrib['firstLine']
                     firstLine = (int(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
-                if 'hanging' in ind.attrib:
-                    hanging = ind.attrib['hanging']
-                    hanging = (int(hanging)/20)
-                    hanging = str(hanging)
             if jc is not None or ind is not None:
                 t_els = el.find_all('t')
                 for el in t_els:
-                    if el.find_ancestor_with_tag('tc') is not None:
-                        tbl_cell = el.find_ancestor_with_tag('tc')
-                        self.indent_table(just,
-                            firstLine, left, right, tbl_cell.column_index)
                     if el.is_last_text:
                         block = False
                         self.block_text += text
-                        if el.find_ancestor_with_tag('tc') is None:
-                            text = self.indent(self.block_text, just,
-                            firstLine, left, right, hanging)
+                        text = self.indent(self.block_text, just,
+                            firstLine, left, right)
                         self.block_text = ''
                     else:
                         block = True
@@ -921,7 +936,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def list_element(self, text, lst_style):
+    def list_element(self, text):
         return text
 
     @abstractmethod
@@ -933,7 +948,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def table_cell(self, text, last, col, row, col_index, row_index):
+    def table_cell(self, text):
         return text
 
     @abstractmethod
@@ -942,8 +957,4 @@ class DocxParser:
 
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
-        return text  # TODO JUSTIFIED JUSTIFIED TEXT
-
-    @abstractmethod
-    def indent_table(self, text, just = '', left='', right='', firstLine='', column = 0):
-        return True
+        return text # TODO JUSTIFIED JUSTIFIED TEXT

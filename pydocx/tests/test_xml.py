@@ -718,6 +718,31 @@ class RTagWithNoText(_TranslationTestCase):
         return xml
 
 
+class SimpleTableTest(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+        <table><tr><td>Blank</td><td>Column 1</td><td>Column 2</td></tr>
+        <tr><td>Row 1</td><td>First</td><td>Second</td></tr>
+        <tr><td>Row 2</td><td>Third</td><td>Fourth</td></tr>
+        </table></body></html>'''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=3, num_columns=3, text=chain(
+            [DXB.p_tag('Blank')],
+            [DXB.p_tag('Column 1')],
+            [DXB.p_tag('Column 2')],
+            [DXB.p_tag('Row 1')],
+            [DXB.p_tag('First')],
+            [DXB.p_tag('Second')],
+            [DXB.p_tag('Row 2')],
+            [DXB.p_tag('Third')],
+            [DXB.p_tag('Fourth')],
+        ), merge=True)
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
 class MissingIlvl(_TranslationTestCase):
     expected_output = '''
     <html><body>
@@ -741,5 +766,50 @@ class MissingIlvl(_TranslationTestCase):
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
         body = lis
 
+        xml = DXB.xml(body)
+        return xml
+
+
+class SameNumIdInTable(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="lower-alpha">
+            <li>AAA
+                <table>
+                    <tr>
+                        <td>
+                            <ol data-list-type="lower-alpha">
+                                <li>BBB</li>
+                            </ol>
+                        </td>
+                    </tr>
+                </table>
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+    # Ensure its not failing somewhere and falling back to decimal
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li_text = [
+            ('BBB', 0, 1),
+        ]
+        lis = ''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        table = DXB.table(num_rows=1, num_columns=1, text=chain(
+            [lis],
+        ))
+        lis = ''
+        lis += DXB.li(text='AAA', ilvl=0, numId=1)
+        lis += table
+        lis += DXB.li(text='CCC', ilvl=0, numId=1)
+        body = lis
         xml = DXB.xml(body)
         return xml

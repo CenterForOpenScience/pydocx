@@ -767,6 +767,31 @@ class InsertTagInList(_TranslationTestCase):
         return xml
 
 
+class SmartTagInList(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                BBB
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        run_tags = [DXB.r_tag(i) for i in 'BBB']
+        smart_tag = DXB.smart_tag(run_tags)
+        p_tag = DXB.p_tag([smart_tag])
+
+        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body += p_tag
+        body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
 class SingleListItem(_TranslationTestCase):
     expected_output = '''
     <html><body>

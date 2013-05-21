@@ -923,7 +923,7 @@ class SDTTestCase(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>

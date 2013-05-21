@@ -19,22 +19,22 @@ TAGS_CONTAINING_CONTENT = (
     'drawing',
     'delText',
     'ins',
-    )
+)
 TAGS_HOLDING_CONTENT_TAGS = (
     'p',
     'tbl',
     'sdt',
-    )
+)
 
 
-def remove_namespaces(document): # remove namespaces
+def remove_namespaces(document):  # remove namespaces
 
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[-1], v)
-                for k, v in child.attrib.items()
+            for k, v in child.attrib.items()
         )
     return ElementTree.tostring(root)
 
@@ -117,7 +117,7 @@ setattr(_ElementInterface, 'is_last_text', False)
 
 
 @contextmanager
-def ZipFile(path): # This is not needed in python 3.2+
+def ZipFile(path):  # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
@@ -134,18 +134,18 @@ class DocxParser:
                 self.fonts = f.read('/word/fontTable.xml')
             except KeyError:
                 self.fonts = None
-            try: # Only present if there are lists
+            try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
                 self.numbering_text = None
-            try: # Only present if there are comments
+            try:  # Only present if there are comments
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
 
         self.root = ElementTree.fromstring(
-            remove_namespaces(self.document_text), # remove the namespaces
+            remove_namespaces(self.document_text),  # remove the namespaces
         )
         self.numbering_root = None
         if self.numbering_text:
@@ -183,7 +183,7 @@ class DocxParser:
         self.page_width = 0
         self._build_data(*args, **kwargs)
 
-        def add_parent(el): # if a parent, make that an attribute
+        def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
                 setattr(child, 'parent', el)
                 add_parent(child)
@@ -197,7 +197,7 @@ see http://msdn.microsoft.com/en-us/library/documentformat
             self.page_width = int(self.root.
                                   find_first('pgSz').attrib['w']) / 20
 
-        add_parent(self.root) # create the parent attributes
+        add_parent(self.root)  # create the parent attributes
 
         #all blank when we init
         self.comment_store = None
@@ -205,12 +205,12 @@ see http://msdn.microsoft.com/en-us/library/documentformat
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
         self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root) # begin to parse
+        self.parse_begin(self.root)  # begin to parse
 
     def _filter_children(self, element, tags):
         return [
-        el for el in element.getchildren()
-        if el.tag in tags
+            el for el in element.getchildren()
+            if el.tag in tags
         ]
 
     def _set_list_attributes(self, el):
@@ -261,7 +261,7 @@ terrible html gets generated.
                     if (
                         v_merge is not None and
                         'continue' == v_merge.get('val', '')
-                        ):
+                    ):
                         child.vmerge_continue = True
 
     def _set_text_attributes(self, el):
@@ -286,10 +286,10 @@ terrible html gets generated.
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
-                i for i in list_elements
-                if (
-                    i.num_id == num_id and
-                    i.ilvl == ilvl
+                    i for i in list_elements
+                    if (
+                        i.num_id == num_id and
+                        i.ilvl == ilvl
                     )
                 ]
                 if not filtered_list_elements:
@@ -304,8 +304,8 @@ terrible html gets generated.
         # non list elements into the first root level list.
         for num_id in num_ids:
             filtered_list_elements = [
-            i for i in list_elements
-            if i.num_id == num_id
+                i for i in list_elements
+                if i.num_id == num_id
             ]
             if not filtered_list_elements:
                 continue
@@ -326,7 +326,7 @@ terrible html gets generated.
             'heading 8': 'h6',
             'heading 9': 'h6',
             'heading 10': 'h6',
-            }
+        }
         for element in elements:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:
@@ -350,7 +350,7 @@ terrible html gets generated.
             for child in self._filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
                 has_descendant_with_tag = any(
                     child.has_descendant_with_tag(tag) for
-                        tag in TAGS_CONTAINING_CONTENT
+                    tag in TAGS_CONTAINING_CONTENT
                 )
                 if has_descendant_with_tag:
                     children.append(child)
@@ -385,8 +385,8 @@ terrible html gets generated.
         # Find the first and last li elements
         body = el.find_first('body')
         list_elements = [
-        child for child in body.find_all('p')
-        if child.is_list_item
+            child for child in body.find_all('p')
+            if child.is_list_item
         ]
         num_ids = set([i.num_id for i in list_elements])
         ilvls = set([i.ilvl for i in list_elements])
@@ -394,7 +394,7 @@ terrible html gets generated.
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
         p_elements = [
-        child for child in body.find_all('p')
+            child for child in body.find_all('p')
         ]
         self._set_headers(p_elements)
         self._set_next(body)
@@ -539,13 +539,13 @@ this in _parse_list, however it seemed cleaner to do it here.
                 # Will be handled when the ilvls do match (nesting issue)
             if last_el.ilvl != first_el.ilvl:
                 return False
-                # We only care about last items that have not been parsed before
+            # We only care about last items that have not been parsed before
             # (first list items are always parsed at the beginning of this
             # method.)
             return (
                 not last_el.is_first_list_item and
                 last_el.is_last_list_item_in_root
-                )
+            )
         if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
@@ -577,7 +577,7 @@ this in _parse_list, however it seemed cleaner to do it here.
         paragraph_like_tags = [
             'p',
             'sdt',
-            ]
+        ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
@@ -613,7 +613,7 @@ are actually in the li tag instead of in the ol/ul tag).
             if (
                 not next_el.is_list_item and
                 not el.is_last_list_item_in_root
-                ):
+            ):
                 return True
             if next_el.is_first_list_item:
                 if next_el.num_id == el.num_id:
@@ -644,9 +644,9 @@ are actually in the li tag instead of in the ol/ul tag).
         # We only want table cells that have a higher row_index that is greater
         # than the current_row and that are on the current_col
         tcs = [
-        tc for tc in tbl.find_all('tc')
-        if tc.row_index >= current_row and
-           tc.column_index == current_col
+            tc for tc in tbl.find_all('tc')
+            if tc.row_index >= current_row and
+            tc.column_index == current_col
         ]
         restart_in_v_merge = False
         if v_merge is not None and 'val' in v_merge.attrib:
@@ -737,7 +737,7 @@ functionality can change once we integrate PIL.
                 return (
                     '%dpx' % x,
                     '%dpx' % y,
-                    )
+                )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not
@@ -793,7 +793,7 @@ Parse the running text.
         run_tag_property = el.find('rPr')
         if run_tag_property is not None:
             fns = []
-            if run_tag_property.has_child('b'): # text styling
+            if run_tag_property.has_child('b'):  # text styling
                 if self._is_style_on(run_tag_property.find('b')):
                     fns.append(self.bold)
             if run_tag_property.has_child('i'):
@@ -808,7 +808,7 @@ Parse the running text.
         just = ''
         if paragraph_tag_property is not None:
             jc = paragraph_tag_property.find('jc')
-            if jc is not None: # text alignments
+            if jc is not None:  # text alignments
                 if jc.attrib['val'] == 'right':
                     just = 'right'
                 elif jc.attrib['val'] == 'center':
@@ -843,7 +843,7 @@ Parse the running text.
                         block = False
                         self.block_text += text
                         text = self.indent(self.block_text, just,
-                            firstLine, left, right)
+                                           firstLine, left, right)
                         self.block_text = ''
                     else:
                         block = True
@@ -957,4 +957,4 @@ Parse the running text.
 
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
-        return text # TODO JUSTIFIED JUSTIFIED TEXT
+        return text

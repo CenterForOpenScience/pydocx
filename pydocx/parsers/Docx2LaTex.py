@@ -1,6 +1,4 @@
 from pydocx.DocxParser import DocxParser
-from mako.template import Template
-import xml.sax.saxutils
 
 
 class Docx2LaTex(DocxParser):
@@ -11,7 +9,7 @@ class Docx2LaTex(DocxParser):
         self.current_col = 0
         self.table_info = []
         self.columns = {}
-        super(Docx2LaTex, self ).__init__(*args, **kwargs)
+        super(Docx2LaTex, self).__init__(*args, **kwargs)
 
     @property
     def parsed(self):
@@ -21,7 +19,7 @@ class Docx2LaTex(DocxParser):
         return unicode(content)
 
     def escape(self, text):
-        chars = ['%', '&', '#', '$', '~', '_', '^', '{', '}',]
+        chars = ['%', '&', '#', '$', '~', '_', '^', '{', '}']
         for ch in chars:
             if ch in text:
                 text = text.replace(ch, '\\'+ch)
@@ -31,27 +29,29 @@ class Docx2LaTex(DocxParser):
         return '\\\\ '
 
     def bold(self, text):
-        return '\\textbf {%s}' %text
+        return '\\textbf {%s}' % text
 
     def italics(self, text):
-        return '\\emph {%s}' %text
+        return '\\emph {%s}' % text
 
     def underline(self, text):
-        return '\\underline {%s}' %text
+        return '\\underline {%s}' % text
 
     def list_element(self, text):
-        return '\\item {%s}' %text
+        return '\\item {%s}' % text
 
     def ordered_list(self, text, list_style):
-        return '\\begin{itemize}{%s}\\end{{enumerate}}'%text
+        return '\\begin{itemize}{%s}\\end{{enumerate}}' % text
 
     def unordered_list(self, text):
-        return '\\begin{itemize}{%s}\\end{{itemize}}'%text
+        return '\\begin{itemize}{%s}\\end{{itemize}}' % text
 
     def head(self):
         return "\\documentclass{article}\\usepackage{hyperref}"\
-               "\\usepackage{graphicx}\\usepackage{changes}\\usepackage{changepage} "\
-               "\\usepackage[paperwidth=%spt]{geometry}\\usepackage{hanging}" %self.page_width
+               "\\usepackage{graphicx}\\usepackage{changes}" \
+               "\\usepackage{changepage} "\
+               "\\usepackage[paperwidth=%spt]{geometry}" \
+               "\\usepackage{hanging}" % self.page_width
 
     def paragraph(self, text, pre=None):
         return '\\par{'+text+'} '
@@ -61,7 +61,7 @@ class Docx2LaTex(DocxParser):
         return text
 
     def insertion(self, text, author, date):
-        return '\\added[id='+author+',remark='+date+']{%s}' %text
+        return '\\added[id='+author+',remark='+date+']{%s}' % text
 
     def hyperlink(self, text, href):
         if text == '':
@@ -69,7 +69,7 @@ class Docx2LaTex(DocxParser):
         return '\\href{%(href)s}{%(text)s}' % {
             'href': href,
             'text': text,
-            }
+        }
 
     def image_handler(self, path):
         return path
@@ -79,8 +79,8 @@ class Docx2LaTex(DocxParser):
         if not src:
             return ''
         if all([x, y]):
-            x = x.replace('px','')
-            y = y.replace('px','')
+            x = x.replace('px', '')
+            y = y.replace('px', '')
             x = float(x)
             y = float(y)
             x = x * float(3) / float(4)
@@ -115,10 +115,11 @@ class Docx2LaTex(DocxParser):
             else:
                 setup_cols += 'l'
         self.table_info = []
-        return '\\\\\\begin{tabular} {%s} %s \\end{tabular}\\\\ '%(setup_cols, text)
+        return '\\\\\\begin{tabular} {%s} %s \\end{tabular}\\\\ ' \
+               % (setup_cols, text)
 
     def table_row(self, text):
-        return '%s \\\\ '%text
+        return '%s \\\\ ' % text
 
     def table_cell(self, text, last, col_index, row_index, col='', row=''):
         if last is True:
@@ -126,12 +127,12 @@ class Docx2LaTex(DocxParser):
             self.rows = row_index + 1
             return text
         else:
-            return '%s & '%text
+            return '%s & ' % text
 
     def page_break(self):
         return '\\newpage '
 
-    def indent_table(self, just='', firstLine='', left='', right='', column = 0):
+    def indent_table(self, just='', firstLine='', left='', right='', column=0):
         self.columns = {}
         self.columns['Column'] = column
         self.columns['justify'] = just
@@ -139,29 +140,28 @@ class Docx2LaTex(DocxParser):
             self.table_info.append(self.columns)
         return ''
 
-
-
-    def indent(self, text, just='', firstLine='', left='', right='', hanging = 0):
+    def indent(self, text, just='', firstLine='',
+               left='', right='', hanging=0):
         raggedright = False
         raggedleft = False
         center = False
         slug = '{'
         if hanging:
-            slug += '\\begin{hangpara}{%spt}{1} ' %(hanging)
+            slug += '\\begin{hangpara}{%spt}{1} ' % (hanging)
         if left and not right:
             left = float(left)
             left = left * float(3) / float(4)
-            slug += '\\begin{adjustwidth}{}{%spt}' %(left)
+            slug += '\\begin{adjustwidth}{}{%spt}' % (left)
         if right and not left:
             right = float(right)
             right = right * float(3) / float(4)
-            slug += '\\begin{adjustwidth}{%spt}{}' %(right)
+            slug += '\\begin{adjustwidth}{%spt}{}' % (right)
         if right and left:
             left = float(left)
             right = float(right)
             left = left * float(3) / float(4)
             right = right * float(3) / float(4)
-            slug += '\\begin{adjustwidth}{%spt}{%spt}' %(left,right)
+            slug += '\\begin{adjustwidth}{%spt}{%spt}' % (left, right)
         if firstLine:
             slug += '\\setlength{\\parindent}{'+firstLine+'pt}\\indent '
         if just:
@@ -173,7 +173,7 @@ class Docx2LaTex(DocxParser):
                 slug += '\\begin{center} '
             elif just == 'right':
                 raggedleft = True
-                slug +=  '\\begin{flushleft} '
+                slug += '\\begin{flushleft} '
         slug += text
         if left or right:
             slug += '\\end{adjustwidth}'
@@ -185,16 +185,12 @@ class Docx2LaTex(DocxParser):
             slug += '\\end{center}'
         if raggedleft:
             slug += '\\end{flushleft}'
-        slug+= '}'
+        slug += '}'
         return slug
         #TODO left and right
 
     def break_tag(self):
         return ''
-#        return '\\\\ '
 
     def deletion(self, text, author, date):
         return '\\deleted[id='+author+',remark='+date+']{%s}' % text
-
-    def insertion(self, text, author, date):
-        return '\\added[id='+author+',remark='+date+']{%s}' %text

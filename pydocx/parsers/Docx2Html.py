@@ -24,12 +24,7 @@ class Docx2Html(DocxParser):
         }
 
     def style(self):
-        return textwrap.dedent('''<style>.insert{{color:red}}.delete
-        {{color:red; text-decoration:line-through}}.center
-        {{text-align:center}}.right{{text-align:right}}
-        .left{{text-align:left}} .comment{{color:blue}}
-        body{{width:%(width)spx; margin:0px auto;
-        }}</style>''') % {
+        return textwrap.dedent('<style>.insert {color:green;}.delete {color:red;text-decoration:line-through;}.center {text-align:center;}.right {text-align:right;}.left {text-align:left;}.comment {color:blue;}body {width:0px;margin:0px auto;}</style>') % {  # noqa
             'width': (self.page_width * (4 / 3)),
         }
         #multiple by (4/3) to get to px
@@ -99,8 +94,9 @@ class Docx2Html(DocxParser):
         }
 
     def ordered_list(self, text, list_style):
-        return "<ol>%(text)s</ol>" % {
+        return '<ol list-style-type="%(list_style)s">%(text)s</ol>' % {
             'text': text,
+            'list_style': list_style,
         }
 
     def unordered_list(self, text):
@@ -123,7 +119,7 @@ class Docx2Html(DocxParser):
         return '&nbsp&nbsp&nbsp&nbsp'
 
     def table(self, text):
-        return '<table border=1>' + text + '</table>'
+        return '<table border="1">' + text + '</table>'
 
     def table_row(self, text):
         return '<tr>' + text + '</tr>'

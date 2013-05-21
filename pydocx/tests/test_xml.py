@@ -146,8 +146,8 @@ class ImageLocal(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        drawing = DXB.drawing(r_id='rId0', size=True)
-        pict = DXB.pict(r_id='rId1', size=True)
+        drawing = DXB.drawing(r_id='rId0', size=False)
+        pict = DXB.pict(r_id='rId1', size=False)
         tags = [
             drawing,
             pict,
@@ -158,29 +158,6 @@ class ImageLocal(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
-
-    def test_get_image_id(self):
-        parser = XMLDocx2Html(
-            document_xml=self.get_xml(),
-            rels_dict=self.relationship_dict,
-        )
-        tree = ElementTree.fromstring(
-            remove_namespaces(self.get_xml()),
-        )
-        els = []
-        els.extend(tree.find_all('drawing'))
-        els.extend(tree.find_all('pict'))
-        image_ids = []
-        for el in els:
-            image_ids.append(parser._get_image_id(el))
-        expected = [
-            'rId0',
-            'rId1',
-        ]
-        self.assertEqual(
-            set(image_ids),
-            set(expected),
-        )
 
 
 class ImageTestCase(_TranslationTestCase):

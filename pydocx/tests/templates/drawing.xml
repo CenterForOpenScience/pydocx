@@ -39,7 +39,9 @@
 							<pic:spPr bwMode="auto">
 								<a:xfrm>
 									<a:off x="0" y="0"/>
+                                    {% if size %}
 									<a:ext cx="{{ width }}" cy="{{ height }}"/>
+                                    {% endif %}
 								</a:xfrm>
 								<a:prstGeom prst="rect">
 									<a:avLst/>

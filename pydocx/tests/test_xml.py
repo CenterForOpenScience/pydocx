@@ -737,6 +737,61 @@ class DeleteTagInList(_TranslationTestCase):
         body = DXB.li(text='AAA', ilvl=0, numId=0)
         body += p_tag
         body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class SingleListItem(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="lower-alpha">
+            <li>AAA</li>
+        </ol>
+        <p>BBB</p>
+    </body></html>
+    '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li = DXB.li(text='AAA', ilvl=0, numId=1)
+        p_tags = [
+            DXB.p_tag('BBB'),
+        ]
+        body = li
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class SimpleTableTest(_TranslationTestCase):
+    expected_output = '''
+        <html><body>
+        <table><tr><td>Blank</td><td>Column 1</td><td>Column 2</td></tr>
+        <tr><td>Row 1</td><td>First</td><td>Second</td></tr>
+        <tr><td>Row 2</td><td>Third</td><td>Fourth</td></tr>
+        </table></body></html>'''
+
+    def get_xml(self):
+        table = DXB.table(num_rows=3, num_columns=3, text=chain(
+            [DXB.p_tag('Blank')],
+            [DXB.p_tag('Column 1')],
+            [DXB.p_tag('Column 2')],
+            [DXB.p_tag('Row 1')],
+            [DXB.p_tag('First')],
+            [DXB.p_tag('Second')],
+            [DXB.p_tag('Row 2')],
+            [DXB.p_tag('Third')],
+            [DXB.p_tag('Fourth')],
+        ), merge=True)
+        body = table
+
         xml = DXB.xml(body)
         return xml
 

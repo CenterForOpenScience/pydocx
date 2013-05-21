@@ -137,11 +137,13 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
 
 class ImageLocal(_TranslationTestCase):
     relationship_dict = {
-        'rId0': 'media/image1.jpeg'
+        'rId0': 'media/image1.jpeg',
+        'rId1': 'media/image2.jpeg',
     }
     expected_output = '''
     <html><body>
     <p><img src="media/image1.jpeg" /></p>
+    <p><img src="media/image2.jpeg" /></p>
     </body></html>
     '''
 

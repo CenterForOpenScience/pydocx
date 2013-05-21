@@ -12,12 +12,13 @@ from pydocx.DocxParser import (
 from unittest import TestCase
 
 STYLE = (
-    '<style>.insert {color:green;}'
-    '.delete {color:red;text-decoration:line-through;}'
-    '.center {text-align:center;}'
-    '.right {text-align:right;}'
-    '.left {text-align:left;}'
-    '.comment {color:blue;}'
+    '<style>'
+    '.pydocx-insert {color:green;}'
+    '.pydocx-delete {color:red;text-decoration:line-through;}'
+    '.pydocx-center {text-align:center;}'
+    '.pydocx-right {text-align:right;}'
+    '.pydocx-left {text-align:left;}'
+    '.pydocx-comment {color:blue;}'
     '.pydocx-underline {text-decoration: underline;}'
     'body {width:612px;margin:0px auto;}'
     '</style>'

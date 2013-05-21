@@ -9,9 +9,6 @@ class Docx2Html(DocxParser):
     @property
     def parsed(self):
         content = self._parsed
-        content = content.replace('<p></p><p></p>', '<br />')
-        content = content.replace('</p><br /><p>', '</p><p>')
-        content = content.replace('</p><br /><ul>', '</p><ul>')
         content = "<html>%(head)s<body>%(content)s</body></html>" % {
             'head': self.head(),
             'content': content,

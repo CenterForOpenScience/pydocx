@@ -16,6 +16,7 @@ USE_ALIGNMENTS = True
 
 
 def remove_namespaces(document):  # remove namespaces
+
     root = ElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
@@ -247,7 +248,7 @@ class DocxParser:
                     v_merge = child.find_first('vMerge')
                     if (
                             v_merge is not None and
-                            'continue' == v_merge.attrib['val']
+                            'continue' == v_merge.get('val', '')
                     ):
                         child.vmerge_continue = True
 
@@ -441,7 +442,7 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = el.find_first('vMerge')
-        if v_merge is not None and 'continue' in v_merge.attrib['val']:
+        if v_merge is not None and 'continue' == v_merge.get('val', ''):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
@@ -462,10 +463,32 @@ class DocxParser:
             return self.parse_table_cell_contents(el, parsed)
         return parsed
 
+    def _build_list(self, el, text):
+        # Get the list style for the pending list.
+        lst_style = self.get_list_style(
+            el.num_id.num_id,
+            el.ilvl,
+        )
+
+        parsed = text
+        # Create the actual list and return it.
+        if lst_style == 'bullet':
+            return self.unordered_list(parsed)
+        else:
+            return self.ordered_list(
+                parsed,
+                lst_style,
+            )
+
     def _parse_list(self, el, text):
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
+        # Everything after this point assumes the first element is not also the
+        # last. If the first element is also the last then early return by
+        # building and returning the completed list.
+        if el.is_last_list_item_in_root:
+            return self._build_list(el, parsed)
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -524,20 +547,7 @@ class DocxParser:
         if parsed == '':
             return parsed
 
-        # Get the list style for the pending list.
-        lst_style = self.get_list_style(
-            el.num_id.num_id,
-            el.ilvl,
-        )
-
-        # Create the actual list and return it.
-        if lst_style == 'bullet':
-            return self.unordered_list(parsed)
-        else:
-            return self.ordered_list(
-                parsed,
-                lst_style,
-            )
+        return self._build_list(el, parsed)
 
     def parse_p(self, el, text):
         if text == '':
@@ -628,7 +638,7 @@ class DocxParser:
             tc.column_index == current_col
         ]
         restart_in_v_merge = False
-        if v_merge is not None:
+        if v_merge is not None and 'val' in v_merge.attrib:
             restart_in_v_merge = 'restart' in v_merge.attrib['val']
 
         def increment_rowspan(tc):
@@ -704,14 +714,19 @@ class DocxParser:
         found, then rely on the `image` handler to strip those attributes. This
         functionality can change once we integrate PIL.
         """
+        localDpi = False
         sizes = el.find_first('ext')
         if sizes is not None:
-            x = self._convert_image_size(int(sizes.get('cx')))
-            y = self._convert_image_size(int(sizes.get('cy')))
-            return (
-                '%dpx' % x,
-                '%dpx' % y,
-            )
+            for size in sizes:
+                if size.tag == 'useLocalDpi':
+                    localDpi = True
+            if not localDpi:
+                x = self._convert_image_size(int(sizes.get('cx')))
+                y = self._convert_image_size(int(sizes.get('cy')))
+                return (
+                    '%dpx' % x,
+                    '%dpx' % y,
+                )
         shape = el.find_first('shape')
         if shape is not None:
             # If either of these are not set, rely on the method `image` to not

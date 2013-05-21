@@ -314,7 +314,7 @@ class DocxParser:
             'heading 8': 'h6',
             'heading 9': 'h6',
             'heading 10': 'h6',
-            }
+        }
         for element in elements:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:

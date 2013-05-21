@@ -844,6 +844,7 @@ class SameNumIdInTable(_TranslationTestCase):
             <li>CCC</li>
         </ol>
     '''
+
     # Ensure its not failing somewhere and falling back to decimal
     numbering_dict = {
         '1': {
@@ -866,5 +867,28 @@ class SameNumIdInTable(_TranslationTestCase):
         lis += table
         lis += DXB.li(text='CCC', ilvl=0, numId=1)
         body = lis
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class SDTTestCase(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="decimal">
+            <li>AAA<br/>
+                BBB
+            </li>
+            <li>CCC</li>
+        </ol>
+    </body></html>
+    '''
+
+    def get_xml(self):
+        body = ''
+        body += DXB.li(text='AAA', ilvl=0, numId=0)
+        body += DXB.sdt_tag(p_tag=DXB.p_tag(text='BBB'))
+        body += DXB.li(text='CCC', ilvl=0, numId=0)
+
         xml = DXB.xml(body)
         return xml

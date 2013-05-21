@@ -146,7 +146,7 @@ def test_inline_tags():
     assert_html_equal(actual_html, (
         '<html><body><p>This sentence has some <strong>bold</strong>, '
         'some <em>italics</em> and some '
-        '<span style="text-decoration: underline">underline</span>, '
+        '<span class="pydocx-underline">underline</span>, '
         'as well as a <a href="http://www.google.com/">hyperlink</a>'
         '.</p></body></html>'
     ))

@@ -25,6 +25,7 @@ class Docx2Html(DocxParser):
         {{color:red; text-decoration:line-through}}.center
         {{text-align:center}}.right{{text-align:right}}
         .left{{text-align:left}} .comment{{color:blue}}
+        .pydocx-underline {text-decoration: underline;}
         body{{width:%(width)spx; margin:0px auto;
         }}</style>''') % {
             'width': (self.page_width * (4 / 3)),
@@ -112,7 +113,7 @@ class Docx2Html(DocxParser):
         return '<em>' + text + '</em>'
 
     def underline(self, text):
-        return '<span style="text-decoration: underline">' + text + '</span>'
+        return '<span class="pydocx-underline">' + text + '</span>'
 
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert

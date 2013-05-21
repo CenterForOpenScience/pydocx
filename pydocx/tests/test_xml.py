@@ -718,6 +718,34 @@ class RTagWithNoText(_TranslationTestCase):
         return xml
 
 
+class SingleListItem(_TranslationTestCase):
+    expected_output = '''
+    <html><body>
+        <ol data-list-type="lower-alpha">
+            <li>AAA</li>
+        </ol>
+        <p>BBB</p>
+    </body></html>
+    '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'lowerLetter',
+        }
+    }
+
+    def get_xml(self):
+        li = DXB.li(text='AAA', ilvl=0, numId=1)
+        p_tags = [
+            DXB.p_tag('BBB'),
+        ]
+        body = li
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
 class SimpleTableTest(_TranslationTestCase):
     expected_output = '''
         <html><body>

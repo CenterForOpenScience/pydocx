@@ -722,7 +722,7 @@ class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='delete' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -746,7 +746,7 @@ class InsertTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 <span class='insert' author='' date=''>BBB</span>
             </li>
             <li>CCC</li>
@@ -771,7 +771,7 @@ class SmartTagInList(_TranslationTestCase):
     expected_output = '''
     <html><body>
         <ol data-list-type="decimal">
-            <li>AAA<br/>
+            <li>AAA<br />
                 BBB
             </li>
             <li>CCC</li>

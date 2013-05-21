@@ -109,13 +109,13 @@ class Docx2Html(DocxParser):
         }
 
     def bold(self, text):
-        return '<b>' + text + '</b>'
+        return '<strong>' + text + '</strong>'
 
     def italics(self, text):
-        return '<i>' + text + '</i>'
+        return '<em>' + text + '</em>'
 
     def underline(self, text):
-        return '<u>' + text + '</u>'
+        return '<span style="text-decoration: underline">' + text + '</span>'
 
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert
@@ -142,7 +142,7 @@ class Docx2Html(DocxParser):
         }
 
     def page_break(self):
-        return '<hr>'
+        return '<hr />'
 
     def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
@@ -167,4 +167,4 @@ class Docx2Html(DocxParser):
         }
 
     def break_tag(self):
-        return '<br/>'
+        return '<br />'

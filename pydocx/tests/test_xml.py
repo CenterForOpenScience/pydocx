@@ -148,8 +148,8 @@ class ImageLocal(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        drawing = DXB.drawing(r_id='rId0', width=None, height=None)
-        pict = DXB.pict(r_id='rId1', width=None, height=None)
+        drawing = DXB.drawing(height=None, width=None, r_id='rId0')
+        pict = DXB.pict(height=None, width=None, r_id='rId1')
         tags = [
             drawing,
             pict,
@@ -159,6 +159,7 @@ class ImageLocal(_TranslationTestCase):
             body += el
 
         xml = DXB.xml(body)
+        print xml
         return xml
 
 
@@ -233,6 +234,7 @@ class ImageTestCase(_TranslationTestCase):
             ('40px', '20px'),
             ('41pt', '21pt'),
         ]
+        print image_ids
         self.assertEqual(
             set(image_ids),
             set(expected),

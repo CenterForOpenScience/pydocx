@@ -1,30 +1,20 @@
 <w:p w:rsidR="00E94BDC" w:rsidRPr="003638EA" w:rsidRDefault="00E94BDC" w:rsidP="00E94BDC">
-	<w:pPr>
-		<w:rPr>
-			<w:color w:val="000000"/>
-		</w:rPr>
-	</w:pPr>
-	<w:r w:rsidR="00360165">
-		<w:rPr>
-			<w:color w:val="000000"/>
-		</w:rPr>
-		<w:pict>
-            {% if width != None and height != None %}
-			<v:shape id="_x0000_i1027" type="#_x0000_t75"
-                     style= "width:{{ width }}pt;height:{{ height }}pt">
-				{% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
-			</v:shape>
-            {% elif width != None %}
+    <w:pPr>
+        <w:rPr>
+            <w:color w:val="000000"/>
+        </w:rPr>
+    </w:pPr>
+    <w:r w:rsidR="00360165">
+        <w:rPr>
+            <w:color w:val="000000"/>
+        </w:rPr>
+        <w:pict>
             <v:shape id="_x0000_i1027" type="#_x0000_t75"
-                     style= "width:{{ width }}pt;">
-                {% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
-            </v:shape>
-            {% elif height != None %}
-            <v:shape id="_x0000_i1027" type="#_x0000_t75"
-                     style= "height:{{ height }}pt;">
-                {% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
-            </v:shape>
-            {% endif %}
-		</w:pict>
-	</w:r>
-</w:p>
+            {%if width != None or height != None %} style={% if width != None %}
+            "width:{{ width }}pt;{%endif%}{% if height != None %}height:{{ height }}pt"
+            {%endif%}{% endif %}>
+            {% if r_id %}<v:imagedata r:id="{{ r_id }}" o:title="New Picture"/>{% endif %}
+        </v:shape>
+    </w:pict>
+</w:r>
+        </w:p>

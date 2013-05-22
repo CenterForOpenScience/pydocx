@@ -54,8 +54,7 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return (
-            "<span class='pydocx-insert' author='%(author)s' "
-            "date='%(date)s'>%(text)s</span>"
+            "<span class='pydocx-insert'>%(text)s</span>"
         ) % {
             'author': author,
             'date': date,
@@ -88,8 +87,7 @@ class Docx2Html(DocxParser):
 
     def deletion(self, text, author, date):
         return (
-            "<span class='pydocx-delete' author='%(author)s' "
-            "date='%(date)s'>%(text)s</span>"
+            "<span class='pydocx-delete'>%(text)s</span>"
         ) % {
             'author': author,
             'date': date,

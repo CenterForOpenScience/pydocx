@@ -125,44 +125,39 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def drawing(self, r_id, height=None, width=None, size=True):
+    def drawing(self, r_id, height=None, width=None):
         template = env.get_template(templates['drawing'])
         if height and width:
             kwargs = {
                 'r_id': r_id,
-                'size': size,
                 'height': height * EMUS_PER_PIXEL,
                 'width': width * EMUS_PER_PIXEL,
             }
         elif height:
             kwargs = {
                 'r_id': r_id,
-                'size': size,
                 'height': height * EMUS_PER_PIXEL,
                 'width': width,
             }
         elif width:
             kwargs = {
                 'r_id': r_id,
-                'size': size,
                 'width': width * EMUS_PER_PIXEL,
                 'height': height,
             }
         else:
             kwargs = {
                 'r_id': r_id,
-                'size': size,
                 'width': width,
                 'height': height,
             }
         return template.render(**kwargs)
 
     @classmethod
-    def pict(self, height=0, width=0, r_id=None, size=True):
+    def pict(self, r_id=None, height=None, width=None):
         template = env.get_template(templates['pict'])
         kwargs = {
             'r_id': r_id,
-            'size': size,
             'height': height,
             'width': width,
         }

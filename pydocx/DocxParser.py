@@ -714,12 +714,13 @@ class DocxParser:
                 '%dpx' % y,
             )
         shape = el.find_first('shape')
-        if shape is not None:
+        if shape is not None and shape.get('style') is not None:
             # If either of these are not set, rely on the method `image` to not
             # use either of them.
             x = 0
             y = 0
             styles = shape.get('style').split(';')
+
             for s in styles:
                 if s.startswith('height:'):
                     y = s.split(':')[1]

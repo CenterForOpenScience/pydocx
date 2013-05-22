@@ -159,7 +159,6 @@ class ImageLocal(_TranslationTestCase):
             body += el
 
         xml = DXB.xml(body)
-        print xml
         return xml
 
 

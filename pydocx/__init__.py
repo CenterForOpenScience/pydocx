@@ -1,9 +1,4 @@
-from .parsers import Docx2Html, Docx2Markdown
+from .parsers import Docx2LaTex
 
-
-def docx2html(path):
-    return Docx2Html(path).parsed
-
-
-def docx2markdown(path):
-    return Docx2Markdown(path).parsed
+def docx2latex(path):
+    return Docx2LaTex(path).parsed

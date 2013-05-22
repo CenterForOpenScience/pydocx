@@ -2,7 +2,6 @@
 import re
 from contextlib import contextmanager
 
-from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.DocxParser import (
     remove_namespaces,
     # We are only importing this from DocxParse since we have added methods to

@@ -2,6 +2,7 @@ from jinja2 import Environment, PackageLoader
 from pydocx.DocxParser import EMUS_PER_PIXEL
 
 templates = {
+    'delete': 'text_delete.xml',
     'drawing': 'drawing.xml',
     'hyperlink': 'hyperlink.xml',
     'insert': 'insert.xml',
@@ -9,6 +10,7 @@ templates = {
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
     'smartTag': 'smart_tag.xml',
     'style': 'style.xml',
@@ -79,10 +81,26 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
+    def delete_tag(self, deleted_texts):
+        template = env.get_template(templates['delete'])
+        kwargs = {
+            'deleted_texts': deleted_texts,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
     def smart_tag(self, run_tags):
         template = env.get_template(templates['smartTag'])
         kwargs = {
             'run_tags': run_tags,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def sdt_tag(self, p_tag):
+        template = env.get_template(templates['sdt'])
+        kwargs = {
+            'p_tag': p_tag,
         }
         return template.render(**kwargs)
 

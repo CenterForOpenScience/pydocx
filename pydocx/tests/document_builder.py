@@ -14,8 +14,8 @@ templates = {
     'style': 'style.xml',
     'styles': 'styles.xml',
     'table': 'table.xml',
-    'tc': 'tc.xml',
     'tr': 'tr.xml',
+    'tc': 'tc.xml',
 }
 
 env = Environment(

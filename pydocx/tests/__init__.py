@@ -10,6 +10,28 @@ from pydocx.DocxParser import (
 )
 from unittest import TestCase
 
+STYLE = (
+    '<style>'
+    '.pydocx-insert {color:green;}'
+    '.pydocx-delete {color:red;text-decoration:line-through;}'
+    '.pydocx-center {text-align:center;}'
+    '.pydocx-right {text-align:right;}'
+    '.pydocx-left {text-align:left;}'
+    '.pydocx-comment {color:blue;}'
+    '.pydocx-underline {text-decoration: underline;}'
+    'body {width:612px;margin:0px auto;}'
+    '</style>'
+)
+
+BASE_HTML = '''
+<html>
+    <head>
+    %s
+    </head>
+    <body>%%s</body>
+</html>
+''' % STYLE
+
 
 def assert_html_equal(actual_html, expected_html):
     assert collapse_html(
@@ -77,6 +99,10 @@ class XMLDocx2Html(Docx2Html):
                 remove_namespaces(document_xml),
             )
 
+        # This is the standard page width for a word document, Also the page
+        # width that we are looking for in the test.
+        self.page_width = 612
+
     def _parse_rels_root(self, *args, **kwargs):
         if self._test_rels_dict is None:
             return {}
@@ -91,29 +117,6 @@ class XMLDocx2Html(Docx2Html):
     def _parse_styles(self):
         return {}
 
-    def head(self):
-        return ''
-
-    def table(self, text):
-        return '<table>' + text + '</table>'
-
-    def ordered_list(self, text, list_style):
-        list_type_conversions = {
-            'decimal': 'decimal',
-            'decimalZero': 'decimal-leading-zero',
-            'upperRoman': 'upper-roman',
-            'lowerRoman': 'lower-roman',
-            'upperLetter': 'upper-alpha',
-            'lowerLetter': 'lower-alpha',
-            'ordinal': 'decimal',
-            'cardinalText': 'decimal',
-            'ordinalText': 'decimal',
-        }
-        return '<ol data-list-type="{list_style}">{text}</ol>'.format(
-            list_style=list_type_conversions.get(list_style, 'decimal'),
-            text=text,
-        )
-
 
 DEFAULT_NUMBERING_DICT = {
     '1': {
@@ -121,8 +124,8 @@ DEFAULT_NUMBERING_DICT = {
         '1': 'decimal',
     },
     '2': {
-        '0': 'none',
-        '1': 'none',
+        '0': 'lowerLetter',
+        '1': 'lowerLetter',
     },
 }
 
@@ -158,4 +161,4 @@ class _TranslationTestCase(TestCase):
             numbering_dict=self.numbering_dict,
         ).parsed
 
-        assert_html_equal(html, self.expected_output)
+        assert_html_equal(html, BASE_HTML % self.expected_output)

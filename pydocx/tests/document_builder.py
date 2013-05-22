@@ -133,8 +133,8 @@ class DocxBuilder(object):
             width = width * EMUS_PER_PIXEL
         kwargs = {
             'r_id': r_id,
-            'height': height * EMUS_PER_PIXEL,
-            'width': width * EMUS_PER_PIXEL,
+            'height': height,
+            'width': width,
         }
         return template.render(**kwargs)
 

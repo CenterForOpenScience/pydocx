@@ -13,6 +13,18 @@ logger = logging.getLogger("NewParser")
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
+TAGS_CONTAINING_CONTENT = (
+    't',
+    'pict',
+    'drawing',
+    'delText',
+    'ins',
+)
+TAGS_HOLDING_CONTENT_TAGS = (
+    'p',
+    'tbl',
+    'sdt',
+)
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -332,17 +344,14 @@ class DocxParser:
                 element.heading_level = headers[style.lower()]
 
     def _set_next(self, body):
-        def _get_children(el):
+        def _get_children_with_content(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_children(el, ['p', 'tbl']):
-                has_descendant_with_tag = False
-                if child.has_descendant_with_tag('t'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('pict'):
-                    has_descendant_with_tag = True
-                if child.has_descendant_with_tag('drawing'):
-                    has_descendant_with_tag = True
+            for child in self._filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
+                has_descendant_with_tag = any(
+                    child.has_descendant_with_tag(tag) for
+                    tag in TAGS_CONTAINING_CONTENT
+                )
                 if has_descendant_with_tag:
                     children.append(child)
             return children
@@ -361,11 +370,11 @@ class DocxParser:
                 except IndexError:
                     pass
         # Assign next for everything in the root.
-        _assign_next(_get_children(body))
+        _assign_next(_get_children_with_content(body))
 
         # In addition set next for everything in table cells.
         for tc in body.find_all('tc'):
-            _assign_next(_get_children(tc))
+            _assign_next(_get_children_with_content(tc))
 
     def parse_begin(self, el):
         self._set_list_attributes(el)
@@ -461,10 +470,32 @@ class DocxParser:
             return self.parse_table_cell_contents(el, parsed)
         return parsed
 
+    def _build_list(self, el, text):
+        # Get the list style for the pending list.
+        lst_style = self.get_list_style(
+            el.num_id.num_id,
+            el.ilvl,
+        )
+
+        parsed = text
+        # Create the actual list and return it.
+        if lst_style == 'bullet':
+            return self.unordered_list(parsed)
+        else:
+            return self.ordered_list(
+                parsed,
+                lst_style,
+            )
+
     def _parse_list(self, el, text):
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
+        # Everything after this point assumes the first element is not also the
+        # last. If the first element is also the last then early return by
+        # building and returning the completed list.
+        if el.is_last_list_item_in_root:
+            return self._build_list(el, parsed)
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -523,20 +554,7 @@ class DocxParser:
         if parsed == '':
             return parsed
 
-        # Get the list style for the pending list.
-        lst_style = self.get_list_style(
-            el.num_id.num_id,
-            el.ilvl,
-        )
-
-        # Create the actual list and return it.
-        if lst_style == 'bullet':
-            return self.unordered_list(parsed)
-        else:
-            return self.ordered_list(
-                parsed,
-                lst_style,
-            )
+        return self._build_list(el, parsed)
 
     def parse_p(self, el, text):
         if text == '':
@@ -556,15 +574,19 @@ class DocxParser:
         return parsed
 
     def _should_append_break_tag(self, next_el):
+        paragraph_like_tags = [
+            'p',
+            'sdt',
+        ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
             return False
         if next_el.previous.is_last_list_item_in_root:
             return False
-        if next_el.previous.tag != 'p':
+        if next_el.previous.tag not in paragraph_like_tags:
             return False
-        if next_el.tag != 'p':
+        if next_el.tag not in paragraph_like_tags:
             return False
         return True
 

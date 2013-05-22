@@ -6,37 +6,12 @@ from os import path
 from nose.plugins.skip import SkipTest
 #from nose.tools import assert_raises
 
-from pydocx.tests import assert_html_equal
+from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
 
 
-class TestDocx2HTML(Docx2Html):
-    def head(self):
-        return ''
-
-    def table(self, text):
-        return '<table>' + text + '</table>'
-
-    def ordered_list(self, text, list_style):
-        list_type_conversions = {
-            'decimal': 'decimal',
-            'decimalZero': 'decimal-leading-zero',
-            'upperRoman': 'upper-roman',
-            'lowerRoman': 'lower-roman',
-            'upperLetter': 'upper-alpha',
-            'lowerLetter': 'lower-alpha',
-            'ordinal': 'decimal',
-            'cardinalText': 'decimal',
-            'ordinalText': 'decimal',
-        }
-        return '<ol data-list-type="{list_style}">{text}</ol>'.format(
-            list_style=list_type_conversions.get(list_style, 'decimal'),
-            text=text,
-        )
-
-
 def convert(path):
-    return TestDocx2HTML(path).parsed
+    return Docx2Html(path).parsed
 
 
 def test_extract_html():
@@ -47,17 +22,16 @@ def test_extract_html():
         'simple.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <p>
           Simple text
         </p>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
           <li>one</li>
           <li>two</li>
           <li>three</li>
         </ol>
-        <table>
+        <table border="1">
           <tr>
             <td>Cell1</td>
             <td>Cell2</td>
@@ -67,7 +41,6 @@ def test_extract_html():
             <td>Cell4</td>
           </tr>
         </table>
-    </body></html>
     ''')
 
 
@@ -79,17 +52,16 @@ def test_nested_list():
         'nested_lists.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <ol data-list-type="decimal">
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <ol list-style-type="decimal">
             <li>one</li>
             <li>two</li>
             <li>three
-                <ol data-list-type="decimal">
+                <ol list-style-type="decimal">
                     <li>AAA</li>
                     <li>BBB</li>
                     <li>CCC
-                        <ol data-list-type="decimal">
+                        <ol list-style-type="decimal">
                             <li>alpha</li>
                         </ol>
                     </li>
@@ -97,9 +69,9 @@ def test_nested_list():
             </li>
             <li>four</li>
         </ol>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>xxx
-                <ol data-list-type="decimal">
+                <ol list-style-type="decimal">
                     <li>yyy</li>
                 </ol>
             </li>
@@ -111,7 +83,6 @@ def test_nested_list():
                 </ul>
             </li>
         </ul>
-    </body></html>
     ''')
 
 
@@ -123,15 +94,13 @@ def test_simple_list():
         'simple_lists.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <ol data-list-type="decimal">
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <ol list-style-type="decimal">
             <li>One</li>
         </ol>
         <ul>
             <li>two</li>
         </ul>
-    </body></html>
     ''')
 
 
@@ -143,8 +112,12 @@ def test_inline_tags():
         'inline_tags.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body><p>This sentence has some <b>bold</b>, some <i>italics</i> and some <u>underline</u>, as well as a <a href="http://www.google.com/">hyperlink</a>.</p></body></html>''')  # noqa
+    assert_html_equal(actual_html, BASE_HTML % (
+        '<p>This sentence has some <strong>bold</strong>, '
+        'some <em>italics</em> and some '
+        '<span class="pydocx-underline">underline</span>, '
+        'as well as a <a href="http://www.google.com/">hyperlink</a>.</p>'
+    ))
 
 
 def test_unicode():
@@ -167,8 +140,8 @@ def test_special_chars():
         'special_chars.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body><p>&amp; &lt; &gt; <a href="https://www.google.com/?test=1&amp;more=2">link</a></p></body></html>''')  # noqa
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>&amp; &lt; &gt; <a href="https://www.google.com/?test=1&amp;more=2">link</a></p>''')  # noqa
 
 
 def test_table_col_row_span():
@@ -179,9 +152,8 @@ def test_table_col_row_span():
         'table_col_row_span.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-      <table>
+    assert_html_equal(actual_html, BASE_HTML % '''
+      <table border="1">
         <tr>
           <td colspan="2">AAA</td>
         </tr>
@@ -194,17 +166,17 @@ def test_table_col_row_span():
         </tr>
         <tr>
           <td>
-          <div class='right'>EEE
+          <div class='pydocx-right'>EEE
           </div></td>
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
           <td>
-           <div class='right'>GGG
+           <div class='pydocx-right'>GGG
            </div></td>
         </tr>
       </table>
-      <table>
+      <table border="1">
         <tr>
           <td>1</td>
           <td>2</td>
@@ -227,7 +199,6 @@ def test_table_col_row_span():
           <td>13</td>
         </tr>
       </table>
-    </body></html>
     ''')
 
 
@@ -239,16 +210,15 @@ def test_nested_table_rowspan():
         'nested_table_rowspan.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <table>
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <table border="1">
             <tr>
                 <td colspan="2">AAA</td>
             </tr>
             <tr>
                 <td>BBB</td>
                 <td>
-                    <table>
+                    <table border="1">
                         <tr>
                             <td rowspan="2">CCC</td>
                             <td>DDD</td>
@@ -260,7 +230,6 @@ def test_nested_table_rowspan():
                 </td>
             </tr>
         </table>
-    </body></html>
     ''')
 
 
@@ -273,9 +242,8 @@ def test_nested_tables():
     )
     actual_html = convert(file_path)
     # Find out why br tag is there.
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <table>
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <table border="1">
             <tr>
                 <td>AAA</td>
                 <td>BBB</td>
@@ -283,7 +251,7 @@ def test_nested_tables():
             <tr>
                 <td>CCC</td>
                 <td>
-                    <table>
+                    <table border="1">
                         <tr>
                             <td>DDD</td>
                             <td>EEE</td>
@@ -296,7 +264,6 @@ def test_nested_tables():
                 </td>
             </tr>
         </table>
-    </body></html>
     ''')
 
 
@@ -308,12 +275,11 @@ def test_list_in_table():
         'list_in_table.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <table>
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <table border="1">
           <tr>
             <td>
-              <ol data-list-type="decimal">
+              <ol list-style-type="decimal">
                 <li>AAA</li>
                 <li>BBB</li>
                 <li>CCC</li>
@@ -321,7 +287,6 @@ def test_list_in_table():
             </td>
           </tr>
         </table>
-    </body></html>
     ''')
 
 
@@ -333,12 +298,11 @@ def test_tables_in_lists():
         'tables_in_lists.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <ol data-list-type="decimal">
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <ol list-style-type="decimal">
             <li>AAA</li>
             <li>BBB
-                <table>
+                <table border="1">
                     <tr>
                         <td>CCC</td>
                         <td>DDD</td>
@@ -351,7 +315,6 @@ def test_tables_in_lists():
             </li>
             <li>GGG</li>
         </ol>
-    </body></html>
     ''')
 
 
@@ -363,8 +326,8 @@ def test_track_changes_on():
         'track_changes_on.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body><p>This was some content.</p></body></html>
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>This was some content.</p>
     ''')
 
 
@@ -376,8 +339,7 @@ def test_headers():
         'headers.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h1>This is an H1</h1>
         <h2>This is an H2</h2>
         <h3>This is an H3</h3>
@@ -388,7 +350,6 @@ def test_headers():
         <h6>This is an H8</h6>
         <h6>This is an H9</h6>
         <h6>This is an H10</h6>
-    </body></html>
     ''')
 
 
@@ -415,8 +376,8 @@ def test_split_headers():
     new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
-    assert_html_equal(actual_html, '''
-    <html><body><h1>AAA</h1><p>BBB</p><h1>CCC</h1></body></html>
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <h1>AAA</h1><p>BBB</p><h1>CCC</h1>
     ''')
 
 
@@ -435,10 +396,8 @@ def test_has_image():
 
     actual_html = convert(new_file_path)
     # Ignore height, width for now.
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <p>AAA<img src="media/image1.gif" height="55px" width="260px" /></p>
-    </body></html>
     ''')
 
 
@@ -452,10 +411,8 @@ def test_local_dpi():
     )
     new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
     actual_html = convert(new_file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <p><img src="media/image1.jpeg" /></p>
-    </body></html>
     ''')
 
 
@@ -476,43 +433,9 @@ def test_has_image_using_image_handler():
     def image_handler(*args, **kwargs):
         return 'test'
     actual_html = convert(new_file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <p>AAA<img src="test" height="55" width="260" /></p>
-    </body></html>
     ''')
-
-
-#def test_attachment_is_tiff():
-#    filename = 'attachment_is_tiff.docx'
-#    file_path = path.join(
-#        path.abspath(path.dirname(__file__)),
-#        '..',
-#        'fixtures',
-#        'attachment_is_tiff.docx',
-#    )
-#    # preserve_images must be true in order for the image to not be removed.
-#    # This is handled in build_import, however here we need to manually set it
-#    # to True.
-#    new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
-#
-#    # First open the file and verify that the image attachment is a tiff.
-#    try:
-#        zf = ZipFile(new_file_path)
-#        # Get the document data.
-#        _, meta_data = _get_document_data(zf)
-#    finally:
-#        zf.close()
-#    # Find the path to the image.
-#    image_file = None
-#    for file_path in meta_data.relationship_dict.values():
-#        if file_path.endswith('.gif'):
-#            image_file = file_path
-#    assert image_file is not None
-#    with open(image_file) as f:
-#        magic_number = f.read()[:4]
-#    # Make sure the image is actually a gif.
-#    assert magic_number == 'GIF8'
 
 
 def test_headers_with_full_line_styles():
@@ -526,12 +449,10 @@ def test_headers_with_full_line_styles():
         'headers_with_full_line_styles.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h2>AAA</h2>
         <h2>BBB</h2>
         <h2><strong>C</strong><em>C</em>C</h2>
-    </body></html>
     ''')
 
 
@@ -546,17 +467,16 @@ def test_convert_p_to_h():
         'convert_p_to_h.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h2>AAA</h2>
         <h2>BBB</h2>
         <p>CCC</p>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li><strong>DDD</strong></li>
             <li><em>EEE</em></li>
             <li>FFF</li>
         </ol>
-        <table>
+        <table border="1">
             <tr>
                 <td><strong>GGG</strong></td>
                 <td><em>HHH</em></td>
@@ -566,41 +486,7 @@ def test_convert_p_to_h():
                 <td>JJJ</td>
             </tr>
         </table>
-    </body></html>
     ''')
-
-
-#def test_bigger_font_size_to_header():
-#    # Show when it is appropriate to convert p tags to h tags based on font
-#    # size.
-#    if not DETECT_FONT_SIZE:
-#        raise SkipTest('Font size detection is disabled.')
-#    file_path = path.join(
-#        path.abspath(path.dirname(__file__)),
-#        '..',
-#        'fixtures',
-#        'bigger_font_size_to_header.docx',
-#    )
-#    actual_html = convert(file_path)
-#    assert_html_equal(actual_html, '''
-#    <html>
-#        <p>Paragraphs:</p>
-#        <h2>Header</h2>
-#        <p>paragraph 1</p>
-#        <p>Lists:</p>
-#        <ol data-list-type="decimal">
-#            <li>bigger</li>
-#            <li>smaller</li>
-#        </ol>
-#        <p>Tables:</p>
-#        <table>
-#            <tr>
-#                <td>bigger</td>
-#                <td>smaller</td>
-#            </tr>
-#        </table>
-#    </html>
-#    ''')
 
 
 def test_fake_headings_by_length():
@@ -615,14 +501,12 @@ def test_fake_headings_by_length():
         'fake_headings_by_length.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h2>Heading.</h2>
         <h2>Still a heading.</h2>
         <p>
         <strong>This is not a heading because it is too many words.</strong>
         </p>
-    </body></html>
     ''')
 
 
@@ -637,25 +521,23 @@ def test_shift_enter():
     # Test just the convert without clean_html to make sure the first
     # break tag is present.
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <p>AAA<br/>BBB</p>
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <p>AAA<br />BBB</p>
         <p>CCC</p>
-        <ol data-list-type="decimal">
-            <li>DDD<br/>EEE</li>
+        <ol list-style-type="decimal">
+            <li>DDD<br />EEE</li>
             <li>FFF</li>
         </ol>
-        <table>
+        <table border="1">
             <tr>
-                <td>GGG<br/>HHH</td>
-                <td>III<br/>JJJ</td>
+                <td>GGG<br />HHH</td>
+                <td>III<br />JJJ</td>
             </tr>
             <tr>
                 <td>KKK</td>
                 <td>LLL</td>
             </tr>
         </table>
-    </body></html>
     ''')
 
 
@@ -667,17 +549,16 @@ def test_lists_with_styles():
         'lists_with_styles.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-        <ol data-list-type="decimal">
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <ol list-style-type="decimal">
             <li>AAA</li>
             <li>BBB
-                <ol data-list-type="lower-roman">
+                <ol list-style-type="lowerRoman">
                     <li>CCC</li>
                     <li>DDD
-                        <ol data-list-type="upper-alpha">
+                        <ol list-style-type="upperLetter">
                             <li>EEE
-                                <ol data-list-type="lower-alpha">
+                                <ol list-style-type="lowerLetter">
                                     <li>FFF</li>
                                 </ol>
                             </li>
@@ -686,7 +567,6 @@ def test_lists_with_styles():
                 </ol>
             </li>
         </ol>
-    </body></html>
     ''')
 
 
@@ -701,25 +581,23 @@ def test_list_to_header():
     actual_html = convert(file_path)
     # It should be noted that list item `GGG` is upper roman in the word
     # document to show that only top level upper romans get converted.
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h2>AAA</h2>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>BBB</li>
         </ol>
         <h2>CCC</h2>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>DDD</li>
         </ol>
         <h2>EEE</h2>
-        <ol data-list-type="decimal">
+        <ol list-style-type="decimal">
             <li>FFF
-                <ol data-list-type="upper-roman">
+                <ol list-style-type="decimal">
                     <li>GGG</li>
                 </ol>
             </li>
         </ol>
-    </body></html>
     ''')
 
 
@@ -731,11 +609,10 @@ def test_has_title():
         'has_title.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(
-        actual_html,
-        '''<html><body><p>Title</p>
-        <p><div class='left'>Text</div></p></body></html>''',
-    )
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <p>Title</p>
+        <p><div class='pydocx-left'>Text</div></p>
+    ''')
 
 
 def test_upper_alpha_all_bold():
@@ -747,12 +624,10 @@ def test_upper_alpha_all_bold():
         'upper_alpha_all_bold.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
+    assert_html_equal(actual_html, BASE_HTML % '''
         <h2>AAA</h2>
         <h2>BBB</h2>
         <h2>CCC</h2>
-    </body></html>
     ''')
 
 
@@ -764,14 +639,21 @@ def test_simple_table():
         'simple_table.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-    <html><body>
-    <table>
-    <tr><td>Cell1<br/>Cell3</td><td>Cell2<br/>
-    And I am writing in the table</td></tr>
-    <tr><td></td><td>Cell4</td></tr>
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <table border="1">
+        <tr>
+            <td>Cell1<br />
+                Cell3
+            </td>
+            <td>Cell2<br />
+                And I am writing in the table
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Cell4</td>
+        </tr>
     </table>
-    </body></html>
     ''')
 
 
@@ -783,18 +665,32 @@ def test_justification():
         'justification.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, '''
-<html><body><p><div class='center'>Center Justified</div>
-</p><p><div class='right'>Right justified</div></p>
-<p><div class='right' style ='margin-right:96.0px;'>
-Right justified and pushed in from right</div></p>
-<p><div class='center' style ='margin-left:252.0px;'margin-right:96.0px;'>
-Center justified and pushed in from left and it is
-great and it is the coolest thing of all time and I like it and
-I think it is cool</div></p><p>
-<div' style ='margin-left:252.0px;'margin-right:96.0px;'>
-Left justified and pushed in from left</div></p></body></html>
-''')
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>
+        <div class='pydocx-center'>Center Justified</div>
+    </p>
+    <p>
+        <div class='pydocx-right'>Right justified</div>
+    </p>
+    <p>
+        <div class='pydocx-right' style='margin-right:96.0px;'>
+            Right justified and pushed in from right
+        </div>
+    </p>
+    <p>
+        <div class='pydocx-center'
+                style='margin-left:252.0px;margin-right:96.0px;'>
+            Center justified and pushed in from left and it is
+            great and it is the coolest thing of all time and I like it and
+            I think it is cool
+        </div>
+    </p>
+    <p>
+        <div style='margin-left:252.0px;margin-right:96.0px;'>
+            Left justified and pushed in from left
+        </div>
+    </p>
+    ''')
 
 
 def _converter(*args, **kwargs):

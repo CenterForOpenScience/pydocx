@@ -127,30 +127,15 @@ class DocxBuilder(object):
     @classmethod
     def drawing(self, r_id, height=None, width=None):
         template = env.get_template(templates['drawing'])
-        if height and width:
-            kwargs = {
-                'r_id': r_id,
-                'height': height * EMUS_PER_PIXEL,
-                'width': width * EMUS_PER_PIXEL,
-            }
-        elif height:
-            kwargs = {
-                'r_id': r_id,
-                'height': height * EMUS_PER_PIXEL,
-                'width': width,
-            }
-        elif width:
-            kwargs = {
-                'r_id': r_id,
-                'width': width * EMUS_PER_PIXEL,
-                'height': height,
-            }
-        else:
-            kwargs = {
-                'r_id': r_id,
-                'width': width,
-                'height': height,
-            }
+        if height is not None:
+            height = height * EMUS_PER_PIXEL
+        if width is not None:
+            width = width * EMUS_PER_PIXEL
+        kwargs = {
+            'r_id': r_id,
+            'height': height * EMUS_PER_PIXEL,
+            'width': width * EMUS_PER_PIXEL,
+        }
         return template.render(**kwargs)
 
     @classmethod

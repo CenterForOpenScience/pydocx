@@ -118,6 +118,31 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
         return xml
 
 
+class ImageLocal(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': 'media/image1.jpeg',
+        'rId1': 'media/image2.jpeg',
+    }
+    expected_output = '''
+    <p><img src="media/image1.jpeg" /></p>
+    <p><img src="media/image2.jpeg" /></p>
+    '''
+
+    def get_xml(self):
+        drawing = DXB.drawing(height=None, width=None, r_id='rId0')
+        pict = DXB.pict(height=None, width=None, r_id='rId1')
+        tags = [
+            drawing,
+            pict,
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+
 class ImageTestCase(_TranslationTestCase):
     relationship_dict = {
         'rId0': 'media/image1.jpeg',

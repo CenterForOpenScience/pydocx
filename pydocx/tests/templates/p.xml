@@ -1,6 +1,6 @@
 <w:p>
 	<w:pPr>
-		<w:pStyle w:val="style0"/>
+		<w:pStyle{% if style %} w:val="{{ style }}"{% endif %}/>
 		{% if is_list %}
 		<w:numPr>
 			{% if ilvl != None %}

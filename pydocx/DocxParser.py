@@ -87,7 +87,7 @@ def find_ancestor_with_tag(self, tag):
     Find the first ancestor with that is a `tag`.
     """
     el = self
-    while el.parent:
+    while el.parent is not None:
         el = el.parent
         if el.tag == tag:
             return el
@@ -288,7 +288,7 @@ class DocxParser:
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
         for p in paragraph_elements:
-            if p.find_ancestor_with_tag('tc'):
+            if p.find_ancestor_with_tag('tc') is not None:
                 p.is_in_table = True
 
     def _set_first_list_item(self, num_ids, ilvls, list_elements):
@@ -343,7 +343,7 @@ class DocxParser:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:
                 continue
-            style = element.find_first('pStyle').attrib['val']
+            style = element.find_first('pStyle').attrib.get('val', '')
             style = self.styles_dict.get(style)
 
             # Check to see if this element is actually a header.
@@ -372,12 +372,12 @@ class DocxParser:
             # Populate the `next` attribute for all the child elements.
             for i in range(len(children)):
                 try:
-                    if children[i + 1]:
+                    if children[i + 1] is not None:
                         children[i].next = children[i + 1]
                 except IndexError:
                     pass
                 try:
-                    if children[i - 1]:
+                    if children[i - 1] is not None:
                         children[i].previous = children[i - 1]
                 except IndexError:
                     pass
@@ -642,7 +642,7 @@ class DocxParser:
                     return True
             return False
 
-        while el:
+        while el is not None:
             if _should_parse_next_as_content(el):
                 el = el.next
                 next_elements_content = self.parse(el)
@@ -705,7 +705,7 @@ class DocxParser:
                 return False
             if next_el.is_in_table:
                 return True
-        while el:
+        while el is not None:
             if _should_parse_next_as_content(el):
                 el = el.next
                 next_elements_content = self.parse(el)

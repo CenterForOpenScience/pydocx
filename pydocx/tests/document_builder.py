@@ -42,6 +42,7 @@ class DocxBuilder(object):
             bold=False,
             underline=False,
             italics=False,
+            style='style0',
             val=None,
     ):
         if isinstance(text, str):
@@ -62,6 +63,7 @@ class DocxBuilder(object):
 
         kwargs = {
             'run_tags': run_tags,
+            'style': style,
         }
         return template.render(**kwargs)
 

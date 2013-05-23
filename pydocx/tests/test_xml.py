@@ -124,8 +124,8 @@ class ImageLocal(_TranslationTestCase):
         'rId1': 'media/image2.jpeg',
     }
     expected_output = '''
-    <p><img src="media/image1.jpeg" /></p>
-    <p><img src="media/image2.jpeg" /></p>
+    <p><img src="word/media/image1.jpeg" /></p>
+    <p><img src="word/media/image2.jpeg" /></p>
     '''
 
     def get_xml(self):
@@ -150,10 +150,10 @@ class ImageTestCase(_TranslationTestCase):
     }
     expected_output = '''
         <p>
-            <img src="media/image1.jpeg" height="20px" width="40px" />
+            <img src="word/media/image1.jpeg" height="20px" width="40px" />
         </p>
         <p>
-            <img src="media/image2.jpeg" height="21pt" width="41pt" />
+            <img src="word/media/image2.jpeg" height="21pt" width="41pt" />
         </p>
     '''
 

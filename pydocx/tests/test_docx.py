@@ -356,10 +356,10 @@ def test_headers():
 def _copy_file_to_tmp_dir(file_path, filename):
     # Since the images need to be extracted from the docx, copy the file to a
     # temp directory so we do not clutter up repo.
-    dp = tempfile.mkdtemp()
-    new_file_path = path.join(dp, filename)
+    directory_path = tempfile.mkdtemp()
+    new_file_path = path.join(directory_path, filename)
     shutil.copyfile(file_path, new_file_path)
-    return new_file_path, dp
+    return new_file_path, directory_path
 
 
 def test_split_headers():
@@ -370,9 +370,6 @@ def test_split_headers():
         'fixtures',
         'split_header.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
     new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
@@ -389,19 +386,21 @@ def test_has_image():
         'fixtures',
         'has_image.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
-    new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
+    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
-    # Ignore height, width for now.
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p>AAA<img src="media/image1.gif" height="55px" width="260px" /></p>
-    ''')
+        <p>
+            AAA
+            <img src="%s/word/media/image1.gif" height="55px" width="260px" />
+        </p>
+    ''' % directory_path)
+    assert path.isfile('%s/word/media/image1.gif' % directory_path)
 
 
 def test_local_dpi():
+    # The image in this file does not have a set height or width, show that the
+    # html will generate without it.
     filename = 'localDpi.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
@@ -409,11 +408,12 @@ def test_local_dpi():
         'fixtures',
         'localDpi.docx',
     )
-    new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
+    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
     actual_html = convert(new_file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="media/image1.jpeg" /></p>
-    ''')
+        <p><img src="%s/word/media/image1.jpeg" /></p>
+    ''' % directory_path)
+    assert path.isfile('%s/word/media/image1.jpeg' % directory_path)
 
 
 def test_has_image_using_image_handler():
@@ -425,9 +425,6 @@ def test_has_image_using_image_handler():
         'fixtures',
         'has_image.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
     new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     def image_handler(*args, **kwargs):

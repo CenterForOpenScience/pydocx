@@ -343,7 +343,7 @@ class DocxParser:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:
                 continue
-            style = element.find_first('pStyle').attrib['val']
+            style = element.find_first('pStyle').attrib.get('val', '')
             style = self.styles_dict.get(style)
 
             # Check to see if this element is actually a header.

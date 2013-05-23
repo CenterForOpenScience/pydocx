@@ -576,11 +576,21 @@ class DocxParser:
     def _should_append_break_tag(self, next_el):
         paragraph_like_tags = [
             'p',
-            'sdt',
+        ]
+        inline_like_tags = [
+            'smartTag',
+            'ins',
+            'delText',
         ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
+            return False
+        tag_is_inline_like = any(
+            next_el.has_descendant_with_tag(tag) for
+            tag in inline_like_tags
+        )
+        if tag_is_inline_like:
             return False
         if next_el.previous.is_last_list_item_in_root:
             return False

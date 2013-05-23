@@ -395,6 +395,7 @@ def test_has_image():
             <img src="%s/word/media/image1.gif" height="55px" width="260px" />
         </p>
     ''' % directory_path)
+    assert path.isfile('%s/word/media/image1.gif' % directory_path)
 
 
 def test_local_dpi():

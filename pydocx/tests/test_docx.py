@@ -370,9 +370,6 @@ def test_split_headers():
         'fixtures',
         'split_header.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
     new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
@@ -389,9 +386,6 @@ def test_has_image():
         'fixtures',
         'has_image.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
     new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
@@ -404,6 +398,8 @@ def test_has_image():
 
 
 def test_local_dpi():
+    # The image in this file does not have a set height or width, show that the
+    # html will generate without it.
     filename = 'localDpi.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
@@ -428,9 +424,6 @@ def test_has_image_using_image_handler():
         'fixtures',
         'has_image.docx',
     )
-    # preserve_images must be true in order for the image to not be removed.
-    # This is handled in build_import, however here we need to manually set it
-    # to True.
     new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     def image_handler(*args, **kwargs):

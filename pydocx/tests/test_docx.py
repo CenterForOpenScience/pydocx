@@ -395,10 +395,12 @@ def test_has_image():
     new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
-    # Ignore height, width for now.
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p>AAA<img src="media/image1.gif" height="55px" width="260px" /></p>
-    ''')
+        <p>
+            AAA
+            <img src="%s/word/media/image1.gif" height="55px" width="260px" />
+        </p>
+    ''' % dp)
 
 
 def test_local_dpi():
@@ -412,8 +414,9 @@ def test_local_dpi():
     new_file_path, dp = _copy_file_to_tmp_dir(file_path, filename)
     actual_html = convert(new_file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="media/image1.jpeg" /></p>
-    ''')
+        <p><img src="%s/word/media/image1.jpeg" /></p>
+    ''' % dp)
+    assert path.isfile('%s/word/media/image1.jpeg' % dp)
 
 
 def test_has_image_using_image_handler():

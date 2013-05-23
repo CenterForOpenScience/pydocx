@@ -99,6 +99,7 @@ class XMLDocx2Html(Docx2Html):
             self.root = ElementTree.fromstring(
                 remove_namespaces(document_xml),
             )
+        self.zip_path = ''
 
         # This is the standard page width for a word document, Also the page
         # width that we are looking for in the test.

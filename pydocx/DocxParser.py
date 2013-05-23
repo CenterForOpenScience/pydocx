@@ -779,12 +779,11 @@ class DocxParser:
         src = self.rels_dict.get(rId)
         if not src:
             return ''
-        if hasattr(self, 'zip_path'):
-            src = os.path.join(
-                self.zip_path,
-                'word',
-                src,
-            )
+        src = os.path.join(
+            self.zip_path,
+            'word',
+            src,
+        )
         src = self.escape(src)
         return self.image(src, x, y)
 

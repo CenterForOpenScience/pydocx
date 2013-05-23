@@ -16,8 +16,8 @@ templates = {
     'style': 'style.xml',
     'styles': 'styles.xml',
     'table': 'table.xml',
-    'tc': 'tc.xml',
     'tr': 'tr.xml',
+    'tc': 'tc.xml',
 }
 
 env = Environment(
@@ -143,17 +143,21 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def drawing(self, height, width, r_id):
+    def drawing(self, r_id, height=None, width=None):
         template = env.get_template(templates['drawing'])
+        if height is not None:
+            height = height * EMUS_PER_PIXEL
+        if width is not None:
+            width = width * EMUS_PER_PIXEL
         kwargs = {
             'r_id': r_id,
-            'height': height * EMUS_PER_PIXEL,
-            'width': width * EMUS_PER_PIXEL,
+            'height': height,
+            'width': width,
         }
         return template.render(**kwargs)
 
     @classmethod
-    def pict(self, height, width, r_id=None):
+    def pict(self, r_id=None, height=None, width=None):
         template = env.get_template(templates['pict'])
         kwargs = {
             'r_id': r_id,

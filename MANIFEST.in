@@ -3,4 +3,4 @@ include LICENSE
 include MANIFEST.in
 include README.md
 include pydocx/fixtures/*
-include pydocx/tests/templates*
+include pydocx/tests/templates/*

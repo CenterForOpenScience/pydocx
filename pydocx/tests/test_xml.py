@@ -212,7 +212,6 @@ class ImageTestCase(_TranslationTestCase):
             ('40px', '20px'),
             ('41pt', '21pt'),
         ]
-        print image_ids
         self.assertEqual(
             set(image_ids),
             set(expected),

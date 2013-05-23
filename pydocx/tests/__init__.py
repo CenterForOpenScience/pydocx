@@ -136,6 +136,8 @@ class _TranslationTestCase(TestCase):
     relationship_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
+    parser = XMLDocx2Html
+    use_base_html = True
 
     def get_xml(self):
         raise NotImplementedError()
@@ -156,10 +158,13 @@ class _TranslationTestCase(TestCase):
         tree = self.get_xml()
 
         # Verify the final output.
-        html = XMLDocx2Html(
+        html = self.parser(
             document_xml=tree,
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,
         ).parsed
 
-        assert_html_equal(html, BASE_HTML % self.expected_output)
+        if self.use_base_html:
+            assert_html_equal(html, BASE_HTML % self.expected_output)
+        else:
+            assert_html_equal(html, self.expected_output)

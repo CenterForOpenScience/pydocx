@@ -36,10 +36,23 @@ class DocxBuilder(object):
         return template.render(body=body)
 
     @classmethod
-    def p_tag(self, text, bold=False, val=None):
+    def p_tag(
+            self,
+            text,
+            bold=False,
+            underline=False,
+            italics=False,
+            val=None,
+    ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
-            run_tag = DocxBuilder.r_tag(text, bold, val)
+            run_tag = DocxBuilder.r_tag(
+                text,
+                is_bold=bold,
+                is_underline=underline,
+                is_italics=italics,
+                val=val,
+            )
             run_tags = [run_tag]
         elif isinstance(text, list):
             run_tags = text
@@ -53,11 +66,21 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def r_tag(self, text, is_bold=False, val=None, include_linebreak=False):
+    def r_tag(
+            self,
+            text,
+            is_bold=False,
+            is_underline=False,
+            is_italics=False,
+            val=None,
+            include_linebreak=False,
+    ):
         template = env.get_template(templates['r'])
         kwargs = {
             'text': text,
             'is_bold': is_bold,
+            'is_underline': is_underline,
+            'is_italics': is_italics,
             'val': val,
             'include_linebreak': include_linebreak,
         }

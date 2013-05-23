@@ -1,8 +1,10 @@
-from abc import abstractmethod, ABCMeta
-import zipfile
 import logging
-from contextlib import contextmanager
+import os
 import xml.etree.ElementTree as ElementTree
+import zipfile
+
+from abc import abstractmethod, ABCMeta
+from contextlib import contextmanager
 from xml.etree.ElementTree import _ElementInterface
 
 from pydocx.utils import NamespacedNumId
@@ -128,6 +130,7 @@ class DocxParser:
 
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
+            self.zip_path, _ = os.path.split(f.filename)
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
             try:
@@ -143,6 +146,15 @@ class DocxParser:
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
+            zipped_image_files = [
+                e for e in f.infolist()
+                if e.filename.startswith('word/media/')
+            ]
+            for e in zipped_image_files:
+                f.extract(
+                    e.filename,
+                    self.zip_path,
+                )
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
@@ -767,6 +779,11 @@ class DocxParser:
         src = self.rels_dict.get(rId)
         if not src:
             return ''
+        src = os.path.join(
+            self.zip_path,
+            'word',
+            src,
+        )
         src = self.escape(src)
         return self.image(src, x, y)
 

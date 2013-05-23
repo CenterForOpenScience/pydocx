@@ -1,9 +1,10 @@
-import os
-from abc import abstractmethod, ABCMeta
-import zipfile
 import logging
-from contextlib import contextmanager
+import os
 import xml.etree.ElementTree as ElementTree
+import zipfile
+
+from abc import abstractmethod, ABCMeta
+from contextlib import contextmanager
 from xml.etree.ElementTree import _ElementInterface
 
 from pydocx.utils import NamespacedNumId

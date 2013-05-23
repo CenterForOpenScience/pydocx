@@ -161,5 +161,4 @@ class _TranslationTestCase(TestCase):
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,
         ).parsed
-
         assert_html_equal(html, BASE_HTML % self.expected_output)

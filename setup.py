@@ -24,7 +24,7 @@ def get_description():
 
 setup(
     name="PyDocX",
-    version="0.1.6",
+    version="0.1.7",
     description="docx (OOXML) to html converter",
     author="Jason Ward, Sam Portnow",
     author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",
@@ -32,6 +32,11 @@ setup(
     platforms=["any"],
     license="BSD",
     packages=find_packages(),
+    package_data={
+        'pydocx': [
+            'tests/templates/*.xml',
+        ],
+    },
     scripts=[],
     zip_safe=False,
     install_requires=[],

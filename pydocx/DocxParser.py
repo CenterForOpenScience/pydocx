@@ -146,11 +146,11 @@ class DocxParser:
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
+            files = [
+                e for e in f.infolist()
+                if e.filename.startswith('word/media/')
+            ]
             try:
-                files = [
-                    e for e in f.infolist()
-                    if e.filename.startswith('word/media/')
-                ]
                 for e in files:
                     f.extract(
                         e.filename,

@@ -146,18 +146,15 @@ class DocxParser:
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
-            files = [
+            zipped_image_files = [
                 e for e in f.infolist()
                 if e.filename.startswith('word/media/')
             ]
-            try:
-                for e in files:
-                    f.extract(
-                        e.filename,
-                        self.zip_path,
-                    )
-            except KeyError:
-                pass
+            for e in zipped_image_files:
+                f.extract(
+                    e.filename,
+                    self.zip_path,
+                )
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces

@@ -89,6 +89,7 @@ class XMLDocx2Html(Docx2Html):
             document_xml=None,
             rels_dict=None,
             numbering_dict=None,
+            styles_dict=None,
             *args, **kwargs):
         self._test_rels_dict = rels_dict
         if numbering_dict is None:
@@ -104,6 +105,8 @@ class XMLDocx2Html(Docx2Html):
         # width that we are looking for in the test.
         self.page_width = 612
 
+        self.styles_dict = styles_dict
+
     def _parse_rels_root(self, *args, **kwargs):
         if self._test_rels_dict is None:
             return {}
@@ -116,7 +119,9 @@ class XMLDocx2Html(Docx2Html):
             return 'decimal'
 
     def _parse_styles(self):
-        return {}
+        if self.styles_dict is None:
+            return {}
+        return self.styles_dict
 
 
 DEFAULT_NUMBERING_DICT = {
@@ -134,6 +139,7 @@ DEFAULT_NUMBERING_DICT = {
 class _TranslationTestCase(TestCase):
     expected_output = None
     relationship_dict = None
+    styles_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
     parser = XMLDocx2Html
@@ -162,6 +168,7 @@ class _TranslationTestCase(TestCase):
             document_xml=tree,
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,
+            styles_dict=self.styles_dict,
         ).parsed
 
         if self.use_base_html:

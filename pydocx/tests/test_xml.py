@@ -890,3 +890,40 @@ class SDTTestCase(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class HeadingTestCase(_TranslationTestCase):
+    expected_output = '''
+        <h1>AAA</h1>
+        <h2>BBB</h2>
+        <h3>CCC</h3>
+        <h4>DDD</h4>
+        <h5>EEE</h5>
+        <h6>GGG</h6>
+        <p>HHH</p>
+    '''
+    styles_dict = {
+        'style0': 'heading 1',
+        'style1': 'heading 2',
+        'style2': 'heading 3',
+        'style3': 'heading 4',
+        'style4': 'heading 5',
+        'style5': 'heading 6',
+    }
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(text='AAA', style='style0'),
+            DXB.p_tag(text='BBB', style='style1'),
+            DXB.p_tag(text='CCC', style='style2'),
+            DXB.p_tag(text='DDD', style='style3'),
+            DXB.p_tag(text='EEE', style='style4'),
+            DXB.p_tag(text='GGG', style='style5'),
+            DXB.p_tag(text='HHH', style='garbage'),
+        ]
+        body = ''
+        for tag in p_tags:
+            body += tag
+
+        xml = DXB.xml(body)
+        return xml

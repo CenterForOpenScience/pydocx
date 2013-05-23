@@ -666,7 +666,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):
     expected_output = '''
-        <p><span class='pydocx-insert' author='' date=''>insert </span>
+        <p><span class='pydocx-insert'>insert </span>
         smarttag</p>
     '''
 
@@ -699,8 +699,8 @@ class RTagWithNoText(_TranslationTestCase):
 class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                <span class='pydocx-delete' author='' date=''>BBB</span>
+            <li>AAA
+                <span class='pydocx-delete'>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -721,8 +721,7 @@ class DeleteTagInList(_TranslationTestCase):
 class InsertTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                <span class='pydocx-insert' author='' date=''>BBB</span>
+            <li>AAA<span class='pydocx-insert'>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -744,8 +743,7 @@ class InsertTagInList(_TranslationTestCase):
 class SmartTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                BBB
+            <li>AAABBB
             </li>
             <li>CCC</li>
         </ol>
@@ -900,8 +898,7 @@ class SameNumIdInTable(_TranslationTestCase):
 class SDTTestCase(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                BBB
+            <li>AAABBB
             </li>
             <li>CCC</li>
         </ol>

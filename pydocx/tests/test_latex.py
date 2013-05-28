@@ -457,8 +457,7 @@ class RTagWithNoText(_LatexTranslationTestCase):
 class DeleteTagInList(_LatexTranslationTestCase):
     expected_output = r'''
         \begin{enumerate}
-            \item AAA \\
-                \deleted[id=, remark=]{BBB}
+            \item AAA \deleted[id=, remark=]{BBB}
             \item CCC
         \end{enumerate}
     '''
@@ -478,8 +477,7 @@ class DeleteTagInList(_LatexTranslationTestCase):
 class InsertTagInList(_LatexTranslationTestCase):
     expected_output = r'''
         \begin{enumerate}
-            \item AAA \\
-                \added[id=,remark=]{BBB}
+            \item AAA\added[id=,remark=]{BBB}
             \item CCC
         \end{enumerate}
     '''
@@ -500,8 +498,7 @@ class InsertTagInList(_LatexTranslationTestCase):
 class SmartTagInList(_LatexTranslationTestCase):
     expected_output = r'''
         \begin{enumerate}
-            \item AAA \\
-                BBB
+            \item AAABBB
             \item CCC
         \end{enumerate}
     '''
@@ -579,7 +576,7 @@ class MissingIlvl(_LatexTranslationTestCase):
     expected_output = r'''
         \begin{enumerate}
             \item AAA \\
-                BBB
+            BBB
             \item CCC
         \end{enumerate}
     '''
@@ -601,8 +598,7 @@ class MissingIlvl(_LatexTranslationTestCase):
 class SDTTestCase(_LatexTranslationTestCase):
     expected_output = r'''
         \begin{enumerate}
-            \item AAA \\
-                BBB
+            \item AAABBB
             \item CCC
         \end{enumerate}
     '''

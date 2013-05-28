@@ -1,8 +1,10 @@
-from abc import abstractmethod, ABCMeta
-import zipfile
 import logging
-from contextlib import contextmanager
+import os
 import xml.etree.ElementTree as ElementTree
+import zipfile
+
+from abc import abstractmethod, ABCMeta
+from contextlib import contextmanager
 from xml.etree.ElementTree import _ElementInterface
 
 from pydocx.utils import NamespacedNumId
@@ -85,7 +87,7 @@ def find_ancestor_with_tag(self, tag):
     Find the first ancestor with that is a `tag`.
     """
     el = self
-    while el.parent:
+    while el.parent is not None:
         el = el.parent
         if el.tag == tag:
             return el
@@ -129,6 +131,7 @@ class DocxParser:
 
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
+            self.zip_path, _ = os.path.split(f.filename)
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
             try:
@@ -144,6 +147,15 @@ class DocxParser:
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
+            zipped_image_files = [
+                e for e in f.infolist()
+                if e.filename.startswith('word/media/')
+            ]
+            for e in zipped_image_files:
+                f.extract(
+                    e.filename,
+                    self.zip_path,
+                )
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
@@ -285,7 +297,7 @@ class DocxParser:
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
         for p in paragraph_elements:
-            if p.find_ancestor_with_tag('tc'):
+            if p.find_ancestor_with_tag('tc') is not None:
                 p.is_in_table = True
 
     def _set_first_list_item(self, num_ids, ilvls, list_elements):
@@ -340,7 +352,7 @@ class DocxParser:
             # This element is using the default style which is not a heading.
             if element.find_first('pStyle') is None:
                 continue
-            style = element.find_first('pStyle').attrib['val']
+            style = element.find_first('pStyle').attrib.get('val', '')
             style = self.styles_dict.get(style)
 
             # Check to see if this element is actually a header.
@@ -369,12 +381,12 @@ class DocxParser:
             # Populate the `next` attribute for all the child elements.
             for i in range(len(children)):
                 try:
-                    if children[i + 1]:
+                    if children[i + 1] is not None:
                         children[i].next = children[i + 1]
                 except IndexError:
                     pass
                 try:
-                    if children[i - 1]:
+                    if children[i - 1] is not None:
                         children[i].previous = children[i - 1]
                 except IndexError:
                     pass
@@ -591,11 +603,21 @@ class DocxParser:
     def _should_append_break_tag(self, next_el):
         paragraph_like_tags = [
             'p',
-            'sdt',
+        ]
+        inline_like_tags = [
+            'smartTag',
+            'ins',
+            'delText',
         ]
         if next_el.is_list_item:
             return False
         if next_el.previous is None:
+            return False
+        tag_is_inline_like = any(
+            next_el.has_descendant_with_tag(tag) for
+            tag in inline_like_tags
+        )
+        if tag_is_inline_like:
             return False
         if next_el.previous.is_last_list_item_in_root:
             return False
@@ -635,7 +657,7 @@ class DocxParser:
                     return True
             return False
 
-        while el:
+        while el is not None:
             if _should_parse_next_as_content(el):
                 el = el.next
                 next_elements_content = self.parse(el)
@@ -698,7 +720,7 @@ class DocxParser:
                 return False
             if next_el.is_in_table:
                 return True
-        while el:
+        while el is not None:
             if _should_parse_next_as_content(el):
                 el = el.next
                 next_elements_content = self.parse(el)
@@ -740,26 +762,24 @@ class DocxParser:
         found, then rely on the `image` handler to strip those attributes. This
         functionality can change once we integrate PIL.
         """
-        localDpi = False
         sizes = el.find_first('ext')
-        if sizes is not None:
-            for size in sizes:
-                if size.tag == 'useLocalDpi':
-                    localDpi = True
-            if not localDpi:
+        if sizes is not None and sizes.get('cx'):
+            if sizes.get('cx'):
                 x = self._convert_image_size(int(sizes.get('cx')))
+            if sizes.get('cy'):
                 y = self._convert_image_size(int(sizes.get('cy')))
-                return (
-                    '%dpx' % x,
-                    '%dpx' % y,
-                )
+            return (
+                '%dpx' % x,
+                '%dpx' % y,
+            )
         shape = el.find_first('shape')
-        if shape is not None:
+        if shape is not None and shape.get('style') is not None:
             # If either of these are not set, rely on the method `image` to not
             # use either of them.
             x = 0
             y = 0
             styles = shape.get('style').split(';')
+
             for s in styles:
                 if s.startswith('height:'):
                     y = s.split(':')[1]
@@ -774,6 +794,11 @@ class DocxParser:
         src = self.rels_dict.get(rId)
         if not src:
             return ''
+        src = os.path.join(
+            self.zip_path,
+            'word',
+            src,
+        )
         src = self.escape(src)
         return self.image(src, x, y)
 

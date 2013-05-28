@@ -20,11 +20,11 @@ def get_file(filename):
 
 
 def get_description():
-    return get_file('README.md')
+    return get_file('README.rst')
 
 setup(
     name="PyDocX",
-    version="0.1.2",
+    version="0.1.8",
     description="docx (OOXML) to html converter",
     author="Jason Ward, Sam Portnow",
     author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",
@@ -32,6 +32,11 @@ setup(
     platforms=["any"],
     license="BSD",
     packages=find_packages(),
+    package_data={
+        'pydocx': [
+            'tests/templates/*.xml',
+        ],
+    },
     scripts=[],
     zip_safe=False,
     install_requires=[],
@@ -39,6 +44,9 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 2 :: Only",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",

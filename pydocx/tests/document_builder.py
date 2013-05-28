@@ -16,8 +16,8 @@ templates = {
     'style': 'style.xml',
     'styles': 'styles.xml',
     'table': 'table.xml',
-    'tc': 'tc.xml',
     'tr': 'tr.xml',
+    'tc': 'tc.xml',
 }
 
 env = Environment(
@@ -36,10 +36,24 @@ class DocxBuilder(object):
         return template.render(body=body)
 
     @classmethod
-    def p_tag(self, text, bold=False, val=None):
+    def p_tag(
+            self,
+            text,
+            bold=False,
+            underline=False,
+            italics=False,
+            style='style0',
+            val=None,
+    ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
-            run_tag = DocxBuilder.r_tag(text, bold, val)
+            run_tag = DocxBuilder.r_tag(
+                text,
+                is_bold=bold,
+                is_underline=underline,
+                is_italics=italics,
+                val=val,
+            )
             run_tags = [run_tag]
         elif isinstance(text, list):
             run_tags = text
@@ -49,15 +63,26 @@ class DocxBuilder(object):
 
         kwargs = {
             'run_tags': run_tags,
+            'style': style,
         }
         return template.render(**kwargs)
 
     @classmethod
-    def r_tag(self, text, is_bold=False, val=None, include_linebreak=False):
+    def r_tag(
+            self,
+            text,
+            is_bold=False,
+            is_underline=False,
+            is_italics=False,
+            val=None,
+            include_linebreak=False,
+    ):
         template = env.get_template(templates['r'])
         kwargs = {
             'text': text,
             'is_bold': is_bold,
+            'is_underline': is_underline,
+            'is_italics': is_italics,
             'val': val,
             'include_linebreak': include_linebreak,
         }
@@ -143,17 +168,21 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def drawing(self, height, width, r_id):
+    def drawing(self, r_id, height=None, width=None):
         template = env.get_template(templates['drawing'])
+        if height is not None:
+            height = height * EMUS_PER_PIXEL
+        if width is not None:
+            width = width * EMUS_PER_PIXEL
         kwargs = {
             'r_id': r_id,
-            'height': height * EMUS_PER_PIXEL,
-            'width': width * EMUS_PER_PIXEL,
+            'height': height,
+            'width': width,
         }
         return template.render(**kwargs)
 
     @classmethod
-    def pict(self, height, width, r_id=None):
+    def pict(self, r_id=None, height=None, width=None):
         template = env.get_template(templates['pict'])
         kwargs = {
             'r_id': r_id,

@@ -118,6 +118,31 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
         return xml
 
 
+class ImageLocal(_TranslationTestCase):
+    relationship_dict = {
+        'rId0': 'media/image1.jpeg',
+        'rId1': 'media/image2.jpeg',
+    }
+    expected_output = '''
+    <p><img src="word/media/image1.jpeg" /></p>
+    <p><img src="word/media/image2.jpeg" /></p>
+    '''
+
+    def get_xml(self):
+        drawing = DXB.drawing(height=None, width=None, r_id='rId0')
+        pict = DXB.pict(height=None, width=None, r_id='rId1')
+        tags = [
+            drawing,
+            pict,
+        ]
+        body = ''
+        for el in tags:
+            body += el
+
+        xml = DXB.xml(body)
+        return xml
+
+
 class ImageTestCase(_TranslationTestCase):
     relationship_dict = {
         'rId0': 'media/image1.jpeg',
@@ -125,10 +150,10 @@ class ImageTestCase(_TranslationTestCase):
     }
     expected_output = '''
         <p>
-            <img src="media/image1.jpeg" height="20px" width="40px" />
+            <img src="word/media/image1.jpeg" height="20px" width="40px" />
         </p>
         <p>
-            <img src="media/image2.jpeg" height="21pt" width="41pt" />
+            <img src="word/media/image2.jpeg" height="21pt" width="41pt" />
         </p>
     '''
 
@@ -641,7 +666,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):
     expected_output = '''
-        <p><span class='pydocx-insert' author='' date=''>insert </span>
+        <p><span class='pydocx-insert'>insert </span>
         smarttag</p>
     '''
 
@@ -674,8 +699,8 @@ class RTagWithNoText(_TranslationTestCase):
 class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                <span class='pydocx-delete' author='' date=''>BBB</span>
+            <li>AAA
+                <span class='pydocx-delete'>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -696,8 +721,7 @@ class DeleteTagInList(_TranslationTestCase):
 class InsertTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                <span class='pydocx-insert' author='' date=''>BBB</span>
+            <li>AAA<span class='pydocx-insert'>BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -719,8 +743,7 @@ class InsertTagInList(_TranslationTestCase):
 class SmartTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                BBB
+            <li>AAABBB
             </li>
             <li>CCC</li>
         </ol>
@@ -875,8 +898,7 @@ class SameNumIdInTable(_TranslationTestCase):
 class SDTTestCase(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<br />
-                BBB
+            <li>AAABBB
             </li>
             <li>CCC</li>
         </ol>
@@ -887,6 +909,43 @@ class SDTTestCase(_TranslationTestCase):
         body += DXB.li(text='AAA', ilvl=0, numId=0)
         body += DXB.sdt_tag(p_tag=DXB.p_tag(text='BBB'))
         body += DXB.li(text='CCC', ilvl=0, numId=0)
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class HeadingTestCase(_TranslationTestCase):
+    expected_output = '''
+        <h1>AAA</h1>
+        <h2>BBB</h2>
+        <h3>CCC</h3>
+        <h4>DDD</h4>
+        <h5>EEE</h5>
+        <h6>GGG</h6>
+        <p>HHH</p>
+    '''
+    styles_dict = {
+        'style0': 'heading 1',
+        'style1': 'heading 2',
+        'style2': 'heading 3',
+        'style3': 'heading 4',
+        'style4': 'heading 5',
+        'style5': 'heading 6',
+    }
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(text='AAA', style='style0'),
+            DXB.p_tag(text='BBB', style='style1'),
+            DXB.p_tag(text='CCC', style='style2'),
+            DXB.p_tag(text='DDD', style='style3'),
+            DXB.p_tag(text='EEE', style='style4'),
+            DXB.p_tag(text='GGG', style='style5'),
+            DXB.p_tag(text='HHH', style='garbage'),
+        ]
+        body = ''
+        for tag in p_tags:
+            body += tag
 
         xml = DXB.xml(body)
         return xml

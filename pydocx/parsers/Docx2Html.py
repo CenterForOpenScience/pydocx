@@ -146,7 +146,8 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
-    def indent(self, text, just='', firstLine='', left='', right='', hanging = ''):
+    def indent(self, text, just='', firstLine='', left='',
+               right='', hanging=''):
         slug = '<div'
         if just:
             slug += " class='pydocx-%(just)s'"

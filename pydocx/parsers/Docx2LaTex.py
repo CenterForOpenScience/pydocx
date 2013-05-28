@@ -65,7 +65,7 @@ class Docx2LaTex(DocxParser):
         return r'\href{%(href)s}{%(text)s}' % {
             'href': href,
             'text': text,
-            }
+        }
 
     def image_handler(self, path):
         return path
@@ -111,7 +111,7 @@ class Docx2LaTex(DocxParser):
                 setup_cols += 'l'
         self.table_info = []
         return r'\begin{tabular}{%s}' % setup_cols\
-               + '\n'+ r'%s\end{tabular}'\
+               + '\n' + r'%s\end{tabular}'\
                % text + '\n'
 
     def table_row(self, text):
@@ -137,14 +137,15 @@ class Docx2LaTex(DocxParser):
         return r'\newpage '
 
     def indent(self, text, just='', firstLine='',
-               left='', right='', hanging= ''):
+               left='', right='', hanging=''):
         if not self.indent_table:
             raggedright = False
             raggedleft = False
             center = False
             slug = ''
             if hanging:
-                return r'\begin{hangparas}{%spt}{1} %s \end{hangparas}' % (hanging, text)
+                return r'\begin{hangparas}{%spt}{1} %s ' \
+                       r'\end{hangparas}' % (hanging, text)
             if right and left:
                 left = float(left)
                 right = float(right)

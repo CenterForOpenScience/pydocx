@@ -1,13 +1,14 @@
-#import mock
-import tempfile
+import base64
 import shutil
+import tempfile
+
 from os import path
-#from zipfile import ZipFile
+
 from nose.plugins.skip import SkipTest
-#from nose.tools import assert_raises
 
 from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.DocxParser import ZipFile
 
 
 def convert(path):
@@ -378,6 +379,22 @@ def test_split_headers():
     ''')
 
 
+def get_image_data(docx_file_path, image_name):
+    """
+    Return base 64 encoded data for the image_name that is stored in the
+    docx_file_path.
+    """
+    with ZipFile(docx_file_path) as f:
+        images = [
+            e for e in f.infolist()
+            if e.filename == 'word/media/%s' % image_name
+        ]
+        if not images:
+            raise AssertionError('%s not in %s' % (image_name, docx_file_path))
+        data = f.read(images[0].filename)
+    return base64.b64encode(data)
+
+
 def test_has_image():
     filename = 'has_image.docx'
     file_path = path.join(
@@ -389,13 +406,13 @@ def test_has_image():
     new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
 
     actual_html = convert(new_file_path)
+    image_data = get_image_data(new_file_path, 'image1.gif')
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>
             AAA
-            <img src="%s/word/media/image1.gif" height="55px" width="260px" />
+            <img src="data:image/png;base64,%s" height="55px" width="260px" />
         </p>
-    ''' % directory_path)
-    assert path.isfile('%s/word/media/image1.gif' % directory_path)
+    ''' % image_data)
 
 
 def test_local_dpi():
@@ -410,10 +427,10 @@ def test_local_dpi():
     )
     new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
     actual_html = convert(new_file_path)
+    image_data = get_image_data(new_file_path, 'image1.jpeg')
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="%s/word/media/image1.jpeg" /></p>
-    ''' % directory_path)
-    assert path.isfile('%s/word/media/image1.jpeg' % directory_path)
+        <p><img src="data:image/png;base64,%s" /></p>
+    ''' % image_data)
 
 
 def test_has_image_using_image_handler():

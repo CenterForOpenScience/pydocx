@@ -92,6 +92,9 @@ class XMLDocx2Html(Docx2Html):
             styles_dict=None,
             *args, **kwargs):
         self._test_rels_dict = rels_dict
+        if rels_dict:
+            for value in rels_dict.values():
+                self._image_data['word/%s' % value] = 'word/%s' % value
         if numbering_dict is None:
             numbering_dict = {}
         self.numbering_dict = numbering_dict
@@ -165,7 +168,12 @@ class _TranslationTestCase(TestCase):
         tree = self.get_xml()
 
         # Verify the final output.
-        html = self.parser(
+        parser = self.parser
+
+        def image_handler(self, src, *args, **kwargs):
+            return src
+        parser.image_handler = image_handler
+        html = parser(
             document_xml=tree,
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,

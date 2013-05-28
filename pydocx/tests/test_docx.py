@@ -10,8 +10,8 @@ from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
 
 
-def convert(path):
-    return Docx2Html(path).parsed
+def convert(path, *args, **kwargs):
+    return Docx2Html(path, *args, **kwargs).parsed
 
 
 def test_extract_html():
@@ -568,14 +568,13 @@ def test_lists_with_styles():
 
 
 def test_list_to_header():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'list_to_header.docx',
     )
-    actual_html = convert(file_path)
+    actual_html = convert(file_path, convert_root_level_upper_roman=True)
     # It should be noted that list item `GGG` is upper roman in the word
     # document to show that only top level upper romans get converted.
     assert_html_equal(actual_html, BASE_HTML % '''
@@ -590,7 +589,7 @@ def test_list_to_header():
         <h2>EEE</h2>
         <ol list-style-type="decimal">
             <li>FFF
-                <ol list-style-type="decimal">
+                <ol list-style-type="upperRoman">
                     <li>GGG</li>
                 </ol>
             </li>

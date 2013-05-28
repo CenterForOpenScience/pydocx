@@ -1,6 +1,4 @@
 import base64
-import shutil
-import tempfile
 
 from os import path
 
@@ -354,26 +352,15 @@ def test_headers():
     ''')
 
 
-def _copy_file_to_tmp_dir(file_path, filename):
-    # Since the images need to be extracted from the docx, copy the file to a
-    # temp directory so we do not clutter up repo.
-    directory_path = tempfile.mkdtemp()
-    new_file_path = path.join(directory_path, filename)
-    shutil.copyfile(file_path, new_file_path)
-    return new_file_path, directory_path
-
-
 def test_split_headers():
-    filename = 'split_header.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'split_header.docx',
     )
-    new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
     <h1>AAA</h1><p>BBB</p><h1>CCC</h1>
     ''')
@@ -396,17 +383,15 @@ def get_image_data(docx_file_path, image_name):
 
 
 def test_has_image():
-    filename = 'has_image.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
     )
-    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
 
-    actual_html = convert(new_file_path)
-    image_data = get_image_data(new_file_path, 'image1.gif')
+    actual_html = convert(file_path)
+    image_data = get_image_data(file_path, 'image1.gif')
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>
             AAA
@@ -418,16 +403,14 @@ def test_has_image():
 def test_local_dpi():
     # The image in this file does not have a set height or width, show that the
     # html will generate without it.
-    filename = 'localDpi.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'localDpi.docx',
     )
-    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
-    actual_html = convert(new_file_path)
-    image_data = get_image_data(new_file_path, 'image1.jpeg')
+    actual_html = convert(file_path)
+    image_data = get_image_data(file_path, 'image1.jpeg')
     assert_html_equal(actual_html, BASE_HTML % '''
         <p><img src="data:image/png;base64,%s" /></p>
     ''' % image_data)
@@ -435,18 +418,16 @@ def test_local_dpi():
 
 def test_has_image_using_image_handler():
     raise SkipTest('This needs to be converted to an xml test')
-    filename = 'has_image.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
     )
-    new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     def image_handler(*args, **kwargs):
         return 'test'
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>AAA<img src="test" height="55" width="260" /></p>
     ''')

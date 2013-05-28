@@ -1,6 +1,7 @@
-from pydocx.DocxParser import DocxParser
-
+import base64
 import xml.sax.saxutils
+
+from pydocx.DocxParser import DocxParser
 
 
 class Docx2Html(DocxParser):
@@ -69,11 +70,15 @@ class Docx2Html(DocxParser):
             'text': text,
         }
 
-    def image_handler(self, path):
-        return path
+    def image_handler(self, image_data):
+        b64_encoded_src = 'data:image/png;base64,%s' % (
+            base64.b64encode(image_data),
+        )
+        b64_encoded_src = self.escape(b64_encoded_src)
+        return b64_encoded_src
 
-    def image(self, path, x, y):
-        src = self.image_handler(path)
+    def image(self, image_data, x, y):
+        src = self.image_handler(image_data)
         if not src:
             return ''
         if all([x, y]):

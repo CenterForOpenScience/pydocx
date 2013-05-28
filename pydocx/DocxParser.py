@@ -112,6 +112,7 @@ setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
 setattr(_ElementInterface, 'is_last_text', False)
+setattr(_ElementInterface, 'is_last_row_item', False)
 
 # End helpers
 
@@ -180,6 +181,12 @@ class DocxParser:
     def __init__(self, *args, **kwargs):
         self._parsed = ''
         self.block_text = ''
+        self.last_row_item = False
+        self.line_break_in_table = False
+        self.is_table = False
+        self.indent_table = False
+        self.column_index = 0
+        self.cols = 0
         self.page_width = 0
         self._build_data(*args, **kwargs)
 
@@ -254,6 +261,8 @@ class DocxParser:
                 continue
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
+                self.cols = len(tcs)
+                tcs[-1].is_last_row_item = True
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
@@ -453,6 +462,10 @@ class DocxParser:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
+        if el.is_last_row_item:
+            self.last_row_item = True
+        else:
+            self.last_row_item = False
         return self.table_cell(text, colspan, rowspan)
 
     def parse_list(self, el, text):
@@ -566,7 +579,9 @@ class DocxParser:
         if el.is_list_item:
             return self.parse_list_item(el, text)
         if el.is_in_table:
+            self.is_table = True
             return self.parse_table_cell_contents(el, text)
+        self.is_table = False
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
@@ -816,25 +831,26 @@ class DocxParser:
                 elif jc.attrib['val'] == 'left':
                     just = 'left'
             ind = paragraph_tag_property.find('ind')
-            right = ''
-            left = ''
-            firstLine = ''
+            right = None
+            left = None
+            firstLine = None
+            hanging = None
             if ind is not None:
-                right = None
-                left = None
-                firstLine = None
+                if 'hanging' in ind.attrib:
+                    hanging = ind.attrib['hanging']
+                    hanging = (float(hanging)/20)
                 if 'right' in ind.attrib:
                     right = ind.attrib['right']
                     # divide by 20 to get to pt. multiply by (4/3) to get to px
-                    right = (int(right) / 20) * float(4) / float(3)
+                    right = (float(right) / 20) * float(4) / float(3)
                     right = str(right)
                 if 'left' in ind.attrib:
                     left = ind.attrib['left']
-                    left = (int(left) / 20) * float(4) / float(3)
+                    left = (float(left) / 20) * float(4) / float(3)
                     left = str(left)
                 if 'firstLine' in ind.attrib:
                     firstLine = ind.attrib['firstLine']
-                    firstLine = (int(firstLine) / 20) * float(4) / float(3)
+                    firstLine = (float(firstLine) / 20) * float(4) / float(3)
                     firstLine = str(firstLine)
             if jc is not None or ind is not None:
                 t_els = el.find_all('t')
@@ -842,8 +858,11 @@ class DocxParser:
                     if el.is_last_text:
                         block = False
                         self.block_text += text
+                        if el.parent.find('tbl') is not None:
+                            tbl = el.parent.find('tbl')
+                            self.column_index = tbl.find('tc').column
                         text = self.indent(self.block_text, just,
-                                           firstLine, left, right)
+                                           firstLine, left, right, hanging)
                         self.block_text = ''
                     else:
                         block = True

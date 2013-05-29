@@ -131,7 +131,6 @@ class DocxParser:
 
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
-            self.zip_path, _ = os.path.split(f.filename)
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
             try:
@@ -152,10 +151,7 @@ class DocxParser:
                 if e.filename.startswith('word/media/')
             ]
             for e in zipped_image_files:
-                f.extract(
-                    e.filename,
-                    self.zip_path,
-                )
+                self._image_data[e.filename] = f.read(e.filename)
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
@@ -199,8 +195,9 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-        self._build_data(path, *args, **kwargs)
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
+        self._image_data = {}
+        self._build_data(path, *args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -824,12 +821,13 @@ class DocxParser:
         if not src:
             return ''
         src = os.path.join(
-            self.zip_path,
             'word',
             src,
         )
-        src = self.escape(src)
-        return self.image(src, x, y)
+        if src in self._image_data:
+            filename = os.path.split(src)[-1]
+            return self.image(self._image_data[src], filename, x, y)
+        return ''
 
     def _is_style_on(self, el):
         """
@@ -973,8 +971,8 @@ class DocxParser:
         return path
 
     @abstractmethod
-    def image(self, path, x, y):
-        return self.image_handler(path)
+    def image(self, data, filename, x, y):
+        return self.image_handler(data)
 
     @abstractmethod
     def deletion(self, text, author, date):

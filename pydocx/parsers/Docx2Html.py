@@ -70,15 +70,17 @@ class Docx2Html(DocxParser):
             'text': text,
         }
 
-    def image_handler(self, image_data):
-        b64_encoded_src = 'data:image/png;base64,%s' % (
+    def image_handler(self, image_data, filename):
+        extension = filename.split('.')[-1].lower()
+        b64_encoded_src = 'data:image/%s;base64,%s' % (
+            extension,
             base64.b64encode(image_data),
         )
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src
 
-    def image(self, image_data, x, y):
-        src = self.image_handler(image_data)
+    def image(self, image_data, filename, x, y):
+        src = self.image_handler(image_data, filename)
         if not src:
             return ''
         if all([x, y]):

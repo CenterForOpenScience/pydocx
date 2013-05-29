@@ -395,7 +395,7 @@ def test_has_image():
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>
             AAA
-            <img src="data:image/png;base64,%s" height="55px" width="260px" />
+            <img src="data:image/gif;base64,%s" height="55px" width="260px" />
         </p>
     ''' % image_data)
 
@@ -412,7 +412,7 @@ def test_local_dpi():
     actual_html = convert(file_path)
     image_data = get_image_data(file_path, 'image1.jpeg')
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="data:image/png;base64,%s" /></p>
+        <p><img src="data:image/jpeg;base64,%s" /></p>
     ''' % image_data)
 
 

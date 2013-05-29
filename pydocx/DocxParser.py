@@ -781,7 +781,8 @@ class DocxParser:
             src,
         )
         if src in self._image_data:
-            return self.image(self._image_data[src], x, y)
+            filename = os.path.split(src)[-1]
+            return self.image(self._image_data[src], filename, x, y)
         return ''
 
     def _is_style_on(self, el):
@@ -926,8 +927,8 @@ class DocxParser:
         return path
 
     @abstractmethod
-    def image(self, path, x, y):
-        return self.image_handler(path)
+    def image(self, data, filename, x, y):
+        return self.image_handler(data)
 
     @abstractmethod
     def deletion(self, text, author, date):

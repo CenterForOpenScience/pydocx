@@ -182,3 +182,8 @@ The base parser `Docx2Html` relies on certain css class being set for certain be
 * class `pydocx-left` -> Aligns the text to the left.
 * class `pydocx-comment` -> Turns the text blue.
 * class `pydocx-underline` -> Underlines the text.
+
+Optional Arguments
+##################
+
+You can pass in `convert_root_level_upper_roman=True` to the parser and it will convert all root level upper roman lists to headings instead.

@@ -84,8 +84,13 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
+    def __init__(self, *args, **kwargs):
+        # Pass in nothing for the path
+        super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
+
     def _build_data(
             self,
+            path,
             document_xml=None,
             rels_dict=None,
             numbering_dict=None,

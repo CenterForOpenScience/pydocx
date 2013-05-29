@@ -27,6 +27,7 @@ TAGS_HOLDING_CONTENT_TAGS = (
     'tbl',
     'sdt',
 )
+UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -189,15 +190,17 @@ class DocxParser:
             rels_dict[rId] = target
         return rels_dict
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+            self,
+            path,
+            convert_root_level_upper_roman=False,
+            *args,
+            **kwargs):
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-        self._build_data(*args, **kwargs)
-        self.convert_root_level_upper_roman = kwargs.get(
-            'convert_root_level_upper_roman',
-            False,
-        )
+        self._build_data(path, *args, **kwargs)
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -393,7 +396,7 @@ class DocxParser:
                 list_item.is_first_list_item = False
                 list_item.is_last_list_item = False
 
-                list_item.heading_level = 'h2'
+                list_item.heading_level = UPPER_ROMAN_TO_HEADING_VALUE
 
     def _set_next(self, body):
         def _get_children_with_content(el):

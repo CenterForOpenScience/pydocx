@@ -84,8 +84,13 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
+    def __init__(self, *args, **kwargs):
+        # Pass in nothing for the path
+        super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
+
     def _build_data(
             self,
+            path,
             document_xml=None,
             rels_dict=None,
             numbering_dict=None,
@@ -148,6 +153,7 @@ class _TranslationTestCase(TestCase):
     run_expected_output = True
     parser = XMLDocx2Html
     use_base_html = True
+    convert_root_level_upper_roman = False
 
     def get_xml(self):
         raise NotImplementedError()
@@ -174,6 +180,7 @@ class _TranslationTestCase(TestCase):
             return src
         parser.image_handler = image_handler
         html = parser(
+            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             document_xml=tree,
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,

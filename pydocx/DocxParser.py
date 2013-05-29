@@ -27,6 +27,7 @@ TAGS_HOLDING_CONTENT_TAGS = (
     'tbl',
     'sdt',
 )
+UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -185,12 +186,18 @@ class DocxParser:
             rels_dict[rId] = target
         return rels_dict
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+            self,
+            path,
+            convert_root_level_upper_roman=False,
+            *args,
+            **kwargs):
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
-        self._build_data(*args, **kwargs)
+        self._build_data(path, *args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -352,6 +359,42 @@ class DocxParser:
                 # Prime the heading_level
                 element.heading_level = headers[style.lower()]
 
+    def _convert_upper_roman(self, body):
+        if not self.convert_root_level_upper_roman:
+            return
+        first_root_list_items = [
+            # Only root level elements.
+            el for el in body.getchildren()
+            # And only first_list_items
+            if el.is_first_list_item
+        ]
+        visited_num_ids = []
+        for root_list_item in first_root_list_items:
+            if root_list_item.num_id in visited_num_ids:
+                continue
+            visited_num_ids.append(root_list_item.num_id)
+            lst_style = self.get_list_style(
+                root_list_item.num_id.num_id,
+                root_list_item.ilvl,
+            )
+            if lst_style != 'upperRoman':
+                continue
+            ilvl = min(
+                el.ilvl for el in body.find_all('p')
+                if el.num_id == root_list_item.num_id
+            )
+            root_upper_roman_list_items = [
+                el for el in body.find_all('p')
+                if el.num_id == root_list_item.num_id and
+                el.ilvl == ilvl
+            ]
+            for list_item in root_upper_roman_list_items:
+                list_item.is_list_item = False
+                list_item.is_first_list_item = False
+                list_item.is_last_list_item = False
+
+                list_item.heading_level = UPPER_ROMAN_TO_HEADING_VALUE
+
     def _set_next(self, body):
         def _get_children_with_content(el):
             # We only care about children if they have text in them.
@@ -406,6 +449,7 @@ class DocxParser:
             child for child in body.find_all('p')
         ]
         self._set_headers(p_elements)
+        self._convert_upper_roman(body)
         self._set_next(body)
 
         self._parsed += self.parse(el)

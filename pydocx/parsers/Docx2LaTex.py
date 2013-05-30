@@ -98,9 +98,9 @@ class Docx2LaTex(DocxParser):
         setup_cols = ''
         for i in range(self.cols + 1):
             for column in self.table_info:
-                if column['Column'] == i   and column['justify'] == 'center':
+                if column['Column'] == i and column['justify'] == 'center':
                     center = True
-                elif column['Column'] == i  and column['justify'] == 'right':
+                elif column['Column'] == i and column['justify'] == 'right':
                     right = True
             if center is True:
                 setup_cols += 'c'

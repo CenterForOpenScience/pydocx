@@ -4,12 +4,12 @@ from pydocx.DocxParser import DocxParser
 class Docx2LaTex(DocxParser):
 
     def __init__(self, *args, **kwargs):
-        self.table_info = {}
+        self.table_info = []
         super(Docx2LaTex, self).__init__(*args, **kwargs)
 
     @property
     def parsed(self):
-        content = "%(head)s\\begin{document}%(content)s\\end{document}" % {
+        content = r"%(head)s\begin{document}%(content)s\end{document}" % {
             'head': self.head(),
             'content': self._parsed}
         return unicode(content)
@@ -47,7 +47,8 @@ class Docx2LaTex(DocxParser):
                \usepackage{graphicx}\usepackage{changes}
                \usepackage{changepage}
                \usepackage[paperwidth=%spt]{geometry}
-               \usepackage{hanging}\usepackage{multirow}''' % self.page_width
+               \usepackage{hanging}\usepackage{multirow}
+               \usepackage{pbox}''' % self.page_width
 
     def paragraph(self, text, pre=None):
         return text + '\n\n'
@@ -95,11 +96,11 @@ class Docx2LaTex(DocxParser):
         center = False
         right = False
         setup_cols = ''
-        for i in range(self.cols):
+        for i in range(self.cols + 1):
             for column in self.table_info:
-                if column['Column'] == i and column['justify'] == 'center':
+                if column['Column'] == i   and column['justify'] == 'center':
                     center = True
-                elif column['Column'] == i and column['justify'] == 'right':
+                elif column['Column'] == i  and column['justify'] == 'right':
                     right = True
             if center is True:
                 setup_cols += 'c'
@@ -110,7 +111,7 @@ class Docx2LaTex(DocxParser):
             else:
                 setup_cols += 'l'
         self.table_info = []
-        return r'\begin{tabular}{%s}' % setup_cols\
+        return '\n' + r'\begin{tabular}{%s}' % setup_cols\
                + '\n' + r'%s\end{tabular}'\
                % text + '\n'
 
@@ -120,11 +121,12 @@ class Docx2LaTex(DocxParser):
     def table_cell(self, text, col='', row=''):
         slug = ''
         if col:
-            slug += r'\multicolumn{%s}{*}' % col
+            slug += r'\multicolumn{%s}{l}' % col
         if row:
             slug += r'\multirow{%s}{*}' % row
         if self.line_break_in_table:
-            slug += r'\pbox{20cm}{' + text + '}'
+            slug += '{' + text + '}'
+#            slug += r'\pbox{20cm}{' + text + '}'
         else:
             slug += text
         if self.last_row_item:
@@ -145,7 +147,7 @@ class Docx2LaTex(DocxParser):
             slug = ''
             if hanging:
                 return r'\begin{hangparas}{%spt}{1} %s ' \
-                       r'\end{hangparas}' % (hanging, text)
+                       r'\end{hangparas}' % (hanging, text) + '\n'
             if right and left:
                 left = float(left)
                 right = float(right)
@@ -188,12 +190,12 @@ class Docx2LaTex(DocxParser):
             self.columns['justify'] = just
             if self.columns not in self.table_info:
                 self.table_info.append(self.columns)
-            return ''
+            return text
 
     def break_tag(self):
         if self.is_table:
             self.line_break_in_table = True
-        return r'\\'
+        return ''
 
     def deletion(self, text, author, date):
         return r'\deleted[id='+author+',remark='+date+']{%s}' % text

@@ -1,17 +1,16 @@
-#import mock
-import tempfile
-import shutil
+import base64
+
 from os import path
-#from zipfile import ZipFile
+
 from nose.plugins.skip import SkipTest
-#from nose.tools import assert_raises
 
 from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.DocxParser import ZipFile
 
 
-def convert(path):
-    return Docx2Html(path).parsed
+def convert(path, *args, **kwargs):
+    return Docx2Html(path, *args, **kwargs).parsed
 
 
 def test_extract_html():
@@ -353,83 +352,82 @@ def test_headers():
     ''')
 
 
-def _copy_file_to_tmp_dir(file_path, filename):
-    # Since the images need to be extracted from the docx, copy the file to a
-    # temp directory so we do not clutter up repo.
-    directory_path = tempfile.mkdtemp()
-    new_file_path = path.join(directory_path, filename)
-    shutil.copyfile(file_path, new_file_path)
-    return new_file_path, directory_path
-
-
 def test_split_headers():
-    filename = 'split_header.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'split_header.docx',
     )
-    new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
     <h1>AAA</h1><p>BBB</p><h1>CCC</h1>
     ''')
 
 
+def get_image_data(docx_file_path, image_name):
+    """
+    Return base 64 encoded data for the image_name that is stored in the
+    docx_file_path.
+    """
+    with ZipFile(docx_file_path) as f:
+        images = [
+            e for e in f.infolist()
+            if e.filename == 'word/media/%s' % image_name
+        ]
+        if not images:
+            raise AssertionError('%s not in %s' % (image_name, docx_file_path))
+        data = f.read(images[0].filename)
+    return base64.b64encode(data)
+
+
 def test_has_image():
-    filename = 'has_image.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
     )
-    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
 
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
+    image_data = get_image_data(file_path, 'image1.gif')
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>
             AAA
-            <img src="%s/word/media/image1.gif" height="55px" width="260px" />
+            <img src="data:image/gif;base64,%s" height="55px" width="260px" />
         </p>
-    ''' % directory_path)
-    assert path.isfile('%s/word/media/image1.gif' % directory_path)
+    ''' % image_data)
 
 
 def test_local_dpi():
     # The image in this file does not have a set height or width, show that the
     # html will generate without it.
-    filename = 'localDpi.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'localDpi.docx',
     )
-    new_file_path, directory_path = _copy_file_to_tmp_dir(file_path, filename)
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
+    image_data = get_image_data(file_path, 'image1.jpeg')
     assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="%s/word/media/image1.jpeg" /></p>
-    ''' % directory_path)
-    assert path.isfile('%s/word/media/image1.jpeg' % directory_path)
+        <p><img src="data:image/jpeg;base64,%s" /></p>
+    ''' % image_data)
 
 
 def test_has_image_using_image_handler():
     raise SkipTest('This needs to be converted to an xml test')
-    filename = 'has_image.docx'
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
     )
-    new_file_path, _ = _copy_file_to_tmp_dir(file_path, filename)
 
     def image_handler(*args, **kwargs):
         return 'test'
-    actual_html = convert(new_file_path)
+    actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>AAA<img src="test" height="55" width="260" /></p>
     ''')
@@ -568,14 +566,13 @@ def test_lists_with_styles():
 
 
 def test_list_to_header():
-    raise SkipTest('This test is not yet passing')
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
         'list_to_header.docx',
     )
-    actual_html = convert(file_path)
+    actual_html = convert(file_path, convert_root_level_upper_roman=True)
     # It should be noted that list item `GGG` is upper roman in the word
     # document to show that only top level upper romans get converted.
     assert_html_equal(actual_html, BASE_HTML % '''
@@ -590,7 +587,7 @@ def test_list_to_header():
         <h2>EEE</h2>
         <ol list-style-type="decimal">
             <li>FFF
-                <ol list-style-type="decimal">
+                <ol list-style-type="upperRoman">
                     <li>GGG</li>
                 </ol>
             </li>

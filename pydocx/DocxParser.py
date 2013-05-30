@@ -27,6 +27,7 @@ TAGS_HOLDING_CONTENT_TAGS = (
     'tbl',
     'sdt',
 )
+UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -131,7 +132,6 @@ class DocxParser:
 
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
-            self.zip_path, _ = os.path.split(f.filename)
             self.document_text = f.read('word/document.xml')
             self.styles_text = f.read('word/styles.xml')
             try:
@@ -152,10 +152,7 @@ class DocxParser:
                 if e.filename.startswith('word/media/')
             ]
             for e in zipped_image_files:
-                f.extract(
-                    e.filename,
-                    self.zip_path,
-                )
+                self._image_data[e.filename] = f.read(e.filename)
 
         self.root = ElementTree.fromstring(
             remove_namespaces(self.document_text),  # remove the namespaces
@@ -190,7 +187,12 @@ class DocxParser:
             rels_dict[rId] = target
         return rels_dict
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+            self,
+            path,
+            convert_root_level_upper_roman=False,
+            *args,
+            **kwargs):
         self._parsed = ''
         self.block_text = ''
         self.last_row_item = False
@@ -200,7 +202,9 @@ class DocxParser:
         self.column_index = 0
         self.cols = 0
         self.page_width = 0
-        self._build_data(*args, **kwargs)
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
+        self._image_data = {}
+        self._build_data(path, *args, **kwargs)
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -365,6 +369,42 @@ class DocxParser:
                 # Prime the heading_level
                 element.heading_level = headers[style.lower()]
 
+    def _convert_upper_roman(self, body):
+        if not self.convert_root_level_upper_roman:
+            return
+        first_root_list_items = [
+            # Only root level elements.
+            el for el in body.getchildren()
+            # And only first_list_items
+            if el.is_first_list_item
+        ]
+        visited_num_ids = []
+        for root_list_item in first_root_list_items:
+            if root_list_item.num_id in visited_num_ids:
+                continue
+            visited_num_ids.append(root_list_item.num_id)
+            lst_style = self.get_list_style(
+                root_list_item.num_id.num_id,
+                root_list_item.ilvl,
+            )
+            if lst_style != 'upperRoman':
+                continue
+            ilvl = min(
+                el.ilvl for el in body.find_all('p')
+                if el.num_id == root_list_item.num_id
+            )
+            root_upper_roman_list_items = [
+                el for el in body.find_all('p')
+                if el.num_id == root_list_item.num_id and
+                el.ilvl == ilvl
+            ]
+            for list_item in root_upper_roman_list_items:
+                list_item.is_list_item = False
+                list_item.is_first_list_item = False
+                list_item.is_last_list_item = False
+
+                list_item.heading_level = UPPER_ROMAN_TO_HEADING_VALUE
+
     def _set_next(self, body):
         def _get_children_with_content(el):
             # We only care about children if they have text in them.
@@ -419,6 +459,7 @@ class DocxParser:
             child for child in body.find_all('p')
         ]
         self._set_headers(p_elements)
+        self._convert_upper_roman(body)
         self._set_next(body)
 
         self._parsed += self.parse(el)
@@ -796,12 +837,13 @@ class DocxParser:
         if not src:
             return ''
         src = os.path.join(
-            self.zip_path,
             'word',
             src,
         )
-        src = self.escape(src)
-        return self.image(src, x, y)
+        if src in self._image_data:
+            filename = os.path.split(src)[-1]
+            return self.image(self._image_data[src], filename, x, y)
+        return ''
 
     def _is_style_on(self, el):
         """
@@ -950,8 +992,8 @@ class DocxParser:
         return path
 
     @abstractmethod
-    def image(self, path, x, y):
-        return self.image_handler(path)
+    def image(self, data, filename, x, y):
+        return self.image_handler(data)
 
     @abstractmethod
     def deletion(self, text, author, date):

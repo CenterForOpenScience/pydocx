@@ -638,6 +638,9 @@ class DocxParser:
     def parse_p(self, el, text):
         if text == '':
             return ''
+        # TODO This is still not correct, however it fixes the bug. We need to
+        # apply the classes/styles on p, td, li and h tags instead of inline,
+        # but that is for another ticket.
         text = self.parse_justification(el, text)
         if el.is_first_list_item:
             return self.parse_list(el, text)

@@ -609,9 +609,47 @@ class DocxParser:
 
         return self._build_list(el, parsed)
 
+    def parse_justification(self, el, text):
+        paragraph_tag_property = el.find('pPr')
+        just = ''
+        if paragraph_tag_property is None:
+            return text
+
+        jc = paragraph_tag_property.find('jc')
+        if jc is not None:  # text alignments
+            if jc.attrib['val'] == 'right':
+                just = 'right'
+            elif jc.attrib['val'] == 'center':
+                just = 'center'
+            elif jc.attrib['val'] == 'left':
+                just = 'left'
+
+        ind = paragraph_tag_property.find('ind')
+        right = ''
+        left = ''
+        firstLine = ''
+        if ind is not None:
+            if 'right' in ind.attrib:
+                right = ind.attrib['right']
+                # divide by 20 to get to pt. multiply by (4/3) to get to px
+                right = (int(right) / 20) * float(4) / float(3)
+                right = str(right)
+            if 'left' in ind.attrib:
+                left = ind.attrib['left']
+                left = (int(left) / 20) * float(4) / float(3)
+                left = str(left)
+            if 'firstLine' in ind.attrib:
+                firstLine = ind.attrib['firstLine']
+                firstLine = (int(firstLine) / 20) * float(4) / float(3)
+                firstLine = str(firstLine)
+        if any([just, firstLine, left, right]):
+            return self.indent(text, just, firstLine, left, right)
+        return text
+
     def parse_p(self, el, text):
         if text == '':
             return ''
+        text = self.parse_justification(el, text)
         if el.is_first_list_item:
             return self.parse_list(el, text)
         if el.heading_level:
@@ -853,7 +891,6 @@ class DocxParser:
         """
         Parse the running text.
         """
-        block = False
         text = parsed
         if not text:
             return ''
@@ -871,54 +908,7 @@ class DocxParser:
                     fns.append(self.underline)
             for fn in fns:
                 text = fn(text)
-        paragraph_tag_property = el.parent.find('pPr')
-        just = ''
-        if paragraph_tag_property is not None:
-            jc = paragraph_tag_property.find('jc')
-            if jc is not None:  # text alignments
-                if jc.attrib['val'] == 'right':
-                    just = 'right'
-                elif jc.attrib['val'] == 'center':
-                    just = 'center'
-                elif jc.attrib['val'] == 'left':
-                    just = 'left'
-            ind = paragraph_tag_property.find('ind')
-            right = ''
-            left = ''
-            firstLine = ''
-            if ind is not None:
-                right = None
-                left = None
-                firstLine = None
-                if 'right' in ind.attrib:
-                    right = ind.attrib['right']
-                    # divide by 20 to get to pt. multiply by (4/3) to get to px
-                    right = (int(right) / 20) * float(4) / float(3)
-                    right = str(right)
-                if 'left' in ind.attrib:
-                    left = ind.attrib['left']
-                    left = (int(left) / 20) * float(4) / float(3)
-                    left = str(left)
-                if 'firstLine' in ind.attrib:
-                    firstLine = ind.attrib['firstLine']
-                    firstLine = (int(firstLine) / 20) * float(4) / float(3)
-                    firstLine = str(firstLine)
-            if jc is not None or ind is not None:
-                t_els = el.find_all('t')
-                for el in t_els:
-                    if el.is_last_text:
-                        block = False
-                        self.block_text += text
-                        text = self.indent(self.block_text, just,
-                                           firstLine, left, right)
-                        self.block_text = ''
-                    else:
-                        block = True
-                        self.block_text += text
-        if block is False:
-            return text
-        else:
-            return ''
+        return text
 
     def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')

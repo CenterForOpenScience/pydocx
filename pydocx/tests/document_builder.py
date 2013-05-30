@@ -46,6 +46,7 @@ class DocxBuilder(object):
             italics=False,
             style='style0',
             val=None,
+            jc=None,
     ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
@@ -66,6 +67,7 @@ class DocxBuilder(object):
         kwargs = {
             'run_tags': run_tags,
             'style': style,
+            'jc': jc,
         }
         return template.render(**kwargs)
 

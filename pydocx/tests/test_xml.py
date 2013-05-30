@@ -1005,3 +1005,22 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class MultipleTTagsInRTag(_TranslationTestCase):
+    expected_output = '''
+        <p>ABC</p>
+    '''
+
+    def get_xml(self):
+        r_tag = DXB.r_tag(
+            [DXB.t_tag(letter) for letter in 'ABC'],
+        )
+        p_tag = DXB.p_tag(
+            [r_tag],
+            jc='start',
+        )
+        body = p_tag
+
+        xml = DXB.xml(body)
+        return xml

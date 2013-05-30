@@ -114,7 +114,6 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-setattr(_ElementInterface, 'is_last_text', False)
 
 # End helpers
 
@@ -280,15 +279,6 @@ class DocxParser:
                     ):
                         child.vmerge_continue = True
 
-    def _set_text_attributes(self, el):
-        # find the ppr. look thru all the elements within and find the text
-        #if it's the last item in the list, it's the last text
-        paragraph_tag_property = el.find_all('pPr')
-        for el in paragraph_tag_property:
-            for i, t in enumerate(el.parent.find_all('t')):
-                if i == (len(el.parent.find_all('t')) - 1):
-                    t.is_last_text = True
-
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
         for p in paragraph_elements:
@@ -431,7 +421,6 @@ class DocxParser:
     def parse_begin(self, el):
         self._set_list_attributes(el)
         self._set_table_attributes(el)
-        self._set_text_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements

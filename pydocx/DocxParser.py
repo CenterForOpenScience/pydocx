@@ -29,6 +29,14 @@ TAGS_HOLDING_CONTENT_TAGS = (
 )
 UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
+JUSTIFY_CENTER = 'center'
+JUSTIFY_LEFT = 'left'
+JUSTIFY_RIGHT = 'right'
+
+INDENTATION_RIGHT = 'right'
+INDENTATION_LEFT = 'left'
+INDENTATION_FIRST_LINE = 'firstLine'
+
 
 def remove_namespaces(document):  # remove namespaces
 
@@ -598,41 +606,40 @@ class DocxParser:
 
         return self._build_list(el, parsed)
 
-    def parse_justification(self, el, text):
+    def justification(self, el, text):
         paragraph_tag_property = el.find('pPr')
-        just = ''
         if paragraph_tag_property is None:
             return text
 
-        jc = paragraph_tag_property.find('jc')
-        if jc is not None:  # text alignments
-            if jc.attrib['val'] == 'right':
-                just = 'right'
-            elif jc.attrib['val'] == 'center':
-                just = 'center'
-            elif jc.attrib['val'] == 'left':
-                just = 'left'
+        _justification = paragraph_tag_property.find('jc')
+        indentation = paragraph_tag_property.find('ind')
+        if _justification is None and indentation is None:
+            return text
+        alignment = None
+        right = None
+        left = None
+        firstLine = None
+        if _justification is not None:  # text alignments
+            value = _justification.attrib['val']
+            if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
+                alignment = value
 
-        ind = paragraph_tag_property.find('ind')
-        right = ''
-        left = ''
-        firstLine = ''
-        if ind is not None:
-            if 'right' in ind.attrib:
-                right = ind.attrib['right']
+        if indentation is not None:
+            if INDENTATION_RIGHT in indentation.attrib:
+                right = indentation.attrib[INDENTATION_RIGHT]
                 # divide by 20 to get to pt. multiply by (4/3) to get to px
                 right = (int(right) / 20) * float(4) / float(3)
                 right = str(right)
-            if 'left' in ind.attrib:
-                left = ind.attrib['left']
+            if INDENTATION_LEFT in indentation.attrib:
+                left = indentation.attrib[INDENTATION_LEFT]
                 left = (int(left) / 20) * float(4) / float(3)
                 left = str(left)
-            if 'firstLine' in ind.attrib:
-                firstLine = ind.attrib['firstLine']
+            if INDENTATION_FIRST_LINE in indentation.attrib:
+                firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
                 firstLine = (int(firstLine) / 20) * float(4) / float(3)
                 firstLine = str(firstLine)
-        if any([just, firstLine, left, right]):
-            return self.indent(text, just, firstLine, left, right)
+        if any([alignment, firstLine, left, right]):
+            return self.indent(text, alignment, firstLine, left, right)
         return text
 
     def parse_p(self, el, text):
@@ -641,7 +648,7 @@ class DocxParser:
         # TODO This is still not correct, however it fixes the bug. We need to
         # apply the classes/styles on p, td, li and h tags instead of inline,
         # but that is for another ticket.
-        text = self.parse_justification(el, text)
+        text = self.justification(el, text)
         if el.is_first_list_item:
             return self.parse_list(el, text)
         if el.heading_level:

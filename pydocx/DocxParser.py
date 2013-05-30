@@ -273,11 +273,12 @@ class DocxParser:
                 continue
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
-                self.cols = len(tcs)
                 tcs[-1].is_last_row_item = True
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
+                    if self.cols <= j:
+                        self.cols = j
                     v_merge = child.find_first('vMerge')
                     if (
                         v_merge is not None and
@@ -883,9 +884,10 @@ class DocxParser:
                     if el.is_last_text:
                         block = False
                         self.block_text += text
-                        if el.parent.find('tbl') is not None:
-                            tbl = el.parent.find('tbl')
-                            self.column_index = tbl.find('tc').column
+                        if el.find_ancestor_with_tag('tc') is not None:
+                            self.indent_table = True
+                            tc = el.find_ancestor_with_tag('tc')
+                            self.column_index = tc.column_index
                         text = self.indent(self.block_text, just,
                                            firstLine, left, right, hanging)
                         self.block_text = ''

@@ -43,9 +43,9 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag('link', is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag('.', is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -61,9 +61,9 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        run_tags = [DXB.r_tag(i) for i in 'link']
+        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'link']
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag('.', is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -93,9 +93,9 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag('link', is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag('.', is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -110,8 +110,8 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag('link'))
-        run_tags.append(DXB.r_tag(None, include_linebreak=True))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
+        run_tags.append(DXB.r_tag([DXB.linebreak()]))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
@@ -671,9 +671,9 @@ class NonStandardTextTagsTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        run_tags = [DXB.r_tag(i) for i in 'insert ']
+        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'insert ']
         insert_tag = DXB.insert_tag(run_tags)
-        run_tags = [DXB.r_tag(i) for i in 'smarttag']
+        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'smarttag']
         smart_tag = DXB.smart_tag(run_tags)
 
         run_tags = [insert_tag, smart_tag]
@@ -728,7 +728,7 @@ class InsertTagInList(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        run_tags = [DXB.r_tag(i) for i in 'BBB']
+        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         insert_tags = DXB.insert_tag(run_tags)
         p_tag = DXB.p_tag([insert_tags])
 
@@ -750,7 +750,7 @@ class SmartTagInList(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        run_tags = [DXB.r_tag(i) for i in 'BBB']
+        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         smart_tag = DXB.smart_tag(run_tags)
         p_tag = DXB.p_tag([smart_tag])
 

@@ -7,3 +7,6 @@ def docx2html(path):
 
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
+
+
+VERSION = '0.2.1'

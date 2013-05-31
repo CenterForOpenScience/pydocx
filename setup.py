@@ -24,7 +24,8 @@ def get_description():
 
 setup(
     name="PyDocX",
-    version="0.2.0",
+    # Edit here and pydocx.__init__
+    version="0.2.1",
     description="docx (OOXML) to html converter",
     author="Jason Ward, Sam Portnow",
     author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",

@@ -6,6 +6,7 @@ templates = {
     'drawing': 'drawing.xml',
     'hyperlink': 'hyperlink.xml',
     'insert': 'insert.xml',
+    'linebreak': 'linebreak.xml',
     'main': 'base.xml',
     'p': 'p.xml',
     'pict': 'pict.xml',
@@ -15,9 +16,10 @@ templates = {
     'smartTag': 'smart_tag.xml',
     'style': 'style.xml',
     'styles': 'styles.xml',
+    't': 't.xml',
     'table': 'table.xml',
-    'tr': 'tr.xml',
     'tc': 'tc.xml',
+    'tr': 'tr.xml',
 }
 
 env = Environment(
@@ -44,11 +46,12 @@ class DocxBuilder(object):
             italics=False,
             style='style0',
             val=None,
+            jc=None,
     ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
             run_tag = DocxBuilder.r_tag(
-                text,
+                [DocxBuilder.t_tag(text)],
                 is_bold=bold,
                 is_underline=underline,
                 is_italics=italics,
@@ -58,33 +61,46 @@ class DocxBuilder(object):
         elif isinstance(text, list):
             run_tags = text
         else:
-            run_tags = [self.r_tag(None)]
+            run_tags = [self.r_tag([])]
         template = env.get_template(templates['p'])
 
         kwargs = {
             'run_tags': run_tags,
             'style': style,
+            'jc': jc,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def linebreak(self):
+        template = env.get_template(templates['linebreak'])
+        kwargs = {}
+        return template.render(**kwargs)
+
+    @classmethod
+    def t_tag(self, text):
+        template = env.get_template(templates['t'])
+        kwargs = {
+            'text': text,
         }
         return template.render(**kwargs)
 
     @classmethod
     def r_tag(
             self,
-            text,
+            elements,
             is_bold=False,
             is_underline=False,
             is_italics=False,
             val=None,
-            include_linebreak=False,
     ):
         template = env.get_template(templates['r'])
         kwargs = {
-            'text': text,
+            'elements': elements,
             'is_bold': is_bold,
             'is_underline': is_underline,
             'is_italics': is_italics,
             'val': val,
-            'include_linebreak': include_linebreak,
         }
         return template.render(**kwargs)
 
@@ -133,12 +149,17 @@ class DocxBuilder(object):
     def li(self, text, ilvl, numId, bold=False):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
-            run_tag = DocxBuilder.r_tag(text, bold)
+            run_tag = DocxBuilder.r_tag([DocxBuilder.t_tag(text)], bold)
             run_tags = [run_tag]
         elif isinstance(text, list):
             run_tags = []
             for run_text, run_bold in text:
-                run_tags.append(DocxBuilder.r_tag(run_tags, run_bold))
+                run_tags.append(
+                    DocxBuilder.r_tag(
+                        [DocxBuilder.t_tag(run_tags)],
+                        run_bold,
+                    ),
+                )
         else:
             raise AssertionError('text must be a string or a list')
         template = env.get_template(templates['p'])

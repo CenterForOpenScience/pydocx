@@ -195,6 +195,7 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
+        self.bookmark = False
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)
@@ -462,7 +463,6 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
@@ -476,6 +476,7 @@ class DocxParser:
         elif el.tag == 't':
             return self.parse_t(el, parsed)
         elif el.tag == 'br':
+            print 'ummm wheres the break'
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)
@@ -489,7 +490,6 @@ class DocxParser:
             return self.parse_image(el)
         else:
             return parsed
-
     def parse_page_break(self, el, text):
         #TODO figure out what parsed is getting overwritten
         return self.page_break()
@@ -672,6 +672,7 @@ class DocxParser:
             """
             next_el = el.next
             if next_el is None:
+                return False
                 return False
             if (
                     not next_el.is_list_item and

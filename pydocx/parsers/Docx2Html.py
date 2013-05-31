@@ -154,19 +154,19 @@ class Docx2Html(DocxParser):
         return '<hr />'
 
     def indent(self, text, just='', firstLine='', left='', right=''):
-        slug = '<div'
+        slug = '<span'
         if just:
             slug += " class='pydocx-%(just)s'"
         if firstLine or left or right:
             slug += " style='"
             if firstLine:
-                slug += "text-indent:%(firstLine)spx;"
+                slug += "text-indent:%(firstLine).1fpx;"
             if left:
-                slug += "margin-left:%(left)spx;"
+                slug += "margin-left:%(left).1fpx;"
             if right:
-                slug += "margin-right:%(right)spx;"
+                slug += "margin-right:%(right).1fpx;"
             slug += "'"
-        slug += ">%(text)s</div>"
+        slug += ">%(text)s</span>"
         return slug % {
             'text': text,
             'just': just,

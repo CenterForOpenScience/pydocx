@@ -29,6 +29,14 @@ TAGS_HOLDING_CONTENT_TAGS = (
 )
 UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
+JUSTIFY_CENTER = 'center'
+JUSTIFY_LEFT = 'left'
+JUSTIFY_RIGHT = 'right'
+
+INDENTATION_RIGHT = 'right'
+INDENTATION_LEFT = 'left'
+INDENTATION_FIRST_LINE = 'firstLine'
+
 
 def remove_namespaces(document):  # remove namespaces
 
@@ -290,15 +298,6 @@ class DocxParser:
                     ):
                         child.vmerge_continue = True
 
-    def _set_text_attributes(self, el):
-        # find the ppr. look thru all the elements within and find the text
-        #if it's the last item in the list, it's the last text
-        paragraph_tag_property = el.find_all('pPr')
-        for el in paragraph_tag_property:
-            for i, t in enumerate(el.parent.find_all('t')):
-                if i == (len(el.parent.find_all('t')) - 1):
-                    t.is_last_text = True
-
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
         for p in paragraph_elements:
@@ -441,7 +440,6 @@ class DocxParser:
     def parse_begin(self, el):
         self._set_list_attributes(el)
         self._set_table_attributes(el)
-        self._set_text_attributes(el)
         self._set_is_in_table(el)
 
         # Find the first and last li elements
@@ -623,9 +621,49 @@ class DocxParser:
 
         return self._build_list(el, parsed)
 
+    def justification(self, el, text):
+        paragraph_tag_property = el.find('pPr')
+        if paragraph_tag_property is None:
+            return text
+
+        _justification = paragraph_tag_property.find('jc')
+        indentation = paragraph_tag_property.find('ind')
+        if _justification is None and indentation is None:
+            return text
+        alignment = None
+        right = None
+        left = None
+        firstLine = None
+        if _justification is not None:  # text alignments
+            value = _justification.attrib['val']
+            if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
+                alignment = value
+
+        if indentation is not None:
+            if INDENTATION_RIGHT in indentation.attrib:
+                right = indentation.attrib[INDENTATION_RIGHT]
+                # divide by 20 to get to pt. multiply by (4/3) to get to px
+                right = (int(right) / 20) * float(4) / float(3)
+                right = str(right)
+            if INDENTATION_LEFT in indentation.attrib:
+                left = indentation.attrib[INDENTATION_LEFT]
+                left = (int(left) / 20) * float(4) / float(3)
+                left = str(left)
+            if INDENTATION_FIRST_LINE in indentation.attrib:
+                firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
+                firstLine = (int(firstLine) / 20) * float(4) / float(3)
+                firstLine = str(firstLine)
+        if any([alignment, firstLine, left, right]):
+            return self.indent(text, alignment, firstLine, left, right)
+        return text
+
     def parse_p(self, el, text):
         if text == '':
             return ''
+        # TODO This is still not correct, however it fixes the bug. We need to
+        # apply the classes/styles on p, td, li and h tags instead of inline,
+        # but that is for another ticket.
+        text = self.justification(el, text)
         if el.is_first_list_item:
             return self.parse_list(el, text)
         if el.heading_level:
@@ -869,7 +907,6 @@ class DocxParser:
         """
         Parse the running text.
         """
-        block = False
         text = parsed
         if not text:
             return ''
@@ -887,59 +924,7 @@ class DocxParser:
                     fns.append(self.underline)
             for fn in fns:
                 text = fn(text)
-        paragraph_tag_property = el.parent.find('pPr')
-        just = ''
-        if paragraph_tag_property is not None:
-            jc = paragraph_tag_property.find('jc')
-            if jc is not None:  # text alignments
-                if jc.attrib['val'] == 'right':
-                    just = 'right'
-                elif jc.attrib['val'] == 'center':
-                    just = 'center'
-                elif jc.attrib['val'] == 'left':
-                    just = 'left'
-            ind = paragraph_tag_property.find('ind')
-            right = None
-            left = None
-            firstLine = None
-            hanging = None
-            if ind is not None:
-                if 'hanging' in ind.attrib:
-                    hanging = ind.attrib['hanging']
-                    hanging = (float(hanging)/20)
-                if 'right' in ind.attrib:
-                    right = ind.attrib['right']
-                    # divide by 20 to get to pt. multiply by (4/3) to get to px
-                    right = (float(right) / 20) * float(4) / float(3)
-                    right = str(right)
-                if 'left' in ind.attrib:
-                    left = ind.attrib['left']
-                    left = (float(left) / 20) * float(4) / float(3)
-                    left = str(left)
-                if 'firstLine' in ind.attrib:
-                    firstLine = ind.attrib['firstLine']
-                    firstLine = (float(firstLine) / 20) * float(4) / float(3)
-                    firstLine = str(firstLine)
-            if jc is not None or ind is not None:
-                t_els = el.find_all('t')
-                for el in t_els:
-                    if el.is_last_text:
-                        block = False
-                        self.block_text += text
-                        if el.find_ancestor_with_tag('tc') is not None:
-                            self.indent_table = True
-                            tc = el.find_ancestor_with_tag('tc')
-                            self.column_index = tc.column_index
-                        text = self.indent(self.block_text, just,
-                                           firstLine, left, right, hanging)
-                        self.block_text = ''
-                    else:
-                        block = True
-                        self.block_text += text
-        if block is False:
-            return text
-        else:
-            return ''
+        return text
 
     def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')

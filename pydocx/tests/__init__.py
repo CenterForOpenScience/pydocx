@@ -7,7 +7,8 @@ from pydocx.DocxParser import (
     remove_namespaces,
     # We are only importing this from DocxParse since we have added methods to
     # it there.
-    ElementTree,
+    fromstring,
+    PydocxLXMLParser,
 )
 from unittest import TestCase
 
@@ -78,6 +79,14 @@ def collapse_html(html):
     )
     return html.strip()
 
+try:
+    from lxml import etree
+    parser_lookup = etree.ElementDefaultClassLookup(element=PydocxLXMLParser)
+    PARSER = etree.XMLParser()
+    PARSER.set_element_class_lookup(parser_lookup)
+except ImportError:
+    pass
+
 
 class XMLDocx2Html(Docx2Html):
     """
@@ -102,11 +111,13 @@ class XMLDocx2Html(Docx2Html):
                 self._image_data['word/%s' % value] = 'word/%s' % value
         if numbering_dict is None:
             numbering_dict = {}
+        self.numbering_root = None
         self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:
-            self.root = ElementTree.fromstring(
+            self.root = fromstring(
                 remove_namespaces(document_xml),
+                PARSER,
             )
         self.zip_path = ''
 

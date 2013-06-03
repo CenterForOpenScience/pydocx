@@ -178,3 +178,6 @@ class Docx2Html(DocxParser):
 
     def break_tag(self):
         return '<br />'
+
+    def change_orientation(self, parsed, orient):
+        return '<hr />'

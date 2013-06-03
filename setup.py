@@ -20,11 +20,12 @@ def get_file(filename):
 
 
 def get_description():
-    return get_file('README.rst')
+    return get_file('README.rst') + get_file('CHANGELOG')
 
 setup(
     name="PyDocX",
-    version="0.2.0",
+    # Edit here and pydocx.__init__
+    version="0.2.1",
     description="docx (OOXML) to html converter",
     author="Jason Ward, Sam Portnow",
     author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",

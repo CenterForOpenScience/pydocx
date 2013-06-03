@@ -1,0 +1,9 @@
+
+Changelog
+=========
+
+* 0.2.1
+    * Added a changelog
+    * Added the version in pydocx.__init__
+    * Fixed an issue with duplicating content if there was indentation or
+      justification on a p element that had multiple t tags.

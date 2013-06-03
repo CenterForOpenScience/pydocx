@@ -36,6 +36,7 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
+INDENTATION_HANGING = 'hanging'
 
 
 def remove_namespaces(document):  # remove namespaces
@@ -208,8 +209,8 @@ class DocxParser:
         self.is_table = False
         self.indent_table = False
         self.column_index = 0
-        self.cols = 0
         self.page_width = 0
+        self.col_count = 0
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)
@@ -224,9 +225,9 @@ class DocxParser:
         see http://msdn.microsoft.com/en-us/library/documentformat
         .openxml.wordprocessing.indentation.aspx
         """
-        if self.root.find_first('pgSz') is not None:
-            self.page_width = int(self.root.
-                                  find_first('pgSz').attrib['w']) / 20
+        if self.root.find_all('pgSz') is not None:
+            self.pages = self.root.find_all('pgSz')
+            self.page_width = int(self.pages[0].attrib['w']) / 20
 
         add_parent(self.root)  # create the parent attributes
 
@@ -234,6 +235,7 @@ class DocxParser:
         self.comment_store = None
         self.visited = []
         self.list_depth = 0
+        self.track_pages = 0
         self.rels_dict = self._parse_rels_root()
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.root)  # begin to parse
@@ -289,8 +291,6 @@ class DocxParser:
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j
-                    if self.cols <= j:
-                        self.cols = j
                     v_merge = child.find_first('vMerge')
                     if (
                         v_merge is not None and
@@ -470,8 +470,9 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-
-        if el.tag == 'br' and el.attrib.get('type') == 'page':
+        if el.tag == 'br'and el.attrib.get('type') == 'page':
+            if len(self.pages) > 1:
+                self.track_pages += 1
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)
@@ -484,6 +485,8 @@ class DocxParser:
         elif el.tag == 't':
             return self.parse_t(el, parsed)
         elif el.tag == 'br':
+            if el.find_ancestor_with_tag('tbl'):
+                self.is_table = True
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)
@@ -625,7 +628,10 @@ class DocxParser:
         paragraph_tag_property = el.find('pPr')
         if paragraph_tag_property is None:
             return text
-
+        if el.find_ancestor_with_tag('tc') is not None:
+            self.is_table = True
+        else:
+            self.is_table = False
         _justification = paragraph_tag_property.find('jc')
         indentation = paragraph_tag_property.find('ind')
         if _justification is None and indentation is None:
@@ -634,7 +640,10 @@ class DocxParser:
         right = None
         left = None
         firstLine = None
+        hanging = None
         if _justification is not None:  # text alignments
+            if el.find_ancestor_with_tag('tc') is not None:
+                self.column_index = el.find_ancestor_with_tag('tc').column_index
             value = _justification.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
@@ -653,8 +662,12 @@ class DocxParser:
                 firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
                 firstLine = (int(firstLine) / 20) * float(4) / float(3)
                 firstLine = str(firstLine)
-        if any([alignment, firstLine, left, right]):
-            return self.indent(text, alignment, firstLine, left, right)
+            if INDENTATION_HANGING in indentation.attrib:
+                hanging = indentation.attrib[INDENTATION_HANGING]
+                hanging = (int(hanging) / 20) * float(4) / float(3)
+                hanging = str(hanging)
+        if any([alignment, firstLine, left, right, hanging]):
+            return self.indent(text, alignment, firstLine, left, right, hanging)
         return text
 
     def parse_p(self, el, text):
@@ -671,13 +684,18 @@ class DocxParser:
         if el.is_list_item:
             return self.parse_list_item(el, text)
         if el.is_in_table:
-            self.is_table = True
             return self.parse_table_cell_contents(el, text)
-        self.is_table = False
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
             parsed = self.paragraph(parsed)
+            if el.find_first('pgSz') is not None:
+                if 'orient' in el.find_first('pgSz').attrib:
+                    orient = 'landscape'
+                else:
+                    orient = 'portrait'
+                parsed = self.change_orientation(parsed, orient)
+                print parsed
         return parsed
 
     def _should_append_break_tag(self, next_el):
@@ -1031,3 +1049,7 @@ class DocxParser:
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
         return text
+
+    @abstractmethod
+    def change_orientation(self, parsed, orientation):
+        return True

@@ -244,7 +244,6 @@ class DocxBuilder(object):
 
     @classmethod
     def numbering(self, numbering_dict):
-        print numbering_dict
         template = env.get_template(templates['numbering'])
 
         kwargs = {

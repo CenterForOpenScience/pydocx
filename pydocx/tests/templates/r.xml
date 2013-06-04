@@ -1,9 +1,10 @@
 <w:r>
 	<w:rPr>
-		{% if is_bold %}
-		<w:b{% if val %} w:val="{{ val }}"{% endif %}/>
-		{% endif %}
+		{% if is_bold %}<w:b{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
+		{% if is_underline %}<w:u{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
+		{% if is_italics %}<w:i{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
 	</w:rPr>
-	{% if include_linebreak %}<w:br/>{% endif %}
-	{% if text %}{% include 't.xml' %}{% endif %}
+	{% for element in elements %}
+		{{ element }}
+	{% endfor %}
 </w:r>

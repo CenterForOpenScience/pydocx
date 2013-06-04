@@ -1,36 +1,42 @@
-from pydocx.DocxParser import DocxParser
-
+import base64
 import xml.sax.saxutils
-import textwrap
+
+from pydocx.DocxParser import DocxParser
 
 
 class Docx2Html(DocxParser):
 
     @property
     def parsed(self):
-        self._parsed = self._parsed.replace('<p></p><p></p>', '<br />')
-        self._parsed = self._parsed.replace('</p><br /><p>', '</p><p>')
-        self._parsed = self._parsed.replace('</p><br /><ul>', '</p><ul>')
-        return (
-            "<html>{head}<body>{content}</body></html>"
-        ).format(
-            head=self.head(),
-            content=self._parsed,
-        )
+        content = self._parsed
+        content = "<html>%(head)s<body>%(content)s</body></html>" % {
+            'head': self.head(),
+            'content': content,
+        }
+        return unicode(content)
 
     def head(self):
-        return "<head>{style}</head>".format(
-            style=self.style(),
-        )
+        return "<head>%(style)s</head>" % {
+            'style': self.style(),
+        }
 
     def style(self):
-        return textwrap.dedent('''<style>.insert{{color:red}}.delete
-        {{color:red; text-decoration:line-through}}.center
-        {{text-align:center}}.right{{text-align:right}}
-        .left{{text-align:left}} .comment{{color:blue}}
-        body{{width:{width}px; margin:0px auto;
-        }}</style>''').format(width=(self.page_width * (4 / 3)))
-        #multiple by (4/3) to get to px
+        result = (
+            '<style>'
+            '.pydocx-insert {color:green;}'
+            '.pydocx-delete {color:red;text-decoration:line-through;}'
+            '.pydocx-center {text-align:center;}'
+            '.pydocx-right {text-align:right;}'
+            '.pydocx-left {text-align:left;}'
+            '.pydocx-comment {color:blue;}'
+            '.pydocx-underline {text-decoration: underline;}'
+            'body {width:%(width)spx;margin:0px auto;}'
+            '</style>'
+        ) % {
+            #multiple by (4/3) to get to px
+            'width': (self.page_width * (4 / 3)),
+        }
+        return result
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -49,9 +55,12 @@ class Docx2Html(DocxParser):
 
     def insertion(self, text, author, date):
         return (
-            "<span class='insert' author='{author}' "
-            "date='{date}'>{text}</span>"
-        ).format(author=author, date=date, text=text)
+            "<span class='pydocx-insert'>%(text)s</span>"
+        ) % {
+            'author': author,
+            'date': date,
+            'text': text,
+        }
 
     def hyperlink(self, text, href):
         if text == '':
@@ -61,11 +70,17 @@ class Docx2Html(DocxParser):
             'text': text,
         }
 
-    def image_handler(self, path):
-        return path
+    def image_handler(self, image_data, filename):
+        extension = filename.split('.')[-1].lower()
+        b64_encoded_src = 'data:image/%s;base64,%s' % (
+            extension,
+            base64.b64encode(image_data),
+        )
+        b64_encoded_src = self.escape(b64_encoded_src)
+        return b64_encoded_src
 
-    def image(self, path, x, y):
-        src = self.image_handler(path)
+    def image(self, image_data, filename, x, y):
+        src = self.image_handler(image_data, filename)
         if not src:
             return ''
         if all([x, y]):
@@ -79,27 +94,42 @@ class Docx2Html(DocxParser):
 
     def deletion(self, text, author, date):
         return (
-            "<span class='delete' author='{author}' "
-            "date='{date}'>{text}</span>"
-        ).format(author=author, date=date, text=text)
+            "<span class='pydocx-delete'>%(text)s</span>"
+        ) % {
+            'author': author,
+            'date': date,
+            'text': text,
+        }
 
+<<<<<<< HEAD
     def list_element(self, text, lst_style = None):
         return "<li>{text}</li>".format(text=text)
+=======
+    def list_element(self, text):
+        return "<li>%(text)s</li>" % {
+            'text': text,
+        }
+>>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
     def ordered_list(self, text, list_style):
-        return "<ol>{text}</ol>".format(text=text)
+        return '<ol list-style-type="%(list_style)s">%(text)s</ol>' % {
+            'text': text,
+            'list_style': list_style,
+        }
 
     def unordered_list(self, text):
-        return "<ul>{text}</ul>".format(text=text)
+        return "<ul>%(text)s</ul>" % {
+            'text': text,
+        }
 
     def bold(self, text):
-        return '<b>' + text + '</b>'
+        return '<strong>' + text + '</strong>'
 
     def italics(self, text):
-        return '<i>' + text + '</i>'
+        return '<em>' + text + '</em>'
 
     def underline(self, text):
-        return '<u>' + text + '</u>'
+        return '<span class="pydocx-underline">' + text + '</span>'
 
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert
@@ -107,7 +137,7 @@ class Docx2Html(DocxParser):
         return '&nbsp&nbsp&nbsp&nbsp'
 
     def table(self, text):
-        return '<table border=1>' + text + '</table>'
+        return '<table border="1">' + text + '</table>'
 
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
@@ -126,21 +156,22 @@ class Docx2Html(DocxParser):
         }
 
     def page_break(self):
-        return '<hr>'
+        return '<hr />'
 
     def indent(self, text, just='', firstLine='', left='', right=''):
         slug = '<div'
         if just:
-            slug += " class='%(just)s"
+            slug += " class='pydocx-%(just)s'"
         if firstLine or left or right:
-            slug += "' style ="
-        if firstLine:
-            slug += "'text-indent:%(firstLine)spx;"
-        if left:
-            slug += "'margin-left:%(left)spx;"
-        if right:
-            slug += "'margin-right:%(right)spx;"
-        slug += "'>%(text)s</div>"
+            slug += " style='"
+            if firstLine:
+                slug += "text-indent:%(firstLine)spx;"
+            if left:
+                slug += "margin-left:%(left)spx;"
+            if right:
+                slug += "margin-right:%(right)spx;"
+            slug += "'"
+        slug += ">%(text)s</div>"
         return slug % {
             'text': text,
             'just': just,
@@ -150,4 +181,4 @@ class Docx2Html(DocxParser):
         }
 
     def break_tag(self):
-        return '<br/>'
+        return '<br />'

@@ -11,6 +11,28 @@ from pydocx.DocxParser import (
 )
 from unittest import TestCase
 
+STYLE = (
+    '<style>'
+    '.pydocx-insert {color:green;}'
+    '.pydocx-delete {color:red;text-decoration:line-through;}'
+    '.pydocx-center {text-align:center;}'
+    '.pydocx-right {text-align:right;}'
+    '.pydocx-left {text-align:left;}'
+    '.pydocx-comment {color:blue;}'
+    '.pydocx-underline {text-decoration: underline;}'
+    'body {width:612px;margin:0px auto;}'
+    '</style>'
+)
+
+BASE_HTML = '''
+<html>
+    <head>
+    %s
+    </head>
+    <body>%%s</body>
+</html>
+''' % STYLE
+
 
 def assert_html_equal(actual_html, expected_html):
     assert collapse_html(
@@ -62,13 +84,22 @@ class XMLDocx2Html(Docx2Html):
     Create the object without passing in a path to the document, set them
     manually.
     """
+    def __init__(self, *args, **kwargs):
+        # Pass in nothing for the path
+        super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
+
     def _build_data(
             self,
+            path,
             document_xml=None,
             rels_dict=None,
             numbering_dict=None,
+            styles_dict=None,
             *args, **kwargs):
         self._test_rels_dict = rels_dict
+        if rels_dict:
+            for value in rels_dict.values():
+                self._image_data['word/%s' % value] = 'word/%s' % value
         if numbering_dict is None:
             numbering_dict = {}
         self.numbering_dict = numbering_dict
@@ -77,6 +108,13 @@ class XMLDocx2Html(Docx2Html):
             self.root = ElementTree.fromstring(
                 remove_namespaces(document_xml),
             )
+        self.zip_path = ''
+
+        # This is the standard page width for a word document, Also the page
+        # width that we are looking for in the test.
+        self.page_width = 612
+
+        self.styles_dict = styles_dict
 
     def _parse_rels_root(self, *args, **kwargs):
         if self._test_rels_dict is None:
@@ -90,30 +128,9 @@ class XMLDocx2Html(Docx2Html):
             return 'decimal'
 
     def _parse_styles(self):
-        return {}
-
-    def head(self):
-        return ''
-
-    def table(self, text):
-        return '<table>' + text + '</table>'
-
-    def ordered_list(self, text, list_style):
-        list_type_conversions = {
-            'decimal': 'decimal',
-            'decimalZero': 'decimal-leading-zero',
-            'upperRoman': 'upper-roman',
-            'lowerRoman': 'lower-roman',
-            'upperLetter': 'upper-alpha',
-            'lowerLetter': 'lower-alpha',
-            'ordinal': 'decimal',
-            'cardinalText': 'decimal',
-            'ordinalText': 'decimal',
-        }
-        return '<ol data-list-type="{list_style}">{text}</ol>'.format(
-            list_style=list_type_conversions.get(list_style, 'decimal'),
-            text=text,
-        )
+        if self.styles_dict is None:
+            return {}
+        return self.styles_dict
 
 
 DEFAULT_NUMBERING_DICT = {
@@ -122,8 +139,8 @@ DEFAULT_NUMBERING_DICT = {
         '1': 'decimal',
     },
     '2': {
-        '0': 'none',
-        '1': 'none',
+        '0': 'lowerLetter',
+        '1': 'lowerLetter',
     },
 }
 
@@ -131,8 +148,12 @@ DEFAULT_NUMBERING_DICT = {
 class _TranslationTestCase(TestCase):
     expected_output = None
     relationship_dict = None
+    styles_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
+    parser = XMLDocx2Html
+    use_base_html = True
+    convert_root_level_upper_roman = False
 
     def get_xml(self):
         raise NotImplementedError()
@@ -153,10 +174,20 @@ class _TranslationTestCase(TestCase):
         tree = self.get_xml()
 
         # Verify the final output.
-        html = XMLDocx2Html(
+        parser = self.parser
+
+        def image_handler(self, src, *args, **kwargs):
+            return src
+        parser.image_handler = image_handler
+        html = parser(
+            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             document_xml=tree,
             rels_dict=self.relationship_dict,
             numbering_dict=self.numbering_dict,
+            styles_dict=self.styles_dict,
         ).parsed
 
-        assert_html_equal(html, self.expected_output)
+        if self.use_base_html:
+            assert_html_equal(html, BASE_HTML % self.expected_output)
+        else:
+            assert_html_equal(html, self.expected_output)

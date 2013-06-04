@@ -440,7 +440,7 @@ class DocxParser:
         rowspan = 1
         result = ''
 
-        tbl = find_ancestor_with_tag(el, 'tbl')
+        tbl = find_ancestor_with_tag(self.pre_processor, el, 'tbl')
         # We only want table cells that have a higher row_index that is greater
         # than the current_row and that are on the current_col
         if tbl is None:

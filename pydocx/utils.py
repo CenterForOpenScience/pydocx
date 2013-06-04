@@ -1,5 +1,5 @@
 from collections import defaultdict
-from lxml import etree
+from xml.etree import cElementTree
 
 
 UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
@@ -41,13 +41,12 @@ def find_all(self, tag):
     return self.findall('.//' + tag)
 
 
-def find_ancestor_with_tag(self, tag):
+def find_ancestor_with_tag(pre_processor, el, tag):
     """
     Find the first ancestor with that is a `tag`.
     """
-    el = self
-    while el.getparent() is not None:
-        el = el.getparent()
+    while pre_processor.parent(el) is not None:
+        el = pre_processor.parent(el)
         if el.tag == tag:
             return el
     return None
@@ -78,15 +77,14 @@ def _filter_children(element, tags):
 def remove_namespaces(document):
     # I can't really find a good way to do this with lxml. Se just do it with
     # xml.
-    import xml.etree.ElementTree as xml_etree
-    root = xml_etree.fromstring(document)
+    root = cElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return xml_etree.tostring(root)
+    return cElementTree.tostring(root)
 
 
 def get_list_style(numbering_root, num_id, ilvl):
@@ -155,6 +153,7 @@ class PydocxPrePorcessor(object):
         self.numbering_root = numbering_root
 
     def perform_pre_processing(self, root, *args, **kwargs):
+        self._add_parent(root)
         self._set_list_attributes(root)
         self._set_table_attributes(root)
         self._set_is_in_table(root)
@@ -221,10 +220,18 @@ class PydocxPrePorcessor(object):
             return
         return self.meta_data[el].get('previous')
 
+    def parent(self, el):
+        return self.meta_data[el].get('parent')
+
+    def _add_parent(self, el):  # if a parent, make that an attribute
+        for child in el.getchildren():
+            self.meta_data[child]['parent'] = el
+            self._add_parent(child)
+
     def _set_list_attributes(self, el):
         list_elements = find_all(el, 'numId')
         for li in list_elements:
-            parent = find_ancestor_with_tag(li, 'p')
+            parent = find_ancestor_with_tag(self, li, 'p')
             # Deleted text in a list will have a numId but no ilvl.
             if parent is None:
                 continue
@@ -250,10 +257,10 @@ class PydocxPrePorcessor(object):
         # First, go up the parent until we get None and count the number of
         # tables there are.
         num_tables = 0
-        while el.getparent() is not None:
+        while self.parent(el) is not None:
             if el.tag == 'tbl':
                 num_tables += 1
-            el = el.getparent()
+            el = self.parent(el)
         return NamespacedNumId(
             num_id=num_id,
             num_tables=num_tables,
@@ -313,7 +320,7 @@ class PydocxPrePorcessor(object):
     def _set_is_in_table(self, el):
         paragraph_elements = find_all(el, 'p')
         for p in paragraph_elements:
-            if find_ancestor_with_tag(p, 'tc') is not None:
+            if find_ancestor_with_tag(self, p, 'tc') is not None:
                 self.meta_data[p]['is_in_table'] = True
 
     def _set_headers(self, elements):
@@ -419,4 +426,4 @@ class PydocxPrePorcessor(object):
 
 
 def parse_xml_from_string(xml):
-    return etree.fromstring(remove_namespaces(xml))
+    return cElementTree.fromstring(remove_namespaces(xml))

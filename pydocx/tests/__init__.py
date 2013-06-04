@@ -10,6 +10,7 @@ from pydocx.DocxParser import (
     fromstring,
     PydocxLXMLParser,
 )
+from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
 
 STYLE = (
@@ -109,9 +110,12 @@ class XMLDocx2Html(Docx2Html):
         if rels_dict:
             for value in rels_dict.values():
                 self._image_data['word/%s' % value] = 'word/%s' % value
-        if numbering_dict is None:
-            numbering_dict = {}
         self.numbering_root = None
+        if numbering_dict is not None:
+            self.numbering_root = fromstring(
+                remove_namespaces(DXB.numbering(numbering_dict)),
+                PARSER,
+            )
         self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:

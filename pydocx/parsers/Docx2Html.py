@@ -126,6 +126,16 @@ class Docx2Html(DocxParser):
     def underline(self, text):
         return '<span class="pydocx-underline">' + text + '</span>'
 
+    def superscript(self, text):
+        return '<sup>%(text)s</sup>' % {
+            'text': text,
+        }
+
+    def subscript(self, text):
+        return '<sub>%(text)s</sub>' % {
+            'text': text,
+        }
+
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert
         # at the beginning!

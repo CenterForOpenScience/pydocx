@@ -597,18 +597,23 @@ class DocxParser:
             return ''
         run_tag_property = el.find('rPr')
         if run_tag_property is not None:
-            fns = []
             if has_child(run_tag_property, 'b'):  # text styling
                 if self._is_style_on(run_tag_property.find('b')):
-                    fns.append(self.bold)
+                    text = self.bold(text)
             if has_child(run_tag_property, 'i'):
                 if self._is_style_on(run_tag_property.find('i')):
-                    fns.append(self.italics)
+                    text = self.italics(text)
             if has_child(run_tag_property, 'u'):
                 if self._is_style_on(run_tag_property.find('u')):
-                    fns.append(self.underline)
-            for fn in fns:
-                text = fn(text)
+                    text = self.underline(text)
+
+            # This could be a superscript or a subscript
+            if has_child(run_tag_property, 'vertAlign'):
+                vert_align = run_tag_property.find('vertAlign')
+                if vert_align.attrib['val'] == 'superscript':
+                    text = self.superscript(text)
+                if vert_align.attrib['val'] == 'subscript':
+                    text = self.subscript(text)
         return text
 
     @property
@@ -661,6 +666,14 @@ class DocxParser:
 
     @abstractmethod
     def underline(self, text):
+        return text
+
+    @abstractmethod
+    def superscript(self, text):
+        return text
+
+    @abstractmethod
+    def subscript(self, text):
         return text
 
     @abstractmethod

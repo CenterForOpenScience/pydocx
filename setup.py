@@ -40,7 +40,7 @@ setup(
     },
     scripts=[],
     zip_safe=False,
-    install_requires=['lxml'],
+    install_requires=[],
     cmdclass={},
     classifiers=[
         "Development Status :: 3 - Alpha",

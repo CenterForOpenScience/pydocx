@@ -287,7 +287,8 @@ class DocxParser:
                 continue
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
-                tcs[-1].is_last_row_item = True
+                if tcs:
+                    tcs[-1].is_last_row_item = True
                 for j, child in enumerate(tcs):
                     child.row_index = i
                     child.column_index = j

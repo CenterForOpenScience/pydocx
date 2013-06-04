@@ -169,6 +169,33 @@ OR, let's say FOO is your new favorite markup language. Simply customize your ow
         def linebreak(self):
             return '!!!!!!!!!!!!'
 
+Custom Pre-Processor
+####################
+
+When creating your own Parser (as described above) you can now add in your own custom Pre Processor. To do so you will need to set the `pre_processor` field on the custom parser, like so:
+
+::
+
+    class Docx2Foo(DocxParser):
+        pre_processor_class = FooPrePorcessor
+
+
+The `FooPrePorcessor` will need a few things to get you going:
+
+::
+
+    class FooPrePorcessor(PydocxPrePorcessor):
+        def perform_pre_processing(self, root, *args, **kwargs):
+            super(FooPrePorcessor, self).perform_pre_processing(root, *args, **kwargs)
+            self._set_foo(root)
+
+        def _set_foo(self, root):
+            pass
+
+If you want `_set_foo` to be called you must add it to `perform_pre_processing` which is called in the base parser for pydocx.
+
+Everything done during pre-processing is executed prior to `parse` being called for the first time.
+
 
 Styles
 ######

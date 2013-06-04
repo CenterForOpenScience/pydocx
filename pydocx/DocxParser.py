@@ -14,7 +14,6 @@ logger = logging.getLogger("NewParser")
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
-UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
 JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'

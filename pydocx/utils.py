@@ -1,3 +1,4 @@
+from collections import defaultdict
 from lxml import etree
 
 
@@ -94,64 +95,66 @@ class NamespacedNumId(object):
 
 # Since I can't actually set attribute (reliably) on each element. I have to
 # keep track of the next and previous elements here.
-next_previous_states = {}
+element_meta_data = defaultdict(dict)
 
 
 class PydocxLXMLParser(etree.ElementBase):
 
     @property
     def is_first_list_item(self):
-        return self.attrib.get('is_first_list_item', '') == str(True)
+        return element_meta_data[self].get('is_first_list_item', False)
 
     @property
     def is_last_list_item_in_root(self):
-        return self.attrib.get('is_last_list_item_in_root', '') == str(True)
+        return element_meta_data[self].get('is_last_list_item_in_root', False)
 
     @property
     def is_list_item(self):
-        return self.attrib.get('is_list_item', '') == str(True)
+        return element_meta_data[self].get('is_list_item', False)
 
     @property
     def num_id(self):
         if not self.is_list_item:
             return None
-        return self._generate_num_id(self)
+        return element_meta_data[self].get('num_id')
 
     @property
     def ilvl(self):
-        return self.attrib.get('ilvl')
+        if not self.is_list_item:
+            return None
+        return element_meta_data[self].get('ilvl')
 
     @property
     def heading_level(self):
-        return self.attrib.get('heading_level')
+        return element_meta_data[self].get('heading_level')
 
     @property
     def is_in_table(self):
-        return self.attrib.get('is_in_table')
+        return element_meta_data[self].get('is_in_table')
 
     @property
     def row_index(self):
-        return self.attrib.get('row_index')
+        return element_meta_data[self].get('row_index')
 
     @property
     def column_index(self):
-        return self.attrib.get('column_index')
+        return element_meta_data[self].get('column_index')
 
     @property
     def vmerge_continue(self):
-        return self.attrib.get('vmerge_continue')
+        return element_meta_data[self].get('vmerge_continue')
 
     @property
     def next(self):
-        if self not in next_previous_states:
+        if self not in element_meta_data:
             return
-        return next_previous_states[self].get('next')
+        return element_meta_data[self].get('next')
 
     @property
     def previous(self):
-        if self not in next_previous_states:
+        if self not in element_meta_data:
             return
-        return next_previous_states[self].get('previous')
+        return element_meta_data[self].get('previous')
 
     def find_first(self, tag):
         """
@@ -204,9 +207,11 @@ class PydocxLXMLParser(etree.ElementBase):
                 continue
             if parent.find_first('ilvl') is None:
                 continue
-            parent.attrib['is_list_item'] = str(True)
-            parent.attrib['num_id'] = str(self._generate_num_id(parent))
-            parent.attrib['ilvl'] = parent.find_first('ilvl').attrib['val']
+            element_meta_data[parent]['is_list_item'] = True
+            element_meta_data[parent]['num_id'] = self._generate_num_id(parent)
+            element_meta_data[parent]['ilvl'] = parent.find_first(
+                'ilvl',
+            ).attrib['val']
 
     def _generate_num_id(self, el):
         '''
@@ -246,7 +251,7 @@ class PydocxLXMLParser(etree.ElementBase):
                 if not filtered_list_elements:
                     continue
                 first_el = filtered_list_elements[0]
-                first_el.attrib['is_first_list_item'] = str(True)
+                element_meta_data[first_el]['is_first_list_item'] = True
 
     def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if
@@ -261,7 +266,7 @@ class PydocxLXMLParser(etree.ElementBase):
             if not filtered_list_elements:
                 continue
             last_el = filtered_list_elements[-1]
-            last_el.attrib['is_last_list_item_in_root'] = str(True)
+            element_meta_data[last_el]['is_last_list_item_in_root'] = True
 
     def _set_table_attributes(self, el):
         tables = el.find_all('tbl')
@@ -272,20 +277,20 @@ class PydocxLXMLParser(etree.ElementBase):
             for i, row in enumerate(rows):
                 tcs = self._filter_children(row, ['tc'])
                 for j, child in enumerate(tcs):
-                    child.attrib['row_index'] = str(i)
-                    child.attrib['column_index'] = str(j)
+                    element_meta_data[child]['row_index'] = i
+                    element_meta_data[child]['column_index'] = j
                     v_merge = child.find_first('vMerge')
                     if (
                             v_merge is not None and
                             'continue' == v_merge.get('val', '')
                     ):
-                        child.attrib['vmerge_continue'] = str(True)
+                        element_meta_data[child]['vmerge_continue'] = True
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
         for p in paragraph_elements:
             if p.find_ancestor_with_tag('tc') is not None:
-                p.attrib['is_in_table'] = str(True)
+                element_meta_data[p]['is_in_table'] = True
 
     def _set_headers(self, elements):
         # These are the styles for headers and what the html tag should be if
@@ -312,11 +317,11 @@ class PydocxLXMLParser(etree.ElementBase):
             # Check to see if this element is actually a header.
             if style and style.lower() in headers:
                 # Set all the list item variables to false.
-                element.attrib['is_list_item'] = str(False)
-                element.attrib['is_first_list_item'] = str(False)
-                element.attrib['is_last_list_item'] = str(False)
+                element_meta_data[element]['is_list_item'] = False
+                element_meta_data[element]['is_first_list_item'] = False
+                element_meta_data[element]['is_last_list_item_in_root'] = False
                 # Prime the heading_level
-                element.attrib['heading_level'] = headers[style.lower()]
+                element_meta_data[element]['heading_level'] = headers[style.lower()]  # noqa
 
     def _convert_upper_roman(self, body):
         if not self.convert_root_level_upper_roman:
@@ -349,11 +354,11 @@ class PydocxLXMLParser(etree.ElementBase):
                 el.ilvl == ilvl
             ]
             for list_item in root_upper_roman_list_items:
-                list_item.attrib['is_list_item'] = str(False)
-                list_item.attrib['is_first_list_item'] = str(False)
-                list_item.attrib['is_last_list_item'] = str(False)
+                element_meta_data[list_item]['is_list_item'] = False
+                element_meta_data[list_item]['is_first_list_item'] = False
+                element_meta_data[list_item]['is_last_list_item_in_root'] = False  # noqa
 
-                list_item.attrib['heading_level'] = UPPER_ROMAN_TO_HEADING_VALUE  # noqa
+                element_meta_data[list_item]['heading_level'] = UPPER_ROMAN_TO_HEADING_VALUE  # noqa
 
     def _set_next(self, body):
         def _get_children_with_content(el):
@@ -371,18 +376,16 @@ class PydocxLXMLParser(etree.ElementBase):
         def _assign_next(children):
             # Populate the `next` attribute for all the child elements.
             for i in range(len(children)):
-                child_state = {}
                 try:
                     if children[i + 1] is not None:
-                        child_state['next'] = children[i + 1]
+                        element_meta_data[children[i]]['next'] = children[i + 1]  # noqa
                 except IndexError:
                     pass
                 try:
                     if children[i - 1] is not None:
-                        child_state['previous'] = children[i - 1]
+                        element_meta_data[children[i]]['previous'] = children[i - 1]  # noqa
                 except IndexError:
                     pass
-                next_previous_states[children[i]] = child_state
         # Assign next for everything in the root.
         _assign_next(_get_children_with_content(body))
 

@@ -27,18 +27,18 @@ def el_iter(el):
         return el.findall('.//*')
 
 
-def find_first(self, tag):
+def find_first(el, tag):
     """
     Find the first occurrence of a tag beneath the current element.
     """
-    return self.find('.//' + tag)
+    return el.find('.//' + tag)
 
 
-def find_all(self, tag):
+def find_all(el, tag):
     """
     Find all occurrences of a tag
     """
-    return self.findall('.//' + tag)
+    return el.findall('.//' + tag)
 
 
 def find_ancestor_with_tag(pre_processor, el, tag):
@@ -52,19 +52,19 @@ def find_ancestor_with_tag(pre_processor, el, tag):
     return None
 
 
-def has_descendant_with_tag(self, tag):
+def has_descendant_with_tag(el, tag):
     """
     Determine if there is a child ahead in the element tree.
     """
     # Get child. stop at first child.
-    return True if self.find('.//' + tag) is not None else False
+    return True if el.find('.//' + tag) is not None else False
 
 
-def has_child(self, tag):
+def has_child(el, tag):
     """
     Determine if current element has a child. Stop at first child.
     """
-    return True if self.find(tag) is not None else False
+    return True if el.find(tag) is not None else False
 
 
 def _filter_children(element, tags):

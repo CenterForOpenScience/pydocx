@@ -1017,3 +1017,32 @@ class MultipleTTagsInRTag(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class SuperAndSubScripts(_TranslationTestCase):
+    expected_output = '''
+        <p>AAA<sup>BBB</sup></p>
+        <p><sub>CCC</sub>DDD</p>
+    '''
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('AAA')]),
+                    DXB.r_tag([DXB.t_tag('BBB')], vert_align='superscript'),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('CCC')], vert_align='subscript'),
+                    DXB.r_tag([DXB.t_tag('DDD')]),
+                ],
+            ),
+        ]
+        body = ''
+        for p_tag in p_tags:
+            body += p_tag
+
+        xml = DXB.xml(body)
+        return xml

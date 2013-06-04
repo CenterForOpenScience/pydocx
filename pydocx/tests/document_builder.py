@@ -93,6 +93,7 @@ class DocxBuilder(object):
             is_bold=False,
             is_underline=False,
             is_italics=False,
+            vert_align=None,
             val=None,
     ):
         template = env.get_template(templates['r'])
@@ -101,6 +102,7 @@ class DocxBuilder(object):
             'is_bold': is_bold,
             'is_underline': is_underline,
             'is_italics': is_italics,
+            'vert_align': vert_align,
             'val': val,
         }
         return template.render(**kwargs)

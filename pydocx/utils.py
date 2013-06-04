@@ -75,8 +75,6 @@ def _filter_children(element, tags):
 
 
 def remove_namespaces(document):
-    # I can't really find a good way to do this with lxml. Se just do it with
-    # xml.
     root = cElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]

@@ -99,6 +99,8 @@ class DocxBuilder(object):
         template = env.get_template(templates['r'])
         kwargs = {
             'elements': elements,
+            # TODO Pass in an `rPr` instead. That is what all of this is for
+            # anyway.
             'is_bold': is_bold,
             'is_underline': is_underline,
             'is_italics': is_italics,

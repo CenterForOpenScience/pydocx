@@ -9,7 +9,7 @@ from pydocx.tests import (
     XMLDocx2Html,
     _TranslationTestCase,
 )
-from pydocx.utils import parse_xml_from_string
+from pydocx.utils import parse_xml_from_string, find_all
 
 
 class BoldTestCase(_TranslationTestCase):
@@ -177,8 +177,8 @@ class ImageTestCase(_TranslationTestCase):
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []
-        els.extend(tree.find_all('drawing'))
-        els.extend(tree.find_all('pict'))
+        els.extend(find_all(tree, 'drawing'))
+        els.extend(find_all(tree, 'pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_id(el))
@@ -198,8 +198,8 @@ class ImageTestCase(_TranslationTestCase):
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []
-        els.extend(tree.find_all('drawing'))
-        els.extend(tree.find_all('pict'))
+        els.extend(find_all(tree, 'drawing'))
+        els.extend(find_all(tree, 'pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_size(el))

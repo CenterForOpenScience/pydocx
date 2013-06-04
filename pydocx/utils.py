@@ -27,6 +27,54 @@ def el_iter(el):
         return el.findall('.//*')
 
 
+def find_first(self, tag):
+    """
+    Find the first occurrence of a tag beneath the current element.
+    """
+    return self.find('.//' + tag)
+
+
+def find_all(self, tag):
+    """
+    Find all occurrences of a tag
+    """
+    return self.findall('.//' + tag)
+
+
+def find_ancestor_with_tag(self, tag):
+    """
+    Find the first ancestor with that is a `tag`.
+    """
+    el = self
+    while el.getparent() is not None:
+        el = el.getparent()
+        if el.tag == tag:
+            return el
+    return None
+
+
+def has_descendant_with_tag(self, tag):
+    """
+    Determine if there is a child ahead in the element tree.
+    """
+    # Get child. stop at first child.
+    return True if self.find('.//' + tag) is not None else False
+
+
+def has_child(self, tag):
+    """
+    Determine if current element has a child. Stop at first child.
+    """
+    return True if self.find(tag) is not None else False
+
+
+def _filter_children(element, tags):
+    return [
+        el for el in element.getchildren()
+        if el.tag in tags
+    ]
+
+
 def remove_namespaces(document):
     # I can't really find a good way to do this with lxml. Se just do it with
     # xml.
@@ -44,13 +92,14 @@ def remove_namespaces(document):
 def get_list_style(numbering_root, num_id, ilvl):
     # This is needed on both the custom lxml parser and the pydocx parser. So
     # make it a function.
-    ids = numbering_root.find_all('num')
+    ids = find_all(numbering_root, 'num')
     for _id in ids:
         if _id.attrib['numId'] != num_id:
             continue
         abstractid = _id.find('abstractNumId')
         abstractid = abstractid.attrib['val']
-        style_information = numbering_root.find_all(
+        style_information = find_all(
+            numbering_root,
             'abstractNum',
         )
         for info in style_information:
@@ -93,123 +142,98 @@ class NamespacedNumId(object):
         return self._num_id
 
 
-# Since I can't actually set attribute (reliably) on each element. I have to
-# keep track of the next and previous elements here.
-element_meta_data = defaultdict(dict)
+class PydocxPrePorcessor(object):
+    def __init__(
+            self,
+            convert_root_level_upper_roman=False,
+            styles_dict=None,
+            numbering_root=None,
+            *args, **kwargs):
+        self.meta_data = defaultdict(dict)
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
+        self.styles_dict = styles_dict
+        self.numbering_root = numbering_root
 
+    def perform_pre_processing(self, root, *args, **kwargs):
+        self._set_list_attributes(root)
+        self._set_table_attributes(root)
+        self._set_is_in_table(root)
 
-class PydocxLXMLParser(etree.ElementBase):
-
-    @property
-    def is_first_list_item(self):
-        return element_meta_data[self].get('is_first_list_item', False)
-
-    @property
-    def is_last_list_item_in_root(self):
-        return element_meta_data[self].get('is_last_list_item_in_root', False)
-
-    @property
-    def is_list_item(self):
-        return element_meta_data[self].get('is_list_item', False)
-
-    @property
-    def num_id(self):
-        if not self.is_list_item:
-            return None
-        return element_meta_data[self].get('num_id')
-
-    @property
-    def ilvl(self):
-        if not self.is_list_item:
-            return None
-        return element_meta_data[self].get('ilvl')
-
-    @property
-    def heading_level(self):
-        return element_meta_data[self].get('heading_level')
-
-    @property
-    def is_in_table(self):
-        return element_meta_data[self].get('is_in_table')
-
-    @property
-    def row_index(self):
-        return element_meta_data[self].get('row_index')
-
-    @property
-    def column_index(self):
-        return element_meta_data[self].get('column_index')
-
-    @property
-    def vmerge_continue(self):
-        return element_meta_data[self].get('vmerge_continue')
-
-    @property
-    def next(self):
-        if self not in element_meta_data:
-            return
-        return element_meta_data[self].get('next')
-
-    @property
-    def previous(self):
-        if self not in element_meta_data:
-            return
-        return element_meta_data[self].get('previous')
-
-    def find_first(self, tag):
-        """
-        Find the first occurrence of a tag beneath the current element.
-        """
-        return self.find('.//' + tag)
-
-    def find_all(self, tag):
-        """
-        Find all occurrences of a tag
-        """
-        return self.findall('.//' + tag)
-
-    def find_ancestor_with_tag(self, tag):
-        """
-        Find the first ancestor with that is a `tag`.
-        """
-        el = self
-        while el.getparent() is not None:
-            el = el.getparent()
-            if el.tag == tag:
-                return el
-        return None
-
-    def has_descendant_with_tag(self, tag):
-        """
-        Determine if there is a child ahead in the element tree.
-        """
-        # Get child. stop at first child.
-        return True if self.find('.//' + tag) is not None else False
-
-    def has_child(self, tag):
-        """
-        Determine if current element has a child. Stop at first child.
-        """
-        return True if self.find(tag) is not None else False
-
-    def _filter_children(self, element, tags):
-        return [
-            el for el in element.getchildren()
-            if el.tag in tags
+        body = find_first(root, 'body')
+        p_elements = [
+            child for child in find_all(body, 'p')
         ]
+        list_elements = [
+            child for child in p_elements
+            if self.is_list_item(child)
+        ]
+        # Find the first and last li elements
+        num_ids = set([self.num_id(i) for i in list_elements])
+        ilvls = set([self.ilvl(i) for i in list_elements])
+        self._set_first_list_item(num_ids, ilvls, list_elements)
+        self._set_last_list_item(num_ids, list_elements)
+
+        self._set_headers(p_elements)
+        self._convert_upper_roman(body)
+        self._set_next(body)
+
+    def is_first_list_item(self, el):
+        return self.meta_data[el].get('is_first_list_item', False)
+
+    def is_last_list_item_in_root(self, el):
+        return self.meta_data[el].get('is_last_list_item_in_root', False)
+
+    def is_list_item(self, el):
+        return self.meta_data[el].get('is_list_item', False)
+
+    def num_id(self, el):
+        if not self.is_list_item(el):
+            return None
+        return self.meta_data[el].get('num_id')
+
+    def ilvl(self, el):
+        if not self.is_list_item(el):
+            return None
+        return self.meta_data[el].get('ilvl')
+
+    def heading_level(self, el):
+        return self.meta_data[el].get('heading_level')
+
+    def is_in_table(self, el):
+        return self.meta_data[el].get('is_in_table')
+
+    def row_index(self, el):
+        return self.meta_data[el].get('row_index')
+
+    def column_index(self, el):
+        return self.meta_data[el].get('column_index')
+
+    def vmerge_continue(self, el):
+        return self.meta_data[el].get('vmerge_continue')
+
+    def next(self, el):
+        if el not in self.meta_data:
+            return
+        return self.meta_data[el].get('next')
+
+    def previous(self, el):
+        if el not in self.meta_data:
+            return
+        return self.meta_data[el].get('previous')
 
     def _set_list_attributes(self, el):
-        list_elements = el.find_all('numId')
+        list_elements = find_all(el, 'numId')
         for li in list_elements:
-            parent = li.find_ancestor_with_tag('p')
+            parent = find_ancestor_with_tag(li, 'p')
             # Deleted text in a list will have a numId but no ilvl.
             if parent is None:
                 continue
-            if parent.find_first('ilvl') is None:
+            if find_first(parent, 'ilvl') is None:
                 continue
-            element_meta_data[parent]['is_list_item'] = True
-            element_meta_data[parent]['num_id'] = self._generate_num_id(parent)
-            element_meta_data[parent]['ilvl'] = parent.find_first(
+            self.meta_data[parent]['is_list_item'] = True
+            self.meta_data[parent]['num_id'] = self._generate_num_id(parent)
+            self.meta_data[parent]['ilvl'] = find_first(
+                parent,
                 'ilvl',
             ).attrib['val']
 
@@ -221,7 +245,7 @@ class PydocxLXMLParser(etree.ElementBase):
         it is in to ensure it is considered a new list. Otherwise all sorts of
         terrible html gets generated.
         '''
-        num_id = el.find_first('numId').attrib['val']
+        num_id = find_first(el, 'numId').attrib['val']
 
         # First, go up the parent until we get None and count the number of
         # tables there are.
@@ -244,14 +268,14 @@ class PydocxLXMLParser(etree.ElementBase):
                 filtered_list_elements = [
                     i for i in list_elements
                     if (
-                        i.num_id == num_id and
-                        i.ilvl == ilvl
+                        self.num_id(i) == num_id and
+                        self.ilvl(i) == ilvl
                     )
                 ]
                 if not filtered_list_elements:
                     continue
                 first_el = filtered_list_elements[0]
-                element_meta_data[first_el]['is_first_list_item'] = True
+                self.meta_data[first_el]['is_first_list_item'] = True
 
     def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if
@@ -261,36 +285,36 @@ class PydocxLXMLParser(etree.ElementBase):
         for num_id in num_ids:
             filtered_list_elements = [
                 i for i in list_elements
-                if i.num_id == num_id
+                if self.num_id(i) == num_id
             ]
             if not filtered_list_elements:
                 continue
             last_el = filtered_list_elements[-1]
-            element_meta_data[last_el]['is_last_list_item_in_root'] = True
+            self.meta_data[last_el]['is_last_list_item_in_root'] = True
 
     def _set_table_attributes(self, el):
-        tables = el.find_all('tbl')
+        tables = find_all(el, 'tbl')
         for table in tables:
-            rows = self._filter_children(table, ['tr'])
+            rows = _filter_children(table, ['tr'])
             if rows is None:
                 continue
             for i, row in enumerate(rows):
-                tcs = self._filter_children(row, ['tc'])
+                tcs = _filter_children(row, ['tc'])
                 for j, child in enumerate(tcs):
-                    element_meta_data[child]['row_index'] = i
-                    element_meta_data[child]['column_index'] = j
-                    v_merge = child.find_first('vMerge')
+                    self.meta_data[child]['row_index'] = i
+                    self.meta_data[child]['column_index'] = j
+                    v_merge = find_first(child, 'vMerge')
                     if (
                             v_merge is not None and
                             'continue' == v_merge.get('val', '')
                     ):
-                        element_meta_data[child]['vmerge_continue'] = True
+                        self.meta_data[child]['vmerge_continue'] = True
 
     def _set_is_in_table(self, el):
-        paragraph_elements = el.find_all('p')
+        paragraph_elements = find_all(el, 'p')
         for p in paragraph_elements:
-            if p.find_ancestor_with_tag('tc') is not None:
-                element_meta_data[p]['is_in_table'] = True
+            if find_ancestor_with_tag(p, 'tc') is not None:
+                self.meta_data[p]['is_in_table'] = True
 
     def _set_headers(self, elements):
         # These are the styles for headers and what the html tag should be if
@@ -309,19 +333,19 @@ class PydocxLXMLParser(etree.ElementBase):
         }
         for element in elements:
             # This element is using the default style which is not a heading.
-            if element.find_first('pStyle') is None:
+            if find_first(element, 'pStyle') is None:
                 continue
-            style = element.find_first('pStyle').attrib.get('val', '')
+            style = find_first(element, 'pStyle').attrib.get('val', '')
             style = self.styles_dict.get(style)
 
             # Check to see if this element is actually a header.
             if style and style.lower() in headers:
                 # Set all the list item variables to false.
-                element_meta_data[element]['is_list_item'] = False
-                element_meta_data[element]['is_first_list_item'] = False
-                element_meta_data[element]['is_last_list_item_in_root'] = False
+                self.meta_data[element]['is_list_item'] = False
+                self.meta_data[element]['is_first_list_item'] = False
+                self.meta_data[element]['is_last_list_item_in_root'] = False
                 # Prime the heading_level
-                element_meta_data[element]['heading_level'] = headers[style.lower()]  # noqa
+                self.meta_data[element]['heading_level'] = headers[style.lower()]  # noqa
 
     def _convert_upper_roman(self, body):
         if not self.convert_root_level_upper_roman:
@@ -330,46 +354,46 @@ class PydocxLXMLParser(etree.ElementBase):
             # Only root level elements.
             el for el in body.getchildren()
             # And only first_list_items
-            if el.is_first_list_item
+            if self.is_first_list_item(el)
         ]
         visited_num_ids = []
         for root_list_item in first_root_list_items:
-            if root_list_item.num_id in visited_num_ids:
+            if self.num_id(root_list_item) in visited_num_ids:
                 continue
-            visited_num_ids.append(root_list_item.num_id)
+            visited_num_ids.append(self.num_id(root_list_item))
             lst_style = get_list_style(
                 self.numbering_root,
-                root_list_item.num_id.num_id,
-                root_list_item.ilvl,
+                self.num_id(root_list_item).num_id,
+                self.ilvl(root_list_item),
             )
             if lst_style != 'upperRoman':
                 continue
             ilvl = min(
-                el.ilvl for el in body.find_all('p')
-                if el.num_id == root_list_item.num_id
+                self.ilvl(el) for el in find_all(body, 'p')
+                if self.num_id(el) == self.num_id(root_list_item)
             )
             root_upper_roman_list_items = [
-                el for el in body.find_all('p')
-                if el.num_id == root_list_item.num_id and
-                el.ilvl == ilvl
+                el for el in find_all(body, 'p')
+                if self.num_id(el) == self.num_id(root_list_item) and
+                self.ilvl(el) == ilvl
             ]
             for list_item in root_upper_roman_list_items:
-                element_meta_data[list_item]['is_list_item'] = False
-                element_meta_data[list_item]['is_first_list_item'] = False
-                element_meta_data[list_item]['is_last_list_item_in_root'] = False  # noqa
+                self.meta_data[list_item]['is_list_item'] = False
+                self.meta_data[list_item]['is_first_list_item'] = False
+                self.meta_data[list_item]['is_last_list_item_in_root'] = False  # noqa
 
-                element_meta_data[list_item]['heading_level'] = UPPER_ROMAN_TO_HEADING_VALUE  # noqa
+                self.meta_data[list_item]['heading_level'] = UPPER_ROMAN_TO_HEADING_VALUE  # noqa
 
     def _set_next(self, body):
         def _get_children_with_content(el):
             # We only care about children if they have text in them.
             children = []
-            for child in self._filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
-                has_descendant_with_tag = any(
-                    child.has_descendant_with_tag(tag) for
+            for child in _filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
+                _has_descendant_with_tag = any(
+                    has_descendant_with_tag(child, tag) for
                     tag in TAGS_CONTAINING_CONTENT
                 )
-                if has_descendant_with_tag:
+                if _has_descendant_with_tag:
                     children.append(child)
             return children
 
@@ -378,64 +402,21 @@ class PydocxLXMLParser(etree.ElementBase):
             for i in range(len(children)):
                 try:
                     if children[i + 1] is not None:
-                        element_meta_data[children[i]]['next'] = children[i + 1]  # noqa
+                        self.meta_data[children[i]]['next'] = children[i + 1]  # noqa
                 except IndexError:
                     pass
                 try:
                     if children[i - 1] is not None:
-                        element_meta_data[children[i]]['previous'] = children[i - 1]  # noqa
+                        self.meta_data[children[i]]['previous'] = children[i - 1]  # noqa
                 except IndexError:
                     pass
         # Assign next for everything in the root.
         _assign_next(_get_children_with_content(body))
 
         # In addition set next for everything in table cells.
-        for tc in body.find_all('tc'):
+        for tc in find_all(body, 'tc'):
             _assign_next(_get_children_with_content(tc))
-
-    def _init(
-            self,
-            add_attributes=False,
-            convert_root_level_upper_roman=False,
-            styles_dict=None,
-            numbering_root=None,
-            *args,
-            **kwargs):
-        super(PydocxLXMLParser, self)._init(*args, **kwargs)
-        if add_attributes:
-            self.convert_root_level_upper_roman = convert_root_level_upper_roman  # noqa
-            self.styles_dict = styles_dict
-            self.numbering_root = numbering_root
-            self._set_list_attributes(self)
-            self._set_table_attributes(self)
-            self._set_is_in_table(self)
-
-            list_elements = [
-                child for child in self.find_all('p')
-                if child.is_list_item
-            ]
-            num_ids = set([i.num_id for i in list_elements])
-            ilvls = set([i.ilvl for i in list_elements])
-            self._set_first_list_item(num_ids, ilvls, list_elements)
-            self._set_last_list_item(num_ids, list_elements)
-
-            # Find the first and last li elements
-            body = self.find_first('body')
-            p_elements = [
-                child for child in body.find_all('p')
-            ]
-            self._set_headers(p_elements)
-            self._convert_upper_roman(body)
-            self._set_next(body)
-
-
-parser_lookup = etree.ElementDefaultClassLookup(element=PydocxLXMLParser)
-parser = etree.XMLParser()
-parser.set_element_class_lookup(parser_lookup)
 
 
 def parse_xml_from_string(xml):
-    return etree.fromstring(
-        remove_namespaces(xml),
-        parser,
-    )
+    return etree.fromstring(remove_namespaces(xml))

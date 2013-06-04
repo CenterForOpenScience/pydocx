@@ -3,12 +3,8 @@ import re
 from contextlib import contextmanager
 
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.DocxParser import (
-    remove_namespaces,
-    # We are only importing this from DocxParse since we have added methods to
-    # it there.
-    fromstring,
-    PydocxLXMLParser,
+from pydocx.utils import (
+    parse_xml_from_string,
 )
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
@@ -80,14 +76,6 @@ def collapse_html(html):
     )
     return html.strip()
 
-try:
-    from lxml import etree
-    parser_lookup = etree.ElementDefaultClassLookup(element=PydocxLXMLParser)
-    PARSER = etree.XMLParser()
-    PARSER.set_element_class_lookup(parser_lookup)
-except ImportError:
-    pass
-
 
 class XMLDocx2Html(Docx2Html):
     """
@@ -112,17 +100,13 @@ class XMLDocx2Html(Docx2Html):
                 self._image_data['word/%s' % value] = 'word/%s' % value
         self.numbering_root = None
         if numbering_dict is not None:
-            self.numbering_root = fromstring(
-                remove_namespaces(DXB.numbering(numbering_dict)),
-                PARSER,
+            self.numbering_root = parse_xml_from_string(
+                DXB.numbering(numbering_dict),
             )
         self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:
-            self.root = fromstring(
-                remove_namespaces(document_xml),
-                PARSER,
-            )
+            self.root = parse_xml_from_string(document_xml)
         self.zip_path = ''
 
         # This is the standard page width for a word document, Also the page

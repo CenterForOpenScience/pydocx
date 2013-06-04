@@ -6,20 +6,10 @@ from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
-    fromstring,
     XMLDocx2Html,
     _TranslationTestCase,
-    remove_namespaces,
 )
-from pydocx.DocxParser import PydocxLXMLParser
-
-try:
-    from lxml import etree
-    parser_lookup = etree.ElementDefaultClassLookup(element=PydocxLXMLParser)
-    PARSER = etree.XMLParser()
-    PARSER.set_element_class_lookup(parser_lookup)
-except ImportError:
-    pass
+from pydocx.utils import parse_xml_from_string
 
 
 class BoldTestCase(_TranslationTestCase):
@@ -185,10 +175,7 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             rels_dict=self.relationship_dict,
         )
-        tree = fromstring(
-            remove_namespaces(self.get_xml()),
-            PARSER,
-        )
+        tree = parse_xml_from_string(self.get_xml())
         els = []
         els.extend(tree.find_all('drawing'))
         els.extend(tree.find_all('pict'))
@@ -209,10 +196,7 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             rels_dict=self.relationship_dict,
         )
-        tree = fromstring(
-            remove_namespaces(self.get_xml()),
-            PARSER,
-        )
+        tree = parse_xml_from_string(self.get_xml())
         els = []
         els.extend(tree.find_all('drawing'))
         els.extend(tree.find_all('pict'))

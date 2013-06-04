@@ -95,6 +95,14 @@ DocxParser includes abstracts methods that each parser overwrites to satsify its
             return text
 
         @abstractmethod
+        def superscript(self, text):
+            return text
+
+        @abstractmethod
+        def subscript(self, text):
+            return text
+
+        @abstractmethod
         def tab(self):
             return True
 

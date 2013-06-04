@@ -8,6 +8,7 @@ templates = {
     'insert': 'insert.xml',
     'linebreak': 'linebreak.xml',
     'main': 'base.xml',
+    'numbering': 'numbering.xml',
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
@@ -237,6 +238,17 @@ class DocxBuilder(object):
         kwargs = {
             'style_id': style_id,
             'value': value,
+        }
+
+        return template.render(**kwargs)
+
+    @classmethod
+    def numbering(self, numbering_dict):
+        print numbering_dict
+        template = env.get_template(templates['numbering'])
+
+        kwargs = {
+            'numbering_dict': numbering_dict,
         }
 
         return template.render(**kwargs)

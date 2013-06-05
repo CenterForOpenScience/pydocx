@@ -608,7 +608,7 @@ class DocxParser:
                 vert_align = run_tag_property.find('vertAlign')
                 if vert_align.attrib['val'] == 'superscript':
                     text = self.superscript(text)
-                if vert_align.attrib['val'] == 'subscript':
+                elif vert_align.attrib['val'] == 'subscript':
                     text = self.subscript(text)
         return text
 

@@ -2,14 +2,13 @@
 Changelog
 =========
 
-* 0.3.1
-    * Superscripts and subscripts are now extracted correctly.
 * 0.3.0
     * We switched from using stock *xml.etree.ElementTree* to using
       *xml.etree.cElementTree*. This has resulted in a fairly significant speed
       increase for python 2.6
     * It is now possible to create your own pre processor to do additional pre
       processing.
+    * Superscripts and subscripts are now extracted correctly.
 * 0.2.1
     * Added a changelog
     * Added the version in pydocx.__init__

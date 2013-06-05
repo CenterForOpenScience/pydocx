@@ -119,6 +119,20 @@ def test_inline_tags():
     ))
 
 
+def test_super_and_subscript():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'super_and_subscript.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <p>AAA<sup>BBB</sup></p>
+        <p><sub>CCC</sub>DDD</p>
+    ''')
+
+
 def test_unicode():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

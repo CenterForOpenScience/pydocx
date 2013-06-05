@@ -4,6 +4,7 @@ python:
   - "2.7"
 script: ./run_tests.sh
 install:
+  - python setup.py -q install
   - pip install -r requirements.txt
 env:
   - TRAVIS_EXECUTE_PERFORMANCE=1

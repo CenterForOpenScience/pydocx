@@ -3,12 +3,10 @@ import re
 from contextlib import contextmanager
 
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.DocxParser import (
-    remove_namespaces,
-    # We are only importing this from DocxParse since we have added methods to
-    # it there.
-    ElementTree,
+from pydocx.utils import (
+    parse_xml_from_string,
 )
+from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
 
 STYLE = (
@@ -100,14 +98,15 @@ class XMLDocx2Html(Docx2Html):
         if rels_dict:
             for value in rels_dict.values():
                 self._image_data['word/%s' % value] = 'word/%s' % value
-        if numbering_dict is None:
-            numbering_dict = {}
+        self.numbering_root = None
+        if numbering_dict is not None:
+            self.numbering_root = parse_xml_from_string(
+                DXB.numbering(numbering_dict),
+            )
         self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:
-            self.root = ElementTree.fromstring(
-                remove_namespaces(document_xml),
-            )
+            self.root = parse_xml_from_string(document_xml)
         self.zip_path = ''
 
         # This is the standard page width for a word document, Also the page

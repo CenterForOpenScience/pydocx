@@ -316,24 +316,20 @@ class DocxParser:
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
 
-        def _scale_indent_to_pixels(value):
-            if value is None:
-                return None
-            return (float(value) / 20.0) * (4.0 / 3.0)
-
         if indentation is not None:
             if INDENTATION_RIGHT in indentation.attrib:
-                right = _scale_indent_to_pixels(
-                    indentation.attrib.get(INDENTATION_RIGHT),
-                )
+                right = indentation.attrib[INDENTATION_RIGHT]
+                # divide by 20 to get to pt. multiply by (4/3) to get to px
+                right = (int(right) / 20) * float(4) / float(3)
+                right = str(right)
             if INDENTATION_LEFT in indentation.attrib:
-                left = _scale_indent_to_pixels(
-                    indentation.attrib.get(INDENTATION_LEFT),
-                )
+                left = indentation.attrib[INDENTATION_LEFT]
+                left = (int(left) / 20) * float(4) / float(3)
+                left = str(left)
             if INDENTATION_FIRST_LINE in indentation.attrib:
-                firstLine = _scale_indent_to_pixels(
-                    indentation.attrib.get(INDENTATION_FIRST_LINE),
-                )
+                firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
+                firstLine = (int(firstLine) / 20) * float(4) / float(3)
+                firstLine = str(firstLine)
         if any([alignment, firstLine, left, right]):
             return self.indent(text, alignment, firstLine, left, right)
         return text

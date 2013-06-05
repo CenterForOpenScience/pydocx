@@ -6,11 +6,10 @@ from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
-    ElementTree,
     XMLDocx2Html,
     _TranslationTestCase,
-    remove_namespaces,
 )
+from pydocx.utils import parse_xml_from_string, find_all
 
 
 class BoldTestCase(_TranslationTestCase):
@@ -176,12 +175,10 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             rels_dict=self.relationship_dict,
         )
-        tree = ElementTree.fromstring(
-            remove_namespaces(self.get_xml()),
-        )
+        tree = parse_xml_from_string(self.get_xml())
         els = []
-        els.extend(tree.find_all('drawing'))
-        els.extend(tree.find_all('pict'))
+        els.extend(find_all(tree, 'drawing'))
+        els.extend(find_all(tree, 'pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_id(el))
@@ -199,12 +196,10 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             rels_dict=self.relationship_dict,
         )
-        tree = ElementTree.fromstring(
-            remove_namespaces(self.get_xml()),
-        )
+        tree = parse_xml_from_string(self.get_xml())
         els = []
-        els.extend(tree.find_all('drawing'))
-        els.extend(tree.find_all('pict'))
+        els.extend(find_all(tree, 'drawing'))
+        els.extend(find_all(tree, 'pict'))
         image_ids = []
         for el in els:
             image_ids.append(parser._get_image_size(el))
@@ -650,8 +645,6 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
         return xml
 
     def test_performance(self):
-        if not os.environ.get('TRAVIS_EXECUTE_PERFORMANCE', False):
-            raise SkipTest('TRAVIS_EXECUTE_PERFORMANCE is false')
         with self.toggle_run_expected_output():
             start_time = time.time()
             try:
@@ -661,7 +654,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 5, total_time
+            assert total_time < 3, total_time
 
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):

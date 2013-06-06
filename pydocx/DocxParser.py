@@ -139,7 +139,7 @@ def ZipFile(path):  # This is not needed in python 3.2+
 
 class DocxParser:
     __metaclass__ = ABCMeta
-
+    
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
             self.document_text = f.read('word/document.xml')
@@ -206,12 +206,6 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-<<<<<<< .merge_file_Q0i6Oc
-        self.col = 0
-        self.row = 0
-=======
-        self.bookmark = False
->>>>>>> .merge_file_7ASwsQ
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)

@@ -101,15 +101,10 @@ class Docx2Html(DocxParser):
             'text': text,
         }
 
-<<<<<<< HEAD
-    def list_element(self, text, lst_style = None):
-        return "<li>{text}</li>".format(text=text)
-=======
     def list_element(self, text):
         return "<li>%(text)s</li>" % {
             'text': text,
         }
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
     def ordered_list(self, text, list_style):
         return '<ol list-style-type="%(list_style)s">%(text)s</ol>' % {

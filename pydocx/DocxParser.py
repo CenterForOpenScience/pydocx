@@ -122,13 +122,10 @@ setattr(_ElementInterface, 'next', None)
 setattr(_ElementInterface, 'vmerge_continue', None)
 setattr(_ElementInterface, 'row_index', None)
 setattr(_ElementInterface, 'column_index', None)
-<<<<<<< HEAD
 setattr(_ElementInterface, 'is_last_text', False)
 setattr(_ElementInterface, 'lst_style', None)
 setattr(_ElementInterface, 'is_last_tc', False)
 
-=======
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
 # End helpers
 
@@ -209,15 +206,11 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-<<<<<<< HEAD
         self.col = 0
         self.row = 0
-        self._build_data(*args, **kwargs)
-=======
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
         def add_parent(el):  # if a parent, make that an attribute
             for child in el.getchildren():
@@ -300,7 +293,7 @@ class DocxParser:
                             'continue' == v_merge.get('val', '')
                     ):
                         child.vmerge_continue = True
-<<<<<<< HEAD
+
     def _set_text_attributes(self, el):
         # find the ppr. look thru all the elements within and find the text
         #if it's the last item in the list, it's the last text
@@ -309,8 +302,7 @@ class DocxParser:
             for i, t in enumerate(el.parent.find_all('t')):
                 if i == (len(el.parent.find_all('t')) - 1):
                     t.is_last_text = True
-=======
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
+
 
     def _set_is_in_table(self, el):
         paragraph_elements = el.find_all('p')
@@ -527,6 +519,8 @@ class DocxParser:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
+        print 'YOU ALREADY KNOW!'
+        print rowspan
         return self.table_cell(text, el.is_last_tc, el.column_index, el.row_index, colspan, rowspan)
 
     def parse_list(self, el, text):
@@ -565,18 +559,11 @@ class DocxParser:
         parsed = self.parse_list_item(el, text)
         num_id = el.num_id
         ilvl = el.ilvl
-<<<<<<< HEAD
-        el.lst_style = self.get_list_style(
-            el.num_id,
-            el.ilvl,
-        )
-=======
         # Everything after this point assumes the first element is not also the
         # last. If the first element is also the last then early return by
         # building and returning the completed list.
         if el.is_last_list_item_in_root:
             return self._build_list(el, parsed)
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
         next_el = el.next
 
         def is_same_list(next_el, num_id, ilvl):
@@ -635,21 +622,6 @@ class DocxParser:
         if parsed == '':
             return parsed
 
-<<<<<<< HEAD
-        # Get the list style for the pending list.
-        lst_style = self.get_list_style(
-            el.num_id,
-            el.ilvl,
-        )
-        # Create the actual list and return it.
-        if lst_style == 'bullet':
-            return self.unordered_list(parsed)
-        else:
-            return self.ordered_list(
-                parsed,
-                lst_style,
-            )
-=======
         return self._build_list(el, parsed)
 
     def justification(self, el, text):
@@ -687,7 +659,6 @@ class DocxParser:
         if any([alignment, firstLine, left, right]):
             return self.indent(text, alignment, firstLine, left, right)
         return text
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
     def parse_p(self, el, text):
         if text == '':
@@ -960,64 +931,7 @@ class DocxParser:
                     fns.append(self.underline)
             for fn in fns:
                 text = fn(text)
-<<<<<<< HEAD
-        paragraph_tag_property = el.parent.find('pPr')
-        just = ''
-        if paragraph_tag_property is not None:
-            jc = paragraph_tag_property.find('jc')
-            if jc is not None:  # text alignments
-                if jc.attrib['val'] == 'right':
-                    just = 'right'
-                elif jc.attrib['val'] == 'center':
-                    just = 'center'
-                elif jc.attrib['val'] == 'left':
-                    just = 'left'
-            ind = paragraph_tag_property.find('ind')
-            right = ''
-            left = ''
-            firstLine = ''
-            if ind is not None:
-                right = None
-                left = None
-                firstLine = None
-                if 'right' in ind.attrib:
-                    right = ind.attrib['right']
-                    # divide by 20 to get to pt. multiply by (4/3) to get to px
-                    right = (int(right) / 20) * float(4) / float(3)
-                    right = str(right)
-                if 'left' in ind.attrib:
-                    left = ind.attrib['left']
-                    left = (int(left) / 20) * float(4) / float(3)
-                    left = str(left)
-                if 'firstLine' in ind.attrib:
-                    firstLine = ind.attrib['firstLine']
-                    firstLine = (int(firstLine) / 20) * float(4) / float(3)
-                    firstLine = str(firstLine)
-            if jc is not None or ind is not None:
-                t_els = el.find_all('t')
-                for el in t_els:
-                    if el.is_last_text:
-                        block = False
-                        is_table = False
-                        self.block_text += text
-                        column = 0
-                        #might need to write column to justify appropriately
-                        if el.find_ancestor_with_tag('tc') is not None:
-                            column = el.find_ancestor_with_tag('tc').column_index
-                            is_table = True
-                        text = self.indent(self.block_text,
-                            just, firstLine, left, right)
-                        self.block_text = ''
-                    else:
-                        block = True
-                        self.block_text += text
-        if block is False:
-            return text
-        else:
-            return ''
-=======
         return text
->>>>>>> a0f1daa2821285ba65a44bd30e2f2bcd19d17791
 
     def get_list_style(self, num_id, ilvl):
         ids = self.numbering_root.find_all('num')

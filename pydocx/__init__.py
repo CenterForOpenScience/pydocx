@@ -12,4 +12,4 @@ def html2docx(path):
     return Html2Docx(path).parsed
 
 
-VERSION = '0.2.1'
+VERSION = '0.3.0'

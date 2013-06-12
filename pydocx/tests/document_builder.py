@@ -8,6 +8,7 @@ templates = {
     'insert': 'insert.xml',
     'linebreak': 'linebreak.xml',
     'main': 'base.xml',
+    'numbering': 'numbering.xml',
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
@@ -92,14 +93,18 @@ class DocxBuilder(object):
             is_bold=False,
             is_underline=False,
             is_italics=False,
+            vert_align=None,
             val=None,
     ):
         template = env.get_template(templates['r'])
         kwargs = {
             'elements': elements,
+            # TODO Pass in an `rPr` instead. That is what all of this is for
+            # anyway.
             'is_bold': is_bold,
             'is_underline': is_underline,
             'is_italics': is_italics,
+            'vert_align': vert_align,
             'val': val,
         }
         return template.render(**kwargs)
@@ -237,6 +242,16 @@ class DocxBuilder(object):
         kwargs = {
             'style_id': style_id,
             'value': value,
+        }
+
+        return template.render(**kwargs)
+
+    @classmethod
+    def numbering(self, numbering_dict):
+        template = env.get_template(templates['numbering'])
+
+        kwargs = {
+            'numbering_dict': numbering_dict,
         }
 
         return template.render(**kwargs)

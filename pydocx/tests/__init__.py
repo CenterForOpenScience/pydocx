@@ -18,6 +18,10 @@ STYLE = (
     '.pydocx-left {text-align:left;}'
     '.pydocx-comment {color:blue;}'
     '.pydocx-underline {text-decoration: underline;}'
+    '.pydocx-caps {text-transform:uppercase;}'
+    '.pydocx-small-caps {font-variant: small-caps;}'
+    '.pydocx-strike {text-decoration: line-through;}'
+    '.pydocx-hidden {visibility: hidden;}'
     'body {width:612px;margin:0px auto;}'
     '</style>'
 )

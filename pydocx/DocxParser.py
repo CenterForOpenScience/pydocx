@@ -602,6 +602,24 @@ class DocxParser:
             if has_child(run_tag_property, 'u'):
                 if self._is_style_on(run_tag_property.find('u')):
                     text = self.underline(text)
+            if has_child(run_tag_property, 'caps'):
+                if self._is_style_on(run_tag_property.find('caps')):
+                    text = self.caps(text)
+            if has_child(run_tag_property, 'smallCaps'):
+                if self._is_style_on(run_tag_property.find('smallCaps')):
+                    text = self.small_caps(text)
+            if has_child(run_tag_property, 'strike'):
+                if self._is_style_on(run_tag_property.find('strike')):
+                    text = self.strike(text)
+            if has_child(run_tag_property, 'dstrike'):
+                if self._is_style_on(run_tag_property.find('dstrike')):
+                    text = self.strike(text)
+            if has_child(run_tag_property, 'vanish'):
+                if self._is_style_on(run_tag_property.find('vanish')):
+                    text = self.hide(text)
+            if has_child(run_tag_property, 'webHidden'):
+                if self._is_style_on(run_tag_property.find('webHidden')):
+                    text = self.hide(text)
 
             # This could be a superscript or a subscript
             if has_child(run_tag_property, 'vertAlign'):
@@ -662,6 +680,22 @@ class DocxParser:
 
     @abstractmethod
     def underline(self, text):
+        return text
+
+    @abstractmethod
+    def caps(self, text):
+        return text
+
+    @abstractmethod
+    def small_caps(self, text):
+        return text
+
+    @abstractmethod
+    def strike(self, text):
+        return text
+
+    @abstractmethod
+    def hide(self, text):
         return text
 
     @abstractmethod

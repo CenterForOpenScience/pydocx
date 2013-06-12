@@ -178,11 +178,11 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def table(self, num_rows, num_columns, text, merge=False):
+    def table(self, num_rows, num_columns, text, merge=False, merge_continue=False):
 
         def _tc(cell_value):
             template = env.get_template(templates['tc'])
-            return template.render(p_tag=cell_value, merge=merge)
+            return template.render(p_tag=cell_value, merge=merge, merge_continue= merge_continue)
 
         def _tr(rows, text):
             tcs = [_tc(text.next()) for _ in range(rows)]
@@ -192,6 +192,12 @@ class DocxBuilder(object):
         trs = [_tr(num_rows, text) for _ in range(num_rows)]
         template = env.get_template(templates['table'])
         return template.render(table_rows=trs)
+
+    @classmethod
+    def tc(cell_value, merge, merge_continue):
+        template = env.get_template(templates['tc'])
+        return template.render(p_tag=cell_value, merge=merge, merge_continue= merge_continue)
+
 
     @classmethod
     def drawing(self, r_id, height=None, width=None):

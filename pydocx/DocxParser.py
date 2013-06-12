@@ -104,7 +104,6 @@ class DocxParser:
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-        self.bookmark = False
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)
@@ -158,7 +157,6 @@ class DocxParser:
         elif el.tag == 't':
             return self.parse_t(el, parsed)
         elif el.tag == 'br':
-            print 'ummm wheres the break'
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)
@@ -409,7 +407,6 @@ class DocxParser:
             """
             next_el = self.pre_processor.next(el)
             if next_el is None:
-                return False
                 return False
             if (
                     not self.pre_processor.is_list_item(next_el) and

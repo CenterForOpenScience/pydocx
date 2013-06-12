@@ -1,6 +1,10 @@
 <w:tc>
 	<w:tcPr>
 		<w:tcW w:type="dxa" w:w="4986"/>
+        {% if merge_continue %}
+        <w:vmerge>
+        </w:vmerge>
+        {% endif %}
         {% if merge %}
         <w:vmerge val="restart">
         </w:vmerge>

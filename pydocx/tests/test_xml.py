@@ -30,7 +30,6 @@ class BoldTestCase(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
-
 class HyperlinkVanillaTestCase(_TranslationTestCase):
     relationship_dict = {
         'rId0': 'www.google.com',
@@ -292,6 +291,24 @@ class TableTag(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
+class RowSpanTestCase(_TranslationTestCase):
+    expected_output = '''
+           <table border="1">
+            <tr>
+                <td rowspan="2">AAA
+                <br>
+                BBB</td>
+            </tr>
+            <tr>
+                <td>CCC</td>
+                <td>DDD</td>
+            </tr>
+        </table>
+    '''
+    def get_xml(self):
+        Cell1 = DXB.tc(DXB.p_tag('AAA'), merge=True)
+        Cell2 = DXB.tc(DXB.p_tag('BBB'), merge_continue=True)
+        print Cell1
 
 class NestedTableTag(_TranslationTestCase):
     expected_output = '''

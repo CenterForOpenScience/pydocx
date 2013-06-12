@@ -172,6 +172,7 @@ class DocxParser:
             return self.parse_image(el)
         else:
             return parsed
+
     def parse_page_break(self, el, text):
         #TODO figure out what parsed is getting overwritten
         return self.page_break()
@@ -185,7 +186,7 @@ class DocxParser:
     def parse_table_cell(self, el, text):
         v_merge = find_first(el, 'vMerge')
         if v_merge is not None and (
-            'continue' == v_merge.get('val', '')):
+                'continue' == v_merge.get('val', '')):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
@@ -447,9 +448,9 @@ class DocxParser:
         if tbl is None:
             return ''
         tcs = [
-        tc for tc in find_all(tbl, 'tc')
-        if self.pre_processor.row_index(tc) >= current_row and
-           self.pre_processor.column_index(tc) == current_col
+            tc for tc in find_all(tbl, 'tc')
+            if self.pre_processor.row_index(tc) >= current_row and
+            self.pre_processor.column_index(tc) == current_col
         ]
         restart_in_v_merge = False
         if v_merge is not None and 'val' in v_merge.attrib:

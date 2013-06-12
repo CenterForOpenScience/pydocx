@@ -15,8 +15,6 @@ from pydocx.utils import (
     has_child,
     has_descendant_with_tag,
 )
-from bs4 import BeautifulSoup
-
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
@@ -58,7 +56,6 @@ class DocxParser:
                 self.fonts = None
             try:  # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
-                print BeautifulSoup(self.numbering_text).prettify()
             except KeyError:
                 self.numbering_text = None
             try:  # Only present if there are comments

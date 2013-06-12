@@ -312,7 +312,7 @@ class PydocxPrePorcessor(object):
                     if (
                             v_merge is not None and
                             ('continue' == v_merge.get('val', '') or
-                            v_merge.attrib == {})
+                             v_merge.attrib == {})
                     ):
                         self.meta_data[child]['vmerge_continue'] = True
 

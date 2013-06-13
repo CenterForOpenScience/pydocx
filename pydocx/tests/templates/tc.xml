@@ -22,5 +22,7 @@
 			<w:right w:type="dxa" w:w="55"/>
 		</w:tcMar>
 	</w:tcPr>
-	{{ p_tag }}
+    {% if paragraph %}
+	{{ paragraph }}
+    {% endif %}
 </w:tc>

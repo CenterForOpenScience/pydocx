@@ -95,8 +95,10 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def rpr_tag(self, *args, **rkwargs):
-        valid_kwargs = (
+    def rpr_tag(self, inline_styles=None, *args, **kwargs):
+        if inline_styles is None:
+            inline_styles = {}
+        valid_styles = (
             'b',
             'i',
             'u',
@@ -108,12 +110,12 @@ class DocxBuilder(object):
             'webHidden',
             'vertAlign',
         )
-        for key in rkwargs:
-            if key not in valid_kwargs:
-                raise AssertionError('%s is not a valid kwarg' % key)
+        for key in inline_styles:
+            if key not in valid_styles:
+                raise AssertionError('%s is not a valid style' % key)
         template = env.get_template(templates['rpr'])
         kwargs = {
-            'tags': rkwargs,
+            'tags': inline_styles,
         }
         return template.render(**kwargs)
 

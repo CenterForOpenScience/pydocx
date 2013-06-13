@@ -22,12 +22,18 @@ class BoldTestCase(_TranslationTestCase):
         tags = [
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('AAA')], rpr=DXB.rpr_tag(b=None)),
+                    DXB.r_tag(
+                        [DXB.t_tag('AAA')],
+                        rpr=DXB.rpr_tag({'b': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('BBB')], rpr=DXB.rpr_tag(b='false')),
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        rpr=DXB.rpr_tag({'b': 'false'}),
+                    ),
                 ],
             ),
         ]
@@ -1038,12 +1044,18 @@ class SuperAndSubScripts(_TranslationTestCase):
             DXB.p_tag(
                 [
                     DXB.r_tag([DXB.t_tag('AAA')]),
-                    DXB.r_tag([DXB.t_tag('BBB')], rpr=DXB.rpr_tag(vertAlign='superscript')),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'superscript'}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('CCC')], rpr=DXB.rpr_tag(vertAlign='subscript')),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'subscript'}),
+                    ),
                     DXB.r_tag([DXB.t_tag('DDD')]),
                 ],
             ),
@@ -1074,52 +1086,82 @@ class AvaliableInlineTags(_TranslationTestCase):
         p_tags = [
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('aaa')], rpr=DXB.rpr_tag(b=None)),
+                    DXB.r_tag(
+                        [DXB.t_tag('aaa')],
+                        rpr=DXB.rpr_tag({'b': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('bbb')], rpr=DXB.rpr_tag(u=None)),
+                    DXB.r_tag(
+                        [DXB.t_tag('bbb')],
+                        rpr=DXB.rpr_tag({'u': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('ccc')], rpr=DXB.rpr_tag(i=None)),
+                    DXB.r_tag(
+                        [DXB.t_tag('ccc')],
+                        rpr=DXB.rpr_tag({'i': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('ddd')], rpr=DXB.rpr_tag(caps=None)),
+                    DXB.r_tag(
+                        [DXB.t_tag('ddd')],
+                        rpr=DXB.rpr_tag({'caps': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('eee')], rpr=DXB.rpr_tag(smallCaps=None)),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('eee')],
+                        rpr=DXB.rpr_tag({'smallCaps': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('fff')], rpr=DXB.rpr_tag(strike=None)),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('fff')],
+                        rpr=DXB.rpr_tag({'strike': None})
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('ggg')], rpr=DXB.rpr_tag(dstrike=None)),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('ggg')],
+                        rpr=DXB.rpr_tag({'dstrike': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('hhh')], rpr=DXB.rpr_tag(vanish=None)),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('hhh')],
+                        rpr=DXB.rpr_tag({'vanish': None})
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('iii')], rpr=DXB.rpr_tag(webHidden=None)),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('iii')],
+                        rpr=DXB.rpr_tag({'webHidden': None}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('jjj')], rpr=DXB.rpr_tag(vertAlign='superscript')),  # noqa
+                    DXB.r_tag(
+                        [DXB.t_tag('jjj')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'superscript'}),
+                    ),
                 ],
             ),
         ]

@@ -20,8 +20,22 @@ class BoldTestCase(_TranslationTestCase):
 
     def get_xml(self):
         tags = [
-            DXB.p_tag(text='AAA', bold=True),
-            DXB.p_tag(text='BBB', bold=True, val='false'),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('AAA')],
+                        rpr=DXB.rpr_tag({'b': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        rpr=DXB.rpr_tag({'b': 'false'}),
+                    ),
+                ],
+            ),
         ]
 
         body = ''
@@ -42,9 +56,9 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -62,7 +76,7 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'link']
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -92,9 +106,9 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -1030,13 +1044,124 @@ class SuperAndSubScripts(_TranslationTestCase):
             DXB.p_tag(
                 [
                     DXB.r_tag([DXB.t_tag('AAA')]),
-                    DXB.r_tag([DXB.t_tag('BBB')], vert_align='superscript'),
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'superscript'}),
+                    ),
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('CCC')], vert_align='subscript'),
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'subscript'}),
+                    ),
                     DXB.r_tag([DXB.t_tag('DDD')]),
+                ],
+            ),
+        ]
+        body = ''
+        for p_tag in p_tags:
+            body += p_tag
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class AvaliableInlineTags(_TranslationTestCase):
+    expected_output = '''
+        <p><strong>aaa</strong></p>
+        <p><span class="pydocx-underline">bbb</span></p>
+        <p><em>ccc</em></p>
+        <p><span class="pydocx-caps">ddd</span></p>
+        <p><span class="pydocx-small-caps">eee</span></p>
+        <p><span class="pydocx-strike">fff</span></p>
+        <p><span class="pydocx-strike">ggg</span></p>
+        <p><span class="pydocx-hidden">hhh</span></p>
+        <p><span class="pydocx-hidden">iii</span></p>
+        <p><sup>jjj</sup></p>
+    '''
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('aaa')],
+                        rpr=DXB.rpr_tag({'b': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('bbb')],
+                        rpr=DXB.rpr_tag({'u': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('ccc')],
+                        rpr=DXB.rpr_tag({'i': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('ddd')],
+                        rpr=DXB.rpr_tag({'caps': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('eee')],
+                        rpr=DXB.rpr_tag({'smallCaps': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('fff')],
+                        rpr=DXB.rpr_tag({'strike': None})
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('ggg')],
+                        rpr=DXB.rpr_tag({'dstrike': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('hhh')],
+                        rpr=DXB.rpr_tag({'vanish': None})
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('iii')],
+                        rpr=DXB.rpr_tag({'webHidden': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('jjj')],
+                        rpr=DXB.rpr_tag({'vertAlign': 'superscript'}),
+                    ),
                 ],
             ),
         ]

@@ -178,28 +178,14 @@ class DocxBuilder(object):
         return template.render(**kwargs)
 
     @classmethod
-    def table(self, num_rows, num_columns,
-              text, merge=False, merge_continue=False):
-
-        def _tc(cell_value):
-            template = env.get_template(templates['tc'])
-            return template.render(
-                p_tag=cell_value, merge=merge, merge_continue=merge_continue)
-
-        def _tr(rows, text):
-            tcs = [_tc(text.next()) for _ in range(rows)]
-            template = env.get_template(templates['tr'])
-            return template.render(table_cells=tcs)
-
-        trs = [_tr(num_rows, text) for _ in range(num_rows)]
-        template = env.get_template(templates['table'])
-        return template.render(table_rows=trs)
-
-    @classmethod
-    def table_cell(self, cell_value, merge=False, merge_continue=False):
+    def table_cell(self, paragraph, merge=False, merge_continue=False):
+        kwargs = {
+            'paragraph': paragraph,
+            'merge': merge,
+            'merge_continue': merge_continue
+        }
         template = env.get_template(templates['tc'])
-        return template.render(
-            p_tag=cell_value, merge=merge, merge_continue=merge_continue)
+        return template.render(**kwargs)
 
     @classmethod
     def table_row(self, tcs):
@@ -207,7 +193,7 @@ class DocxBuilder(object):
         return template.render(table_cells=tcs)
 
     @classmethod
-    def tableSingle(self, trs):
+    def table(self, trs):
         template = env.get_template(templates['table'])
         return template.render(table_rows=trs)
 

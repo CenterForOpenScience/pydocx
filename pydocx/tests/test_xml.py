@@ -20,8 +20,16 @@ class BoldTestCase(_TranslationTestCase):
 
     def get_xml(self):
         tags = [
-            DXB.p_tag(text='AAA', bold=True),
-            DXB.p_tag(text='BBB', bold=True, val='false'),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('AAA')], rpr=DXB.rpr_tag(b=None)),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('BBB')], rpr=DXB.rpr_tag(b='false')),
+                ],
+            ),
         ]
 
         body = ''
@@ -42,9 +50,9 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -62,7 +70,7 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'link']
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -92,9 +100,9 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
 
     def get_xml(self):
         run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')], is_bold=False))
+        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
         body = DXB.p_tag(run_tags)
         xml = DXB.xml(body)
         return xml
@@ -1030,12 +1038,12 @@ class SuperAndSubScripts(_TranslationTestCase):
             DXB.p_tag(
                 [
                     DXB.r_tag([DXB.t_tag('AAA')]),
-                    DXB.r_tag([DXB.t_tag('BBB')], vert_align='superscript'),
+                    DXB.r_tag([DXB.t_tag('BBB')], rpr=DXB.rpr_tag(vertAlign='superscript')),  # noqa
                 ],
             ),
             DXB.p_tag(
                 [
-                    DXB.r_tag([DXB.t_tag('CCC')], vert_align='subscript'),
+                    DXB.r_tag([DXB.t_tag('CCC')], rpr=DXB.rpr_tag(vertAlign='subscript')),  # noqa
                     DXB.r_tag([DXB.t_tag('DDD')]),
                 ],
             ),

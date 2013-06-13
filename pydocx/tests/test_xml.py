@@ -1046,3 +1046,78 @@ class SuperAndSubScripts(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class AvaliableInlineTags(_TranslationTestCase):
+    expected_output = '''
+        <p><strong>aaa</strong></p>
+        <p><span class="pydocx-underline">bbb</span></p>
+        <p><em>ccc</em></p>
+        <p><span class="pydocx-caps">ddd</span></p>
+        <p><span class="pydocx-small-caps">eee</span></p>
+        <p><span class="pydocx-strike">fff</span></p>
+        <p><span class="pydocx-strike">ggg</span></p>
+        <p><span class="pydocx-hidden">hhh</span></p>
+        <p><span class="pydocx-hidden">iii</span></p>
+        <p><sup>jjj</sup></p>
+    '''
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('aaa')], rpr=DXB.rpr_tag(b=None)),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('bbb')], rpr=DXB.rpr_tag(u=None)),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('ccc')], rpr=DXB.rpr_tag(i=None)),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('ddd')], rpr=DXB.rpr_tag(caps=None)),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('eee')], rpr=DXB.rpr_tag(smallCaps=None)),  # noqa
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('fff')], rpr=DXB.rpr_tag(strike=None)),  # noqa
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('ggg')], rpr=DXB.rpr_tag(dstrike=None)),  # noqa
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('hhh')], rpr=DXB.rpr_tag(vanish=None)),  # noqa
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('iii')], rpr=DXB.rpr_tag(webHidden=None)),  # noqa
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag([DXB.t_tag('jjj')], rpr=DXB.rpr_tag(vertAlign='superscript')),  # noqa
+                ],
+            ),
+        ]
+        body = ''
+        for p_tag in p_tags:
+            body += p_tag
+
+        xml = DXB.xml(body)
+        return xml

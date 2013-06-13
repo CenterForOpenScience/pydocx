@@ -647,6 +647,7 @@ def test_simple_table():
         'simple_table.docx',
     )
     actual_html = convert(file_path)
+    print actual_html
     assert_html_equal(actual_html, BASE_HTML % '''
     <table border="1">
         <tr>
@@ -659,7 +660,6 @@ def test_simple_table():
             </td>
         </tr>
         <tr>
-            <td></td>
             <td>Cell4</td>
         </tr>
     </table>

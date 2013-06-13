@@ -295,20 +295,24 @@ class RowSpanTestCase(_TranslationTestCase):
     expected_output = '''
            <table border="1">
             <tr>
-                <td rowspan="2">AAA
-                <br>
-                BBB</td>
+                <td rowspan="2">AAA</td>
+                <td>BBB</td>
             </tr>
             <tr>
                 <td>CCC</td>
-                <td>DDD</td>
             </tr>
         </table>
     '''
     def get_xml(self):
-        Cell1 = DXB.tc(DXB.p_tag('AAA'), merge=True)
-        Cell2 = DXB.tc(DXB.p_tag('BBB'), merge_continue=True)
-        print Cell1
+        cell1 = DXB.table_cell(DXB.p_tag('AAA'), True, False)
+        cell2 = DXB.table_cell(None, False, True)
+        cell3 =  DXB.table_cell(DXB.p_tag('BBB'), False, False)
+        cell4 =  DXB.table_cell(DXB.p_tag('CCC'), False, False)
+        rows = [DXB.table_row([cell1, cell3]),DXB.table_row([cell2, cell4])]
+        table = DXB.tableSingle(rows)
+        body = table
+        xml = DXB.xml(body)
+        return xml
 
 class NestedTableTag(_TranslationTestCase):
     expected_output = '''

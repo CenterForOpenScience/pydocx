@@ -12,6 +12,7 @@ templates = {
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'rpr': 'rpr.xml',
     'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
     'smartTag': 'smart_tag.xml',
@@ -90,22 +91,37 @@ class DocxBuilder(object):
     def r_tag(
             self,
             elements,
-            is_bold=False,
-            is_underline=False,
-            is_italics=False,
-            vert_align=None,
-            val=None,
+            rpr=None,
     ):
         template = env.get_template(templates['r'])
+        if rpr is None:
+            rpr = DocxBuilder.rpr_tag()
         kwargs = {
             'elements': elements,
-            # TODO Pass in an `rPr` instead. That is what all of this is for
-            # anyway.
-            'is_bold': is_bold,
-            'is_underline': is_underline,
-            'is_italics': is_italics,
-            'vert_align': vert_align,
-            'val': val,
+            'rpr': rpr,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def rpr_tag(self, *args, **rkwargs):
+        valid_kwargs = (
+            'b',
+            'i',
+            'u',
+            'caps',
+            'smallCaps',
+            'strike',
+            'dstrike',
+            'vanish',
+            'webHidden',
+            'vertAlign',
+        )
+        for key in rkwargs:
+            if key not in valid_kwargs:
+                raise AssertionError('%s is not a valid kwarg' % key)
+        template = env.get_template(templates['rpr'])
+        kwargs = {
+            'tags': rkwargs,
         }
         return template.render(**kwargs)
 

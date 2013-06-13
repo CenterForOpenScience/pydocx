@@ -194,9 +194,19 @@ class DocxBuilder(object):
         return template.render(table_rows=trs)
 
     @classmethod
-    def tc(cell_value, merge, merge_continue):
+    def table_cell(self, cell_value, merge=False, merge_continue=False):
         template = env.get_template(templates['tc'])
         return template.render(p_tag=cell_value, merge=merge, merge_continue= merge_continue)
+
+    @classmethod
+    def table_row(self, tcs):
+        template = env.get_template(templates['tr'])
+        return template.render(table_cells=tcs)
+
+    @classmethod
+    def tableSingle(self, trs):
+        template = env.get_template(templates['table'])
+        return template.render(table_rows=trs)
 
 
     @classmethod

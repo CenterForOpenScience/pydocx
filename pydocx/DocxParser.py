@@ -596,31 +596,30 @@ class DocxParser:
             el = run_tag_property.find(tag)
             if el is not None:
                 return self._is_style_on(el)
-        inline_tags = (
-            ('b', self.bold),
-            ('i', self.italics),
-            ('u', self.underline),
-            ('caps', self.caps),
-            ('smallCaps', self.small_caps),
-            ('strike', self.strike),
-            ('dstrike', self.strike),
-            ('vanish', self.hide),
-            ('webHidden', self.hide),
-        )
+        inline_tags = {
+            'b': self.bold,
+            'i': self.italics,
+            'u': self.underline,
+            'caps': self.caps,
+            'smallCaps': self.small_caps,
+            'strike': self.strike,
+            'dstrike': self.strike,
+            'vanish': self.hide,
+            'webHidden': self.hide,
+        }
         if run_tag_property is not None:
-            for tag, formatter in inline_tags:
-                if _has_style_on(run_tag_property, tag):
-                    text = formatter(text)
+            for child in run_tag_property:
+                # These tags are a little different, handle them separately
+                # from the rest.
+                # This could be a superscript or a subscript
+                if child.tag == 'vertAlign':
+                    if child.attrib['val'] == 'superscript':
+                        text = self.superscript(text)
+                    elif child.attrib['val'] == 'subscript':
+                        text = self.subscript(text)
+                elif child.tag in inline_tags and self._is_style_on(child):
+                    text = inline_tags[child.tag](text)
 
-            # These tags are a little different, handle them separately from
-            # the rest.
-            # This could be a superscript or a subscript
-            vert_align = run_tag_property.find('vertAlign')
-            if vert_align is not None:
-                if vert_align.attrib['val'] == 'superscript':
-                    text = self.superscript(text)
-                elif vert_align.attrib['val'] == 'subscript':
-                    text = self.subscript(text)
         return text
 
     @property

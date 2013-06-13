@@ -43,21 +43,13 @@ class DocxBuilder(object):
     def p_tag(
             self,
             text,
-            bold=False,
-            underline=False,
-            italics=False,
             style='style0',
-            val=None,
             jc=None,
     ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
             run_tag = DocxBuilder.r_tag(
                 [DocxBuilder.t_tag(text)],
-                is_bold=bold,
-                is_underline=underline,
-                is_italics=italics,
-                val=val,
             )
             run_tags = [run_tag]
         elif isinstance(text, list):

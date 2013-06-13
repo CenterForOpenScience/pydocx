@@ -647,7 +647,6 @@ def test_simple_table():
         'simple_table.docx',
     )
     actual_html = convert(file_path)
-    print actual_html
     assert_html_equal(actual_html, BASE_HTML % '''
     <table border="1">
         <tr>

@@ -12,6 +12,7 @@ templates = {
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'rpr': 'rpr.xml',
     'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
     'smartTag': 'smart_tag.xml',
@@ -42,21 +43,13 @@ class DocxBuilder(object):
     def p_tag(
             self,
             text,
-            bold=False,
-            underline=False,
-            italics=False,
             style='style0',
-            val=None,
             jc=None,
     ):
         if isinstance(text, str):
             # Use create a single r tag based on the text and the bold
             run_tag = DocxBuilder.r_tag(
                 [DocxBuilder.t_tag(text)],
-                is_bold=bold,
-                is_underline=underline,
-                is_italics=italics,
-                val=val,
             )
             run_tags = [run_tag]
         elif isinstance(text, list):
@@ -90,22 +83,39 @@ class DocxBuilder(object):
     def r_tag(
             self,
             elements,
-            is_bold=False,
-            is_underline=False,
-            is_italics=False,
-            vert_align=None,
-            val=None,
+            rpr=None,
     ):
         template = env.get_template(templates['r'])
+        if rpr is None:
+            rpr = DocxBuilder.rpr_tag()
         kwargs = {
             'elements': elements,
-            # TODO Pass in an `rPr` instead. That is what all of this is for
-            # anyway.
-            'is_bold': is_bold,
-            'is_underline': is_underline,
-            'is_italics': is_italics,
-            'vert_align': vert_align,
-            'val': val,
+            'rpr': rpr,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def rpr_tag(self, inline_styles=None, *args, **kwargs):
+        if inline_styles is None:
+            inline_styles = {}
+        valid_styles = (
+            'b',
+            'i',
+            'u',
+            'caps',
+            'smallCaps',
+            'strike',
+            'dstrike',
+            'vanish',
+            'webHidden',
+            'vertAlign',
+        )
+        for key in inline_styles:
+            if key not in valid_styles:
+                raise AssertionError('%s is not a valid style' % key)
+        template = env.get_template(templates['rpr'])
+        kwargs = {
+            'tags': inline_styles,
         }
         return template.render(**kwargs)
 

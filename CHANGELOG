@@ -2,6 +2,15 @@
 Changelog
 =========
 
+* 0.3.1
+    * Added support for several more OOXML tags including:
+        * caps
+        * smallCaps
+        * strike
+        * dstrike
+        * vanish
+        * webHidden
+      More details in the README.
 * 0.3.0
     * We switched from using stock *xml.etree.ElementTree* to using
       *xml.etree.cElementTree*. This has resulted in a fairly significant speed

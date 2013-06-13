@@ -217,6 +217,10 @@ The base parser `Docx2Html` relies on certain css class being set for certain be
 * class `pydocx-left` -> Aligns the text to the left.
 * class `pydocx-comment` -> Turns the text blue.
 * class `pydocx-underline` -> Underlines the text.
+* class `pydocx-caps` -> Makes all text uppercase.
+* class `pydocx-small-caps` -> Makes all text uppercase, however truly lowercase letters will be small than their uppercase counterparts.
+* class `pydocx-strike` -> Strike a line through.
+* class `pydocx-hidden` -> Hide the text.
 
 Optional Arguments
 ##################

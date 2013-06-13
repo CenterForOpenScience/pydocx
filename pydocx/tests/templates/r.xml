@@ -1,10 +1,5 @@
 <w:r>
-	<w:rPr>
-		{% if is_bold %}<w:b{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
-		{% if is_underline %}<w:u{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
-		{% if is_italics %}<w:i{% if val %} w:val="{{ val }}"{% endif %}/>{% endif %}
-		{% if vert_align %}<w:vertAlign w:val="{{ vert_align }}"/>{% endif %}
-	</w:rPr>
+	{{ rpr }}
 	{% for element in elements %}
 		{{ element }}
 	{% endfor %}

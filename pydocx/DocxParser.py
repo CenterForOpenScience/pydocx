@@ -12,7 +12,6 @@ from pydocx.utils import (
     find_first,
     find_all,
     find_ancestor_with_tag,
-    has_child,
     has_descendant_with_tag,
 )
 
@@ -592,38 +591,32 @@ class DocxParser:
         if not text:
             return ''
         run_tag_property = el.find('rPr')
-        if run_tag_property is not None:
-            if has_child(run_tag_property, 'b'):  # text styling
-                if self._is_style_on(run_tag_property.find('b')):
-                    text = self.bold(text)
-            if has_child(run_tag_property, 'i'):
-                if self._is_style_on(run_tag_property.find('i')):
-                    text = self.italics(text)
-            if has_child(run_tag_property, 'u'):
-                if self._is_style_on(run_tag_property.find('u')):
-                    text = self.underline(text)
-            if has_child(run_tag_property, 'caps'):
-                if self._is_style_on(run_tag_property.find('caps')):
-                    text = self.caps(text)
-            if has_child(run_tag_property, 'smallCaps'):
-                if self._is_style_on(run_tag_property.find('smallCaps')):
-                    text = self.small_caps(text)
-            if has_child(run_tag_property, 'strike'):
-                if self._is_style_on(run_tag_property.find('strike')):
-                    text = self.strike(text)
-            if has_child(run_tag_property, 'dstrike'):
-                if self._is_style_on(run_tag_property.find('dstrike')):
-                    text = self.strike(text)
-            if has_child(run_tag_property, 'vanish'):
-                if self._is_style_on(run_tag_property.find('vanish')):
-                    text = self.hide(text)
-            if has_child(run_tag_property, 'webHidden'):
-                if self._is_style_on(run_tag_property.find('webHidden')):
-                    text = self.hide(text)
 
+        def _has_style_on(run_tag_property, tag):
+            el = run_tag_property.find(tag)
+            if el is not None:
+                return self._is_style_on(el)
+        inline_tags = (
+            ('b', self.bold),
+            ('i', self.italics),
+            ('u', self.underline),
+            ('caps', self.caps),
+            ('smallCaps', self.small_caps),
+            ('strike', self.strike),
+            ('dstrike', self.strike),
+            ('vanish', self.hide),
+            ('webHidden', self.hide),
+        )
+        if run_tag_property is not None:
+            for tag, formatter in inline_tags:
+                if _has_style_on(run_tag_property, tag):
+                    text = formatter(text)
+
+            # These tags are a little different, handle them separately from
+            # the rest.
             # This could be a superscript or a subscript
-            if has_child(run_tag_property, 'vertAlign'):
-                vert_align = run_tag_property.find('vertAlign')
+            vert_align = run_tag_property.find('vertAlign')
+            if vert_align is not None:
                 if vert_align.attrib['val'] == 'superscript':
                     text = self.superscript(text)
                 elif vert_align.attrib['val'] == 'subscript':

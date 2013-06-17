@@ -8,6 +8,9 @@ class Docx2LaTex(DocxParser):
         self.table_info = []
         self.counted_columns = False
         self.previous_orient = ''
+        self.col_count = 0
+        self.hit_list = False
+        self.line_break_in_table = False
         super(Docx2LaTex, self).__init__(*args, **kwargs)
 
     @property
@@ -40,9 +43,11 @@ class Docx2LaTex(DocxParser):
         return r'\item %s' % text + '\n'
 
     def ordered_list(self, text, list_style):
+        self.hit_list = True
         return r'\begin{enumerate} %s \end{enumerate}' % text
 
     def unordered_list(self, text):
+        self.hit_list = True
         return r'\begin{itemize} %s \end{itemize}' % text
 
     def head(self):
@@ -50,14 +55,24 @@ class Docx2LaTex(DocxParser):
                \usepackage{graphicx}\usepackage{changes}
                \usepackage{changepage}
                \usepackage{hanging}\usepackage{multirow}
-               \usepackage{pbox}\usepackage{pdflscape}'''
-
-    def paragraph(self, text, pre=None):
-        return text + '\n\n'
+               \usepackage{pbox}\usepackage{pdflscape}
+               \usepackage{ulem}\usepackage{comment}'''
 
     def heading(self, text, heading_value):
-        #TODO figure out what to do for headings
-        return text
+        if heading_value == 'h1':
+            return r'\section{%s}' % text + '\n\n'
+        elif heading_value == 'h2':
+            return r'\subsection{%s}' % text + '\n\n'
+        elif heading_value == 'h3':
+            return r'\paragraph{%s}' % text + '\n\n'
+        elif heading_value  == 'h4':
+            return r'\subparagraph{%s}' % text + '\n\n'
+        else:
+            return text + '\n\n'
+
+    def paragraph(self, text, pre=None):
+        self.hit_list = False
+        return text + '\n\n'
 
     def insertion(self, text, author, date):
         return r'\added[id='+author+',remark='+date+']{%s}' % text
@@ -85,13 +100,17 @@ class Docx2LaTex(DocxParser):
         if not src:
             return ''
         if all([x, y]):
-            x = x.replace('px', '')
-            y = y.replace('px', '')
-            x = float(x)
-            y = float(y)
-            x = x * float(3) / float(4)
-            y = y * float(3) / float(4)
-            return r'\includegraphics[height=%spt, width=%spt]{%s}' % (
+            if x.find('px') != -1:
+                x = x.replace('px', '')
+                x = float(x)
+                x = x * float(3) / float(4)
+                x = str(x) + 'pt'
+            elif y.find('px') != -1:
+                y = y.replace('px', '')
+                y = float(y)
+                y = y * float(3) / float(4)
+                y = str(y) + 'pt'
+            return r'\includegraphics[height=%spt, width=%s]{%s}' % (
                 y,
                 x,
                 src)
@@ -104,24 +123,30 @@ class Docx2LaTex(DocxParser):
     def table(self, text):
         center = False
         right = False
+        pcm = False
         setup_cols = ''
-        for i in range(self.col_count + 1):
+        for i in range(0, self.col_count):
             for column in self.table_info:
-                if column['Column'] == i and column['justify'] == 'center':
-                    center = True
-                elif column['Column'] == i and column['justify'] == 'right':
-                    right = True
+                if 'Column' in column:
+                    if column['Column'] == i:
+                        if 'justify' in column:
+                            if column['justify']== 'center':
+                                center = True
+                            elif column['justify'] == 'right':
+                                right = True
+                        elif column['list']:
+                            pcm = True
             if center is True:
                 setup_cols += 'c'
                 center = False
             elif right is True:
                 setup_cols += 'r'
                 right = False
+            elif pcm is True:
+                setup_cols += 'p{3cm}'
             else:
                 setup_cols += 'l'
         self.table_info = []
-        self.col_count = 0
-        self.counted_columns = False
         return '\n' + r'\begin{tabular}{%s}' % setup_cols\
                + '\n' + r'%s\end{tabular}'\
                % text + '\n\n'
@@ -130,7 +155,12 @@ class Docx2LaTex(DocxParser):
         self.counted_columns = True
         return text
 
-    def table_cell(self, text, col='', row=''):
+    def table_cell(self, text, col='', row='', is_last_row_item = False):
+        if self.hit_list:
+            self.columns = {}
+            self.columns['Column'] = self.col_count
+            self.columns['list'] = True
+            self.table_info.append(self.columns)
         if col:
             col = int(col)
             if not self.counted_columns and col:
@@ -144,13 +174,13 @@ class Docx2LaTex(DocxParser):
             slug += r'\multicolumn{%s}{c}' % col
         if row:
             slug += r'\multirow{%s}{*}' % row
-#        if self.line_break_in_table:
-#            slug += r'\pbox{20cm}{' + text + '}'
+        if self.line_break_in_table:
+            slug += r'\parbox{20cm}'
         if text == '':
             slug += '{}'
         else:
             slug += '{' + text + '}'
-        if self.last_row_item:
+        if is_last_row_item:
             slug += r' \\' + '\n'
             return slug
         self.line_break_in_table = False
@@ -160,8 +190,8 @@ class Docx2LaTex(DocxParser):
         return r'\newpage '
 
     def indent(self, text, just='', firstLine='',
-               left='', right='', hanging=''):
-        if not self.is_table:
+               left='', right='', hanging='', is_in_table = False):
+        if not is_in_table:
             raggedright = False
             raggedleft = False
             center = False
@@ -209,18 +239,16 @@ class Docx2LaTex(DocxParser):
             return slug
         else:
             self.columns = {}
-            self.columns['Column'] = self.column_index
+            self.columns['Column'] = self.col_count
             self.columns['justify'] = just
             if self.columns not in self.table_info:
                 self.table_info.append(self.columns)
             return text
 
-    def break_tag(self):
-        if self.is_table:
-            self.is_table = False
+    def break_tag(self, is_in_table):
+        if is_in_table:
             self.line_break_in_table = True
-            return ''
-        return r'\vspace{1cm}'
+        return r'\\'
 
     def change_orientation(self, parsed, orient):
         if orient == 'portrait':
@@ -231,8 +259,20 @@ class Docx2LaTex(DocxParser):
     def deletion(self, text, author, date):
         return r'\deleted[id='+author+',remark='+date+']{%s}' % text
 
+    def caps(self, text):
+        return r'\MakeUppercase{%s}' %text
 
-#with open('test.jpg', 'wb+') as f:
-#    f.write(data)
-#gotcha
-#The default handler takes that raw image data and base64 encodes it and embeds it into the html
+    def small_caps(self, text):
+        return r'\textsx{%s}' % text
+
+    def strike(self, text):
+        return r'\sout{%s}' % text
+
+    def hide(self, text):
+        return r'\begin{comment}%s\end{comment}' % text
+
+    def superscript(self, text):
+        return r'\textsuperscript{%s}' % text
+
+    def subscript(self, text):
+        return r'\textsubscript{%s}' % text

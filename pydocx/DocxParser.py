@@ -12,7 +12,6 @@ from pydocx.utils import (
     find_first,
     find_all,
     find_ancestor_with_tag,
-    has_child,
     has_descendant_with_tag,
 )
 
@@ -595,24 +594,35 @@ class DocxParser:
         if not text:
             return ''
         run_tag_property = el.find('rPr')
-        if run_tag_property is not None:
-            if has_child(run_tag_property, 'b'):  # text styling
-                if self._is_style_on(run_tag_property.find('b')):
-                    text = self.bold(text)
-            if has_child(run_tag_property, 'i'):
-                if self._is_style_on(run_tag_property.find('i')):
-                    text = self.italics(text)
-            if has_child(run_tag_property, 'u'):
-                if self._is_style_on(run_tag_property.find('u')):
-                    text = self.underline(text)
 
-            # This could be a superscript or a subscript
-            if has_child(run_tag_property, 'vertAlign'):
-                vert_align = run_tag_property.find('vertAlign')
-                if vert_align.attrib['val'] == 'superscript':
-                    text = self.superscript(text)
-                elif vert_align.attrib['val'] == 'subscript':
-                    text = self.subscript(text)
+        def _has_style_on(run_tag_property, tag):
+            el = run_tag_property.find(tag)
+            if el is not None:
+                return self._is_style_on(el)
+        inline_tags = {
+            'b': self.bold,
+            'i': self.italics,
+            'u': self.underline,
+            'caps': self.caps,
+            'smallCaps': self.small_caps,
+            'strike': self.strike,
+            'dstrike': self.strike,
+            'vanish': self.hide,
+            'webHidden': self.hide,
+        }
+        if run_tag_property is not None:
+            for child in run_tag_property:
+                # These tags are a little different, handle them separately
+                # from the rest.
+                # This could be a superscript or a subscript
+                if child.tag == 'vertAlign':
+                    if child.attrib['val'] == 'superscript':
+                        text = self.superscript(text)
+                    elif child.attrib['val'] == 'subscript':
+                        text = self.subscript(text)
+                elif child.tag in inline_tags and self._is_style_on(child):
+                    text = inline_tags[child.tag](text)
+
         return text
 
     @property
@@ -665,6 +675,22 @@ class DocxParser:
 
     @abstractmethod
     def underline(self, text):
+        return text
+
+    @abstractmethod
+    def caps(self, text):
+        return text
+
+    @abstractmethod
+    def small_caps(self, text):
+        return text
+
+    @abstractmethod
+    def strike(self, text):
+        return text
+
+    @abstractmethod
+    def hide(self, text):
         return text
 
     @abstractmethod

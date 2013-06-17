@@ -943,6 +943,7 @@ class HeadingTestCase(_TranslationTestCase):
         <h6>GGG</h6>
         <p>HHH</p>
     '''
+
     styles_dict = {
         'style0': 'heading 1',
         'style1': 'heading 2',

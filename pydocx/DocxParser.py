@@ -210,7 +210,11 @@ class DocxParser:
         self.indent_table = False
         self.column_index = 0
         self.page_width = 0
+<<<<<<< HEAD
         self.col_count = 0
+=======
+        self.bookmark = False
+>>>>>>> master
         self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self._image_data = {}
         self._build_data(path, *args, **kwargs)
@@ -471,9 +475,13 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
+<<<<<<< HEAD
         if el.tag == 'br'and el.attrib.get('type') == 'page':
             if len(self.pages) > 1:
                 self.track_pages += 1
+=======
+        if el.tag == 'br' and el.attrib.get('type') == 'page':
+>>>>>>> master
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)
@@ -486,8 +494,12 @@ class DocxParser:
         elif el.tag == 't':
             return self.parse_t(el, parsed)
         elif el.tag == 'br':
+<<<<<<< HEAD
             if el.find_ancestor_with_tag('tbl'):
                 self.is_table = True
+=======
+            print 'ummm wheres the break'
+>>>>>>> master
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)
@@ -501,7 +513,6 @@ class DocxParser:
             return self.parse_image(el)
         else:
             return parsed
-
     def parse_page_break(self, el, text):
         #TODO figure out what parsed is getting overwritten
         return self.page_break()
@@ -745,6 +756,7 @@ class DocxParser:
             """
             next_el = el.next
             if next_el is None:
+                return False
                 return False
             if (
                 not next_el.is_list_item and

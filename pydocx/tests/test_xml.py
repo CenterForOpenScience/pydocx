@@ -1,6 +1,5 @@
 import os
 import time
-from itertools import chain
 
 from nose.plugins.skip import SkipTest
 
@@ -46,6 +45,7 @@ class BoldTestCase(_TranslationTestCase):
 
 
 class HyperlinkVanillaTestCase(_TranslationTestCase):
+
     relationship_dict = {
         'rId0': 'www.google.com',
     }
@@ -296,12 +296,40 @@ class TableTag(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        table = DXB.table(num_rows=2, num_columns=2, text=chain(
-            [DXB.p_tag('AAA')],
-            [DXB.p_tag('BBB')],
-            [DXB.p_tag('CCC')],
-            [DXB.p_tag('DDD')],
-        ))
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('AAA'))
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('CCC'))
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('DDD'))
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        table = DXB.table(rows)
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
+class RowSpanTestCase(_TranslationTestCase):
+
+    expected_output = '''
+           <table border="1">
+            <tr>
+                <td rowspan="2">AAA</td>
+                <td>BBB</td>
+            </tr>
+            <tr>
+                <td>CCC</td>
+            </tr>
+        </table>
+    '''
+
+    def get_xml(self):
+        cell1 = DXB.table_cell(
+            paragraph=DXB.p_tag('AAA'), merge=True, merge_continue=False)
+        cell2 = DXB.table_cell(
+            paragraph=DXB.p_tag(None), merge=False, merge_continue=True)
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('CCC'))
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        table = DXB.table(rows)
         body = table
         xml = DXB.xml(body)
         return xml
@@ -333,18 +361,18 @@ class NestedTableTag(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        nested_table = DXB.table(num_rows=2, num_columns=2, text=chain(
-            [DXB.p_tag('DDD')],
-            [DXB.p_tag('EEE')],
-            [DXB.p_tag('FFF')],
-            [DXB.p_tag('GGG')],
-        ))
-        table = DXB.table(num_rows=2, num_columns=2, text=chain(
-            [DXB.p_tag('AAA')],
-            [DXB.p_tag('BBB')],
-            [DXB.p_tag('CCC')],
-            [nested_table],
-        ))
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('DDD'))
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('FFF'))
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('EEE'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('GGG'))
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        nested_table = DXB.table(rows)
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('AAA'))
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('CCC'))
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
+        cell4 = DXB.table_cell(nested_table)
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        table = DXB.table(rows)
         body = table
         xml = DXB.xml(body)
         return xml
@@ -365,14 +393,12 @@ class TableWithInvalidTag(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        table = DXB.table(num_rows=2, num_columns=2, text=chain(
-            [DXB.p_tag('AAA')],
-            [DXB.p_tag('BBB')],
-            # This tag may have CCC in it, however this tag has no meaning
-            # pertaining to content.
-            ['<w:invalidTag>CCC</w:invalidTag>'],
-            [DXB.p_tag('DDD')],
-        ))
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('AAA'))
+        cell2 = DXB.table_cell('<w:invalidTag>CCC</w:invalidTag>')
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('DDD'))
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        table = DXB.table(rows)
         body = table
         xml = DXB.xml(body)
         return xml
@@ -410,9 +436,9 @@ class TableWithListAndParagraph(_TranslationTestCase):
         td = ''
         for el in els:
             td += el
-        table = DXB.table(num_rows=1, num_columns=1, text=chain(
-            [td],
-        ))
+        cell1 = DXB.table_cell(td)
+        row = DXB.table_row([cell1])
+        table = DXB.table([row])
         body = table
         xml = DXB.xml(body)
         return xml
@@ -495,12 +521,12 @@ class ListWithContinuationTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        table = DXB.table(num_rows=2, num_columns=2, text=chain(
-            [DXB.p_tag('DDD')],
-            [DXB.p_tag('EEE')],
-            [DXB.p_tag('FFF')],
-            [DXB.p_tag('GGG')],
-        ))
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('DDD'))
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('FFF'))
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('EEE'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('GGG'))
+        rows = [DXB.table_row([cell1, cell3]), DXB.table_row([cell2, cell4])]
+        table = DXB.table(rows)
         tags = [
             DXB.li(text='AAA', ilvl=0, numId=1),
             DXB.p_tag('BBB'),
@@ -536,12 +562,12 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        table1 = DXB.table(num_rows=1, num_columns=1, text=chain(
-            [DXB.p_tag('BBB')],
-        ))
-        table2 = DXB.table(num_rows=1, num_columns=1, text=chain(
-            [DXB.p_tag('CCC')],
-        ))
+        cell = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
+        row = DXB.table_row([cell])
+        table1 = DXB.table([row])
+        cell = DXB.table_cell(paragraph=DXB.p_tag('CCC'))
+        row = DXB.table_row([cell])
+        table2 = DXB.table([row])
         tags = [
             DXB.li(text='AAA', ilvl=0, numId=1),
             table1,
@@ -648,12 +674,12 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
     run_expected_output = False
 
     def get_xml(self):
-        table = DXB.p_tag('AAA')
+        paragraph = DXB.p_tag('AAA')
 
         for _ in range(50):
-            table = DXB.table(num_rows=1, num_columns=1, text=chain(
-                [table],
-            ))
+            cell = DXB.table_cell(paragraph)
+            row = DXB.table_cell([cell])
+            table = DXB.table([row])
         body = table
         xml = DXB.xml(body)
         return xml
@@ -816,19 +842,20 @@ class SimpleTableTest(_TranslationTestCase):
         </table>'''
 
     def get_xml(self):
-        table = DXB.table(num_rows=3, num_columns=3, text=chain(
-            [DXB.p_tag('Blank')],
-            [DXB.p_tag('Column 1')],
-            [DXB.p_tag('Column 2')],
-            [DXB.p_tag('Row 1')],
-            [DXB.p_tag('First')],
-            [DXB.p_tag('Second')],
-            [DXB.p_tag('Row 2')],
-            [DXB.p_tag('Third')],
-            [DXB.p_tag('Fourth')],
-        ), merge=True)
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('Blank'))
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('Row 1'))
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('Row 2'))
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('Column 1'))
+        cell5 = DXB.table_cell(paragraph=DXB.p_tag('First'))
+        cell6 = DXB.table_cell(paragraph=DXB.p_tag('Third'))
+        cell7 = DXB.table_cell(paragraph=DXB.p_tag('Column 2'))
+        cell8 = DXB.table_cell(paragraph=DXB.p_tag('Second'))
+        cell9 = DXB.table_cell(paragraph=DXB.p_tag('Fourth'))
+        rows = [DXB.table_row([cell1, cell4, cell7]),
+                DXB.table_row([cell2, cell5, cell8]),
+                DXB.table_row([cell3, cell6, cell9])]
+        table = DXB.table(rows)
         body = table
-
         xml = DXB.xml(body)
         return xml
 
@@ -889,15 +916,14 @@ class SameNumIdInTable(_TranslationTestCase):
         lis = ''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
-        table = DXB.table(num_rows=1, num_columns=1, text=chain(
-            [lis],
-        ))
+        cell1 = DXB.table_cell(lis)
+        rows = DXB.table_row([cell1])
+        table = DXB.table([rows])
         lis = ''
         lis += DXB.li(text='AAA', ilvl=0, numId=1)
         lis += table
         lis += DXB.li(text='CCC', ilvl=0, numId=1)
         body = lis
-
         xml = DXB.xml(body)
         return xml
 
@@ -931,6 +957,7 @@ class HeadingTestCase(_TranslationTestCase):
         <h6>GGG</h6>
         <p>HHH</p>
     '''
+
     styles_dict = {
         'style0': 'heading 1',
         'style1': 'heading 2',

@@ -12,22 +12,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
-# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
-EMUS_PER_PIXEL = 9525
-USE_ALIGNMENTS = True
-TAGS_CONTAINING_CONTENT = (
-    't',
-    'pict',
-    'drawing',
-    'delText',
-    'ins',
-)
-TAGS_HOLDING_CONTENT_TAGS = (
-    'p',
-    'tbl',
-    'sdt',
-)
-UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 
 JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'
@@ -37,96 +21,6 @@ INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
 INDENTATION_HANGING = 'hanging'
-
-
-def remove_namespaces(document):  # remove namespaces
-
-    root = ElementTree.fromstring(document)
-    for child in el_iter(root):
-        child.tag = child.tag.split("}")[1]
-        child.attrib = dict(
-            (k.split("}")[-1], v)
-            for k, v in child.attrib.items()
-        )
-    return ElementTree.tostring(root)
-
-# Add some helper functions to Element to make it slightly more readable
-
-
-def has_child(self, tag):
-    """
-    Determine if current element has a child. Stop at first child.
-    """
-    return True if self.find(tag) is not None else False
-
-
-def has_descendant_with_tag(self, tag):
-    """
-Determine if there is a child ahead in the element tree.
-"""
-    # Get child. stop at first child.
-    return True if self.find('.//' + tag) is not None else False
-
-
-def find_first(self, tag):
-    """
-    Find the first occurrence of a tag beneath the current element.
-    """
-    return self.find('.//' + tag)
-
-
-def find_all(self, tag):
-    """
-Find all occurrences of a tag
-    """
-    return self.findall('.//' + tag)
-
-
-def el_iter(el):
-    """
-    Go through all elements
-    """
-    try:
-        return el.iter()
-    except AttributeError:
-        return el.findall('.//*')
-
-
-def find_ancestor_with_tag(self, tag):
-    """
-    Find the first ancestor with that is a `tag`.
-    """
-    el = self
-    while el.parent is not None:
-        el = el.parent
-        if el.tag == tag:
-            return el
-    return None
-
-
-#make all of these attributes of _ElementInterface
-setattr(_ElementInterface, 'has_child', has_child)
-setattr(_ElementInterface, 'has_descendant_with_tag', has_descendant_with_tag)
-setattr(_ElementInterface, 'find_first', find_first)
-setattr(_ElementInterface, 'find_all', find_all)
-setattr(_ElementInterface, 'find_ancestor_with_tag', find_ancestor_with_tag)
-setattr(_ElementInterface, 'parent', None)
-setattr(_ElementInterface, 'is_first_list_item', False)
-setattr(_ElementInterface, 'is_last_list_item_in_root', False)
-setattr(_ElementInterface, 'is_list_item', False)
-setattr(_ElementInterface, 'ilvl', None)
-setattr(_ElementInterface, 'num_id', None)
-setattr(_ElementInterface, 'heading_level', None)
-setattr(_ElementInterface, 'is_in_table', False)
-setattr(_ElementInterface, 'previous', None)
-setattr(_ElementInterface, 'next', None)
-setattr(_ElementInterface, 'vmerge_continue', None)
-setattr(_ElementInterface, 'row_index', None)
-setattr(_ElementInterface, 'column_index', None)
-setattr(_ElementInterface, 'is_last_text', False)
-setattr(_ElementInterface, 'is_last_row_item', False)
-
-# End helpers
 
 
 @contextmanager

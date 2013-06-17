@@ -60,13 +60,6 @@ def has_descendant_with_tag(el, tag):
     return True if el.find('.//' + tag) is not None else False
 
 
-def has_child(el, tag):
-    """
-    Determine if current element has a child. Stop at first child.
-    """
-    return True if el.find(tag) is not None else False
-
-
 def _filter_children(element, tags):
     return [
         el for el in element.getchildren()

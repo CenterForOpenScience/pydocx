@@ -5,7 +5,7 @@ Changelog
     * We were not taking into account that vertical merges should have a
     continue attribute, but sometimes they do not, and in those cases word
     assumes the continue attribute. We updated the parser to handle the
-    cases in which the continue attribute is not there. 
+    cases in which the continue attribute is not there.
 * 0.3.1
     * Added support for several more OOXML tags including:
         * caps

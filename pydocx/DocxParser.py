@@ -183,7 +183,7 @@ class DocxParser:
     def parse_table_cell(self, el, text):
         v_merge = find_first(el, 'vMerge')
         if v_merge is not None and (
-            'restart' != v_merge.get('val', '')):
+                'restart' != v_merge.get('val', '')):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)

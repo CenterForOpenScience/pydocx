@@ -119,6 +119,41 @@ def test_inline_tags():
     ))
 
 
+def test_all_configured_styles():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'all_configured_styles.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <p><strong>aaa</strong></p>
+        <p><span class="pydocx-underline">bbb</span></p>
+        <p><em>ccc</em></p>
+        <p><span class="pydocx-caps">ddd</span></p>
+        <p><span class="pydocx-small-caps">eee</span></p>
+        <p><span class="pydocx-strike">fff</span></p>
+        <p><span class="pydocx-strike">ggg</span></p>
+        <p><span class="pydocx-hidden">hhh</span></p>
+        <p><span class="pydocx-hidden">iii</span></p>
+    ''')
+
+
+def test_super_and_subscript():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'super_and_subscript.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <p>AAA<sup>BBB</sup></p>
+        <p><sub>CCC</sub>DDD</p>
+    ''')
+
+
 def test_unicode():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

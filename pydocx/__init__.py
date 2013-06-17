@@ -12,4 +12,4 @@ def docx2markdown(path):
 def docx2latex(path):
     return Docx2LaTex(path).parsed
 
-VERSION = '0.2.1'
+VERSION = '0.3.1'

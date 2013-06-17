@@ -4,12 +4,10 @@ from contextlib import contextmanager
 
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.parsers.Docx2LaTex import Docx2LaTex
-from pydocx.DocxParser import (
-    remove_namespaces,
-    # We are only importing this from DocxParse since we have added methods to
-    # it there.
-    ElementTree,
+from pydocx.utils import (
+    parse_xml_from_string,
 )
+from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
 
 STYLE = (
@@ -21,6 +19,10 @@ STYLE = (
     '.pydocx-left {text-align:left;}'
     '.pydocx-comment {color:blue;}'
     '.pydocx-underline {text-decoration: underline;}'
+    '.pydocx-caps {text-transform:uppercase;}'
+    '.pydocx-small-caps {font-variant: small-caps;}'
+    '.pydocx-strike {text-decoration: line-through;}'
+    '.pydocx-hidden {visibility: hidden;}'
     'body {width:612px;margin:0px auto;}'
     '</style>'
 )
@@ -114,53 +116,53 @@ def collapse_html(html):
     return html.strip()
 
 
-class XMLDocx2Latex(Docx2LaTex):
-
-    def _build_data(
-            self,
-            document_xml=None,
-            rels_dict=None,
-            numbering_dict=None,
-            *args, **kwargs):
-        self._test_rels_dict = rels_dict
-        if numbering_dict is None:
-            numbering_dict = {}
-        self.numbering_dict = numbering_dict
-        # Intentionally not calling super
-        if document_xml is not None:
-            self.root = ElementTree.fromstring(
-                remove_namespaces(document_xml),
-            )
-
-        # This is the standard page width for a word document, Also the page
-        # width that we are looking for in the test.
-        self.page_width = 612
-
-    def _parse_rels_root(self, *args, **kwargs):
-        if self._test_rels_dict is None:
-            return {}
-        return self._test_rels_dict
-
-    def get_list_style(self, num_id, ilvl):
-        try:
-            return self.numbering_dict[num_id][ilvl]
-        except KeyError:
-            return 'decimal'
-
-    def _parse_styles(self):
-        return {}
-
-
-DEFAULT_NUMBERING_DICT = {
-    '1': {
-        '0': 'decimal',
-        '1': 'decimal',
-    },
-    '2': {
-        '0': 'lowerLetter',
-        '1': 'lowerLetter',
-    },
-}
+#class XMLDocx2Latex(Docx2LaTex):
+#
+#    def _build_data(
+#            self,
+#            document_xml=None,
+#            rels_dict=None,
+#            numbering_dict=None,
+#            *args, **kwargs):
+#        self._test_rels_dict = rels_dict
+#        if numbering_dict is None:
+#            numbering_dict = {}
+#        self.numbering_dict = numbering_dict
+#        # Intentionally not calling super
+#        if document_xml is not None:
+#            self.root = ElementTree.fromstring(
+#                remove_namespaces(document_xml),
+#            )
+#
+#        # This is the standard page width for a word document, Also the page
+#        # width that we are looking for in the test.
+#        self.page_width = 612
+#
+#    def _parse_rels_root(self, *args, **kwargs):
+#        if self._test_rels_dict is None:
+#            return {}
+#        return self._test_rels_dict
+#
+#    def get_list_style(self, num_id, ilvl):
+#        try:
+#            return self.numbering_dict[num_id][ilvl]
+#        except KeyError:
+#            return 'decimal'
+#
+#    def _parse_styles(self):
+#        return {}
+#
+#
+#DEFAULT_NUMBERING_DICT = {
+#    '1': {
+#        '0': 'decimal',
+#        '1': 'decimal',
+#    },
+#    '2': {
+#        '0': 'lowerLetter',
+#        '1': 'lowerLetter',
+#    },
+#}
 
 
 class XMLDocx2Html(Docx2Html):
@@ -184,14 +186,15 @@ class XMLDocx2Html(Docx2Html):
         if rels_dict:
             for value in rels_dict.values():
                 self._image_data['word/%s' % value] = 'word/%s' % value
-        if numbering_dict is None:
-            numbering_dict = {}
+        self.numbering_root = None
+        if numbering_dict is not None:
+            self.numbering_root = parse_xml_from_string(
+                DXB.numbering(numbering_dict),
+            )
         self.numbering_dict = numbering_dict
         # Intentionally not calling super
         if document_xml is not None:
-            self.root = ElementTree.fromstring(
-                remove_namespaces(document_xml),
-            )
+            self.root = parse_xml_from_string(document_xml)
         self.zip_path = ''
 
         # This is the standard page width for a word document, Also the page
@@ -272,35 +275,35 @@ class _TranslationTestCase(TestCase):
         ).parsed
         assert_html_equal(html, BASE_HTML % self.expected_output)
 
-
-class _LatexTranslationTestCase(TestCase):
-    expected_output = None
-    relationship_dict = None
-    numbering_dict = DEFAULT_NUMBERING_DICT
-    run_expected_output = True
-
-    def get_xml(self):
-        raise NotImplementedError()
-
-    @contextmanager
-    def toggle_run_expected_output(self):
-        self.run_expected_output = not self.run_expected_output
-        yield
-        self.run_expected_output = not self.run_expected_output
-
-    def test_expected_output(self):
-        if self.expected_output is None:
-            raise NotImplementedError('expected_output is not defined')
-        if not self.run_expected_output:
-            return
-
-        # Create the xml
-        tree = self.get_xml()
-
-        # Verify the final output.
-        latex = XMLDocx2Latex(
-            document_xml=tree,
-            rels_dict=self.relationship_dict,
-            numbering_dict=self.numbering_dict,
-        ).parsed
-        assert_latex_equal(latex, BASE_LATEX % self.expected_output)
+#
+#class _LatexTranslationTestCase(TestCase):
+#    expected_output = None
+#    relationship_dict = None
+#    numbering_dict = DEFAULT_NUMBERING_DICT
+#    run_expected_output = True
+#
+#    def get_xml(self):
+#        raise NotImplementedError()
+#
+#    @contextmanager
+#    def toggle_run_expected_output(self):
+#        self.run_expected_output = not self.run_expected_output
+#        yield
+#        self.run_expected_output = not self.run_expected_output
+#
+#    def test_expected_output(self):
+#        if self.expected_output is None:
+#            raise NotImplementedError('expected_output is not defined')
+#        if not self.run_expected_output:
+#            return
+#
+#        # Create the xml
+#        tree = self.get_xml()
+#
+#        # Verify the final output.
+#        latex = XMLDocx2Latex(
+#            document_xml=tree,
+#            rels_dict=self.relationship_dict,
+#            numbering_dict=self.numbering_dict,
+#        ).parsed
+#        assert_latex_equal(latex, BASE_LATEX % self.expected_output)

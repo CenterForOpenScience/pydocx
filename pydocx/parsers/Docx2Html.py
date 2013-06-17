@@ -30,6 +30,10 @@ class Docx2Html(DocxParser):
             '.pydocx-left {text-align:left;}'
             '.pydocx-comment {color:blue;}'
             '.pydocx-underline {text-decoration: underline;}'
+            '.pydocx-caps {text-transform:uppercase;}'
+            '.pydocx-small-caps {font-variant: small-caps;}'
+            '.pydocx-strike {text-decoration: line-through;}'
+            '.pydocx-hidden {visibility: hidden;}'
             'body {width:%(width)spx;margin:0px auto;}'
             '</style>'
         ) % {
@@ -125,6 +129,28 @@ class Docx2Html(DocxParser):
 
     def underline(self, text):
         return '<span class="pydocx-underline">' + text + '</span>'
+
+    def caps(self, text):
+        return '<span class="pydocx-caps">' + text + '</span>'
+
+    def small_caps(self, text):
+        return '<span class="pydocx-small-caps">' + text + '</span>'
+
+    def strike(self, text):
+        return '<span class="pydocx-strike">' + text + '</span>'
+
+    def hide(self, text):
+        return '<span class="pydocx-hidden">' + text + '</span>'
+
+    def superscript(self, text):
+        return '<sup>%(text)s</sup>' % {
+            'text': text,
+        }
+
+    def subscript(self, text):
+        return '<sub>%(text)s</sub>' % {
+            'text': text,
+        }
 
     def tab(self):
         # Insert before the text right?? So got the text and just do an insert

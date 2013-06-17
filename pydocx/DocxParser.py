@@ -13,11 +13,13 @@ from pydocx.utils import (
     find_all,
     find_ancestor_with_tag,
     has_descendant_with_tag,
-)
+    )
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
+
+# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
 
@@ -28,11 +30,12 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-INDENTATION_HANGING = 'hanging'
+
+# Add some helper functions to Element to make it slightly more readable
 
 
 @contextmanager
-def ZipFile(path):  # This is not needed in python 3.2+
+def ZipFile(path): # This is not needed in python 3.2+
     f = zipfile.ZipFile(path)
     yield f
     f.close()
@@ -50,18 +53,18 @@ class DocxParser:
                 self.fonts = f.read('/word/fontTable.xml')
             except KeyError:
                 self.fonts = None
-            try:  # Only present if there are lists
+            try: # Only present if there are lists
                 self.numbering_text = f.read('word/numbering.xml')
             except KeyError:
                 self.numbering_text = None
-            try:  # Only present if there are comments
+            try: # Only present if there are comments
                 self.comment_text = f.read('word/comments.xml')
             except KeyError:
                 self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
             zipped_image_files = [
-                e for e in f.infolist()
-                if e.filename.startswith('word/media/')
+            e for e in f.infolist()
+            if e.filename.startswith('word/media/')
             ]
             for e in zipped_image_files:
                 self._image_data[e.filename] = f.read(e.filename)
@@ -97,14 +100,31 @@ class DocxParser:
             convert_root_level_upper_roman=False,
             *args,
             **kwargs):
+        self._parsed = ''
+        self.block_text = ''
+        self.page_width = 0
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
+        self._image_data = {}
+        self._build_data(path, *args, **kwargs)
+        self.pre_processor = None
+
+        #divide by 20 to get to pt (Office works in 20th's of a point)
+        """
+        see http://msdn.microsoft.com/en-us/library/documentformat
+        .openxml.wordprocessing.indentation.aspx
+        """
+        if find_first(self.root, 'pgSz') is not None:
+            self.page_width = int(
+                find_first(self.root, 'pgSz').attrib['w']
+            ) / 20
+
         #all blank when we init
         self.comment_store = None
         self.visited = []
         self.list_depth = 0
-        self.track_pages = 0
         self.rels_dict = self._parse_rels_root()
         self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root)  # begin to parse
+        self.parse_begin(self.root) # begin to parse
 
     def parse_begin(self, el):
         self.pre_processor = self.pre_processor_class(
@@ -123,6 +143,7 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
+
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
@@ -166,11 +187,7 @@ class DocxParser:
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
-        if el.is_last_row_item:
-            self.last_row_item = True
-        else:
-            self.last_row_item = False
-        return self.table_cell(text, colspan, rowspan)
+        return self.table_cell(text, colspan, rowspan, self.pre_processor.is_last_row_item(el))
 
     def parse_list(self, el, text):
         """
@@ -253,23 +270,23 @@ class DocxParser:
         def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
-            # Different list
+                # Different list
             if (
-                    self.pre_processor.num_id(last_el) !=
-                    self.pre_processor.num_id(first_el)):
+                self.pre_processor.num_id(last_el) !=
+                self.pre_processor.num_id(first_el)):
                 return False
-            # Will be handled when the ilvls do match (nesting issue)
+                # Will be handled when the ilvls do match (nesting issue)
             if (
-                    self.pre_processor.ilvl(last_el) !=
-                    self.pre_processor.ilvl(first_el)):
+                self.pre_processor.ilvl(last_el) !=
+                self.pre_processor.ilvl(first_el)):
                 return False
-            # We only care about last items that have not been parsed before
+                # We only care about last items that have not been parsed before
             # (first list items are always parsed at the beginning of this
             # method.)
             return (
                 not self.pre_processor.is_first_list_item(last_el) and
                 self.pre_processor.is_last_list_item_in_root(last_el)
-            )
+                )
         if should_parse_last_el(next_el, el):
             parsed += self.parse(next_el)
 
@@ -284,10 +301,7 @@ class DocxParser:
         paragraph_tag_property = el.find('pPr')
         if paragraph_tag_property is None:
             return text
-        if el.find_ancestor_with_tag('tc') is not None:
-            self.is_table = True
-        else:
-            self.is_table = False
+
         _justification = paragraph_tag_property.find('jc')
         indentation = paragraph_tag_property.find('ind')
         if _justification is None and indentation is None:
@@ -296,10 +310,7 @@ class DocxParser:
         right = None
         left = None
         firstLine = None
-        hanging = None
-        if _justification is not None:  # text alignments
-            if el.find_ancestor_with_tag('tc') is not None:
-                self.column_index = el.find_ancestor_with_tag('tc').column_index
+        if _justification is not None: # text alignments
             value = _justification.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
@@ -318,18 +329,14 @@ class DocxParser:
                 firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
                 firstLine = (int(firstLine) / 20) * float(4) / float(3)
                 firstLine = str(firstLine)
-            if INDENTATION_HANGING in indentation.attrib:
-                hanging = indentation.attrib[INDENTATION_HANGING]
-                hanging = (int(hanging) / 20) * float(4) / float(3)
-                hanging = str(hanging)
-        if any([alignment, firstLine, left, right, hanging]):
-            return self.indent(text, alignment, firstLine, left, right, hanging)
+        if any([alignment, firstLine, left, right]):
+            return self.indent(text, alignment, firstLine, left, right, self.pre_processor.is_in_table(el))
         return text
 
     def parse_p(self, el, text):
         if text == '':
             return ''
-        # TODO This is still not correct, however it fixes the bug. We need to
+            # TODO This is still not correct, however it fixes the bug. We need to
         # apply the classes/styles on p, td, li and h tags instead of inline,
         # but that is for another ticket.
         text = self.justification(el, text)
@@ -345,37 +352,30 @@ class DocxParser:
         # No p tags in li tags
         if self.list_depth == 0:
             parsed = self.paragraph(parsed)
-            if el.find_first('pgSz') is not None:
-                if 'orient' in el.find_first('pgSz').attrib:
-                    orient = 'landscape'
-                else:
-                    orient = 'portrait'
-                parsed = self.change_orientation(parsed, orient)
-                print parsed
         return parsed
 
     def _should_append_break_tag(self, next_el):
         paragraph_like_tags = [
             'p',
-        ]
+            ]
         inline_like_tags = [
             'smartTag',
             'ins',
             'delText',
-        ]
+            ]
         if self.pre_processor.is_list_item(next_el):
             return False
         if self.pre_processor.previous(next_el) is None:
             return False
         tag_is_inline_like = any(
             has_descendant_with_tag(next_el, tag) for
-            tag in inline_like_tags
+                tag in inline_like_tags
         )
         if tag_is_inline_like:
             return False
         if (
-                self.pre_processor.is_last_list_item_in_root(
-                    self.pre_processor.previous(next_el))):
+            self.pre_processor.is_last_list_item_in_root(
+                self.pre_processor.previous(next_el))):
             return False
         if self.pre_processor.previous(next_el).tag not in paragraph_like_tags:
             return False
@@ -403,16 +403,15 @@ class DocxParser:
             next_el = self.pre_processor.next(el)
             if next_el is None:
                 return False
-                return False
             if (
-                    not self.pre_processor.is_list_item(next_el) and
-                    not self.pre_processor.is_last_list_item_in_root(el)
-            ):
+                not self.pre_processor.is_list_item(next_el) and
+                not self.pre_processor.is_last_list_item_in_root(el)
+                ):
                 return True
             if self.pre_processor.is_first_list_item(next_el):
                 if (
-                        self.pre_processor.num_id(next_el) ==
-                        self.pre_processor.num_id(el)):
+                    self.pre_processor.num_id(next_el) ==
+                    self.pre_processor.num_id(el)):
                     return True
             return False
 
@@ -423,7 +422,7 @@ class DocxParser:
                 if not next_elements_content:
                     continue
                 if self._should_append_break_tag(el):
-                    parsed += self.break_tag()
+                    parsed += self.break_tag(self.pre_processor.is_in_table(el))
                 parsed += next_elements_content
             else:
                 break
@@ -442,9 +441,9 @@ class DocxParser:
         if tbl is None:
             return ''
         tcs = [
-            tc for tc in find_all(tbl, 'tc')
-            if self.pre_processor.row_index(tc) >= current_row and
-            self.pre_processor.column_index(tc) == current_col
+        tc for tc in find_all(tbl, 'tc')
+        if self.pre_processor.row_index(tc) >= current_row and
+           self.pre_processor.column_index(tc) == current_col
         ]
         restart_in_v_merge = False
         if v_merge is not None and 'val' in v_merge.attrib:
@@ -488,7 +487,7 @@ class DocxParser:
                 if not next_elements_content:
                     continue
                 if self._should_append_break_tag(el):
-                    parsed += self.break_tag()
+                    parsed += self.break_tag(self.pre_processor.is_in_table(el))
                 parsed += next_elements_content
             else:
                 break
@@ -532,7 +531,7 @@ class DocxParser:
             return (
                 '%dpx' % x,
                 '%dpx' % y,
-            )
+                )
         shape = find_first(el, 'shape')
         if shape is not None and shape.get('style') is not None:
             # If either of these are not set, rely on the method `image` to not
@@ -576,7 +575,7 @@ class DocxParser:
         return self.escape(el.text)
 
     def parse_break_tag(self, el, parsed):
-        return self.break_tag()
+        return self.break_tag(self.pre_processor.is_in_table(el))
 
     def parse_deletion(self, el, parsed):
         return self.deletion(el.text, '', '')
@@ -607,7 +606,7 @@ class DocxParser:
             'dstrike': self.strike,
             'vanish': self.hide,
             'webHidden': self.hide,
-        }
+            }
         if run_tag_property is not None:
             for child in run_tag_property:
                 # These tags are a little different, handle them separately
@@ -733,8 +732,4 @@ class DocxParser:
 
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
-        return text
-
-    @abstractmethod
-    def change_orientation(self, parsed, orientation):
-        return True
+        return text # TODO JUSTIFIED JUSTIFIED TEXT

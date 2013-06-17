@@ -192,6 +192,9 @@ class PydocxPrePorcessor(object):
     def is_in_table(self, el):
         return self.meta_data[el].get('is_in_table')
 
+    def is_last_row_item(self, el):
+        return self.meta_data[el].get('is_last_row_item')
+
     def row_index(self, el):
         return self.meta_data[el].get('row_index')
 
@@ -298,6 +301,7 @@ class PydocxPrePorcessor(object):
                 continue
             for i, row in enumerate(rows):
                 tcs = _filter_children(row, ['tc'])
+                self.meta_data[tcs[-1]]['is_last_row_item'] = True
                 for j, child in enumerate(tcs):
                     self.meta_data[child]['row_index'] = i
                     self.meta_data[child]['column_index'] = j

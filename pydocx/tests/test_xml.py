@@ -17,6 +17,9 @@ class BoldTestCase(_TranslationTestCase):
         <p><strong>AAA</strong></p>
         <p>BBB</p>
     """
+    latex_expected_output = r'''
+    \textbf{AAA}'''\
+     + "\n" + '''BBB''' + "\n"
 
     def get_xml(self):
         tags = [
@@ -54,6 +57,10 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
         <p><a href="www.google.com">link</a>.</p>
     '''
 
+    latex_expected_output = r'''
+        \href{www.google.com}{link}.
+    '''
+
     def get_xml(self):
         run_tags = []
         run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
@@ -73,6 +80,10 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
         <p><a href="www.google.com">link</a>.</p>
     '''
 
+    latex_expected_output = r'''
+        \href{www.google.com}{link}.
+    '''
+
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'link']
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
@@ -89,6 +100,8 @@ class HyperlinkNoTextTestCase(_TranslationTestCase):
 
     expected_output = ''
 
+    latex_expected_output = ''
+
     def get_xml(self):
         run_tags = []
         run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
@@ -103,6 +116,10 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
     }
 
     expected_output = '<p>link.</p>'
+
+    latex_expected_output = r'''
+        link.
+    '''
 
     def get_xml(self):
         run_tags = []
@@ -120,6 +137,10 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
     }
 
     expected_output = '<p><a href="www.google.com">link<br /></a></p>'
+
+    latex_expected_output = r'''
+        \href{www.google.com}{link\\}
+    '''
 
     def get_xml(self):
         run_tags = []
@@ -141,19 +162,26 @@ class ImageLocal(_TranslationTestCase):
     <p><img src="word/media/image2.jpeg" /></p>
     '''
 
-    def get_xml(self):
-        drawing = DXB.drawing(height=None, width=None, r_id='rId0')
-        pict = DXB.pict(height=None, width=None, r_id='rId1')
-        tags = [
-            drawing,
-            pict,
-        ]
-        body = ''
-        for el in tags:
-            body += el
+    latex_expected_output = r'''
+    \includegraphics {word/media/image1.jpeg}
+    ''' + '\n' + '''
+    \includegraphics {word/media/image2.jpeg}
+    '''
 
-        xml = DXB.xml(body)
-        return xml
+
+    def get_xml(self):
+            drawing = DXB.drawing(height=None, width=None, r_id='rId0')
+            pict = DXB.pict(height=None, width=None, r_id='rId1')
+            tags = [
+                drawing,
+                pict,
+            ]
+            body = ''
+            for el in tags:
+                body += el
+
+            xml = DXB.xml(body)
+            return xml
 
 
 class ImageTestCase(_TranslationTestCase):
@@ -170,6 +198,11 @@ class ImageTestCase(_TranslationTestCase):
         </p>
     '''
 
+    latex_expected_output = r'''
+    \includegraphics[height=20pxpt, width=30.0pt]{word/media/image1.jpeg}
+    ''' + '\n' + '''
+    \includegraphics[height=21ptpt, width=41pt]{word/media/image2.jpeg}
+    '''
     def get_xml(self):
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         pict = DXB.pict(height=21, width=41, r_id='rId1')
@@ -233,6 +266,8 @@ class ImageNotInRelsDictTestCase(_TranslationTestCase):
     }
     expected_output = ''
 
+    latex_expected_output = ''
+
     def get_xml(self):
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         body = drawing
@@ -260,6 +295,8 @@ class ImageNoSizeTestCase(_TranslationTestCase):
             </p>
         </html>
     ''' % relationship_dict['rId0']
+
+    latex_expected_output = r'\includegraphics{%s}' % relationship_dict['rId0']
 
     @staticmethod
     def image_handler(image_id, relationship_dict):
@@ -294,6 +331,14 @@ class TableTag(_TranslationTestCase):
             </tr>
         </table>
     '''
+
+    latex_expected_output = r'''
+        \begin{tabular}{ll}
+        {AAA} & {BBB} \\
+        {CCC} & {DDD} \\
+        \end{tabular}
+    '''
+
 
     def get_xml(self):
         table = DXB.table(num_rows=2, num_columns=2, text=chain(
@@ -332,6 +377,16 @@ class NestedTableTag(_TranslationTestCase):
         </table>
     '''
 
+    latex_expected_output = r'''\begin{tabular}{ll}
+        {AAA} & {BBB} \\
+        {CCC} & {
+            \begin{tabular}{ll}
+            {DDD} & {EEE} \\
+            {FFF} & {GGG} \\
+            \end{tabular}
+    } \\
+    \end{tabular}'''
+
     def get_xml(self):
         nested_table = DXB.table(num_rows=2, num_columns=2, text=chain(
             [DXB.p_tag('DDD')],
@@ -364,6 +419,13 @@ class TableWithInvalidTag(_TranslationTestCase):
         </table>
     '''
 
+    latex_expected_output = r'''
+        \begin{tabular}{ l l }
+          {AAA} & {BBB} \\
+          {} & {DDD} \\
+        \end{tabular}
+    '''
+
     def get_xml(self):
         table = DXB.table(num_rows=2, num_columns=2, text=chain(
             [DXB.p_tag('AAA')],
@@ -393,6 +455,14 @@ class TableWithListAndParagraph(_TranslationTestCase):
             </tr>
         </table>
     '''
+
+    latex_expected_output = r'''
+    \begin{tabular}{p{3cm}}
+    \parbox{20cm}{\begin{enumerate} \item AAA
+    \item BBB
+    \end{enumerate}CCC\\DDD} \\
+    \end{tabular}'''
+
 
     def get_xml(self):
         li_text = [
@@ -427,6 +497,13 @@ class SimpleListTestCase(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+            \item BBB
+            \item CCC
+        \end {enumerate}
+    '''
     # Ensure its not failing somewhere and falling back to decimal
     numbering_dict = {
         '1': {
@@ -453,6 +530,11 @@ class SingleListItemTestCase(_TranslationTestCase):
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
         </ol>
+    '''
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+        \end {enumerate}
     '''
 
     # Ensure its not failing somewhere and falling back to decimal
@@ -492,6 +574,18 @@ class ListWithContinuationTestCase(_TranslationTestCase):
             </li>
             <li>HHH</li>
         </ol>
+    '''
+
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA \\ BBB
+            \item CCC
+                \begin{tabular} {ll}
+                        {DDD} & {EEE} \\
+                        {FFF} & {GGG} \\
+                \end{tabular}
+            \item HHH
+        \end{enumerate}
     '''
 
     def get_xml(self):
@@ -535,6 +629,20 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+                \begin{tabular} {l}
+                        {BBB}\\
+                \end{tabular}
+                \begin{tabular} {l}
+                        {CCC}\\
+                \end{tabular}
+            \item DDD
+        \end{enumerate}
+    '''
+
+
     def get_xml(self):
         table1 = DXB.table(num_rows=1, num_columns=1, text=chain(
             [DXB.p_tag('BBB')],
@@ -570,6 +678,18 @@ class MangledIlvlTestCase(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+        \end{enumerate}
+        \begin{enumerate}
+            \item BBB
+                \begin{enumerate}
+                    \item CCC
+                \end{enumerate}
+        \end{enumerate}
+    '''
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 2),
@@ -595,6 +715,18 @@ class SeperateListsTestCase(_TranslationTestCase):
         <ol list-style-type="lowerLetter">
             <li>CCC</li>
         </ol>
+    '''
+
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+        \end{enumerate}
+        \begin{enumerate}
+            \item BBB
+        \end{enumerate}
+        \begin{enumerate}
+            \item CCC
+        \end{enumerate}
     '''
 
     def get_xml(self):
@@ -627,6 +759,18 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
                 </ol>
             </li>
         </ol>
+    '''
+
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA
+                \begin{enumerate}
+                    \item BBB
+                        \begin{enumerate}
+                            \item CCC
+                        \end {enumerate}
+                \end{enumerate}
+            \end{enumerate}
     '''
 
     def get_xml(self):
@@ -677,6 +821,10 @@ class NonStandardTextTagsTestCase(_TranslationTestCase):
         smarttag</p>
     '''
 
+    latex_expected_output = r'''
+        \added[id=, remark=]{insert} smarttag
+    '''
+
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'insert ']
         insert_tag = DXB.insert_tag(run_tags)
@@ -691,6 +839,7 @@ class NonStandardTextTagsTestCase(_TranslationTestCase):
 
 class RTagWithNoText(_TranslationTestCase):
     expected_output = ''
+    latex_expected_output = ''
 
     def get_xml(self):
         p_tag = DXB.p_tag(None)  # No text
@@ -713,6 +862,13 @@ class DeleteTagInList(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA \deleted[id=, remark=]{BBB}
+            \item CCC
+        \end{enumerate}
+    '''
+
     def get_xml(self):
         delete_tags = DXB.delete_tag(['BBB'])
         p_tag = DXB.p_tag([delete_tags])
@@ -732,6 +888,12 @@ class InsertTagInList(_TranslationTestCase):
             </li>
             <li>CCC</li>
         </ol>
+    '''
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA\added[id=,remark=]{BBB}
+            \item CCC
+        \end{enumerate}
     '''
 
     def get_xml(self):
@@ -756,6 +918,13 @@ class SmartTagInList(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAABBB
+            \item CCC
+        \end{enumerate}
+    '''
+
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         smart_tag = DXB.smart_tag(run_tags)
@@ -776,6 +945,11 @@ class SingleListItem(_TranslationTestCase):
         </ol>
         <p>BBB</p>
     '''
+
+    latex_expected_output = r'''
+        \begin{enumerate}
+        \item AAA
+        \end{enumerate}''' + '\n' + 'BBB'
 
     numbering_dict = {
         '1': {
@@ -815,6 +989,13 @@ class SimpleTableTest(_TranslationTestCase):
             </tr>
         </table>'''
 
+    latex_expected_output = r'''
+        \begin{tabular} { lll }
+        {Blank} & {Column 1} & {Column 2} \\
+        {Row 1} & {First} & {Second} \\
+        {Row 2} & {Third} & {Fourth} \\
+        \end{tabular}'''
+
     def get_xml(self):
         table = DXB.table(num_rows=3, num_columns=3, text=chain(
             [DXB.p_tag('Blank')],
@@ -841,6 +1022,13 @@ class MissingIlvl(_TranslationTestCase):
             </li>
             <li>CCC</li>
         </ol>
+    '''
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAA \\
+            BBB
+            \item CCC
+        \end{enumerate}
     '''
 
     def get_xml(self):
@@ -874,6 +1062,15 @@ class SameNumIdInTable(_TranslationTestCase):
             <li>CCC</li>
         </ol>
     '''
+    latex_expected_output = r'''
+    \begin{enumerate} \item AAA
+    \begin{tabular}{p{3cm}}
+    {\begin{enumerate} \item BBB
+     \end{enumerate}} \\
+    \end{tabular}
+    \item CCC
+     \end{enumerate}
+     '''
 
     # Ensure its not failing somewhere and falling back to decimal
     numbering_dict = {
@@ -910,6 +1107,12 @@ class SDTTestCase(_TranslationTestCase):
             <li>CCC</li>
         </ol>
     '''
+    latex_expected_output = r'''
+        \begin{enumerate}
+            \item AAABBB
+            \item CCC
+        \end{enumerate}
+    '''
 
     def get_xml(self):
         body = ''
@@ -931,6 +1134,22 @@ class HeadingTestCase(_TranslationTestCase):
         <h6>GGG</h6>
         <p>HHH</p>
     '''
+
+    latex_expected_output = r'''\section{AAA}
+        ''' + '\n' + '''
+        \subsection{BBB}
+        ''' + '\n' + '''
+        \paragraph{CCC}
+        ''' + '\n' + '''
+        \subparagraph{DDD}
+        ''' + '\n' + '''
+        EEE
+        ''' + '\n' + '''
+        GGG
+        ''' + '\n' + '''
+        HHH
+    '''
+
     styles_dict = {
         'style0': 'heading 1',
         'style1': 'heading 2',
@@ -996,6 +1215,13 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
         </ol>
     '''
 
+    latex_expected_output = r'''
+    \subsection{AAA}\begin{enumerate} \item BBB
+    \end{enumerate}\subsection{CCC}\begin{enumerate} \item DDD
+    \end{enumerate}\subsection{EEE}\begin{enumerate} \item FFF\begin{enumerate} \item GGG
+    \end{enumerate}
+    \end{enumerate}'''
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 1),
@@ -1018,6 +1244,7 @@ class MultipleTTagsInRTag(_TranslationTestCase):
     expected_output = '''
         <p>ABC</p>
     '''
+    latex_expected_output = 'ABC'
 
     def get_xml(self):
         r_tag = DXB.r_tag(
@@ -1038,6 +1265,10 @@ class SuperAndSubScripts(_TranslationTestCase):
         <p>AAA<sup>BBB</sup></p>
         <p><sub>CCC</sub>DDD</p>
     '''
+
+    latex_expected_output = r'''
+    AAA \textsuperscript{BBB}
+    ''' + '\n' + r'\textsubscript{CCC} DDD'
 
     def get_xml(self):
         p_tags = [
@@ -1080,6 +1311,18 @@ class AvaliableInlineTags(_TranslationTestCase):
         <p><span class="pydocx-hidden">hhh</span></p>
         <p><span class="pydocx-hidden">iii</span></p>
         <p><sup>jjj</sup></p>
+    '''
+
+    latex_expected_output = r'''\textbf {aaa}
+        \underline {bbb}
+        \emph {ccc}
+        \MakeUppercase{ddd}
+        \textsx{eee}
+        \sout{fff}
+        \sout{ggg}
+        \begin{comment}hhh\end{comment}
+        \begin{comment}iii\end{comment}
+        \textsuperscript{jjj}
     '''
 
     def get_xml(self):

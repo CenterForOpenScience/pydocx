@@ -714,7 +714,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def list_element(self, text, lst_style):
+    def list_element(self, text):
         return text
 
     @abstractmethod
@@ -726,7 +726,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def table_cell(self, text, last, col, row, col_index, row_index):
+    def table_cell(self, text):
         return text
 
     @abstractmethod

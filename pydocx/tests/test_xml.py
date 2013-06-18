@@ -169,18 +169,18 @@ class ImageLocal(_TranslationTestCase):
     '''
 
     def get_xml(self):
-            drawing = DXB.drawing(height=None, width=None, r_id='rId0')
-            pict = DXB.pict(height=None, width=None, r_id='rId1')
-            tags = [
-                drawing,
-                pict,
-            ]
-            body = ''
-            for el in tags:
-                body += el
+        drawing = DXB.drawing(height=None, width=None, r_id='rId0')
+        pict = DXB.pict(height=None, width=None, r_id='rId1')
+        tags = [
+            drawing,
+            pict,
+        ]
+        body = ''
+        for el in tags:
+            body += el
 
-            xml = DXB.xml(body)
-            return xml
+        xml = DXB.xml(body)
+        return xml
 
 
 class ImageTestCase(_TranslationTestCase):
@@ -204,7 +204,6 @@ class ImageTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         pict = DXB.pict(height=21, width=41, r_id='rId1')
         tags = [

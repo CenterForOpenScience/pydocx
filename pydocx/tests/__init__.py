@@ -41,7 +41,8 @@ BASE_LATEX = r'''\documentclass{article}\usepackage{hyperref}
 \usepackage{changepage}
 \usepackage{hanging}\usepackage{multirow}
 \usepackage{pbox}\usepackage{pdflscape}
-\usepackage{ulem}\usepackage{comment}\begin{document}''' + "%s" + r'''\end{document}
+\usepackage{ulem}\usepackage{comment}
+\begin{document}''' + "%s" + r'''\end{document}
 '''
 
 
@@ -178,12 +179,13 @@ DEFAULT_NUMBERING_DICT = {
     '1': {
         '0': 'decimal',
         '1': 'decimal',
-        },
+    },
     '2': {
         '0': 'lowerLetter',
         '1': 'lowerLetter',
-        },
-    }
+    },
+}
+
 
 class XMLDocx2Html(Docx2Html):
     """

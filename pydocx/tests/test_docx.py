@@ -671,7 +671,8 @@ def test_simple_table():
     assert_html_equal(actual_html, BASE_HTML % '''
     <table border="1">
         <tr>
-            <td>Cell1<br />
+            <td rowspan="2">
+                Cell1<br />
                 Cell3
             </td>
             <td>Cell2<br />
@@ -679,7 +680,6 @@ def test_simple_table():
             </td>
         </tr>
         <tr>
-            <td></td>
             <td>Cell4</td>
         </tr>
     </table>

@@ -143,7 +143,6 @@ class DocxParser:
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
@@ -193,7 +192,8 @@ class DocxParser:
         else:
             rowspan = ''
         return self.table_cell(
-            text, colspan, rowspan, self.pre_processor.is_last_row_item(el))
+            text, colspan, rowspan, self.pre_processor.is_last_row_item(el),
+            has_descendant_with_tag(el, 'ilvl'))
 
     def parse_list(self, el, text):
         """
@@ -247,7 +247,7 @@ class DocxParser:
                 return False
             if self.pre_processor.is_last_list_item_in_root(next_el):
                 return False
-                # If next_el is not a list item then roll it into the list by
+            # If next_el is not a list item then roll it into the list by
             # returning True.
             if not self.pre_processor.is_list_item(next_el):
                 return True
@@ -276,19 +276,19 @@ class DocxParser:
         def should_parse_last_el(last_el, first_el):
             if last_el is None:
                 return False
-                # Different list
+            # Different list
             if (
                     self.pre_processor.num_id(last_el) !=
                     self.pre_processor.num_id(first_el)):
                     return False
-                # Will be handled when the ilvls do match (nesting issue)
+            # Will be handled when the ilvls do match (nesting issue)
             if (
                     self.pre_processor.ilvl(last_el) !=
                     self.pre_processor.ilvl(first_el)):
                     return False
-                # We only care about last items that have not been
-                # parsed before (first list items are
-                # always parsed at the beginning of this method.)
+            # We only care about last items that have not been
+            # parsed before (first list items are
+            # always parsed at the beginning of this method.)
             return (
                 not self.pre_processor.is_first_list_item(last_el) and
                 self.pre_processor.is_last_list_item_in_root(last_el)
@@ -320,7 +320,6 @@ class DocxParser:
             value = _justification.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
-
         if indentation is not None:
             if INDENTATION_RIGHT in indentation.attrib:
                 right = indentation.attrib[INDENTATION_RIGHT]
@@ -344,9 +343,8 @@ class DocxParser:
     def parse_p(self, el, text):
         if text == '':
             return ''
-            # TODO This is still not correct, however it fixes the bug.
-            # We need to apply the classes/styles on p, td,
-            # li and h tags instead of inline,
+            # TODO This is still not correct, however it fixes the bug. We need to
+            # apply the classes/styles on p, td, li and h tags instead of inline,
             # but that is for another ticket.
         text = self.justification(el, text)
         if self.pre_processor.is_first_list_item(el):
@@ -436,7 +434,7 @@ class DocxParser:
                 parsed += next_elements_content
             else:
                 break
-            # Create the actual li element
+        # Create the actual li element
         return self.list_element(parsed)
 
     def _get_rowspan(self, el, v_merge):
@@ -518,7 +516,7 @@ class DocxParser:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
             return blip.get('embed')
-            # Picts
+        # Picts
         imagedata = find_first(el, 'imagedata')
         if imagedata is not None:
             return imagedata.get('id')

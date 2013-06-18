@@ -154,8 +154,9 @@ class Docx2LaTex(DocxParser):
         self.counted_columns = True
         return text
 
-    def table_cell(self, text, col='', row='', is_last_row_item=False):
-        if self.hit_list:
+    def table_cell(self, text, col='', row='', is_last_row_item=False, is_list_item=False):
+        print text, is_list_item
+        if is_list_item:
             self.columns = {}
             self.columns['Column'] = self.col_count
             self.columns['list'] = True

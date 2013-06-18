@@ -297,7 +297,8 @@ class _TranslationTestCase(TestCase):
             numbering_dict=self.numbering_dict,
             styles_dict=self.styles_dict,
         ).parsed
-        assert_html_equal(html, BASE_HTML % self.expected_output)
+        if self.use_base_html:
+            assert_html_equal(html, BASE_HTML % self.expected_output)
 
         latex_parser.image_handler = image_handler
         latex = latex_parser(

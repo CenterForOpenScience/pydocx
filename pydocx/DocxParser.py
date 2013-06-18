@@ -280,12 +280,12 @@ class DocxParser:
             if (
                     self.pre_processor.num_id(last_el) !=
                     self.pre_processor.num_id(first_el)):
-                    return False
+                return False
             # Will be handled when the ilvls do match (nesting issue)
             if (
                     self.pre_processor.ilvl(last_el) !=
                     self.pre_processor.ilvl(first_el)):
-                    return False
+                return False
             # We only care about last items that have not been
             # parsed before (first list items are
             # always parsed at the beginning of this method.)
@@ -343,9 +343,9 @@ class DocxParser:
     def parse_p(self, el, text):
         if text == '':
             return ''
-            # TODO This is still not correct, however it fixes the bug. We need to
-            # apply the classes/styles on p, td, li and h tags instead of inline,
-            # but that is for another ticket.
+        # TODO This is still not correct, however it fixes the bug. We need to
+        # apply the classes/styles on p, td, li and h tags instead of inline,
+        # but that is for another ticket.
         text = self.justification(el, text)
         if self.pre_processor.is_first_list_item(el):
             return self.parse_list(el, text)
@@ -419,7 +419,7 @@ class DocxParser:
                 if (
                         self.pre_processor.num_id(next_el) ==
                         self.pre_processor.num_id(el)):
-                        return True
+                    return True
             return False
 
         while el is not None:

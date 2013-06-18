@@ -301,6 +301,8 @@ class _TranslationTestCase(TestCase):
         ).parsed
         if self.use_base_html:
             assert_html_equal(html, BASE_HTML % self.expected_output)
+        else:
+            assert_html_equal(html, self.expected_output)
 
         latex_parser.image_handler = image_handler
         latex = latex_parser(

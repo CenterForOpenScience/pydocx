@@ -183,11 +183,20 @@ class DocxParser:
 
     def parse_table_cell(self, el, text):
         v_merge = find_first(el, 'vMerge')
-        if v_merge is not None and 'continue' == v_merge.get('val', ''):
+        if v_merge is not None and (
+                'restart' != v_merge.get('val', '')):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
+<<<<<<< HEAD
         return self.table_cell(text, colspan, rowspan, self.pre_processor.is_last_row_item(el))
+=======
+        if rowspan > 1:
+            rowspan = str(rowspan)
+        else:
+            rowspan = ''
+        return self.table_cell(text, colspan, rowspan)
+>>>>>>> table_fix
 
     def parse_list(self, el, text):
         """
@@ -434,7 +443,6 @@ class DocxParser:
         current_col = self.pre_processor.column_index(el)
         rowspan = 1
         result = ''
-
         tbl = find_ancestor_with_tag(self.pre_processor, el, 'tbl')
         # We only want table cells that have a higher row_index that is greater
         # than the current_row and that are on the current_col

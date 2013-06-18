@@ -168,7 +168,6 @@ class ImageLocal(_TranslationTestCase):
     \includegraphics {word/media/image2.jpeg}
     '''
 
-
     def get_xml(self):
             drawing = DXB.drawing(height=None, width=None, r_id='rId0')
             pict = DXB.pict(height=None, width=None, r_id='rId1')
@@ -203,7 +202,9 @@ class ImageTestCase(_TranslationTestCase):
     ''' + '\n' + '''
     \includegraphics[height=21ptpt, width=41pt]{word/media/image2.jpeg}
     '''
+
     def get_xml(self):
+
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         pict = DXB.pict(height=21, width=41, r_id='rId1')
         tags = [
@@ -339,7 +340,6 @@ class TableTag(_TranslationTestCase):
         \end{tabular}
     '''
 
-
     def get_xml(self):
         cell1 = DXB.table_cell(paragraph=DXB.p_tag('AAA'))
         cell2 = DXB.table_cell(paragraph=DXB.p_tag('CCC'))
@@ -364,6 +364,13 @@ class RowSpanTestCase(_TranslationTestCase):
                 <td>CCC</td>
             </tr>
         </table>
+    '''
+
+    latex_expected_output = r'''
+        \begin{tabular}{ll}
+        \multirow{2}{*}{AAA} & {BBB} \\
+        & {CCC} \\
+        \end{tabular}
     '''
 
     def get_xml(self):
@@ -488,7 +495,6 @@ class TableWithListAndParagraph(_TranslationTestCase):
     \item BBB
     \end{enumerate}CCC\\DDD} \\
     \end{tabular}'''
-
 
     def get_xml(self):
         li_text = [
@@ -667,7 +673,6 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
             \item DDD
         \end{enumerate}
     '''
-
 
     def get_xml(self):
         cell = DXB.table_cell(paragraph=DXB.p_tag('BBB'))
@@ -1161,7 +1166,6 @@ class HeadingTestCase(_TranslationTestCase):
         <p>HHH</p>
     '''
 
-<<<<<<< HEAD
     latex_expected_output = r'''\section{AAA}
         ''' + '\n' + '''
         \subsection{BBB}
@@ -1177,8 +1181,6 @@ class HeadingTestCase(_TranslationTestCase):
         HHH
     '''
 
-=======
->>>>>>> table_fix
     styles_dict = {
         'style0': 'heading 1',
         'style1': 'heading 2',
@@ -1247,7 +1249,8 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
     latex_expected_output = r'''
     \subsection{AAA}\begin{enumerate} \item BBB
     \end{enumerate}\subsection{CCC}\begin{enumerate} \item DDD
-    \end{enumerate}\subsection{EEE}\begin{enumerate} \item FFF\begin{enumerate} \item GGG
+    \end{enumerate}\subsection{EEE}\begin{enumerate}
+    \item FFF\begin{enumerate} \item GGG
     \end{enumerate}
     \end{enumerate}'''
 

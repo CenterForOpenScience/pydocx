@@ -163,11 +163,7 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-<<<<<<< HEAD
     def table_cell(self, text, col='', row='', *args):
-=======
-    def table_cell(self, text, col='', row=''):
->>>>>>> table_fix
         slug = '<td'
         if col:
             slug += ' colspan="%(colspan)s"'
@@ -211,3 +207,6 @@ class Docx2Html(DocxParser):
 
     def change_orientation(self, parsed, orient):
         return '<hr />'
+
+    def empty_cell(self):
+        return ''

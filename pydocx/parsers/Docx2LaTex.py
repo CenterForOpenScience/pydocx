@@ -65,7 +65,7 @@ class Docx2LaTex(DocxParser):
             return r'\subsection{%s}' % text + '\n\n'
         elif heading_value == 'h3':
             return r'\paragraph{%s}' % text + '\n\n'
-        elif heading_value  == 'h4':
+        elif heading_value == 'h4':
             return r'\subparagraph{%s}' % text + '\n\n'
         else:
             return text + '\n\n'
@@ -85,13 +85,12 @@ class Docx2LaTex(DocxParser):
             'text': text,
         }
 
-
     def image_handler(self, image_data, filename):
         extension = filename.split('.')[-1].lower()
         b64_encoded_src = 'data:image/%s;base64,%s' % (
             extension,
             base64.b64encode(image_data),
-            )
+        )
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src
 
@@ -130,7 +129,7 @@ class Docx2LaTex(DocxParser):
                 if 'Column' in column:
                     if column['Column'] == i:
                         if 'justify' in column:
-                            if column['justify']== 'center':
+                            if column['justify'] == 'center':
                                 center = True
                             elif column['justify'] == 'right':
                                 right = True
@@ -155,7 +154,7 @@ class Docx2LaTex(DocxParser):
         self.counted_columns = True
         return text
 
-    def table_cell(self, text, col='', row='', is_last_row_item = False):
+    def table_cell(self, text, col='', row='', is_last_row_item=False):
         if self.hit_list:
             self.columns = {}
             self.columns['Column'] = self.col_count
@@ -190,7 +189,7 @@ class Docx2LaTex(DocxParser):
         return r'\newpage '
 
     def indent(self, text, just='', firstLine='',
-               left='', right='', hanging='', is_in_table = False):
+               left='', right='', hanging='', is_in_table=False):
         if not is_in_table:
             raggedright = False
             raggedleft = False
@@ -254,13 +253,14 @@ class Docx2LaTex(DocxParser):
         if orient == 'portrait':
             return parsed
         if orient == 'landscape':
-            return r'\begin{landscape}' + '\n' + parsed + '\end{landscape}' + '\n'
+            return r'\begin{landscape}' + '\n' \
+                   + parsed + '\end{landscape}' + '\n'
 
     def deletion(self, text, author, date):
         return r'\deleted[id='+author+',remark='+date+']{%s}' % text
 
     def caps(self, text):
-        return r'\MakeUppercase{%s}' %text
+        return r'\MakeUppercase{%s}' % text
 
     def small_caps(self, text):
         return r'\textsx{%s}' % text
@@ -276,3 +276,6 @@ class Docx2LaTex(DocxParser):
 
     def subscript(self, text):
         return r'\textsubscript{%s}' % text
+
+    def empty_cell(self):
+        return ' & '

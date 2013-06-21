@@ -30,6 +30,9 @@ class Docx2LaTex(DocxParser):
     def linebreak(self):
         return '\n\n'
 
+    def paragraph(self, text, pre=None):
+        return text + '\n\n'
+
     def bold(self, text):
         return r'\textbf {%s}' % text
 
@@ -69,10 +72,6 @@ class Docx2LaTex(DocxParser):
             return r'\subparagraph{%s}' % text + '\n\n'
         else:
             return text + '\n\n'
-
-    def paragraph(self, text, pre=None):
-        self.hit_list = False
-        return text + '\n\n'
 
     def insertion(self, text, author, date):
         return r'\added[id='+author+',remark='+date+']{%s}' % text
@@ -125,16 +124,17 @@ class Docx2LaTex(DocxParser):
         pcm = False
         setup_cols = ''
         for i in range(0, self.col_count):
-            for column in self.table_info:
-                if 'Column' in column:
-                    if column['Column'] == i:
-                        if 'justify' in column:
-                            if column['justify'] == 'center':
-                                center = True
-                            elif column['justify'] == 'right':
-                                right = True
-                        elif column['list']:
-                            pcm = True
+            match = next((
+                column for column in self.table_info
+                if 'Column' in column and column['Column'] == i), None)
+            if match:
+                if 'justify' in match:
+                    if match['justify'] == 'center':
+                        center = True
+                    elif match['justify'] == 'right':
+                        right = True
+                elif match['list']:
+                    pcm = True
             if center is True:
                 setup_cols += 'c'
                 center = False

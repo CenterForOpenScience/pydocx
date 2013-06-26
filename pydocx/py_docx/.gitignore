@@ -1,0 +1,8 @@
+.coverage
+*.pyc
+*.docx
+*.kpf
+build
+dist
+template/word/media
+MANIFEST

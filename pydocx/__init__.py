@@ -1,4 +1,5 @@
 from .parsers import Docx2LaTex, Docx2Html, Docx2Markdown
+from HtmlConversion import Html2Docx
 
 
 def docx2html(path):
@@ -11,5 +12,8 @@ def docx2markdown(path):
 
 def docx2latex(path):
     return Docx2LaTex(path).parsed
+
+def html2docx(path):
+    return Html2Docx(path).parsed
 
 VERSION = '0.3.1'

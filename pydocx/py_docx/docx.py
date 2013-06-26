@@ -9,6 +9,7 @@ See LICENSE for licensing information.
 """
 
 import logging
+import lxml
 from lxml import etree
 from PIL import Image
 import zipfile

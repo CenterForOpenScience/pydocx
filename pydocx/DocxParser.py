@@ -572,7 +572,10 @@ class DocxParser:
         sufficient. You need to check to make sure it is not set to "false" as
         well.
         """
-        return el.get('val') != 'false'
+        val = el.get('val')
+        if val is None:
+            return True
+        return val.lower() not in ['false', '0']
 
     def parse_t(self, el, parsed):
         return self.escape(el.text)

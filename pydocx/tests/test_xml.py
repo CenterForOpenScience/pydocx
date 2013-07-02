@@ -16,6 +16,7 @@ class BoldTestCase(_TranslationTestCase):
     expected_output = """
         <p><strong>AAA</strong></p>
         <p>BBB</p>
+        <p>CCC</p>
     """
 
     def get_xml(self):
@@ -33,6 +34,14 @@ class BoldTestCase(_TranslationTestCase):
                     DXB.r_tag(
                         [DXB.t_tag('BBB')],
                         rpr=DXB.rpr_tag({'b': 'false'}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        rpr=DXB.rpr_tag({'b': '0'}),
                     ),
                 ],
             ),

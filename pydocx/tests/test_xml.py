@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import time
 
@@ -1198,3 +1199,26 @@ class AvaliableInlineTags(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
+
+
+class UnicodeTestCase(_TranslationTestCase):
+    expected_output = u"""
+        <p>\U0010001f</p>
+    """
+
+    def get_xml(self):
+        tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag(r'&#x10001F;')],
+                    ),
+                ],
+            ),
+        ]
+
+        body = ''
+        for tag in tags:
+            body += tag
+        xml = DXB.xml(body)
+        return xml.encode('utf-8')

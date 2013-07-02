@@ -1,3 +1,5 @@
+import re
+
 from collections import defaultdict
 from xml.etree import cElementTree
 
@@ -68,6 +70,14 @@ def _filter_children(element, tags):
 
 
 def remove_namespaces(document):
+    encoding_regex = re.compile(
+        r'<\?xml.*encoding="(.+?)"',
+        re.DOTALL | re.MULTILINE,
+    )
+    encoding = 'us-ascii'
+    m = encoding_regex.match(document)
+    if m:
+        encoding = m.groups(0)[0]
     root = cElementTree.fromstring(document)
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
@@ -75,7 +85,7 @@ def remove_namespaces(document):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root)
+    return cElementTree.tostring(root, encoding=encoding)
 
 
 def get_list_style(numbering_root, num_id, ilvl):

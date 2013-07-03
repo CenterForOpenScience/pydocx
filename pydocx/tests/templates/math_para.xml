@@ -1,0 +1,5 @@
+<w:p>
+    {% if math_para %}
+        {{ math_para }}
+    {% endif %}
+</w:p>

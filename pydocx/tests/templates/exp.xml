@@ -1,0 +1,5 @@
+<w:e>
+    {% if run_text %}
+        {{ run_text }}
+    {% endif %}
+</w:e>

@@ -1,0 +1,13 @@
+<w:oMathPara>
+    <w:omath>
+        {% if rad %}
+            {{ rad }}
+        {% endif %}
+        {% if deg %}
+            {{ deg }}
+        {% endif %}
+        {% if exp %}
+            {{ exp }}
+        {% endif %}
+    </w:omath>
+</w:oMathPara>

@@ -1,0 +1,8 @@
+<w:rad>
+    {% if deg %}
+        {{ deg }}
+    {% endif %}
+    {% if exp %}
+        {{ exp }}
+    {% endif %}
+</w:rad>

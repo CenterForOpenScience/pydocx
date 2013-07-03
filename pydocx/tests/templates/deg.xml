@@ -1,0 +1,5 @@
+<w:deg>
+    {% if run_text %}
+        {{ run_text }}
+    {% endif %}
+</w:deg>

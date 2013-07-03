@@ -1496,3 +1496,29 @@ class UnicodeTestCase(_TranslationTestCase):
             body += tag
         xml = DXB.xml(body)
         return xml.encode('utf-8')
+
+
+class MatrixTestCase(_TranslationTestCase):
+
+    expected_output = '''
+        <p> <math><mtable><mtr><mtd><mi>1</mi>
+        </mtd><mtd><mi>2</mi></mtd></mtr><mtr><mtd><mi>3</mi>
+        </mtd><mtd><mi>4</mi></mtd></mtr></mtable></math> </p>
+    '''
+
+    latex_expected_output = r'''
+        $\begin{matrix} 1&2
+        \\3&4\\ \end{matrix}$
+    '''
+
+    def get_xml(self):
+        matrix_cell1 = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('1')]))
+        matrix_cell2 = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('2')]))
+        matrix_cell3 = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('3')]))
+        matrix_cell4 = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('4')]))
+        row_1 = DXB.matrix_row([matrix_cell1, matrix_cell2])
+        row_2 = DXB.matrix_row([matrix_cell3, matrix_cell4])
+        matrix = DXB.matrix([row_1, row_2])
+        math = DXB.math(matrix)
+        para = DXB.math_paragraph(math)
+        return DXB.xml(para)

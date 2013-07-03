@@ -12,6 +12,9 @@ templates = {
     'main': 'base.xml',
     'math': 'math.xml',
     'math_para': 'math_para.xml',
+    'math_tag': 'math_tag.xml',
+    'matrix': 'matrix.xml',
+    'matrix_row': 'matrix_row.xml',
     'numbering': 'numbering.xml',
     'p': 'p.xml',
     'pict': 'pict.xml',
@@ -315,5 +318,29 @@ class DocxBuilder(object):
         template = env.get_template(templates['math_para'])
         kwargs = {
             'math_para': math_para
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def matrix_row(self, matrix_cells):
+        template = env.get_template(templates['matrix_row'])
+        kwargs = {
+            'matrix_cells':matrix_cells
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def matrix(self, matrix_rows):
+        template = env.get_template(templates['matrix'])
+        kwargs = {
+            'matrix_rows': matrix_rows
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def math_tag(self, math):
+        template = env.get_template(templates['math_tag'])
+        kwargs = {
+            'math': math
         }
         return template.render(**kwargs)

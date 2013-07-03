@@ -13,10 +13,10 @@ class Docx2Html(DocxParser):
             'head': self.head(),
             'content': content,
         }
-        return unicode(content)
+        return content.encode('utf-8')
 
     def head(self):
-        return "<head>%(style)s</head>" % {
+        return "<head><meta charset='UTF-8'>%(style)s</head>" % {
             'style': self.style(),
         }
 
@@ -48,7 +48,9 @@ class Docx2Html(DocxParser):
     def linebreak(self, pre=None):
         return '<br />'
 
-    def paragraph(self, text, pre=None):
+    def paragraph(self, text, math = False):
+        if math:
+            return '<p> <math>' + text + '</math> </p>'
         return '<p>' + text + '</p>'
 
     def heading(self, text, heading_value):
@@ -210,3 +212,34 @@ class Docx2Html(DocxParser):
 
     def empty_cell(self):
         return ''
+
+    def num(self, text):
+        return '<sup>%(text)s</sup>' % {
+            'text': text,
+            }
+
+    def den(self, text):
+        return '/<sub>%(text)s</sub>' % {
+            'text': text,
+            }
+
+    def deg(self, text):
+        if text:
+            return '<mn>%(text)s</mn>' % {
+                'text': text,
+                }
+        else:
+            return None
+
+
+    def exp(self, text):
+        return '<mi> %s </mi>' %text
+
+    def radical(self, deg, exp):
+        if deg:
+            return '<mroot> %(exp)s %(deg)s </mroot>' % {
+                'exp': exp,
+                'deg': deg,
+            }
+        else:
+            return '<msqrt> %s </msqrt>' % exp

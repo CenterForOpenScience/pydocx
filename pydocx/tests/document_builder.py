@@ -5,7 +5,7 @@ templates = {
     'deg': 'deg.xml',
     'delete': 'text_delete.xml',
     'drawing': 'drawing.xml',
-    'exp':'exp.xml',
+    'exp': 'exp.xml',
     'hyperlink': 'hyperlink.xml',
     'insert': 'insert.xml',
     'linebreak': 'linebreak.xml',
@@ -289,7 +289,7 @@ class DocxBuilder(object):
     def exp(self, run_text=None):
         template = env.get_template(templates['exp'])
         kwargs = {
-            'run_text':run_text
+            'run_text': run_text
         }
         return template.render(**kwargs)
 

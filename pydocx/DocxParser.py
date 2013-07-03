@@ -154,6 +154,10 @@ class DocxParser:
             return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
             return self.parse_table_cell(el, parsed)
+        elif el.tag == 'm':
+            return self.matrix(parsed)
+        elif el.tag == 'mr':
+            return self.parse_matrix_row(el, parsed)
         elif el.tag == 'rad':
             return self.radical(self.degree, self.expon)
         elif el.tag == 'deg':
@@ -377,7 +381,7 @@ class DocxParser:
         if el.find('oMathPara') is not None:
             math = True
         else:
-            math =False
+            math = False
         if self.list_depth == 0:
             parsed = self.paragraph(parsed, math)
         return parsed
@@ -663,8 +667,13 @@ class DocxParser:
         if find_ancestor_with_tag(self.pre_processor, el, 'rad'):
             self.expon = self.exp(parsed)
             return ''
+        elif find_ancestor_with_tag(self.pre_processor, el, 'm'):
+            return self.matrix_cell(parsed)
         else:
             return self.exp(parsed)
+
+    def parse_matrix_row(self, el, parsed):
+        return self.matrix_row(parsed)
 
     @property
     def parsed(self):
@@ -804,4 +813,16 @@ class DocxParser:
 
     @abstractmethod
     def exp(self, text):
+        return text
+
+    @abstractmethod
+    def matrix_row(self, text):
+        return text
+
+    @abstractmethod
+    def matrix_cell(self, text):
+        return text
+
+    @abstractmethod
+    def matrix(self, text):
         return text

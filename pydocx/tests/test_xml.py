@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-# coding=utf-8
-
-=======
 # -*- coding: utf-8 -*-
->>>>>>> c46e8647a29e711476f258eb9629b90513e86991
 import os
 import time
 
@@ -25,7 +20,7 @@ class BoldTestCase(_TranslationTestCase):
     """
     latex_expected_output = r'''
     \textbf{AAA}'''\
-     + "\n" + '''BBB''' + "\n"
+     + "\n" + '''BBB''' + "\n" + 'CCC'
 
     def get_xml(self):
         tags = [
@@ -1461,7 +1456,6 @@ class AvaliableInlineTags(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
-<<<<<<< HEAD
 class Math(_TranslationTestCase):
 
     expected_output = '''
@@ -1478,13 +1472,14 @@ class Math(_TranslationTestCase):
         math_para_tag = DXB.math_paragraph(math)
         xml = DXB.xml(math_para_tag)
         return xml
-=======
 
 class UnicodeTestCase(_TranslationTestCase):
     expected_output = u"""
         <p>\U0010001f</p>
     """
-
+    latex_expected_output = '''
+    􀀟
+    '''
     def get_xml(self):
         tags = [
             DXB.p_tag(
@@ -1501,4 +1496,3 @@ class UnicodeTestCase(_TranslationTestCase):
             body += tag
         xml = DXB.xml(body)
         return xml.encode('utf-8')
->>>>>>> c46e8647a29e711476f258eb9629b90513e86991

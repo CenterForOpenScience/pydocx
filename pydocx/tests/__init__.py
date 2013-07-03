@@ -30,7 +30,6 @@ STYLE = (
 BASE_HTML = '''
 <html>
     <head>
-    <meta charset='UTF-8'>
     %s
     </head>
     <body>%%s</body>

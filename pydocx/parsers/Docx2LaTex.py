@@ -4,6 +4,7 @@ import base64
 from pydocx.DocxParser import DocxParser
 from unicode_to_latex import unicode_to_latex
 
+
 class Docx2LaTex(DocxParser):
 
     def __init__(self, *args, **kwargs):
@@ -310,3 +311,12 @@ class Docx2LaTex(DocxParser):
 
     def exp(self, text):
         return r'{%s}' % text
+
+    def matrix(self, text):
+        return text
+
+    def matrix_row(self, text):
+        return text
+
+    def matrix_cell(self, text):
+        return text

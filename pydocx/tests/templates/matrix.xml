@@ -1,0 +1,5 @@
+<w:m>
+    {% for matrix_row in matrix_rows %}
+        {{ matrix_row }}
+    {% endfor %}
+</w:m>

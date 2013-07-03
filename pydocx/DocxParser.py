@@ -71,6 +71,8 @@ class DocxParser:
 
         self.root = parse_xml_from_string(self.document_text)
         self.numbering_root = None
+        self.expon = ''
+        self.degree = ''
         if self.numbering_text:
             self.numbering_root = parse_xml_from_string(self.numbering_text)
         self.comment_root = None
@@ -151,6 +153,20 @@ class DocxParser:
             return self.parse_table_row(el, parsed)
         elif el.tag == 'tc':
             return self.parse_table_cell(el, parsed)
+        elif el.tag == 'rad':
+            return self.radical(self.degree, self.expon)
+        elif el.tag == 'deg':
+            return self.parse_deg(el, parsed)
+        elif el.tag == 'e':
+            return self.parse_exp(el, parsed)
+        elif el.tag == 'num':
+            return self.num(parsed)
+        elif el.tag == 'den':
+            return self.den(parsed)
+        elif el.tag == 'sup':
+            return self.superscript(parsed)
+        elif el.tag == 'sub':
+            return self.subscript(parsed)
         elif el.tag == 'r':
             return self.parse_r(el, parsed)
         elif el.tag == 't':
@@ -357,8 +373,12 @@ class DocxParser:
             return self.parse_table_cell_contents(el, text)
         parsed = text
         # No p tags in li tags
+        if el.find('oMathPara') is not None:
+            math = True
+        else:
+            math =False
         if self.list_depth == 0:
-            parsed = self.paragraph(parsed)
+            parsed = self.paragraph(parsed, math)
         return parsed
 
     def _should_append_break_tag(self, next_el):
@@ -630,6 +650,20 @@ class DocxParser:
 
         return text
 
+    def parse_rad(self, el, parsed):
+        return ''
+
+    def parse_deg(self, el, parsed):
+        self.degree = self.deg(parsed)
+        return ''
+
+    def parse_exp(self, el, parsed):
+        if find_ancestor_with_tag(self.pre_processor, el, 'rad'):
+            self.expon = self.exp(parsed)
+            return ''
+        else:
+            return self.exp(parsed)
+
     @property
     def parsed(self):
         return self._parsed
@@ -643,7 +677,7 @@ class DocxParser:
         return ''
 
     @abstractmethod
-    def paragraph(self, text):
+    def paragraph(self, text, math):
         return text
 
     @abstractmethod
@@ -745,3 +779,27 @@ class DocxParser:
     @abstractmethod
     def empty_cell(self):
         return ''
+
+#    @abstractmethod
+#    def radical(self, text, rad):
+#        return text
+
+    @abstractmethod
+    def num(self, text):
+        return text
+
+    @abstractmethod
+    def radical(self, deg, num):
+        return True
+
+    @abstractmethod
+    def den(self, text):
+        return text
+
+    @abstractmethod
+    def deg(self, text):
+        return text
+
+    @abstractmethod
+    def exp(self, text):
+        return text

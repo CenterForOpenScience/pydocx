@@ -2,16 +2,21 @@ from jinja2 import Environment, PackageLoader
 from pydocx.DocxParser import EMUS_PER_PIXEL
 
 templates = {
+    'deg': 'deg.xml',
     'delete': 'text_delete.xml',
     'drawing': 'drawing.xml',
+    'exp':'exp.xml',
     'hyperlink': 'hyperlink.xml',
     'insert': 'insert.xml',
     'linebreak': 'linebreak.xml',
     'main': 'base.xml',
+    'math': 'math.xml',
+    'math_para': 'math_para.xml',
     'numbering': 'numbering.xml',
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'rad': 'rad.xml',
     'rpr': 'rpr.xml',
     'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
@@ -268,4 +273,47 @@ class DocxBuilder(object):
             'numbering_dict': numbering_dict,
         }
 
+        return template.render(**kwargs)
+
+    @classmethod
+    def math(self, rad=None, exp=None, deg=None):
+        template = env.get_template(templates['math'])
+        kwargs = {
+            'rad': rad,
+            'exp': exp,
+            'deg': deg
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def exp(self, run_text=None):
+        template = env.get_template(templates['exp'])
+        kwargs = {
+            'run_text':run_text
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def deg(self, run_text=None):
+        kwargs = {
+            'run_text': run_text
+        }
+        template = env.get_template(templates['deg'])
+        return template.render(**kwargs)
+
+    @classmethod
+    def rad(self, exp, deg):
+        template = env.get_template(templates['rad'])
+        kwargs = {
+            'exp': exp,
+            'deg': deg,
+        }
+        return template.render(**kwargs)
+
+    @classmethod
+    def math_paragraph(self, math_para):
+        template = env.get_template(templates['math_para'])
+        kwargs = {
+            'math_para': math_para
+        }
         return template.render(**kwargs)

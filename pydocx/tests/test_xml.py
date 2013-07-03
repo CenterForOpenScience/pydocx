@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import os
 import time
 
@@ -1444,4 +1446,21 @@ class AvaliableInlineTags(_TranslationTestCase):
             body += p_tag
 
         xml = DXB.xml(body)
+        return xml
+
+class Math(_TranslationTestCase):
+
+    expected_output = '''
+    <p> <math><msqrt> <mi> 1+3 </mi> </msqrt></math> </p>
+    '''
+    latex_expected_output = r'''
+    $\sqrt{1+3}$
+    '''
+    def get_xml(self):
+        deg = DXB.deg()
+        exp = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('1+3')]))
+        rad = DXB.rad(deg=deg, exp=exp)
+        math = DXB.math(rad=rad)
+        math_para_tag = DXB.math_paragraph(math)
+        xml = DXB.xml(math_para_tag)
         return xml

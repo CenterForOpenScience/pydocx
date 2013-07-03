@@ -30,6 +30,7 @@ STYLE = (
 BASE_HTML = '''
 <html>
     <head>
+    <meta charset='UTF-8'>
     %s
     </head>
     <body>%%s</body>
@@ -41,7 +42,7 @@ BASE_LATEX = r'''\documentclass{article}\usepackage{hyperref}
 \usepackage{changepage}
 \usepackage{hanging}\usepackage{multirow}
 \usepackage{pbox}\usepackage{pdflscape}
-\usepackage{ulem}\usepackage{comment}
+\usepackage{ulem}\usepackage{comment}\usepackage{mathtools}
 \begin{document}''' + "%s" + r'''\end{document}
 '''
 

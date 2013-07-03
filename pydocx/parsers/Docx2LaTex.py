@@ -1,6 +1,8 @@
+# coding=utf-8
+
 import base64
 from pydocx.DocxParser import DocxParser
-
+from unicode_to_latex import unicode_to_latex
 
 class Docx2LaTex(DocxParser):
 
@@ -15,10 +17,11 @@ class Docx2LaTex(DocxParser):
 
     @property
     def parsed(self):
+        content = self._parsed
         content = r"%(head)s\begin{document}%(content)s\end{document}" % {
             'head': self.head(),
-            'content': self._parsed}
-        return unicode(content)
+            'content': content}
+        return content.encode('utf-8')
 
     def escape(self, text):
         chars = ['%', '&', '#', '$', '~', '_', '^', '{', '}']
@@ -30,7 +33,12 @@ class Docx2LaTex(DocxParser):
     def linebreak(self):
         return '\n\n'
 
-    def paragraph(self, text, pre=None):
+    def paragraph(self, text, math=False):
+        if math:
+            matches = [match for match in unicode_to_latex if match in text]
+            for match in matches:
+                text = text.replace(match, unicode_to_latex[match])
+            return '$' + text + '$' + '\n\n'
         return text + '\n\n'
 
     def bold(self, text):
@@ -59,7 +67,7 @@ class Docx2LaTex(DocxParser):
                \usepackage{changepage}
                \usepackage{hanging}\usepackage{multirow}
                \usepackage{pbox}\usepackage{pdflscape}
-               \usepackage{ulem}\usepackage{comment}'''
+               \usepackage{ulem}\usepackage{comment}\usepackage{mathtools}'''
 
     def heading(self, text, heading_value):
         if heading_value == 'h1':
@@ -281,3 +289,24 @@ class Docx2LaTex(DocxParser):
 
     def empty_cell(self):
         return ' & '
+
+    def radical(self, deg, exp):
+        if deg:
+            return deg + exp
+        else:
+            return r'\sqrt' + exp
+
+    def num(self, text):
+        return r'\frac{%s}' % text
+
+    def den(self, text):
+        return r'{%s}' % text
+
+    def deg(self, text):
+        if text:
+            return r'\sqrt[%s]' % text
+        else:
+            return ''
+
+    def exp(self, text):
+        return r'{%s}' % text

@@ -249,5 +249,5 @@ class Docx2Html(DocxParser):
     def matrix_row(self, text):
         return '<mtr>%s</mtr>' %text
 
-    def matrix_cell(self, text):
+    def matrix_cell(self, text, is_last_row_item=False):
         return '<mtd><mi>%s</mi></mtd>' %text

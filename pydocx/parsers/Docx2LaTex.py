@@ -12,6 +12,7 @@ class Docx2LaTex(DocxParser):
         self.counted_columns = False
         self.previous_orient = ''
         self.col_count = 0
+        self.matrix_col_count = 0
         self.hit_list = False
         self.line_break_in_table = False
         super(Docx2LaTex, self).__init__(*args, **kwargs)
@@ -313,10 +314,13 @@ class Docx2LaTex(DocxParser):
         return r'{%s}' % text
 
     def matrix(self, text):
-        return text
+        return r'\begin{matrix} %s \end{matrix}' % text
 
     def matrix_row(self, text):
         return text
 
-    def matrix_cell(self, text):
-        return text
+    def matrix_cell(self, text, is_last_matrix_row_item):
+        if is_last_matrix_row_item:
+            return text + r'\\'
+        else:
+            return text + r'&'

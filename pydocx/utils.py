@@ -157,6 +157,7 @@ class PydocxPrePorcessor(object):
         self._add_parent(root)
         self._set_list_attributes(root)
         self._set_table_attributes(root)
+        self._set_matrix_attributes(root)
         self._set_is_in_table(root)
 
         body = find_first(root, 'body')
@@ -210,6 +211,15 @@ class PydocxPrePorcessor(object):
 
     def column_index(self, el):
         return self.meta_data[el].get('column_index')
+
+    def is_last_matrix_row_item(self, el):
+        return self.meta_data[el].get('is_last_matrix_row_item')
+
+    def matrix_row_index(self, el):
+        return self.meta_data[el].get('matrix_row_index')
+
+    def matrix_column_index(self, el):
+        return self.meta_data[el].get('matrix_column_index')
 
     def vmerge_continue(self, el):
         return self.meta_data[el].get('vmerge_continue')
@@ -302,6 +312,19 @@ class PydocxPrePorcessor(object):
                 continue
             last_el = filtered_list_elements[-1]
             self.meta_data[last_el]['is_last_list_item_in_root'] = True
+
+    def _set_matrix_attributes(self, el):
+        matrices = find_all(el, 'm')
+        for matrix in matrices:
+            rows = _filter_children(matrix, ['mr'])
+            if rows is None:
+                continue
+            for i, row in enumerate(rows):
+                tcs = _filter_children(row, ['e'])
+                self.meta_data[tcs[-1]]['is_last_matrix_row_item'] = True
+                for j, child in enumerate(tcs):
+                    self.meta_data[child]['matrix_row_index'] = i
+                    self.meta_data[child]['matrix_column_index'] = j
 
     def _set_table_attributes(self, el):
         tables = find_all(el, 'tbl')

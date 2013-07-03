@@ -668,7 +668,7 @@ class DocxParser:
             self.expon = self.exp(parsed)
             return ''
         elif find_ancestor_with_tag(self.pre_processor, el, 'm'):
-            return self.matrix_cell(parsed)
+            return self.matrix_cell(parsed,self.pre_processor.is_last_matrix_row_item(el))
         else:
             return self.exp(parsed)
 
@@ -791,10 +791,6 @@ class DocxParser:
     def empty_cell(self):
         return ''
 
-#    @abstractmethod
-#    def radical(self, text, rad):
-#        return text
-
     @abstractmethod
     def num(self, text):
         return text
@@ -820,7 +816,7 @@ class DocxParser:
         return text
 
     @abstractmethod
-    def matrix_cell(self, text):
+    def matrix_cell(self, text, is_last_row_item=False):
         return text
 
     @abstractmethod

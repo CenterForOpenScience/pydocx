@@ -3,13 +3,9 @@
 
 
 unicode_to_latex = {
-    u"\u0020": "\\space ",
     u"\u0023": "\\#",
-    u"\u0024": "\\textdollar ",
     u"\u0025": "\\%",
-    u"\u0026": "\\&amp;",
     u"\u0027": "\\textquotesingle ",
-    u"\u002A": "\\ast ",
     u"\u005E": "\\^{}",
     u"\u005F": "\\_",
     u"\u0060": "\\textasciigrave ",

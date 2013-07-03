@@ -1,6 +1,9 @@
 
 Changelog
 =========
+* 0.3.3
+    * In the event that `cElementTree` has a problem parsing the document, a
+      `MalformedDocxException` is raised instead of a `SyntaxError`
 * 0.3.2
     * We were not taking into account that vertical merges should have a
       continue attribute, but sometimes they do not, and in those cases word

@@ -3,9 +3,13 @@ Changelog
 =========
 * 0.3.2
     * We were not taking into account that vertical merges should have a
-    continue attribute, but sometimes they do not, and in those cases word
-    assumes the continue attribute. We updated the parser to handle the
-    cases in which the continue attribute is not there.
+      continue attribute, but sometimes they do not, and in those cases word
+      assumes the continue attribute. We updated the parser to handle the
+      cases in which the continue attribute is not there.
+    * We now correctly handle documents with unicode character in the
+      namespace.
+    * In rare cases, some text would be output with a style when it should not
+      have been. This issue has been fixed.
 * 0.3.1
     * Added support for several more OOXML tags including:
         * caps

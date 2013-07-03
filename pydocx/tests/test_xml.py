@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 # coding=utf-8
 
+=======
+# -*- coding: utf-8 -*-
+>>>>>>> c46e8647a29e711476f258eb9629b90513e86991
 import os
 import time
 
@@ -17,6 +21,7 @@ class BoldTestCase(_TranslationTestCase):
     expected_output = """
         <p><strong>AAA</strong></p>
         <p>BBB</p>
+        <p>CCC</p>
     """
     latex_expected_output = r'''
     \textbf{AAA}'''\
@@ -37,6 +42,14 @@ class BoldTestCase(_TranslationTestCase):
                     DXB.r_tag(
                         [DXB.t_tag('BBB')],
                         rpr=DXB.rpr_tag({'b': 'false'}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        rpr=DXB.rpr_tag({'b': '0'}),
                     ),
                 ],
             ),
@@ -1448,6 +1461,7 @@ class AvaliableInlineTags(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
+<<<<<<< HEAD
 class Math(_TranslationTestCase):
 
     expected_output = '''
@@ -1464,3 +1478,27 @@ class Math(_TranslationTestCase):
         math_para_tag = DXB.math_paragraph(math)
         xml = DXB.xml(math_para_tag)
         return xml
+=======
+
+class UnicodeTestCase(_TranslationTestCase):
+    expected_output = u"""
+        <p>\U0010001f</p>
+    """
+
+    def get_xml(self):
+        tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag(r'&#x10001F;')],
+                    ),
+                ],
+            ),
+        ]
+
+        body = ''
+        for tag in tags:
+            body += tag
+        xml = DXB.xml(body)
+        return xml.encode('utf-8')
+>>>>>>> c46e8647a29e711476f258eb9629b90513e86991

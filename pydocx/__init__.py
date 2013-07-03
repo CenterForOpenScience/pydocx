@@ -9,6 +9,7 @@ def docx2html(path):
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
 
+<<<<<<< HEAD
 
 def docx2latex(path):
     return Docx2LaTex(path).parsed
@@ -17,3 +18,6 @@ def html2docx(path):
     return Html2Docx(path).parsed
 
 VERSION = '0.3.1'
+=======
+VERSION = '0.3.2'
+>>>>>>> c46e8647a29e711476f258eb9629b90513e86991

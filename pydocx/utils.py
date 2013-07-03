@@ -3,6 +3,8 @@ import re
 from collections import defaultdict
 from xml.etree import cElementTree
 
+from pydocx.exceptions import MalformedDocxException
+
 
 UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
 TAGS_CONTAINING_CONTENT = (
@@ -70,6 +72,14 @@ def _filter_children(element, tags):
 
 
 def remove_namespaces(document):
+    """
+    >>> exception_raised = False
+    >>> try:
+    ...     remove_namespaces('junk')
+    ... except MalformedDocxException:
+    ...     exception_raised = True
+    >>> assert exception_raised
+    """
     encoding_regex = re.compile(
         r'<\?xml.*encoding="(.+?)"',
         re.DOTALL | re.MULTILINE,
@@ -78,7 +88,10 @@ def remove_namespaces(document):
     m = encoding_regex.match(document)
     if m:
         encoding = m.groups(0)[0]
-    root = cElementTree.fromstring(document)
+    try:
+        root = cElementTree.fromstring(document)
+    except SyntaxError:
+        raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(

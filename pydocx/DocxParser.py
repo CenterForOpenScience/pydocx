@@ -577,13 +577,13 @@ class DocxParser:
         return val.lower() not in DISABLED_VALUES
 
     def parse_t(self, el, parsed):
-        return self.escape(el.text)
+        return self.escape(el.text or '')
 
     def parse_break_tag(self, el, parsed):
         return self.break_tag()
 
     def parse_deletion(self, el, parsed):
-        return self.deletion(el.text, '', '')
+        return self.deletion(el.text or '', '', '')
 
     def parse_insertion(self, el, parsed):
         return self.insertion(parsed, '', '')

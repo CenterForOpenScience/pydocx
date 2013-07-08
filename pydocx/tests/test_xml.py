@@ -1526,6 +1526,7 @@ class MatrixTestCase(_TranslationTestCase):
 class NoTextInTTagTestCase(_TranslationTestCase):
     expected_output = u"""
     """
+    latex_expected_output = ''
 
     def get_xml(self):
         tags = [

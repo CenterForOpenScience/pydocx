@@ -8,6 +8,7 @@ def docx2html(path):
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
 
+
 def docx2latex(path):
     return Docx2LaTex(path).parsed
 

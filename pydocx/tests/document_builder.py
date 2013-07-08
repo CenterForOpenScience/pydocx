@@ -325,7 +325,7 @@ class DocxBuilder(object):
     def matrix_row(self, matrix_cells):
         template = env.get_template(templates['matrix_row'])
         kwargs = {
-            'matrix_cells':matrix_cells
+            'matrix_cells': matrix_cells
         }
         return template.render(**kwargs)
 

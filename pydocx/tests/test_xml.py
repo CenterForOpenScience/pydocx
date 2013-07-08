@@ -1456,6 +1456,7 @@ class AvaliableInlineTags(_TranslationTestCase):
         xml = DXB.xml(body)
         return xml
 
+
 class Math(_TranslationTestCase):
 
     expected_output = '''
@@ -1464,6 +1465,7 @@ class Math(_TranslationTestCase):
     latex_expected_output = r'''
     $\sqrt{1+3}$
     '''
+
     def get_xml(self):
         deg = DXB.deg()
         exp = DXB.exp(run_text=DXB.r_tag([DXB.t_tag('1+3')]))
@@ -1473,6 +1475,7 @@ class Math(_TranslationTestCase):
         xml = DXB.xml(math_para_tag)
         return xml
 
+
 class UnicodeTestCase(_TranslationTestCase):
     expected_output = u"""
         <p>\U0010001f</p>
@@ -1480,6 +1483,7 @@ class UnicodeTestCase(_TranslationTestCase):
     latex_expected_output = '''
     􀀟
     '''
+
     def get_xml(self):
         tags = [
             DXB.p_tag(
@@ -1522,6 +1526,7 @@ class MatrixTestCase(_TranslationTestCase):
         math = DXB.math(matrix)
         para = DXB.math_paragraph(math)
         return DXB.xml(para)
+
 
 class NoTextInTTagTestCase(_TranslationTestCase):
     expected_output = u"""

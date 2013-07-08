@@ -244,10 +244,10 @@ class Docx2Html(DocxParser):
             return '<msqrt> %s </msqrt>' % exp
 
     def matrix(self, text):
-        return '<mtable>%s</mtable>' %text
+        return '<mtable>%s</mtable>' % text
 
     def matrix_row(self, text):
-        return '<mtr>%s</mtr>' %text
+        return '<mtr>%s</mtr>' % text
 
     def matrix_cell(self, text, is_last_row_item=False):
-        return '<mtd><mi>%s</mi></mtd>' %text
+        return '<mtd><mi>%s</mi></mtd>' % text

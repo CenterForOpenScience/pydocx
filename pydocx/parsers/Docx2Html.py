@@ -165,7 +165,9 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text, col='', row='', *args):
+    def table_cell(
+            self, text, col='', row='',
+            is_last_row_item=False, is_list_item=False):
         slug = '<td'
         if col:
             slug += ' colspan="%(colspan)s"'
@@ -182,7 +184,7 @@ class Docx2Html(DocxParser):
         return '<hr />'
 
     def indent(self, text, just='', firstLine='', left='',
-               right='', hanging=''):
+               right='', hanging='', is_in_table=False):
         slug = '<div'
         if just:
             slug += " class='pydocx-%(just)s'"

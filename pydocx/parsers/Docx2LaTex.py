@@ -203,48 +203,39 @@ class Docx2LaTex(DocxParser):
     def indent(self, text, just='', firstLine='',
                left='', right='', hanging='', is_in_table=False):
         if not is_in_table:
-            raggedright = False
-            raggedleft = False
-            center = False
             slug = ''
             if hanging:
                 hanging = float(hanging)
                 hanging = hanging * float(3)/float(4)
                 return r'\begin{hangparas}{%spt}{1} %s ' \
                        r'\end{hangparas}' % (hanging, text) + '\n'
-            if right and left:
-                left = float(left)
-                right = float(right)
-                left = left * float(3) / float(4)
-                right = right * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{%spt}{%spt}' % (left, right)
-            elif left:
-                left = float(left)
-                left = left * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{}{%spt}' % (left)
-            elif right:
-                right = float(right)
-                right = right * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{%spt}{}' % (right)
+            if left or right:
+                if left:
+                    left = float(left)
+                    left = left * float(3) / float(4)
+                    left = '%spt' % (left)
+                if right:
+                    right = float(right)
+                    right = right * float(3) / float(4)
+                    right = '%spt' % (right)
+                slug += r'\begin{adjustwidth}{%s}{%s}' % (left, right)
             if firstLine:
                 slug += r'\setlength{\parindent}{'+firstLine+r'pt}\indent '
             if just:
                 if just == 'left':
-                    raggedright = True
                     slug += r'\begin{flushright} '
                 elif just == 'center':
-                    center = True
                     slug += r'\begin{center} '
                 elif just == 'right':
-                    raggedleft = True
                     slug += r'\begin{flushleft} '
             slug += text
-            if raggedright:
-                slug += r'\end{flushright}'
-            if center:
-                slug += r'\end{center}'
-            if raggedleft:
-                slug += r'\end{flushleft}'
+            if just:
+                if just == 'left':
+                    slug += r'\end{flushright}'
+                if just == 'center':
+                    slug += r'\end{center}'
+                if just == 'right':
+                    slug += r'\end{flushleft}'
             if left or right:
                 slug += r'\end{adjustwidth}'
             return slug
@@ -260,13 +251,6 @@ class Docx2LaTex(DocxParser):
         if is_in_table:
             self.line_break_in_table = True
         return r'\\'
-
-    def change_orientation(self, parsed, orient):
-        if orient == 'portrait':
-            return parsed
-        if orient == 'landscape':
-            return r'\begin{landscape}' + '\n' \
-                   + parsed + '\end{landscape}' + '\n'
 
     def deletion(self, text, author, date):
         return r'\deleted[id='+author+',remark='+date+']{%s}' % text

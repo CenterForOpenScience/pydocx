@@ -213,8 +213,9 @@ class DocxParser:
         else:
             rowspan = ''
         return self.table_cell(
-            text, colspan, rowspan, self.pre_processor.is_last_row_item(el),
-            has_descendant_with_tag(el, 'ilvl'))
+            text, col=colspan, row=rowspan,
+            is_last_row_item=self.pre_processor.is_last_row_item(el),
+            is_list_item=has_descendant_with_tag(el, 'ilvl'))
 
     def parse_list(self, el, text):
         """
@@ -357,8 +358,9 @@ class DocxParser:
                 firstLine = str(firstLine)
         if any([alignment, firstLine, left, right]):
             return self.indent(
-                text, alignment, firstLine,
-                left, right, self.pre_processor.is_in_table(el))
+                text, just=alignment, firstLine=firstLine,
+                left=left, right=right,
+                is_in_table=self.pre_processor.is_in_table(el))
         return text
 
     def parse_p(self, el, text):

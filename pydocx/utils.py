@@ -1,5 +1,9 @@
+import re
+
 from collections import defaultdict
 from xml.etree import cElementTree
+
+from pydocx.exceptions import MalformedDocxException
 
 
 UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
@@ -68,14 +72,33 @@ def _filter_children(element, tags):
 
 
 def remove_namespaces(document):
-    root = cElementTree.fromstring(document)
+    """
+    >>> exception_raised = False
+    >>> try:
+    ...     remove_namespaces('junk')
+    ... except MalformedDocxException:
+    ...     exception_raised = True
+    >>> assert exception_raised
+    """
+    encoding_regex = re.compile(
+        r'<\?xml.*encoding="(.+?)"',
+        re.DOTALL | re.MULTILINE,
+    )
+    encoding = 'us-ascii'
+    m = encoding_regex.match(document)
+    if m:
+        encoding = m.groups(0)[0]
+    try:
+        root = cElementTree.fromstring(document)
+    except SyntaxError:
+        raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
         child.tag = child.tag.split("}")[1]
         child.attrib = dict(
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root)
+    return cElementTree.tostring(root, encoding=encoding)
 
 
 def get_list_style(numbering_root, num_id, ilvl):

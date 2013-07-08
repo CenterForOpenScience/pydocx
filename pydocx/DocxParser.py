@@ -30,6 +30,7 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
+DISABLED_VALUES = ['false', '0']
 
 # Add some helper functions to Element to make it slightly more readable
 
@@ -577,15 +578,20 @@ class DocxParser:
         sufficient. You need to check to make sure it is not set to "false" as
         well.
         """
-        return el.get('val') != 'false'
+        val = el.get('val', '').lower()
+        return val.lower() not in DISABLED_VALUES
 
     def parse_t(self, el, parsed):
+        if el.text is None:
+            return ''
         return self.escape(el.text)
 
     def parse_break_tag(self, el, parsed):
         return self.break_tag(self.pre_processor.is_in_table(el))
 
     def parse_deletion(self, el, parsed):
+        if el.text is None:
+            return ''
         return self.deletion(el.text, '', '')
 
     def parse_insertion(self, el, parsed):

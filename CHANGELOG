@@ -1,6 +1,9 @@
 
 Changelog
 =========
+* 0.3.5
+    * Not all docx files contain a `styles.xml` file. We are no longer assuming
+      they do.
 * 0.3.4
     * It is possible for `w:t` tags to have `text` set to `None`. This no longer causes an error when escaping that text.
 * 0.3.3

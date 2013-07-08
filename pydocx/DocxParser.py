@@ -46,23 +46,24 @@ class DocxParser:
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPrePorcessor
 
+    def _extract_xml(self, f, xml_path):
+        try:
+            return f.read(xml_path)
+        except KeyError:
+            return None
+
     def _build_data(self, path, *args, **kwargs):
         with ZipFile(path) as f:
+            # These must be in the ZIP in order for the docx to be valid.
             self.document_text = f.read('word/document.xml')
-            self.styles_text = f.read('word/styles.xml')
-            try:
-                self.fonts = f.read('/word/fontTable.xml')
-            except KeyError:
-                self.fonts = None
-            try:  # Only present if there are lists
-                self.numbering_text = f.read('word/numbering.xml')
-            except KeyError:
-                self.numbering_text = None
-            try:  # Only present if there are comments
-                self.comment_text = f.read('word/comments.xml')
-            except KeyError:
-                self.comment_text = None
             self.relationship_text = f.read('word/_rels/document.xml.rels')
+
+            # These are all optional.
+            self.styles_text = self._extract_xml(f, 'word/styles.xml')
+            self.fonts = self._extract_xml(f, 'word/fontTable.xml')
+            self.numbering_text = self._extract_xml(f, 'word/numbering.xml')
+            self.comment_text = self._extract_xml(f, 'word/comments.xml')
+
             zipped_image_files = [
                 e for e in f.infolist()
                 if e.filename.startswith('word/media/')
@@ -79,6 +80,8 @@ class DocxParser:
             self.comment_root = parse_xml_from_string(self.comment_text)
 
     def _parse_styles(self):
+        if self.styles_text is None:
+            return {}
         tree = parse_xml_from_string(self.styles_text)
         result = {}
         for style in find_all(tree, 'style'):

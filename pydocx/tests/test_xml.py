@@ -1522,3 +1522,24 @@ class MatrixTestCase(_TranslationTestCase):
         math = DXB.math(matrix)
         para = DXB.math_paragraph(math)
         return DXB.xml(para)
+
+class NoTextInTTagTestCase(_TranslationTestCase):
+    expected_output = u"""
+    """
+
+    def get_xml(self):
+        tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag(None)],
+                    ),
+                ],
+            ),
+        ]
+
+        body = ''
+        for tag in tags:
+            body += tag
+        xml = DXB.xml(body)
+        return xml.encode('utf-8')

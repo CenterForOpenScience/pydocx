@@ -672,7 +672,8 @@ class DocxParser:
             self.expon = self.exp(parsed)
             return ''
         elif find_ancestor_with_tag(self.pre_processor, el, 'm'):
-            return self.matrix_cell(parsed,self.pre_processor.is_last_matrix_row_item(el))
+            return self.matrix_cell(
+                parsed, self.pre_processor.is_last_matrix_row_item(el))
         else:
             return self.exp(parsed)
 

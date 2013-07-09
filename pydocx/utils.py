@@ -168,7 +168,9 @@ class PydocxPrePorcessor(object):
 
     def perform_pre_processing(self, root, *args, **kwargs):
         self._add_parent(root)
-        self._set_list_attributes(root)
+        # If we don't have a numbering root there cannot be any lists.
+        if self.numbering_root is not None:
+            self._set_list_attributes(root)
         self._set_table_attributes(root)
         self._set_is_in_table(root)
 

@@ -722,6 +722,33 @@ def test_justification():
     ''')
 
 
+def test_missing_style():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'missing_style.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>AAA</p>
+    ''')
+
+
+def test_missing_numbering():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'missing_numbering.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>AAA</p>
+    <p>BBB</p>
+    ''')
+
+
 def _converter(*args, **kwargs):
     # Having a converter that does nothing is the same as if abiword fails to
     # convert.

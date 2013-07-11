@@ -1462,7 +1462,9 @@ class UnicodeTestCase(_TranslationTestCase):
         <p>\U0010001f</p>
     """
 
-    latex_expected_output = r'\udbc0\udc1f' + '\n'
+    latex_expected_output = '''
+    􀀟
+    '''
 
     def get_xml(self):
         tags = [

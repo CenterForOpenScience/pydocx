@@ -18,7 +18,7 @@ class Docx2LaTex(DocxParser):
         content = r"%(head)s\begin{document}%(content)s\end{document}" % {
             'head': self.head(),
             'content': self._parsed}
-        return unicode(content)
+        return content.encode('utf-8')
 
     def escape(self, text):
         chars = ['%', '&', '#', '$', '~', '_', '^', '{', '}']

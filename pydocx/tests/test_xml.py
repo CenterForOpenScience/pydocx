@@ -12,11 +12,12 @@ from pydocx.tests import (
 from pydocx.utils import parse_xml_from_string, find_all
 
 
-class BoldTestCase(_TranslationTestCase):
+class StyleIsOnTestCase(_TranslationTestCase):
     expected_output = """
         <p><strong>AAA</strong></p>
         <p>BBB</p>
         <p>CCC</p>
+        <p>DDD</p>
     """
 
     def get_xml(self):
@@ -42,6 +43,14 @@ class BoldTestCase(_TranslationTestCase):
                     DXB.r_tag(
                         [DXB.t_tag('CCC')],
                         rpr=DXB.rpr_tag({'b': '0'}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('DDD')],
+                        rpr=DXB.rpr_tag({'u': 'none'}),
                     ),
                 ],
             ),

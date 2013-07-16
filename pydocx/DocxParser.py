@@ -30,7 +30,7 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-DISABLED_VALUES = ['false', '0']
+DISABLED_VALUES = ['false', '0', 'none']
 
 # Add some helper functions to Element to make it slightly more readable
 

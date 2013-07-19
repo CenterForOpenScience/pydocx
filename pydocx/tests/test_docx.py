@@ -3,6 +3,7 @@ from os import path
 from tempfile import NamedTemporaryFile
 
 from nose.plugins.skip import SkipTest
+from nose.tools import raises
 
 from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
@@ -750,13 +751,10 @@ def test_missing_numbering():
     ''')
 
 
+@raises(MalformedDocxException)
 def test_malformed_docx_exception():
     with NamedTemporaryFile(suffix='.docx') as f:
-        try:
-            convert(f.name)
-            raise AssertionError('MalformedDocxException was not raised')
-        except MalformedDocxException:
-            pass
+        convert(f.name)
 
 
 def _converter(*args, **kwargs):

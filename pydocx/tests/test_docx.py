@@ -1,12 +1,14 @@
 import base64
-
 from os import path
+from tempfile import NamedTemporaryFile
 
 from nose.plugins.skip import SkipTest
+from nose.tools import raises
 
 from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.DocxParser import ZipFile
+from pydocx.exceptions import MalformedDocxException
 
 
 def convert(path, *args, **kwargs):
@@ -747,6 +749,12 @@ def test_missing_numbering():
     <p>AAA</p>
     <p>BBB</p>
     ''')
+
+
+@raises(MalformedDocxException)
+def test_malformed_docx_exception():
+    with NamedTemporaryFile(suffix='.docx') as f:
+        convert(f.name)
 
 
 def _converter(*args, **kwargs):

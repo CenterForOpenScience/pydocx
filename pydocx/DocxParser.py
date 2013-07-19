@@ -14,6 +14,7 @@ from pydocx.utils import (
     find_ancestor_with_tag,
     has_descendant_with_tag,
 )
+from pydocx.exceptions import MalformedDocxException
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
@@ -37,7 +38,10 @@ DISABLED_VALUES = ['false', '0', 'none']
 
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
-    f = zipfile.ZipFile(path)
+    try:
+        f = zipfile.ZipFile(path)
+    except zipfile.BadZipfile:
+        raise MalformedDocxException('Passed in document is not a docx')
     yield f
     f.close()
 

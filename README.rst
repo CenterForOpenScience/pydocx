@@ -222,6 +222,11 @@ The base parser `Docx2Html` relies on certain css class being set for certain be
 * class `pydocx-strike` -> Strike a line through.
 * class `pydocx-hidden` -> Hide the text.
 
+Exceptions
+##########
+
+Right now there is only one custom exception (`MalformedDocxException`). It is raised if either the `xml` or `zipfile` libraries raise an exception.
+
 Optional Arguments
 ##################
 

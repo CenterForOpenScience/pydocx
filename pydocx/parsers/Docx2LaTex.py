@@ -119,9 +119,6 @@ class Docx2LaTex(DocxParser):
         return r'\qquad '
 
     def table(self, text):
-        center = False
-        right = False
-        pcm = False
         setup_cols = ''
         for i in range(0, self.col_count):
             match = next((
@@ -130,19 +127,11 @@ class Docx2LaTex(DocxParser):
             if match:
                 if 'justify' in match:
                     if match['justify'] == 'center':
-                        center = True
+                        setup_cols += 'c'
                     elif match['justify'] == 'right':
-                        right = True
+                        setup_cols += 'r'
                 elif match['list']:
-                    pcm = True
-            if center is True:
-                setup_cols += 'c'
-                center = False
-            elif right is True:
-                setup_cols += 'r'
-                right = False
-            elif pcm is True:
-                setup_cols += 'p{3cm}'
+                        setup_cols += 'p{3cm}'
             else:
                 setup_cols += 'l'
         self.table_info = []
@@ -156,8 +145,8 @@ class Docx2LaTex(DocxParser):
 
     def table_cell(
             self, text, col='', row='',
-            is_last_row_item=False, is_list_item=False):
-        if is_list_item:
+            is_last_row_item=False, has_child_list=False):
+        if has_child_list:
             self.columns = {}
             self.columns['Column'] = self.col_count
             self.columns['list'] = True
@@ -190,58 +179,40 @@ class Docx2LaTex(DocxParser):
     def page_break(self):
         return r'\newpage '
 
-    def indent(self, text, just='', firstLine='',
+    def indent(self, text, alignment='', firstLine='',
                left='', right='', hanging='', is_in_table=False):
         if not is_in_table:
-            raggedright = False
-            raggedleft = False
-            center = False
             slug = ''
             if hanging:
                 hanging = float(hanging)
                 hanging = hanging * float(3)/float(4)
                 return r'\begin{hangparas}{%spt}{1} %s ' \
                        r'\end{hangparas}' % (hanging, text) + '\n'
-            if right and left:
-                left = float(left)
-                right = float(right)
-                left = left * float(3) / float(4)
-                right = right * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{%spt}{%spt}' % (left, right)
-            elif left:
-                left = float(left)
-                left = left * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{}{%spt}' % (left)
-            elif right:
+            if right:
                 right = float(right)
                 right = right * float(3) / float(4)
-                slug += r'\begin{adjustwidth}{%spt}{}' % (right)
+            if left:
+                left = float(left)
+                left = left * float(3) / float(4)
+            if left or right:
+                slug += r'\begin{adjustwidth}{%s}{%s}' % (
+                    left+'pt', right+'pt')
             if firstLine:
                 slug += r'\setlength{\parindent}{'+firstLine+r'pt}\indent '
-            if just:
-                if just == 'left':
-                    raggedright = True
-                    slug += r'\begin{flushright} '
-                elif just == 'center':
-                    center = True
-                    slug += r'\begin{center} '
-                elif just == 'right':
-                    raggedleft = True
-                    slug += r'\begin{flushleft} '
-            slug += text
-            if raggedright:
-                slug += r'\end{flushright}'
-            if center:
-                slug += r'\end{center}'
-            if raggedleft:
-                slug += r'\end{flushleft}'
+            if alignment:
+                if alignment == 'left':
+                    slug += r'\begin{flushright} %s \end{flushright}' % text
+                elif alignment == 'center':
+                    slug += r'\begin{center} %s \end{center}' % text
+                elif alignment == 'right':
+                    slug += r'\begin{flushleft} %s \end{flushleft}' % text
             if left or right:
                 slug += r'\end{adjustwidth}'
             return slug
         else:
             self.columns = {}
             self.columns['Column'] = self.col_count
-            self.columns['justify'] = just
+            self.columns['justify'] = alignment
             if self.columns not in self.table_info:
                 self.table_info.append(self.columns)
             return text
@@ -250,13 +221,6 @@ class Docx2LaTex(DocxParser):
         if is_in_table:
             self.line_break_in_table = True
         return r'\\'
-
-    def change_orientation(self, parsed, orient):
-        if orient == 'portrait':
-            return parsed
-        if orient == 'landscape':
-            return r'\begin{landscape}' + '\n' \
-                   + parsed + '\end{landscape}' + '\n'
 
     def deletion(self, text, author, date):
         return r'\deleted[id='+author+',remark='+date+']{%s}' % text

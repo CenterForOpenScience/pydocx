@@ -1,6 +1,13 @@
 
 Changelog
 =========
+* 0.3.8
+    * If zipfile fails to open the passed in file, we are now raising a
+      `MalformedDocxException` instead of a `BadZipFIle`.
+* 0.3.7
+    * Some inline tags (most notably the underline tag) could have a `val` of
+      `none` and that would signify that the style is disabled. A `val` of
+      `none` is now correctly handled.
 * 0.3.6
     * It is possible for a docx file to not contain a `numbering.xml` file but
       still try to use lists. Now if this happens all lists get converted to

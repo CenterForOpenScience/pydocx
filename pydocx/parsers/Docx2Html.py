@@ -163,7 +163,9 @@ class Docx2Html(DocxParser):
     def table_row(self, text):
         return '<tr>' + text + '</tr>'
 
-    def table_cell(self, text, col='', row=''):
+    def table_cell(
+            self, text, col='', row='',
+            is_last_row_item=False, has_child_list=False):
         slug = '<td'
         if col:
             slug += ' colspan="%(colspan)s"'
@@ -179,9 +181,10 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
-    def indent(self, text, just='', firstLine='', left='', right=''):
+    def indent(self, text, alignment='', firstLine='', left='',
+               right='', hanging='', is_in_table=False):
         slug = '<div'
-        if just:
+        if alignment:
             slug += " class='pydocx-%(just)s'"
         if firstLine or left or right:
             slug += " style='"
@@ -195,11 +198,17 @@ class Docx2Html(DocxParser):
         slug += ">%(text)s</div>"
         return slug % {
             'text': text,
-            'just': just,
+            'just': alignment,
             'firstLine': firstLine,
             'left': left,
             'right': right,
         }
 
-    def break_tag(self):
+    def break_tag(self, *args):
         return '<br />'
+
+    def change_orientation(self, parsed, orient):
+        return '<hr />'
+
+    def empty_cell(self):
+        return ''

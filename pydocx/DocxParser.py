@@ -192,14 +192,17 @@ class DocxParser:
         v_merge = find_first(el, 'vMerge')
         if v_merge is not None and (
                 'restart' != v_merge.get('val', '')):
-            return ''
+            return self.empty_cell()
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
         if rowspan > 1:
             rowspan = str(rowspan)
         else:
             rowspan = ''
-        return self.table_cell(text, colspan, rowspan)
+        return self.table_cell(
+            text, col=colspan, row=rowspan,
+            is_last_row_item=self.pre_processor.is_last_row_item(el),
+            has_child_list=has_descendant_with_tag(el, 'ilvl'))
 
     def parse_list(self, el, text):
         """
@@ -292,9 +295,9 @@ class DocxParser:
                     self.pre_processor.ilvl(last_el) !=
                     self.pre_processor.ilvl(first_el)):
                 return False
-            # We only care about last items that have not been parsed before
-            # (first list items are always parsed at the beginning of this
-            # method.)
+            # We only care about last items that have not been
+            # parsed before (first list items are
+            # always parsed at the beginning of this method.)
             return (
                 not self.pre_processor.is_first_list_item(last_el) and
                 self.pre_processor.is_last_list_item_in_root(last_el)
@@ -326,7 +329,6 @@ class DocxParser:
             value = _justification.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
-
         if indentation is not None:
             if INDENTATION_RIGHT in indentation.attrib:
                 right = indentation.attrib[INDENTATION_RIGHT]
@@ -342,7 +344,10 @@ class DocxParser:
                 firstLine = (int(firstLine) / 20) * float(4) / float(3)
                 firstLine = str(firstLine)
         if any([alignment, firstLine, left, right]):
-            return self.indent(text, alignment, firstLine, left, right)
+            return self.indent(
+                text, alignment=alignment, firstLine=firstLine,
+                left=left, right=right,
+                is_in_table=self.pre_processor.is_in_table(el))
         return text
 
     def parse_p(self, el, text):
@@ -386,8 +391,8 @@ class DocxParser:
         if tag_is_inline_like:
             return False
         if (
-                self.pre_processor.is_last_list_item_in_root(
-                    self.pre_processor.previous(next_el))):
+            self.pre_processor.is_last_list_item_in_root(
+                self.pre_processor.previous(next_el))):
             return False
         if self.pre_processor.previous(next_el).tag not in paragraph_like_tags:
             return False
@@ -434,7 +439,8 @@ class DocxParser:
                 if not next_elements_content:
                     continue
                 if self._should_append_break_tag(el):
-                    parsed += self.break_tag()
+                    parsed += self.break_tag(
+                        self.pre_processor.is_in_table(el))
                 parsed += next_elements_content
             else:
                 break
@@ -498,7 +504,8 @@ class DocxParser:
                 if not next_elements_content:
                     continue
                 if self._should_append_break_tag(el):
-                    parsed += self.break_tag()
+                    parsed += self.break_tag(
+                        self.pre_processor.is_in_table(el))
                 parsed += next_elements_content
             else:
                 break
@@ -589,7 +596,7 @@ class DocxParser:
         return self.escape(el.text)
 
     def parse_break_tag(self, el, parsed):
-        return self.break_tag()
+        return self.break_tag(self.pre_processor.is_in_table(el))
 
     def parse_deletion(self, el, parsed):
         if el.text is None:
@@ -748,4 +755,8 @@ class DocxParser:
 
     @abstractmethod
     def indent(self, text, left='', right='', firstLine=''):
-        return text  # TODO JUSTIFIED JUSTIFIED TEXT
+        return text
+
+    @abstractmethod
+    def empty_cell(self):
+        return ''

@@ -751,6 +751,20 @@ def test_missing_numbering():
     ''')
 
 
+def test_styled_bolding():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'styled_bolding.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p><strong>AAA</strong></p>
+    <p><strong>BBB</strong></p>
+    ''')
+
+
 @raises(MalformedDocxException)
 def test_malformed_docx_exception():
     with NamedTemporaryFile(suffix='.docx') as f:

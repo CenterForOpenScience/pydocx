@@ -2,7 +2,6 @@
 import os
 import time
 
-from xml.etree import cElementTree
 from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
@@ -980,22 +979,22 @@ class HeadingTestCase(_TranslationTestCase):
 
     styles_dict = {
         'style0': {
-            'style_val': 'heading 1',
+            'style_name': 'heading 1',
         },
         'style1': {
-            'style_val': 'heading 2',
+            'style_name': 'heading 2',
         },
         'style2': {
-            'style_val': 'heading 3',
+            'style_name': 'heading 3',
         },
         'style3': {
-            'style_val': 'heading 4',
+            'style_name': 'heading 4',
         },
         'style4': {
-            'style_val': 'heading 5',
+            'style_name': 'heading 5',
         },
         'style5': {
-            'style_val': 'heading 6',
+            'style_name': 'heading 6',
         },
     }
 
@@ -1026,10 +1025,10 @@ class StyledBoldingTestCase(_TranslationTestCase):
 
     styles_dict = {
         'style0': {
-            'style_val': 'p1',
-            'rPr': cElementTree.XML(
-                '<rPr><b /></rPr>',
-            ),
+            'style_name': 'p1',
+            'default_run_properties': {
+                'b': '',
+            }
         },
     }
 

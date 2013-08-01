@@ -355,6 +355,8 @@ class PydocxPrePorcessor(object):
             'heading 9': 'h6',
             'heading 10': 'h6',
         }
+        # Remove the rPr from the styles dict since all the styling will be
+        # down with the heading.
         for style_id, styles in self.styles_dict.items():
             if styles.get('style_name', '').lower() in headers:
                 if 'default_run_properties' in styles:
@@ -376,8 +378,6 @@ class PydocxPrePorcessor(object):
                 self.meta_data[element]['is_last_list_item_in_root'] = False
                 # Prime the heading_level
                 self.meta_data[element]['heading_level'] = headers[style_name.lower()]  # noqa
-                # Remove the rPr from the styles dict since all the styling
-                # will be down with the heading.
 
     def _convert_upper_roman(self, body):
         if not self.convert_root_level_upper_roman:

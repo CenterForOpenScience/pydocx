@@ -360,16 +360,22 @@ class PydocxPrePorcessor(object):
             if find_first(element, 'pStyle') is None:
                 continue
             style = find_first(element, 'pStyle').attrib.get('val', '')
-            style = self.styles_dict.get(style)
+            metadata = self.styles_dict.get(style, {})
+            style_val = metadata.get('style_val')
 
             # Check to see if this element is actually a header.
-            if style and style.lower() in headers:
+            if style_val and style_val.lower() in headers:
                 # Set all the list item variables to false.
                 self.meta_data[element]['is_list_item'] = False
                 self.meta_data[element]['is_first_list_item'] = False
                 self.meta_data[element]['is_last_list_item_in_root'] = False
                 # Prime the heading_level
-                self.meta_data[element]['heading_level'] = headers[style.lower()]  # noqa
+                self.meta_data[element]['heading_level'] = headers[style_val.lower()]  # noqa
+                # Remove the rPr from the styles dict since all the styling
+                # will be down with the heading.
+                if style in self.styles_dict:
+                    if 'rPr' in self.styles_dict[style]:
+                        del self.styles_dict[style]['rPr']
 
     def _convert_upper_roman(self, body):
         if not self.convert_root_level_upper_roman:

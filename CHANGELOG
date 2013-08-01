@@ -4,6 +4,10 @@ Changelog
 * 0.3.9
     * We are now respecting the `<w:tab/>` element. We are putting a space in
       everywhere they happen.
+    * Each styling can have a default defined based on values in `styles.xml`.
+      These default styles can be overwritten using the `rPr` on the actual `r`
+      tag. These default styles defined in `styles.xml` are actually being
+      respected now.
 * 0.3.8
     * If zipfile fails to open the passed in file, we are now raising a
       `MalformedDocxException` instead of a `BadZipFIle`.

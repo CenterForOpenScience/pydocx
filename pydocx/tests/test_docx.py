@@ -180,6 +180,17 @@ def test_special_chars():
     <p>&amp; &lt; &gt; <a href="https://www.google.com/?test=1&amp;more=2">link</a></p>''')  # noqa
 
 
+def test_include_tabs():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'include_tabs.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '<p>AAA BBB</p>')
+
+
 def test_table_col_row_span():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

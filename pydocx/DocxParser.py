@@ -90,7 +90,11 @@ class DocxParser:
         result = {}
         for style in find_all(tree, 'style'):
             style_val = find_first(style, 'name').attrib['val']
-            result[style.attrib['styleId']] = style_val
+            run_property = find_first(style, 'rPr')
+            result[style.attrib['styleId']] = {
+                'style_val': style_val,
+                'rPr': run_property,
+            }
         return result
 
     def _parse_rels_root(self):
@@ -606,12 +610,28 @@ class DocxParser:
         text = parsed
         if not text:
             return ''
-        run_tag_property = el.find('rPr')
+
+        run_tag_properties = []
+        p = find_ancestor_with_tag(self.pre_processor, el, 'p')
+        paragraph_style = find_first(p, 'pStyle')
+        if paragraph_style is not None:
+            style = paragraph_style.get('val')
+            metadata = self.styles_dict.get(style, {})
+            run_tag_properties.append(metadata.get('rPr'))
+        run_tag_properties.append(el.find('rPr'))
+
+        # Filter out the rPr tags that were missing.
+        run_tag_properties = [
+            rPr for rPr
+            in run_tag_properties
+            if rPr is not None
+        ]
 
         def _has_style_on(run_tag_property, tag):
             el = run_tag_property.find(tag)
             if el is not None:
                 return self._is_style_on(el)
+
         inline_tags = {
             'b': self.bold,
             'i': self.italics,
@@ -623,7 +643,7 @@ class DocxParser:
             'vanish': self.hide,
             'webHidden': self.hide,
         }
-        if run_tag_property is not None:
+        for run_tag_property in run_tag_properties:
             for child in run_tag_property:
                 # These tags are a little different, handle them separately
                 # from the rest.

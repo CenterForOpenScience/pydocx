@@ -978,12 +978,24 @@ class HeadingTestCase(_TranslationTestCase):
     '''
 
     styles_dict = {
-        'style0': 'heading 1',
-        'style1': 'heading 2',
-        'style2': 'heading 3',
-        'style3': 'heading 4',
-        'style4': 'heading 5',
-        'style5': 'heading 6',
+        'style0': {
+            'style_val': 'heading 1',
+        },
+        'style1': {
+            'style_val': 'heading 2',
+        },
+        'style2': {
+            'style_val': 'heading 3',
+        },
+        'style3': {
+            'style_val': 'heading 4',
+        },
+        'style4': {
+            'style_val': 'heading 5',
+        },
+        'style5': {
+            'style_val': 'heading 6',
+        },
     }
 
     def get_xml(self):

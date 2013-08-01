@@ -612,15 +612,19 @@ class DocxParser:
             return ''
 
         run_tag_properties = []
+
+        # Get the rPr for the current style first, they are the defaults.
         p = find_ancestor_with_tag(self.pre_processor, el, 'p')
         paragraph_style = find_first(p, 'pStyle')
         if paragraph_style is not None:
             style = paragraph_style.get('val')
             metadata = self.styles_dict.get(style, {})
             run_tag_properties.append(metadata.get('rPr'))
+
+        # Get the rPr for the current r tag second, they are overrides.
         run_tag_properties.append(el.find('rPr'))
 
-        # Filter out the rPr tags that were missing.
+        # Filter out the rPr tags that were missing
         run_tag_properties = [
             rPr for rPr
             in run_tag_properties
@@ -643,18 +647,36 @@ class DocxParser:
             'vanish': self.hide,
             'webHidden': self.hide,
         }
+        styles_needing_application = {}
         for run_tag_property in run_tag_properties:
             for child in run_tag_property:
                 # These tags are a little different, handle them separately
                 # from the rest.
                 # This could be a superscript or a subscript
                 if child.tag == 'vertAlign':
+                    # If the tag is on, then set the
+                    # `styles_needing_application` value to the handler.
                     if child.attrib['val'] == 'superscript':
-                        text = self.superscript(text)
+                        styles_needing_application['vertAlign'] = self.superscript  # noqa
                     elif child.attrib['val'] == 'subscript':
-                        text = self.subscript(text)
-                elif child.tag in inline_tags and self._is_style_on(child):
-                    text = inline_tags[child.tag](text)
+                        styles_needing_application['vertAlign'] = self.subscript  # noqa
+                    # Otherwise replace whatever was there with a blank
+                    # handler.
+                    else:
+                        styles_needing_application['vertAlign'] = lambda x: x
+                else:
+                    # Same thing here, if the style is on, then save the
+                    # handler.
+                    if child.tag in inline_tags and self._is_style_on(child):
+                        styles_needing_application[child.tag] = inline_tags[child.tag]  # noqa
+                    # Otherwise override whatever was there with a blank
+                    # handler.
+                    else:
+                        styles_needing_application[child.tag] = lambda x: x
+
+        # Apply all the handlers.
+        for func in styles_needing_application.values():
+            text = func(text)
 
         return text
 

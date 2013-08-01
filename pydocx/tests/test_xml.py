@@ -2,6 +2,7 @@
 import os
 import time
 
+from xml.etree import cElementTree
 from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
@@ -1007,6 +1008,54 @@ class HeadingTestCase(_TranslationTestCase):
             DXB.p_tag(text='EEE', style='style4'),
             DXB.p_tag(text='GGG', style='style5'),
             DXB.p_tag(text='HHH', style='garbage'),
+        ]
+        body = ''
+        for tag in p_tags:
+            body += tag
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class StyledBoldingTestCase(_TranslationTestCase):
+    expected_output = '''
+        <p><strong>AAA</strong></p>
+        <p><strong>BBB</strong></p>
+        <p>CCC</p>
+    '''
+
+    styles_dict = {
+        'style0': {
+            'style_val': 'p1',
+            'rPr': cElementTree.XML(
+                '<rPr><b /></rPr>',
+            ),
+        },
+    }
+
+    def get_xml(self):
+        p_tags = [
+            DXB.p_tag(text='AAA', style='style0'),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        # Don't do duplicates
+                        rpr=DXB.rpr_tag({'b': None}),
+                    ),
+                ],
+                style='style0',
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        # Overwrite the current style
+                        rpr=DXB.rpr_tag({'b': 'false'}),
+                    ),
+                ],
+                style='style0',
+            ),
         ]
         body = ''
         for tag in p_tags:

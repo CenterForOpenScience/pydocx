@@ -31,7 +31,7 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-DISABLED_VALUES = ['false', '0', 'none']
+DISABLED_STYLE_VALUES = ['false', '0', 'none']
 
 # Add some helper functions to Element to make it slightly more readable
 
@@ -83,15 +83,48 @@ class DocxParser:
         if self.comment_text:
             self.comment_root = parse_xml_from_string(self.comment_text)
 
+    def _parse_run_properties(self, rPr):
+        """
+        Takes an `rPr` and returns a dictionary contain the tag name mapped to
+        the child's value property.
+
+        If you have an rPr that looks like this:
+        <w:rPr>
+            <w:b/>
+            <w:u val="false"/>
+            <w:sz val="16"/>
+        </w:rPr>
+
+        That will result in a dictionary that looks like this:
+        {
+            'b': '',
+            'u': 'false',
+            'sz': '16',
+        }
+        """
+        run_properties = {}
+        if rPr is None:
+            return {}
+        for run_property in rPr:
+            val = run_property.get('val', '').lower()
+            run_properties[run_property.tag] = val
+        return run_properties
+
     def _parse_styles(self):
         if self.styles_text is None:
             return {}
         tree = parse_xml_from_string(self.styles_text)
-        result = {}
+        styles_dict = {}
         for style in find_all(tree, 'style'):
             style_val = find_first(style, 'name').attrib['val']
-            result[style.attrib['styleId']] = style_val
-        return result
+            run_properties = find_first(style, 'rPr')
+            styles_dict[style.attrib['styleId']] = {
+                'style_name': style_val,
+                'default_run_properties': self._parse_run_properties(
+                    run_properties,
+                ),
+            }
+        return styles_dict
 
     def _parse_rels_root(self):
         tree = parse_xml_from_string(self.relationship_text)
@@ -576,14 +609,13 @@ class DocxParser:
             return self.image(self._image_data[src], filename, x, y)
         return ''
 
-    def _is_style_on(self, el):
+    def _is_style_on(self, value):
         """
         For b, i, u (bold, italics, and underline) merely having the tag is not
         sufficient. You need to check to make sure it is not set to "false" as
         well.
         """
-        val = el.get('val', '').lower()
-        return val.lower() not in DISABLED_VALUES
+        return value not in DISABLED_STYLE_VALUES
 
     def parse_t(self, el, parsed):
         if el.text is None:
@@ -611,13 +643,28 @@ class DocxParser:
         text = parsed
         if not text:
             return ''
-        run_tag_property = el.find('rPr')
 
-        def _has_style_on(run_tag_property, tag):
-            el = run_tag_property.find(tag)
-            if el is not None:
-                return self._is_style_on(el)
-        inline_tags = {
+        run_properties = {}
+
+        # Get the rPr for the current style, they are the defaults.
+        p = find_ancestor_with_tag(self.pre_processor, el, 'p')
+        paragraph_style = find_first(p, 'pStyle')
+        if paragraph_style is not None:
+            style = paragraph_style.get('val')
+            style_defaults = self.styles_dict.get(style, {})
+            run_properties.update(
+                style_defaults.get('default_run_properties', {}),
+            )
+
+        # Get the rPr for the current r tag, they are overrides.
+        run_properties_element = el.find('rPr')
+        if run_properties_element:
+            local_run_properties = self._parse_run_properties(
+                run_properties_element,
+            )
+            run_properties.update(local_run_properties)
+
+        inline_tag_handlers = {
             'b': self.bold,
             'i': self.italics,
             'u': self.underline,
@@ -628,18 +675,28 @@ class DocxParser:
             'vanish': self.hide,
             'webHidden': self.hide,
         }
-        if run_tag_property is not None:
-            for child in run_tag_property:
-                # These tags are a little different, handle them separately
-                # from the rest.
-                # This could be a superscript or a subscript
-                if child.tag == 'vertAlign':
-                    if child.attrib['val'] == 'superscript':
-                        text = self.superscript(text)
-                    elif child.attrib['val'] == 'subscript':
-                        text = self.subscript(text)
-                elif child.tag in inline_tags and self._is_style_on(child):
-                    text = inline_tags[child.tag](text)
+        styles_needing_application = []
+        for property_name, property_value in run_properties.items():
+            # These tags are a little different, handle them separately
+            # from the rest.
+            # This could be a superscript or a subscript
+            if property_name == 'vertAlign':
+                if property_value == 'superscript':
+                    styles_needing_application.append(self.superscript)
+                elif property_value == 'subscript':
+                    styles_needing_application.append(self.subscript)
+            else:
+                if (
+                        property_name in inline_tag_handlers and
+                        self._is_style_on(property_value)
+                ):
+                    styles_needing_application.append(
+                        inline_tag_handlers[property_name],
+                    )
+
+        # Apply all the handlers.
+        for func in styles_needing_application:
+            text = func(text)
 
         return text
 

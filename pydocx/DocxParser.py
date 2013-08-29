@@ -520,23 +520,10 @@ class DocxParser:
     def parse_table_cell_contents(self, el, text):
         parsed = text
 
-        def _should_parse_next_as_content(el):
-            next_el = self.pre_processor.next(el)
-            if next_el is None:
-                return False
-            if self.pre_processor.is_in_table(next_el):
-                return True
-        while el is not None:
-            if _should_parse_next_as_content(el):
-                el = self.pre_processor.next(el)
-                next_elements_content = self.parse(el)
-                if not next_elements_content:
-                    continue
-                if self._should_append_break_tag(el):
-                    parsed += self.break_tag()
-                parsed += next_elements_content
-            else:
-                break
+        next_el = self.pre_processor.next(el)
+        if next_el is not None:
+            if self._should_append_break_tag(next_el):
+                parsed += self.break_tag()
         return parsed
 
     def parse_hyperlink(self, el, text):

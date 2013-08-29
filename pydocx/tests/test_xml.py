@@ -695,10 +695,37 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
     def get_xml(self):
         paragraph = DXB.p_tag('AAA')
 
-        for _ in range(50):
+        for _ in range(1000):
             cell = DXB.table_cell(paragraph)
             row = DXB.table_cell([cell])
             table = DXB.table([row])
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+    def test_performance(self):
+        with self.toggle_run_expected_output():
+            start_time = time.time()
+            try:
+                self.test_expected_output()
+            except AssertionError:
+                pass
+            end_time = time.time()
+            total_time = end_time - start_time
+            # This finishes in under a second on python 2.7
+            assert total_time < 3, total_time
+
+
+class LargeCellTestCase(_TranslationTestCase):
+    expected_output = ''
+    run_expected_output = False
+
+    def get_xml(self):
+        # Make sure it is over 1000 (which is the recursion limit)
+        paragraphs = [DXB.p_tag('%d' % i) for i in range(1000)]
+        cell = DXB.table_cell(paragraphs)
+        row = DXB.table_cell([cell])
+        table = DXB.table([row])
         body = table
         xml = DXB.xml(body)
         return xml

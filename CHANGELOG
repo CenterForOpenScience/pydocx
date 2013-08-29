@@ -1,6 +1,10 @@
 
 Changelog
 =========
+* 0.3.10
+    * Found and optimized a fairly large performance issue with tables that had
+      large amounts of content within a single cell, which includes nested
+      tables.
 * 0.3.9
     * We are now respecting the `<w:tab/>` element. We are putting a space in
       everywhere they happen.

@@ -1,6 +1,9 @@
 
 Changelog
 =========
+* 0.3.11
+    * The non breaking hyphen tag was not correctly being imported. This issue
+      has been fixed.
 * 0.3.10
     * Found and optimized a fairly large performance issue with tables that had
       large amounts of content within a single cell, which includes nested

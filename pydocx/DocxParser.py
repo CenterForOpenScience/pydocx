@@ -198,6 +198,8 @@ class DocxParser:
             return self.parse_t(el, parsed)
         elif el.tag == 'tab':
             return self.parse_tab(el, parsed)
+        elif el.tag == 'noBreakHyphen':
+            return self.parse_hyphen(el, parsed)
         elif el.tag == 'br':
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
@@ -611,6 +613,9 @@ class DocxParser:
 
     def parse_tab(self, el, parsed):
         return ' '
+
+    def parse_hyphen(self, el, parsed):
+        return '-'
 
     def parse_break_tag(self, el, parsed):
         return self.break_tag()

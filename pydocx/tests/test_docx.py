@@ -776,6 +776,19 @@ def test_styled_bolding():
     ''')
 
 
+def test_no_break_hyphen():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'no_break_hyphen.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % '''
+    <p>AAA-BBB</p>
+    ''')
+
+
 @raises(MalformedDocxException)
 def test_malformed_docx_exception():
     with NamedTemporaryFile(suffix='.docx') as f:

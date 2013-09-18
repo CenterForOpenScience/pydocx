@@ -231,3 +231,8 @@ Optional Arguments
 ##################
 
 You can pass in `convert_root_level_upper_roman=True` to the parser and it will convert all root level upper roman lists to headings instead.
+
+Command Line Execution
+######################
+
+First you have to install pydocx, this can be done by running the command `pip install pydocx`. From there you can simply call the command `pydocx --html path/to/file.docx path/to/output.html`. Change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.

@@ -235,4 +235,4 @@ You can pass in `convert_root_level_upper_roman=True` to the parser and it will 
 Command Line Execution
 ######################
 
-It is possible to run the conversion from command line without using any python. This can be done by calling `pydocx.docx2html path/to/file.docx path/to/output.html`. Simply change `pydocx.docx2html` to `pydocx.docx2markdown` in order to convert to markdown instead.
+It is possible to run the conversion from command line without using any python. This can be done by calling `pydocx --html path/to/file.docx path/to/output.html`. Simply change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.

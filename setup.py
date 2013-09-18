@@ -56,8 +56,7 @@ setup(
     long_description=get_description(),
     entry_points={
         'console_scripts': [
-            'pydocx.docx2html = pydocx.parsers.Docx2Html:main',
-            'pydocx.docx2markdown = pydocx.parsers.Docx2Markdown:main',
+            'pydocx = pydocx.__init__:main',
         ],
     },
 )

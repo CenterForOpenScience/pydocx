@@ -28,7 +28,7 @@ def main():
         print 'Only valid parsers are --html and --markdown'
         sys.exit()
     with open(path_to_html, 'w') as f:
-        f.write(html)
+        f.write(html.encode('utf-8'))
 
 if __name__ == '__main__':
     main()

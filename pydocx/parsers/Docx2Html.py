@@ -215,7 +215,7 @@ def main():
         sys.exit()
     html = Docx2Html(path_to_docx).parsed
     with open(path_to_html, 'w') as f:
-        f.write(html)
+        f.write(html.encode('utf-8'))
 
 if __name__ == '__main__':
     main()

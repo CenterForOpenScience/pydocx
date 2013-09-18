@@ -1,5 +1,3 @@
-import sys
-
 from pydocx.DocxParser import DocxParser
 
 
@@ -26,18 +24,3 @@ class Docx2Markdown(DocxParser):
 
     def underline(self, text):
         return '***' + text + '***'
-
-
-def main():
-    try:
-        path_to_docx = sys.argv[1]
-        path_to_html = sys.argv[2]
-    except IndexError:
-        print 'Must specific the file to convert and the name of the resulting file.'  # noqa
-        sys.exit()
-    html = Docx2Markdown(path_to_docx).parsed
-    with open(path_to_html, 'w') as f:
-        f.write(html)
-
-if __name__ == '__main__':
-    main()

@@ -9,7 +9,6 @@ except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
     from setuptools import setup, find_packages  # noqa
-
 rel_file = lambda *args: os.path.join(
     os.path.dirname(os.path.abspath(__file__)), *args)
 
@@ -55,4 +54,9 @@ setup(
         "Topic :: Text Processing :: Markup :: XML",
     ],
     long_description=get_description(),
+    entry_points={
+        'console_scripts': [
+            'pydocx = pydocx.__init__:main',
+        ],
+    },
 )

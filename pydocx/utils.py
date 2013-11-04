@@ -1,4 +1,6 @@
 import re
+import collections
+import functools
 
 from collections import defaultdict
 from xml.etree import cElementTree
@@ -21,6 +23,39 @@ TAGS_HOLDING_CONTENT_TAGS = (
 )
 
 
+class memoized(object):
+    '''
+    Decorator. Caches a function's return value each time it is called.
+    If called later with the same arguments, the cached value is returned
+    (not reevaluated).
+    Stolen from: https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+    '''
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        if not isinstance(args, collections.Hashable):
+            # uncacheable. a list, for instance.
+            # better to not cache than blow up.
+            return self.func(*args)
+        if args in self.cache:
+            return self.cache[args]
+        else:
+            value = self.func(*args)
+            self.cache[args] = value
+            return value
+
+    def __repr__(self):
+        '''Return the function's docstring.'''
+        return self.func.__doc__
+
+    def __get__(self, obj, objtype):
+        '''Support instance methods.'''
+        return functools.partial(self.__call__, obj)
+
+
+@memoized
 def el_iter(el):
     """
     Go through all elements
@@ -31,6 +66,7 @@ def el_iter(el):
         return el.findall('.//*')
 
 
+@memoized
 def find_first(el, tag):
     """
     Find the first occurrence of a tag beneath the current element.
@@ -38,6 +74,7 @@ def find_first(el, tag):
     return el.find('.//' + tag)
 
 
+@memoized
 def find_all(el, tag):
     """
     Find all occurrences of a tag
@@ -45,6 +82,7 @@ def find_all(el, tag):
     return el.findall('.//' + tag)
 
 
+@memoized
 def find_ancestor_with_tag(pre_processor, el, tag):
     """
     Find the first ancestor with that is a `tag`.
@@ -56,6 +94,7 @@ def find_ancestor_with_tag(pre_processor, el, tag):
     return None
 
 
+@memoized
 def has_descendant_with_tag(el, tag):
     """
     Determine if there is a child ahead in the element tree.

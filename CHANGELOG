@@ -1,6 +1,9 @@
 
 Changelog
 =========
+* 0.3.13
+    * Significant performance gains for documents with a large number of table
+      cells.
 * 0.3.12
     * Added command line support to convert from docx to either html or
       markdown.

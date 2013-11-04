@@ -55,7 +55,6 @@ class memoized(object):
         return functools.partial(self.__call__, obj)
 
 
-@memoized
 def el_iter(el):
     """
     Go through all elements

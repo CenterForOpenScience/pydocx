@@ -1,4 +1,5 @@
 import re
+import collections
 
 from collections import defaultdict
 from xml.etree import cElementTree
@@ -19,6 +20,43 @@ TAGS_HOLDING_CONTENT_TAGS = (
     'tbl',
     'sdt',
 )
+
+
+class MulitMemoize(object):
+    '''
+    Adapted from: https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+    func_names = {
+        'find_all': find_all,
+        ...
+    }
+    '''
+    def __init__(self, func_names):
+        self.cache = dict((func_name, {}) for func_name in func_names)
+        self.func_names = func_names
+
+    def __call__(self, func_name, *args):
+        if not isinstance(args, collections.Hashable):
+            # uncacheable. a list, for instance.
+            # better to not cache than blow up.
+            return self.func_names[func_name](*args)
+        if args in self.cache[func_name]:
+            return self.cache[func_name][args]
+        else:
+            value = self.func_names[func_name](*args)
+            self.cache[func_name][args] = value
+            return value
+
+
+class MulitMemoizeMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(MulitMemoizeMixin, self).__init__(*args, **kwargs)
+        self._memoization = None
+
+    def memod_tree_op(self, func_name, *args):
+        return self._memoization(func_name, *args)
+
+    def populate_memoization(self, func_names):
+        self._memoization = MulitMemoize(func_names)
 
 
 def el_iter(el):
@@ -61,7 +99,7 @@ def has_descendant_with_tag(el, tag):
     Determine if there is a child ahead in the element tree.
     """
     # Get child. stop at first child.
-    return True if el.find('.//' + tag) is not None else False
+    return True if find_first(el, tag) is not None else False
 
 
 def _filter_children(element, tags):
@@ -154,7 +192,7 @@ class NamespacedNumId(object):
         return self._num_id
 
 
-class PydocxPrePorcessor(object):
+class PydocxPreProcessor(MulitMemoizeMixin):
     def __init__(
             self,
             convert_root_level_upper_roman=False,
@@ -167,6 +205,9 @@ class PydocxPrePorcessor(object):
         self.numbering_root = numbering_root
 
     def perform_pre_processing(self, root, *args, **kwargs):
+        self.populate_memoization({
+            'find_first': find_first,
+        })
         self._add_parent(root)
         # If we don't have a numbering root there cannot be any lists.
         if self.numbering_root is not None:
@@ -251,14 +292,12 @@ class PydocxPrePorcessor(object):
             # Deleted text in a list will have a numId but no ilvl.
             if parent is None:
                 continue
-            if find_first(parent, 'ilvl') is None:
+            parent_ilvl = self.memod_tree_op('find_first', parent, 'ilvl')
+            if parent_ilvl is None:
                 continue
             self.meta_data[parent]['is_list_item'] = True
             self.meta_data[parent]['num_id'] = self._generate_num_id(parent)
-            self.meta_data[parent]['ilvl'] = find_first(
-                parent,
-                'ilvl',
-            ).attrib['val']
+            self.meta_data[parent]['ilvl'] = parent_ilvl.attrib['val']
 
     def _generate_num_id(self, el):
         '''
@@ -364,9 +403,10 @@ class PydocxPrePorcessor(object):
 
         for element in elements:
             # This element is using the default style which is not a heading.
-            if find_first(element, 'pStyle') is None:
+            p_style = find_first(element, 'pStyle')
+            if p_style is None:
                 continue
-            style = find_first(element, 'pStyle').attrib.get('val', '')
+            style = p_style.attrib.get('val', '')
             metadata = self.styles_dict.get(style, {})
             style_name = metadata.get('style_name')
 
@@ -389,6 +429,7 @@ class PydocxPrePorcessor(object):
             if self.is_first_list_item(el)
         ]
         visited_num_ids = []
+        all_p_tags_in_body = find_all(body, 'p')
         for root_list_item in first_root_list_items:
             if self.num_id(root_list_item) in visited_num_ids:
                 continue
@@ -401,11 +442,11 @@ class PydocxPrePorcessor(object):
             if lst_style != 'upperRoman':
                 continue
             ilvl = min(
-                self.ilvl(el) for el in find_all(body, 'p')
+                self.ilvl(el) for el in all_p_tags_in_body
                 if self.num_id(el) == self.num_id(root_list_item)
             )
             root_upper_roman_list_items = [
-                el for el in find_all(body, 'p')
+                el for el in all_p_tags_in_body
                 if self.num_id(el) == self.num_id(root_list_item) and
                 self.ilvl(el) == ilvl
             ]

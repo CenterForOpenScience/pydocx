@@ -185,16 +185,16 @@ When creating your own Parser (as described above) you can now add in your own c
 ::
 
     class Docx2Foo(DocxParser):
-        pre_processor_class = FooPrePorcessor
+        pre_processor_class = FooPreProcessor
 
 
-The `FooPrePorcessor` will need a few things to get you going:
+The `FooPreProcessor` will need a few things to get you going:
 
 ::
 
-    class FooPrePorcessor(PydocxPrePorcessor):
+    class FooPreProcessor(PydocxPreProcessor):
         def perform_pre_processing(self, root, *args, **kwargs):
-            super(FooPrePorcessor, self).perform_pre_processing(root, *args, **kwargs)
+            super(FooPreProcessor, self).perform_pre_processing(root, *args, **kwargs)
             self._set_foo(root)
 
         def _set_foo(self, root):

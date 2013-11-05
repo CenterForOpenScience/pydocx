@@ -173,7 +173,7 @@ class DocxParser(MulitMemoizeMixin):
             'find_all': find_all,
             'find_first': find_first,
             'has_descendant_with_tag': has_descendant_with_tag,
-            'get_tcs_in_column': self.get_tcs_in_column,
+            '_get_tcs_in_column': self._get_tcs_in_column,
         })
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
@@ -485,7 +485,7 @@ class DocxParser(MulitMemoizeMixin):
         # Create the actual li element
         return self.list_element(parsed)
 
-    def get_tcs_in_column(self, tbl, column_index):
+    def _get_tcs_in_column(self, tbl, column_index):
         return [
             tc for tc in self.memod_tree_op('find_all', tbl, 'tc')
             if self.pre_processor.column_index(tc) == column_index
@@ -511,7 +511,7 @@ class DocxParser(MulitMemoizeMixin):
 
         tcs = [
             tc for tc in self.memod_tree_op(
-                'get_tcs_in_column', tbl, current_col,
+                '_get_tcs_in_column', tbl, current_col,
             ) if self.pre_processor.row_index(tc) >= current_row
         ]
 

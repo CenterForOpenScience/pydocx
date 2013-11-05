@@ -6,13 +6,14 @@ from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
 
 from pydocx.utils import (
-    PydocxPrePorcessor,
-    get_list_style,
-    parse_xml_from_string,
-    find_first,
+    MulitMemoizeMixin,
+    PydocxPreProcessor,
     find_all,
     find_ancestor_with_tag,
+    find_first,
+    get_list_style,
     has_descendant_with_tag,
+    parse_xml_from_string,
 )
 from pydocx.exceptions import MalformedDocxException
 
@@ -46,9 +47,9 @@ def ZipFile(path):  # This is not needed in python 3.2+
     f.close()
 
 
-class DocxParser:
+class DocxParser(MulitMemoizeMixin):
     __metaclass__ = ABCMeta
-    pre_processor_class = PydocxPrePorcessor
+    pre_processor_class = PydocxPreProcessor
 
     def _extract_xml(self, f, xml_path):
         try:
@@ -161,13 +162,19 @@ class DocxParser:
 
         #all blank when we init
         self.comment_store = None
-        self.visited = []
+        self.visited = set()
         self.list_depth = 0
         self.rels_dict = self._parse_rels_root()
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
+        self.populate_memoization({
+            'find_all': find_all,
+            'find_first': find_first,
+            'has_descendant_with_tag': has_descendant_with_tag,
+            'get_tcs_in_column': self.get_tcs_in_column,
+        })
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             styles_dict=self.styles_dict,
@@ -179,7 +186,7 @@ class DocxParser:
     def parse(self, el):
         if el in self.visited:
             return ''
-        self.visited.append(el)
+        self.visited.add(el)
         parsed = ''
         for child in el:
             # recursive. So you can get all the way to the bottom
@@ -417,7 +424,7 @@ class DocxParser:
         if self.pre_processor.previous(next_el) is None:
             return False
         tag_is_inline_like = any(
-            has_descendant_with_tag(next_el, tag) for
+            self.memod_tree_op('has_descendant_with_tag', next_el, tag) for
             tag in inline_like_tags
         )
         if tag_is_inline_like:
@@ -478,7 +485,20 @@ class DocxParser:
         # Create the actual li element
         return self.list_element(parsed)
 
+    def get_tcs_in_column(self, tbl, column_index):
+        return [
+            tc for tc in self.memod_tree_op('find_all', tbl, 'tc')
+            if self.pre_processor.column_index(tc) == column_index
+        ]
+
     def _get_rowspan(self, el, v_merge):
+        restart_in_v_merge = False
+        if v_merge is not None and 'val' in v_merge.attrib:
+            restart_in_v_merge = 'restart' in v_merge.attrib['val']
+
+        if not restart_in_v_merge:
+            return ''
+
         current_row = self.pre_processor.row_index(el)
         current_col = self.pre_processor.column_index(el)
         rowspan = 1
@@ -488,24 +508,20 @@ class DocxParser:
         # than the current_row and that are on the current_col
         if tbl is None:
             return ''
-        tcs = [
-            tc for tc in find_all(tbl, 'tc')
-            if self.pre_processor.row_index(tc) >= current_row and
-            self.pre_processor.column_index(tc) == current_col
-        ]
-        restart_in_v_merge = False
-        if v_merge is not None and 'val' in v_merge.attrib:
-            restart_in_v_merge = 'restart' in v_merge.attrib['val']
 
-        def increment_rowspan(tc):
-            if not restart_in_v_merge:
-                return False
+        tcs = [
+            tc for tc in self.memod_tree_op(
+                'get_tcs_in_column', tbl, current_col,
+            ) if self.pre_processor.row_index(tc) >= current_row
+        ]
+
+        def should_increment_rowspan(tc):
             if not self.pre_processor.vmerge_continue(tc):
                 return False
             return True
 
         for tc in tcs:
-            if increment_rowspan(tc):
+            if should_increment_rowspan(tc):
                 rowspan += 1
             else:
                 rowspan = 1
@@ -517,7 +533,7 @@ class DocxParser:
         grid_span = find_first(el, 'gridSpan')
         if grid_span is None:
             return ''
-        return find_first(el, 'gridSpan').attrib['val']
+        return grid_span.attrib['val']
 
     def parse_table_cell_contents(self, el, text):
         parsed = text
@@ -640,7 +656,7 @@ class DocxParser:
 
         # Get the rPr for the current style, they are the defaults.
         p = find_ancestor_with_tag(self.pre_processor, el, 'p')
-        paragraph_style = find_first(p, 'pStyle')
+        paragraph_style = self.memod_tree_op('find_first', p, 'pStyle')
         if paragraph_style is not None:
             style = paragraph_style.get('val')
             style_defaults = self.styles_dict.get(style, {})

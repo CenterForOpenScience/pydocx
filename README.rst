@@ -1,9 +1,9 @@
 ======
 pydocx
 ======
-.. image:: https://travis-ci.org/OpenScienceFramework/pydocx.png?branch=master
+.. image:: https://travis-ci.org/CenterForOpenScience/pydocx.png?branch=master
    :align: left
-   :target: https://travis-ci.org/OpenScienceFramework/pydocx
+   :target: https://travis-ci.org/CenterForOpenScience/pydocx
 
 pydocx is a parser that breaks down the elements of a docxfile and converts them
 into different markup languages. Right now, HTML is supported. Markdown and LaTex

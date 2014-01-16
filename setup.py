@@ -28,7 +28,7 @@ setup(
     description="docx (OOXML) to html converter",
     author="Jason Ward, Sam Portnow",
     author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",
-    url="http://github.com/OpenScienceFramework/pydocx",
+    url="http://github.com/CenterForOpenScience/pydocx",
     platforms=["any"],
     license="BSD",
     packages=find_packages(),

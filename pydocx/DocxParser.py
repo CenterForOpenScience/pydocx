@@ -191,7 +191,7 @@ class DocxParser(MulitMemoizeMixin):
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-        if el.tag == 'br' and el.attrib.get('type') == 'page':
+        if el.tag == 'lastRenderedPageBreak':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)
@@ -628,7 +628,7 @@ class DocxParser(MulitMemoizeMixin):
         return self.escape(el.text)
 
     def parse_tab(self, el, parsed):
-        return ' '
+        return self.tab()
 
     def parse_hyphen(self, el, parsed):
         return '-'

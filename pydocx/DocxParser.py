@@ -191,7 +191,10 @@ class DocxParser(MulitMemoizeMixin):
         for child in el:
             # recursive. So you can get all the way to the bottom
             parsed += self.parse(child)
-        if el.tag == 'lastRenderedPageBreak':
+        if el.tag == 'br' and el.attrib.get('type') == 'page':
+            return self.parse_page_break(el, parsed)
+        # page breaks use lastRenderedPageBreak in MS Word > 2007
+        elif el.tag == 'lastRenderedPageBreak':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':
             return self.parse_table(el, parsed)

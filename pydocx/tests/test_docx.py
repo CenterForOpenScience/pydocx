@@ -188,7 +188,10 @@ def test_include_tabs():
         'include_tabs.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '<p>AAA BBB</p>')
+    assert_html_equal(
+        actual_html,
+        BASE_HTML % '<p>AAA&nbsp;&nbsp;&nbsp;&nbsp;BBB</p>'
+    )
 
 
 def test_table_col_row_span():

@@ -206,7 +206,7 @@ class ImageTestCase(_TranslationTestCase):
     def test_get_image_id(self):
         parser = XMLDocx2Html(
             document_xml=self.get_xml(),
-            rels_dict=self.relationship_dict,
+            relationships=self.relationships,
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []
@@ -227,7 +227,7 @@ class ImageTestCase(_TranslationTestCase):
     def test_get_image_sizes(self):
         parser = XMLDocx2Html(
             document_xml=self.get_xml(),
-            rels_dict=self.relationship_dict,
+            relationships=self.relationships,
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []

@@ -148,8 +148,21 @@ class WordprocessingMLPackage(object):
             file_handle=file_handle,
             root=root,
         )
-        target_path_to_part_map = {}
 
+        self._build_and_associate_parts(
+            file_handle=file_handle,
+            relationship_digraph=relationship_digraph,
+            root=root,
+        )
+        return root.target
+
+    def _build_and_associate_parts(
+        self,
+        file_handle,
+        relationship_digraph,
+        root,
+    ):
+        target_path_to_part_map = {}
         # Load data for the individual parts
         for parent, relationships in relationship_digraph.items():
             for relationship in relationships.values():
@@ -183,8 +196,6 @@ class WordprocessingMLPackage(object):
         for parent, relationships in relationship_digraph.items():
             for relationship in relationships.values():
                 parent.target.add_relationship(relationship)
-
-        return root.target
 
     def _load_relationships(self, file_handle, root):
         digraph_of_relationships = {}

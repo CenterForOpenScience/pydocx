@@ -144,62 +144,64 @@ class WordprocessingMLPackage(object):
             target=OPCPart(),
         )
 
-        relations_digraph = self._load_relationships(
+        relationship_digraph = self._load_relationships(
             file_handle=file_handle,
             root=root,
         )
         target_path_to_part_map = {}
 
         # Load data for the individual parts
-        for parent, relations in relations_digraph.items():
-            for relation in relations.values():
-                if relation.external:
+        for parent, relationships in relationship_digraph.items():
+            for relationship in relationships.values():
+                if relationship.external:
                     continue
 
-                if relation.target is None:
-                    part = target_path_to_part_map.get(relation.target_path)
-                    relation.target = part
+                if relationship.target is None:
+                    part = target_path_to_part_map.get(
+                        relationship.target_path,
+                    )
+                    relationship.target = part
 
-                if relation.target is None:
+                if relationship.target is None:
                     raw_data = self._read_resource_from_file(
                         file_handle=file_handle,
-                        resource_path=relation.target_path,
+                        resource_path=relationship.target_path,
                     )
                     part = OPCPart(raw_data=raw_data)
-                    target_path_to_part_map[relation.target_path] = part
-                    relation.target = part
+                    target_path_to_part_map[relationship.target_path] = part
+                    relationship.target = part
 
         # Add relationships to parts
-        for parent, relations in relations_digraph.items():
-            for relation in relations.values():
-                parent.target.add_relationship(relation)
+        for parent, relationships in relationship_digraph.items():
+            for relationship in relationships.values():
+                parent.target.add_relationship(relationship)
 
         return root.target
 
     def _load_relationships(self, file_handle, root):
-        relations = {}
-        relations_to_scan = [root]
-        while len(relations_to_scan) > 0:
-            relation = relations_to_scan.pop()
+        digraph_of_relationships = {}
+        stack = [root]
+        while len(stack) > 0:
+            relationship = stack.pop()
             data = self._read_resource_from_file(
                 file_handle=file_handle,
-                resource_path=relation.relationship_path,
+                resource_path=relationship.relationship_path,
             )
             if data is None:
                 continue
             xml = parse_xml_from_string(data)
             relationships = self._parse_relationship_xml(
                 xml=xml,
-                source=relation,
+                source=relationship,
             )
-            relations[relation] = relationships
-            relations_to_scan.extend(relationships.values())
+            digraph_of_relationships[relationship] = relationships
+            stack.extend(relationships.values())
 
-        if not relations:
+        if not digraph_of_relationships:
             self.handle_required_resource_is_missing(
                 root.relationships_path,
             )
-        return relations
+        return digraph_of_relationships
 
     def _parse_relationship_xml(self, xml, source):
         relationships = {}

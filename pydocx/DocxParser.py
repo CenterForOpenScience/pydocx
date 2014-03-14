@@ -304,6 +304,9 @@ class DocxParser(MulitMemoizeMixin):
         .openxml.wordprocessing.indentation.aspx
         """
         if find_first(self.document.xml_tree, 'pgSz') is not None:
+            # TODO it's not clear that units page_width is in. The magic number
+            # 20 should be made into a CONSTANT to describe the conversion that
+            # is taking place here.
             self.page_width = int(
                 find_first(self.document.xml_tree, 'pgSz').attrib['w']
             ) / 20

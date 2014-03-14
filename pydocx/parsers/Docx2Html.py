@@ -38,6 +38,8 @@ class Docx2Html(DocxParser):
             '</style>'
         ) % {
             #multiple by (4/3) to get to px
+            # TODO Points to pixels conversion depends on the DPI which can be
+            # variable
             'width': (self.page_width * (4 / 3)),
         }
         return result

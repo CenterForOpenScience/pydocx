@@ -1,6 +1,8 @@
 
 Changelog
 =========
+* 0.3.14
+    * Use paths from _rels/.rels instead of hardcoding
 * 0.3.13
     * Significant performance gains for documents with a large number of table
       cells.

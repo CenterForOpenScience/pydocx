@@ -172,9 +172,6 @@ class _TranslationTestCase(TestCase):
         # Verify the final output.
         parser = self.parser
 
-        def image_handler(self, src, *args, **kwargs):
-            return src
-        parser.image_handler = image_handler
         html = parser(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             document_xml=tree,

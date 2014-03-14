@@ -154,20 +154,28 @@ class WordprocessingMLPackage(object):
         for parent, relationships in relationship_digraph.items():
             for relationship in relationships.values():
                 if relationship.external:
+                    # External relationships don't have content in the archive,
+                    # so we skip building a part
                     continue
 
                 if relationship.target is None:
+                    # The part for this endpoint may have already been created.
                     part = target_path_to_part_map.get(
                         relationship.target_path,
                     )
                     relationship.target = part
+                    # If it wasn't created, this is just being set to None
+                    # again
 
                 if relationship.target is None:
+                    # Create the part for this endpoint
                     raw_data = self._read_resource_from_file(
                         file_handle=file_handle,
                         resource_path=relationship.target_path,
                     )
                     part = OPCPart(raw_data=raw_data)
+                    # Maintain a list of created parts so we only create one
+                    # for each local endpoint
                     target_path_to_part_map[relationship.target_path] = part
                     relationship.target = part
 

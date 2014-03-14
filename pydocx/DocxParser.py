@@ -226,25 +226,31 @@ class WordprocessingMLPackage(object):
         relationships = {}
         for child in xml:
             if child.tag == 'Relationship':
-                rid = child.get('Id')
-                target_mode = child.get('TargetMode')
-                external = False
-                target_path = child.get('Target')
-                if target_mode == 'External':
-                    external = True
-                else:
-                    target_path = os.path.join(
-                        source.container,
-                        target_path,
-                    )
-                relationship = OPCRelationship(
-                    rId=rid,
-                    rType=child.get('Type'),
-                    target_path=target_path,
-                    external=external,
+                relationship = self._create_relationship_from_element(
+                    element=child,
+                    source=source,
                 )
-                relationships[rid] = relationship
+                relationships[relationship.rId] = relationship
         return relationships
+
+    def _create_relationship_from_element(self, element, source):
+        rid = element.get('Id')
+        target_mode = element.get('TargetMode')
+        external = False
+        target_path = element.get('Target')
+        if target_mode == 'External':
+            external = True
+        else:
+            target_path = os.path.join(
+                source.container,
+                target_path,
+            )
+        return OPCRelationship(
+            rId=rid,
+            rType=element.get('Type'),
+            target_path=target_path,
+            external=external,
+        )
 
 
 class DocxParser(MulitMemoizeMixin):

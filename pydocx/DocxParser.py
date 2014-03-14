@@ -688,7 +688,7 @@ class DocxParser(MulitMemoizeMixin):
         rId = el.get('id')
         relationship = self.document.get_relationship_by_id(rId)
         if not relationship:
-            return ''
+            return text
         href = self.escape(relationship.target_path)
         return self.hyperlink(text, href)
 

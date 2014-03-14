@@ -47,42 +47,223 @@ def ZipFile(path):  # This is not needed in python 3.2+
     f.close()
 
 
+class OPCRelationship(object):
+    '''
+    In Open Packaging Convention, a relationship is an association between a
+    part and another part, or a part and an external resource.
+    '''
+
+    def __init__(self, rId, rType, target_path, external, target=None):
+        self.rId = rId
+        self.rType = rType
+        self.target_path = target_path
+        self.target = target
+        self.external = external
+        self.namespace, self.name = os.path.split(self.rType)
+        self.container, self.filename = os.path.split(self.target_path)
+        self.relationship_path = os.path.join(
+            self.container,
+            '_rels',
+            '%s.rels' % self.filename,
+        )
+
+
+class OPCPart(object):
+    '''
+    In Open Packaging Convention, the term part corresponds to a file stored
+    within the ZIP archive.
+
+    A part may have relationships to other parts or external resources.
+    '''
+
+    def __init__(self, raw_data=None):
+        self.raw_data = raw_data
+        self._xml_tree = None
+        self.relationships_by_name = {}
+        self.relationships_by_id = {}
+
+    @property
+    def xml_tree(self):
+        if self._xml_tree is not None:
+            return self._xml_tree
+        if self.raw_data is not None:
+            self._xml_tree = parse_xml_from_string(self.raw_data)
+        return self._xml_tree
+
+    def get_relationship_by_name(self, name):
+        return self.relationships_by_name.get(name)
+
+    def get_relationship_by_id(self, rId):
+        return self.relationships_by_id.get(rId)
+
+    def add_relationship(self, relationship):
+        self.relationships_by_id[relationship.rId] = relationship
+        self.relationships_by_name[relationship.name] = relationship
+
+
+class WordprocessingMLPackage(object):
+    '''
+    An interface to a WordprocessingML package
+
+    Example:
+
+    package = WordprocessingMLPackage.load('path/file.docx')
+    for el in package.get_relationship('officeDocument').target.xml_tree:
+        pass
+    '''
+    @staticmethod
+    def load(path_to_archive):
+        package = WordprocessingMLPackage()
+        with ZipFile(path_to_archive) as zip_file_handle:
+            return package._load(
+                file_handle=zip_file_handle,
+            )
+
+    def handle_required_resource_is_missing(self, resource):
+        raise MalformedDocxException(
+            'A required resource is missing: %s' % resource
+        )
+
+    def _read_resource_from_file(self, file_handle, resource_path):
+        try:
+            return file_handle.read(resource_path)
+        except KeyError:
+            return None
+
+    def _load(self, file_handle):
+        root = OPCRelationship(
+            rId=None,
+            rType='',
+            target_path='',
+            external=False,
+            target=OPCPart(),
+        )
+
+        relations_digraph = self._load_relationships(
+            file_handle=file_handle,
+            root=root,
+        )
+        target_path_to_part_map = {}
+
+        # Load data for the individual parts
+        for parent, relations in relations_digraph.items():
+            for relation in relations.values():
+                if relation.external:
+                    continue
+
+                if relation.target is None:
+                    part = target_path_to_part_map.get(relation.target_path)
+                    relation.target = part
+
+                if relation.target is None:
+                    raw_data = self._read_resource_from_file(
+                        file_handle=file_handle,
+                        resource_path=relation.target_path,
+                    )
+                    part = OPCPart(raw_data=raw_data)
+                    target_path_to_part_map[relation.target_path] = part
+                    relation.target = part
+
+        # Add relationships to parts
+        for parent, relations in relations_digraph.items():
+            for relation in relations.values():
+                parent.target.add_relationship(relation)
+
+        return root.target
+
+    def _load_relationships(self, file_handle, root):
+        relations = {}
+        relations_to_scan = [root]
+        while len(relations_to_scan) > 0:
+            relation = relations_to_scan.pop()
+            data = self._read_resource_from_file(
+                file_handle=file_handle,
+                resource_path=relation.relationship_path,
+            )
+            if data is None:
+                continue
+            xml = parse_xml_from_string(data)
+            relationships = self._parse_relationship_xml(
+                xml=xml,
+                source=relation,
+            )
+            relations[relation] = relationships
+            relations_to_scan.extend(relationships.values())
+
+        if not relations:
+            self.handle_required_resource_is_missing(
+                root.relationships_path,
+            )
+        return relations
+
+    def _parse_relationship_xml(self, xml, source):
+        relationships = {}
+        for child in xml:
+            if child.tag == 'Relationship':
+                rid = child.get('Id')
+                target_mode = child.get('TargetMode')
+                external = False
+                target_path = child.get('Target')
+                if target_mode == 'External':
+                    external = True
+                else:
+                    target_path = os.path.join(
+                        source.container,
+                        target_path,
+                    )
+                relationship = OPCRelationship(
+                    rId=rid,
+                    rType=child.get('Type'),
+                    target_path=target_path,
+                    external=external,
+                )
+                relationships[rid] = relationship
+        return relationships
+
+
 class DocxParser(MulitMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
 
-    def _extract_xml(self, f, xml_path):
-        try:
-            return f.read(xml_path)
-        except KeyError:
-            return None
+    def __init__(
+            self,
+            path_to_archive,
+            convert_root_level_upper_roman=False,
+            *args,
+            **kwargs):
+        self._parsed = ''
+        self.block_text = ''
+        self.page_width = 0
+        self.convert_root_level_upper_roman = convert_root_level_upper_roman
+        self.pre_processor = None
+        self.visited = set()
+        self.list_depth = 0
+        self._load(path_to_archive, *args, **kwargs)
 
-    def _build_data(self, path, *args, **kwargs):
-        with ZipFile(path) as f:
-            # These must be in the ZIP in order for the docx to be valid.
-            self.document_text = f.read('word/document.xml')
-            self.relationship_text = f.read('word/_rels/document.xml.rels')
+    def _load(self, path_to_archive, *args, **kwargs):
+        package = WordprocessingMLPackage.load(path_to_archive)
 
-            # These are all optional.
-            self.styles_text = self._extract_xml(f, 'word/styles.xml')
-            self.fonts = self._extract_xml(f, 'word/fontTable.xml')
-            self.numbering_text = self._extract_xml(f, 'word/numbering.xml')
-            self.comment_text = self._extract_xml(f, 'word/comments.xml')
+        self.document = package.get_relationship_by_name(
+            'officeDocument',
+        ).target
 
-            zipped_image_files = [
-                e for e in f.infolist()
-                if e.filename.startswith('word/media/')
-            ]
-            for e in zipped_image_files:
-                self._image_data[e.filename] = f.read(e.filename)
-
-        self.root = parse_xml_from_string(self.document_text)
         self.numbering_root = None
-        if self.numbering_text:
-            self.numbering_root = parse_xml_from_string(self.numbering_text)
-        self.comment_root = None
-        if self.comment_text:
-            self.comment_root = parse_xml_from_string(self.comment_text)
+        numbering = self.document.get_relationship_by_name('numbering')
+        if numbering:
+            self.numbering_root = numbering.target.xml_tree
+
+        #divide by 20 to get to pt (Office works in 20th's of a point)
+        """
+        see http://msdn.microsoft.com/en-us/library/documentformat
+        .openxml.wordprocessing.indentation.aspx
+        """
+        if find_first(self.document.xml_tree, 'pgSz') is not None:
+            self.page_width = int(
+                find_first(self.document.xml_tree, 'pgSz').attrib['w']
+            ) / 20
+
+        self.styles_dict = self._parse_styles()
+        self.parse_begin(self.document.xml_tree)  # begin to parse
 
     def _parse_run_properties(self, rPr):
         """
@@ -112,11 +293,11 @@ class DocxParser(MulitMemoizeMixin):
         return run_properties
 
     def _parse_styles(self):
-        if self.styles_text is None:
+        styles = self.document.get_relationship_by_name('styles')
+        if not styles:
             return {}
-        tree = parse_xml_from_string(self.styles_text)
         styles_dict = {}
-        for style in find_all(tree, 'style'):
+        for style in find_all(styles.target.xml_tree, 'style'):
             style_val = find_first(style, 'name').attrib['val']
             run_properties = find_first(style, 'rPr')
             styles_dict[style.attrib['styleId']] = {
@@ -126,47 +307,6 @@ class DocxParser(MulitMemoizeMixin):
                 ),
             }
         return styles_dict
-
-    def _parse_rels_root(self):
-        tree = parse_xml_from_string(self.relationship_text)
-        rels_dict = {}
-        for el in tree:
-            rId = el.get('Id')
-            target = el.get('Target')
-            rels_dict[rId] = target
-        return rels_dict
-
-    def __init__(
-            self,
-            path,
-            convert_root_level_upper_roman=False,
-            *args,
-            **kwargs):
-        self._parsed = ''
-        self.block_text = ''
-        self.page_width = 0
-        self.convert_root_level_upper_roman = convert_root_level_upper_roman
-        self._image_data = {}
-        self._build_data(path, *args, **kwargs)
-        self.pre_processor = None
-
-        #divide by 20 to get to pt (Office works in 20th's of a point)
-        """
-        see http://msdn.microsoft.com/en-us/library/documentformat
-        .openxml.wordprocessing.indentation.aspx
-        """
-        if find_first(self.root, 'pgSz') is not None:
-            self.page_width = int(
-                find_first(self.root, 'pgSz').attrib['w']
-            ) / 20
-
-        #all blank when we init
-        self.comment_store = None
-        self.visited = set()
-        self.list_depth = 0
-        self.rels_dict = self._parse_rels_root()
-        self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root)  # begin to parse
 
     def parse_begin(self, el):
         self.populate_memoization({
@@ -546,10 +686,10 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_hyperlink(self, el, text):
         rId = el.get('id')
-        href = self.rels_dict.get(rId)
-        if not href:
-            return text
-        href = self.escape(href)
+        relationship = self.document.get_relationship_by_id(rId)
+        if not relationship:
+            return ''
+        href = self.escape(relationship.target_path)
         return self.hyperlink(text, href)
 
     def _get_image_id(self, el):
@@ -602,17 +742,17 @@ class DocxParser(MulitMemoizeMixin):
     def parse_image(self, el):
         x, y = self._get_image_size(el)
         rId = self._get_image_id(el)
-        src = self.rels_dict.get(rId)
-        if not src:
+        relationship = self.document.get_relationship_by_id(rId)
+        if (not relationship or
+                not relationship.target or
+                not relationship.target.raw_data):
             return ''
-        src = os.path.join(
-            'word',
-            src,
+        return self.image(
+            relationship.target.raw_data,
+            relationship.filename,
+            x,
+            y,
         )
-        if src in self._image_data:
-            filename = os.path.split(src)[-1]
-            return self.image(self._image_data[src], filename, x, y)
-        return ''
 
     def _is_style_on(self, value):
         """

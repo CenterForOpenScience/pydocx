@@ -60,12 +60,17 @@ class OPCRelationship(object):
         self.target = target
         self.external = external
         self.namespace, self.name = os.path.split(self.rType)
-        self.container, self.filename = os.path.split(self.target_path)
-        self.relationship_path = os.path.join(
-            self.container,
-            '_rels',
-            '%s.rels' % self.filename,
-        )
+        if external:
+            self.container = None
+            self.filename = None
+            self.relationship_path = None
+        else:
+            self.container, self.filename = os.path.split(self.target_path)
+            self.relationship_path = os.path.join(
+                self.container,
+                '_rels',
+                '%s.rels' % self.filename,
+            )
 
 
 class OPCPart(object):

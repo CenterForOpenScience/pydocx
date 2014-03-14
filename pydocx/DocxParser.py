@@ -877,12 +877,12 @@ class DocxParser(MulitMemoizeMixin):
         return text
 
     @abstractmethod
-    def image_handler(self, path):
+    def image_handler(self, image_data, path):
         return path
 
     @abstractmethod
     def image(self, data, filename, x, y):
-        return self.image_handler(data)
+        return self.image_handler(data, filename)
 
     @abstractmethod
     def deletion(self, text, author, date):

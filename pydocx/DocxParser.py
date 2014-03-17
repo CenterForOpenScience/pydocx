@@ -271,7 +271,7 @@ class DocxParser(MulitMemoizeMixin):
 
     def __init__(
             self,
-            path_to_archive,
+            path,
             convert_root_level_upper_roman=False,
             *args,
             **kwargs):
@@ -282,7 +282,7 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
-        self._load(path_to_archive, *args, **kwargs)
+        self._load(path, *args, **kwargs)
 
     def _load(self, path_to_archive, *args, **kwargs):
         package = WordprocessingMLPackage.load(path_to_archive)

@@ -89,8 +89,7 @@ class XMLDocx2Html(Docx2Html):
     """
     def __init__(self, *args, **kwargs):
         # Pass in nothing for the path
-        super(XMLDocx2Html, self).__init__(
-            path_to_archive=None, *args, **kwargs)
+        super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(
         self,

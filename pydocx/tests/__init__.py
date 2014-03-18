@@ -2,6 +2,7 @@
 import re
 from contextlib import contextmanager
 
+from pydocx.DocxParser import OPCPart, OPCRelationship
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
     parse_xml_from_string,
@@ -90,50 +91,41 @@ class XMLDocx2Html(Docx2Html):
         # Pass in nothing for the path
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
-    def _build_data(
-            self,
-            path,
-            document_xml=None,
-            rels_dict=None,
-            numbering_dict=None,
-            styles_dict=None,
-            *args, **kwargs):
-        self._test_rels_dict = rels_dict
-        if rels_dict:
-            for value in rels_dict.values():
-                self._image_data['word/%s' % value] = 'word/%s' % value
+    def _load(
+        self,
+        path_to_archive,
+        document_xml=None,
+        relationships=None,
+        numbering_dict=None,
+        styles_dict=None,
+        *args,
+        **kwargs
+    ):
+        self.document = OPCPart(raw_data=document_xml)
+        if relationships:
+            for relationship in relationships:
+                self.document.add_relationship(OPCRelationship(**relationship))
+
+        self.styles_dict = styles_dict or {}
+
         self.numbering_root = None
         if numbering_dict is not None:
             self.numbering_root = parse_xml_from_string(
                 DXB.numbering(numbering_dict),
             )
-        self.numbering_dict = numbering_dict
-        # Intentionally not calling super
-        if document_xml is not None:
-            self.root = parse_xml_from_string(document_xml)
-        self.zip_path = ''
+            self.numbering_dict = numbering_dict
 
         # This is the standard page width for a word document, Also the page
         # width that we are looking for in the test.
         self.page_width = 612
 
-        self.styles_dict = styles_dict
-
-    def _parse_rels_root(self, *args, **kwargs):
-        if self._test_rels_dict is None:
-            return {}
-        return self._test_rels_dict
+        self.parse_begin(self.document.xml_tree)
 
     def get_list_style(self, num_id, ilvl):
         try:
             return self.numbering_dict[num_id][ilvl]
         except KeyError:
             return 'decimal'
-
-    def _parse_styles(self):
-        if self.styles_dict is None:
-            return {}
-        return self.styles_dict
 
 
 DEFAULT_NUMBERING_DICT = {
@@ -150,7 +142,7 @@ DEFAULT_NUMBERING_DICT = {
 
 class _TranslationTestCase(TestCase):
     expected_output = None
-    relationship_dict = None
+    relationships = None
     styles_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
@@ -179,13 +171,10 @@ class _TranslationTestCase(TestCase):
         # Verify the final output.
         parser = self.parser
 
-        def image_handler(self, src, *args, **kwargs):
-            return src
-        parser.image_handler = image_handler
         html = parser(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             document_xml=tree,
-            rels_dict=self.relationship_dict,
+            relationships=self.relationships,
             numbering_dict=self.numbering_dict,
             styles_dict=self.styles_dict,
         ).parsed

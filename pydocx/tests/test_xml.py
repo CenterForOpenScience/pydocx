@@ -4,6 +4,7 @@ import time
 
 from nose.plugins.skip import SkipTest
 
+from pydocx.DocxParser import OPCPart
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
     XMLDocx2Html,
@@ -65,9 +66,14 @@ class StyleIsOnTestCase(_TranslationTestCase):
 
 class HyperlinkVanillaTestCase(_TranslationTestCase):
 
-    relationship_dict = {
-        'rId0': 'www.google.com',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/hyperlink',
+            external=True,
+            target_path='www.google.com',
+        ),
+    ]
 
     expected_output = '''
         <p><a href="www.google.com">link</a>.</p>
@@ -84,9 +90,14 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 
 
 class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': 'www.google.com',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/hyperlink',
+            external=True,
+            target_path='www.google.com',
+        ),
+    ]
 
     expected_output = '''
         <p><a href="www.google.com">link</a>.</p>
@@ -102,9 +113,14 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
 
 
 class HyperlinkNoTextTestCase(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': 'www.google.com',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/hyperlink',
+            external=True,
+            target_path='www.google.com',
+        ),
+    ]
 
     expected_output = ''
 
@@ -116,10 +132,9 @@ class HyperlinkNoTextTestCase(_TranslationTestCase):
         return xml
 
 
-class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
-    relationship_dict = {
-        # 'rId0': 'www.google.com', missing
-    }
+class HyperlinkWithoutDefinedRelationshipDictTestCase(_TranslationTestCase):
+    relationships = [
+    ]
 
     expected_output = '<p>link.</p>'
 
@@ -134,9 +149,14 @@ class HyperlinkNotInRelsDictTestCase(_TranslationTestCase):
 
 
 class HyperlinkWithBreakTestCase(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': 'www.google.com',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/hyperlink',
+            external=True,
+            target_path='www.google.com',
+        ),
+    ]
 
     expected_output = '<p><a href="www.google.com">link<br /></a></p>'
 
@@ -151,13 +171,26 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
 
 
 class ImageLocal(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': 'media/image1.jpeg',
-        'rId1': 'media/image2.jpeg',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/image',
+            external=False,
+            target_path='word/media/image1.jpeg',
+            target=OPCPart(raw_data='content1'),
+        ),
+        dict(
+            rId='rId1',
+            rType='foo/image',
+            external=False,
+            target_path='word/media/image2.jpeg',
+            target=OPCPart(raw_data='content2'),
+        ),
+    ]
+
     expected_output = '''
-    <p><img src="word/media/image1.jpeg" /></p>
-    <p><img src="word/media/image2.jpeg" /></p>
+    <p><img src="data:image/jpeg;base64,Y29udGVudDE=" /></p>
+    <p><img src="data:image/jpeg;base64,Y29udGVudDI=" /></p>
     '''
 
     def get_xml(self):
@@ -176,16 +209,31 @@ class ImageLocal(_TranslationTestCase):
 
 
 class ImageTestCase(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': 'media/image1.jpeg',
-        'rId1': 'media/image2.jpeg',
-    }
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/image',
+            external=False,
+            target_path='word/media/image1.jpeg',
+            target=OPCPart(raw_data='content1'),
+        ),
+        dict(
+            rId='rId1',
+            rType='foo/image',
+            external=False,
+            target_path='word/media/image2.jpeg',
+            target=OPCPart(raw_data='content2'),
+        ),
+    ]
+
     expected_output = '''
         <p>
-            <img src="word/media/image1.jpeg" height="20px" width="40px" />
+            <img src="data:image/jpeg;base64,Y29udGVudDE="
+                height="20px" width="40px" />
         </p>
         <p>
-            <img src="word/media/image2.jpeg" height="21pt" width="41pt" />
+            <img src="data:image/jpeg;base64,Y29udGVudDI="
+                height="21pt" width="41pt" />
         </p>
     '''
 
@@ -206,7 +254,7 @@ class ImageTestCase(_TranslationTestCase):
     def test_get_image_id(self):
         parser = XMLDocx2Html(
             document_xml=self.get_xml(),
-            rels_dict=self.relationship_dict,
+            relationships=self.relationships,
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []
@@ -227,7 +275,7 @@ class ImageTestCase(_TranslationTestCase):
     def test_get_image_sizes(self):
         parser = XMLDocx2Html(
             document_xml=self.get_xml(),
-            rels_dict=self.relationship_dict,
+            relationships=self.relationships,
         )
         tree = parse_xml_from_string(self.get_xml())
         els = []
@@ -247,9 +295,8 @@ class ImageTestCase(_TranslationTestCase):
 
 
 class ImageNotInRelsDictTestCase(_TranslationTestCase):
-    relationship_dict = {
-        # 'rId0': 'media/image1.jpeg',
-    }
+    relationships = [
+    ]
     expected_output = ''
 
     def get_xml(self):
@@ -261,14 +308,20 @@ class ImageNotInRelsDictTestCase(_TranslationTestCase):
 
 
 class ImageNoSizeTestCase(_TranslationTestCase):
-    relationship_dict = {
-        'rId0': os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            '..',
-            'fixtures',
-            'bullet_go_gray.png',
+    relationships = [
+        dict(
+            rId='rId0',
+            rType='foo/image',
+            external=False,
+            target_path=os.path.join(
+                os.path.abspath(os.path.dirname(__file__)),
+                '..',
+                'fixtures',
+                'bullet_go_gray.png',
+            ),
+            target=OPCPart(raw_data='content1'),
         )
-    }
+    ]
     image_sizes = {
         'rId0': (0, 0),
     }
@@ -278,7 +331,7 @@ class ImageNoSizeTestCase(_TranslationTestCase):
                 <img src="%s" />
             </p>
         </html>
-    ''' % relationship_dict['rId0']
+    ''' % relationships[0]['target_path']
 
     @staticmethod
     def image_handler(image_id, relationship_dict):

@@ -221,6 +221,7 @@ The base parser `Docx2Html` relies on certain css class being set for certain be
 * class `pydocx-small-caps` -> Makes all text uppercase, however truly lowercase letters will be small than their uppercase counterparts.
 * class `pydocx-strike` -> Strike a line through.
 * class `pydocx-hidden` -> Hide the text.
+* class `pydocx-tab` -> Represents a tab within the document.
 
 Exceptions
 ##########

@@ -493,3 +493,13 @@ class PydocxPreProcessor(MulitMemoizeMixin):
 
 def parse_xml_from_string(xml):
     return cElementTree.fromstring(remove_namespaces(xml))
+
+
+def convert_dictionary_to_style_fragment(style):
+    items = sorted(style.iteritems())
+    return ';'.join("%s:%s" % item for item in items)
+
+
+def convert_dictionary_to_html_attributes(attributes):
+    items = sorted(attributes.iteritems())
+    return ' '.join('%s="%s"' % item for item in items)

@@ -188,7 +188,10 @@ def test_include_tabs():
         'include_tabs.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '<p>AAA BBB</p>')
+    expected_html = BASE_HTML % (
+        '<p>AAA<span class="pydocx-tab"> </span>BBB</p>'
+    )
+    assert_html_equal(actual_html, expected_html)
 
 
 def test_table_col_row_span():
@@ -213,14 +216,14 @@ def test_table_col_row_span():
         </tr>
         <tr>
           <td>
-          <div class='pydocx-right'>EEE
-          </div></td>
+              <span class="pydocx-right">EEE</span>
+          </td>
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
           <td>
-           <div class='pydocx-right'>GGG
-           </div></td>
+           <span class="pydocx-right">GGG</span>
+          </td>
         </tr>
       </table>
       <table border="1">
@@ -653,7 +656,7 @@ def test_has_title():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>Title</p>
-        <p><div class='pydocx-left'>Text</div></p>
+        <p><span class="pydocx-left">Text</span></p>
     ''')
 
 
@@ -707,32 +710,22 @@ def test_justification():
         'justification.docx',
     )
     actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>
-        <div class='pydocx-center'>Center Justified</div>
-    </p>
-    <p>
-        <div class='pydocx-right'>Right justified</div>
-    </p>
-    <p>
-        <div class='pydocx-right' style='margin-right:96.0px;'>
-            Right justified and pushed in from right
-        </div>
-    </p>
-    <p>
-        <div class='pydocx-center'
-                style='margin-left:252.0px;margin-right:96.0px;'>
-            Center justified and pushed in from left and it is
-            great and it is the coolest thing of all time and I like it and
-            I think it is cool
-        </div>
-    </p>
-    <p>
-        <div style='margin-left:252.0px;margin-right:96.0px;'>
-            Left justified and pushed in from left
-        </div>
-    </p>
+    expected_html = BASE_HTML % ('''
+    <p><span class="pydocx-center">Center Justified</span></p>
+    <p><span class="pydocx-right">Right justified</span></p>
+    <p><span class="pydocx-right" style="margin-right:96.0px">
+        Right justified and pushed in from right
+    </span></p>
+    <p><span class="pydocx-center"
+            style="margin-left:252.0px;margin-right:96.0px">
+        Center justified and pushed in from left and it is great and it is the
+        coolest thing of all time and I like it and I think it is cool
+    </span></p>
+    <p><span style="margin-left:252.0px;margin-right:96.0px">
+        Left justified and pushed in from left
+    </span></p>
     ''')
+    assert_html_equal(actual_html, expected_html)
 
 
 def test_missing_style():

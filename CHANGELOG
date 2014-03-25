@@ -1,6 +1,8 @@
 
 Changelog
 =========
+* dev
+    * Use inline span to define styles instead of div
 * 0.3.14
     * Use paths from _rels/.rels instead of hardcoding
 * 0.3.13

@@ -2,6 +2,10 @@ import base64
 import xml.sax.saxutils
 
 from pydocx.DocxParser import DocxParser
+from pydocx.utils import (
+    convert_dictionary_to_html_attributes,
+    convert_dictionary_to_style_fragment,
+)
 
 
 class Docx2Html(DocxParser):
@@ -34,6 +38,7 @@ class Docx2Html(DocxParser):
             '.pydocx-small-caps {font-variant: small-caps;}'
             '.pydocx-strike {text-decoration: line-through;}'
             '.pydocx-hidden {visibility: hidden;}'
+            '.pydocx-tab {display:inline-block;width:4em;}'
             'body {width:%(width)spx;margin:0px auto;}'
             '</style>'
         ) % {
@@ -155,9 +160,7 @@ class Docx2Html(DocxParser):
         }
 
     def tab(self):
-        # Insert before the text right?? So got the text and just do an insert
-        # at the beginning!
-        return '&nbsp&nbsp&nbsp&nbsp'
+        return '<span class="pydocx-tab"> </span>'
 
     def table(self, text):
         return '<table border="1">' + text + '</table>'
@@ -181,26 +184,29 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
-    def indent(self, text, just='', firstLine='', left='', right=''):
-        slug = '<div'
-        if just:
-            slug += " class='pydocx-%(just)s'"
+    def indent(self, text, alignment='', firstLine='', left='', right=''):
+        tag = 'span'
+        attrs = {}
+        if alignment:
+            attrs['class'] = 'pydocx-%s' % alignment
         if firstLine or left or right:
-            slug += " style='"
+            style = {}
             if firstLine:
-                slug += "text-indent:%(firstLine)spx;"
+                style['text-indent'] = '%spx' % firstLine
             if left:
-                slug += "margin-left:%(left)spx;"
+                style['margin-left'] = '%spx' % left
             if right:
-                slug += "margin-right:%(right)spx;"
-            slug += "'"
-        slug += ">%(text)s</div>"
-        return slug % {
+                style['margin-right'] = '%spx' % right
+            attrs['style'] = convert_dictionary_to_style_fragment(style)
+        html_attrs = convert_dictionary_to_html_attributes(attrs)
+        if html_attrs:
+            template = '<%(tag)s %(attrs)s>%(text)s</%(tag)s>'
+        else:
+            template = '<%(tag)s>%(text)s</%(tag)s>'
+        return template % {
+            'tag': tag,
+            'attrs': html_attrs,
             'text': text,
-            'just': just,
-            'firstLine': firstLine,
-            'left': left,
-            'right': right,
         }
 
     def break_tag(self):

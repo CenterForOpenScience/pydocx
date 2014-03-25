@@ -157,7 +157,7 @@ class Docx2Html(DocxParser):
         }
 
     def tab(self):
-        return '&nbsp;&nbsp;&nbsp;&nbsp;'
+        return '<span class="pydocx-tab">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
 
     def table(self, text):
         return '<table border="1">' + text + '</table>'

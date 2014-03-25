@@ -717,11 +717,11 @@ def test_justification():
         Right justified and pushed in from right
     </span></p>
     <p><span class="pydocx-center"
-            style="margin-right:96.0px;margin-left:252.0px">
+            style="margin-left:252.0px;margin-right:96.0px">
         Center justified and pushed in from left and it is great and it is the
         coolest thing of all time and I like it and I think it is cool
     </span></p>
-    <p><span style="margin-right:96.0px;margin-left:252.0px">
+    <p><span style="margin-left:252.0px;margin-right:96.0px">
         Left justified and pushed in from left
     </span></p>
     ''')

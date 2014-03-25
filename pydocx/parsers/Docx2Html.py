@@ -1,7 +1,9 @@
 import base64
 import xml.sax.saxutils
+from xml.etree import cElementTree
 
 from pydocx.DocxParser import DocxParser
+from pydocx.utils import convert_dictionary_to_style_fragment
 
 
 class Docx2Html(DocxParser):
@@ -181,27 +183,23 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
-    def indent(self, text, just='', firstLine='', left='', right=''):
-        slug = '<span'
-        if just:
-            slug += " class='pydocx-%(just)s'"
+    def indent(self, text, alignment='', firstLine='', left='', right=''):
+        tag = 'span'
+        attrs = {}
+        if alignment:
+            attrs['class'] = 'pydocx-%s' % alignment
         if firstLine or left or right:
-            slug += " style='"
+            style = {}
             if firstLine:
-                slug += "text-indent:%(firstLine)spx;"
+                style['text-indent'] = '%spx' % firstLine
             if left:
-                slug += "margin-left:%(left)spx;"
+                style['margin-left'] = '%spx' % left
             if right:
-                slug += "margin-right:%(right)spx;"
-            slug += "'"
-        slug += ">%(text)s</span>"
-        return slug % {
-            'text': text,
-            'just': just,
-            'firstLine': firstLine,
-            'left': left,
-            'right': right,
-        }
+                style['margin-right'] = '%spx' % right
+            attrs['style'] = convert_dictionary_to_style_fragment(style)
+        element = cElementTree.Element(tag, attrs)
+        element.text = text
+        return cElementTree.tostring(element)
 
     def break_tag(self):
         return '<br />'

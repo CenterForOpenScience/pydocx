@@ -820,7 +820,7 @@ class DocxParser(MulitMemoizeMixin):
         return self.escape(el.text)
 
     def parse_tab(self, el, parsed):
-        return ' '
+        return self.tab()
 
     def parse_hyphen(self, el, parsed):
         return '-'

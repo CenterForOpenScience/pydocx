@@ -496,7 +496,8 @@ def parse_xml_from_string(xml):
 
 
 def convert_dictionary_to_style_fragment(style):
-    return ';'.join("%s:%s" % item for item in style.iteritems())
+    items = sorted(style.iteritems())
+    return ';'.join("%s:%s" % item for item in items)
 
 
 def convert_dictionary_to_html_attributes(attributes):

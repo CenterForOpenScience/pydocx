@@ -189,7 +189,7 @@ def test_include_tabs():
     )
     actual_html = convert(file_path)
     expected_html = BASE_HTML % (
-        '<p>AAA<span class="pydocx-tab">&nbsp;&nbsp;&nbsp;&nbsp;</span>BBB</p>'
+        '<p>AAA<span class="pydocx-tab"> </span>BBB</p>'
     )
     assert_html_equal(actual_html, expected_html)
 

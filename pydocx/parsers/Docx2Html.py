@@ -38,6 +38,7 @@ class Docx2Html(DocxParser):
             '.pydocx-small-caps {font-variant: small-caps;}'
             '.pydocx-strike {text-decoration: line-through;}'
             '.pydocx-hidden {visibility: hidden;}'
+            '.pydocx-tab {display:inline-block;width:4em;}'
             'body {width:%(width)spx;margin:0px auto;}'
             '</style>'
         ) % {

@@ -214,13 +214,13 @@ def test_table_col_row_span():
         </tr>
         <tr>
           <td>
-              <span class='pydocx-right'>EEE</span>
+              <span class="pydocx-right">EEE</span>
           </td>
           <td rowspan="2">FFF</td>
         </tr>
         <tr>
           <td>
-           <span class='pydocx-right'>GGG</span>
+           <span class="pydocx-right">GGG</span>
           </td>
         </tr>
       </table>
@@ -654,7 +654,7 @@ def test_has_title():
     actual_html = convert(file_path)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>Title</p>
-        <p><span class='pydocx-left'>Text</span></p>
+        <p><span class="pydocx-left">Text</span></p>
     ''')
 
 
@@ -709,29 +709,19 @@ def test_justification():
     )
     actual_html = convert(file_path)
     expected_html = BASE_HTML % ('''
-    <p>
-        <span class='pydocx-center'>Center Justified</span>
-    </p>
-    <p>
-        <span class='pydocx-right'>Right justified</span>
-    </p>
-    <p>
-        <span class='pydocx-right' style='margin-right:96.0px;'>
-            Right justified and pushed in from right
-        </span>
-    </p>
-    <p>
-        <span class='pydocx-center'
-                style='margin-left:252.0px;margin-right:96.0px;'>
-            Center justified and pushed in from left and it is great and it is
-            the coolest thing of all time and I like it and I think it is cool
-        </span>
-    </p>
-    <p>
-        <span style='margin-left:252.0px;margin-right:96.0px;'>
-            Left justified and pushed in from left
-        </span>
-    </p>
+    <p><span class="pydocx-center">Center Justified</span></p>
+    <p><span class="pydocx-right">Right justified</span></p>
+    <p><span class="pydocx-right" style="margin-right:96.0px">
+        Right justified and pushed in from right
+    </span></p>
+    <p><span class="pydocx-center"
+            style="margin-right:96.0px;margin-left:252.0px">
+        Center justified and pushed in from left and it is great and it is the
+        coolest thing of all time and I like it and I think it is cool
+    </span></p>
+    <p><span style="margin-right:96.0px;margin-left:252.0px">
+        Left justified and pushed in from left
+    </span></p>
     ''')
     assert_html_equal(actual_html, expected_html)
 

@@ -1,9 +1,11 @@
 import base64
 import xml.sax.saxutils
-from xml.etree import cElementTree
 
 from pydocx.DocxParser import DocxParser
-from pydocx.utils import convert_dictionary_to_style_fragment
+from pydocx.utils import (
+    convert_dictionary_to_html_attributes,
+    convert_dictionary_to_style_fragment,
+)
 
 
 class Docx2Html(DocxParser):
@@ -195,9 +197,16 @@ class Docx2Html(DocxParser):
             if right:
                 style['margin-right'] = '%spx' % right
             attrs['style'] = convert_dictionary_to_style_fragment(style)
-        element = cElementTree.Element(tag, attrs)
-        element.text = text
-        return cElementTree.tostring(element)
+        html_attrs = convert_dictionary_to_html_attributes(attrs)
+        if html_attrs:
+            template = '<%(tag)s %(attrs)s>%(text)s</%(tag)s>'
+        else:
+            template = '<%(tag)s>%(text)s</%(tag)s>'
+        return template % {
+            'tag': tag,
+            'attrs': html_attrs,
+            'text': text,
+        }
 
     def break_tag(self):
         return '<br />'

@@ -116,8 +116,8 @@ class XMLDocx2Html(Docx2Html):
             )
             self.numbering_dict = numbering_dict
 
-        # This is the standard page width for a word document, Also the page
-        # width that we are looking for in the test.
+        # This is the standard page width for a word document (in points), Also
+        # the page width that we are looking for in the test.
         self.page_width = 612
 
         self.parse_begin(self.document.xml_tree)

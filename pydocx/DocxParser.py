@@ -410,7 +410,7 @@ class DocxParser(MulitMemoizeMixin):
             return parsed
 
     def parse_page_break(self, el, text):
-        #TODO figure out what parsed is getting overwritten
+        # TODO figure out what parsed is getting overwritten
         return self.page_break()
 
     def parse_table(self, el, text):

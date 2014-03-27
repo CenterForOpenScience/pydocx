@@ -794,7 +794,7 @@ def _converter(*args, **kwargs):
     pass
 
 
-#def test_converter_broken():
+# def test_converter_broken():
 #    file_path = 'test.doc'
 #    assert_raises(
 #        ConversionFailed,
@@ -812,19 +812,19 @@ def test_fall_back():
     assert html == 'success'
 
 
-#@mock.patch('docx2html.core.read_html_file')
-#@mock.patch('docx2html.core.get_zip_file_handler')
-#def test_html_files(patch_zip_handler, patch_read):
+# @mock.patch('docx2html.core.read_html_file')
+# @mock.patch('docx2html.core.get_zip_file_handler')
+# def test_html_files(patch_zip_handler, patch_read):
 def test_html_files():
     raise SkipTest('This test is not yet passing')
 
     def raise_assertion(*args, **kwargs):
         raise AssertionError('Should not have called get_zip_file_handler')
-    #patch_zip_handler.side_effect = raise_assertion
+    # patch_zip_handler.side_effect = raise_assertion
 
     def return_text(*args, **kwargs):
         return 'test'
-    #patch_read.side_effect = return_text
+    # patch_read.side_effect = return_text
 
     # Try with an html file
     file_path = 'test.html'

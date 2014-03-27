@@ -560,18 +560,11 @@ class DocxParser(MulitMemoizeMixin):
 
         if indentation is not None:
             if INDENTATION_RIGHT in indentation.attrib:
-                right = indentation.attrib[INDENTATION_RIGHT]
-                # divide by 20 to get to pt. multiply by (4/3) to get to px
-                right = (int(right) / 20) * float(4) / float(3)
-                right = str(right)
+                right = int(indentation.attrib[INDENTATION_RIGHT])
             if INDENTATION_LEFT in indentation.attrib:
-                left = indentation.attrib[INDENTATION_LEFT]
-                left = (int(left) / 20) * float(4) / float(3)
-                left = str(left)
+                left = int(indentation.attrib[INDENTATION_LEFT])
             if INDENTATION_FIRST_LINE in indentation.attrib:
-                firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
-                firstLine = (int(firstLine) / 20) * float(4) / float(3)
-                firstLine = str(firstLine)
+                firstLine = int(indentation.attrib[INDENTATION_FIRST_LINE])
         if any([alignment, firstLine, left, right]):
             return self.indent(text, alignment, firstLine, left, right)
         return text

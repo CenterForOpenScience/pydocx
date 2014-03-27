@@ -1,7 +1,7 @@
 import base64
 import xml.sax.saxutils
 
-from pydocx.DocxParser import DocxParser
+from pydocx.DocxParser import DocxParser, TWIPS_PER_POINT
 from pydocx.utils import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
@@ -198,11 +198,14 @@ class Docx2Html(DocxParser):
             attrs['class'] = 'pydocx-%s' % alignment
         style = {}
         if firstLine:
-            style['text-indent'] = '%spx' % firstLine
+            firstLine = firstLine / TWIPS_PER_POINT / POINTS_PER_EM
+            style['text-indent'] = '%.2fem' % firstLine
         if left:
-            style['margin-left'] = '%spx' % left
+            left = left / TWIPS_PER_POINT / POINTS_PER_EM
+            style['margin-left'] = '%.2fem' % left
         if right:
-            style['margin-right'] = '%spx' % right
+            right = right / TWIPS_PER_POINT / POINTS_PER_EM
+            style['margin-right'] = '%.2fem' % right
         if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)
         html_attrs = convert_dictionary_to_html_attributes(attrs)

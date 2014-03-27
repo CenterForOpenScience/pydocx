@@ -1004,5 +1004,12 @@ class DocxParser(MulitMemoizeMixin):
         return True
 
     @abstractmethod
-    def indent(self, text, left='', right='', firstLine=''):
-        return text  # TODO JUSTIFIED JUSTIFIED TEXT
+    def indent(
+        self,
+        text,
+        alignment=None,
+        left=None,
+        right=None,
+        firstLine=None,
+    ):
+        return text

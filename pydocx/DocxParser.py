@@ -25,6 +25,9 @@ logger = logging.getLogger("NewParser")
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
 
+# https://en.wikipedia.org/wiki/Twip
+TWIPS_PER_POINT = 20
+
 JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'
 JUSTIFY_RIGHT = 'right'
@@ -298,18 +301,10 @@ class DocxParser(MulitMemoizeMixin):
         if numbering:
             self.numbering_root = numbering.target.xml_tree
 
-        #divide by 20 to get to pt (Office works in 20th's of a point)
-        """
-        see http://msdn.microsoft.com/en-us/library/documentformat
-        .openxml.wordprocessing.indentation.aspx
-        """
         if find_first(self.document.xml_tree, 'pgSz') is not None:
-            # TODO it's not clear that units page_width is in. The magic number
-            # 20 should be made into a CONSTANT to describe the conversion that
-            # is taking place here.
-            self.page_width = int(
-                find_first(self.document.xml_tree, 'pgSz').attrib['w']
-            ) / 20
+            # pgSz is defined in twips, convert to points
+            pgSz = int(find_first(self.document.xml_tree, 'pgSz').attrib['w'])
+            self.page_width = pgSz / TWIPS_PER_POINT
 
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.document.xml_tree)  # begin to parse

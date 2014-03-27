@@ -7,6 +7,8 @@ from pydocx.utils import (
     convert_dictionary_to_style_fragment,
 )
 
+POINTS_PER_EM = 12
+
 
 class Docx2Html(DocxParser):
 
@@ -25,6 +27,7 @@ class Docx2Html(DocxParser):
         }
 
     def style(self):
+        width = self.page_width / POINTS_PER_EM
         result = (
             '<style>'
             '.pydocx-insert {color:green;}'
@@ -39,13 +42,10 @@ class Docx2Html(DocxParser):
             '.pydocx-strike {text-decoration: line-through;}'
             '.pydocx-hidden {visibility: hidden;}'
             '.pydocx-tab {display:inline-block;width:4em;}'
-            'body {width:%(width)spx;margin:0px auto;}'
+            'body {width:%(width).2fem;margin:0px auto;}'
             '</style>'
         ) % {
-            #multiple by (4/3) to get to px
-            # TODO Points to pixels conversion depends on the DPI which can be
-            # variable
-            'width': (self.page_width * (4 / 3)),
+            'width': width,
         }
         return result
 

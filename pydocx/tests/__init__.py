@@ -24,7 +24,7 @@ STYLE = (
     '.pydocx-strike {text-decoration: line-through;}'
     '.pydocx-hidden {visibility: hidden;}'
     '.pydocx-tab {display:inline-block;width:4em;}'
-    'body {width:612px;margin:0px auto;}'
+    'body {width:51.00em;margin:0px auto;}'
     '</style>'
 )
 

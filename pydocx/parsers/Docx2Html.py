@@ -9,6 +9,47 @@ from pydocx.utils import (
 
 POINTS_PER_EM = 12
 
+PYDOCX_STYLES = {
+    'insert': {
+        'color': 'green',
+    },
+    'delete': {
+        'color': 'red',
+        'text-decoration': 'line-through',
+    },
+    'center': {
+        'text-align': 'center',
+    },
+    'right': {
+        'text-align': 'right',
+    },
+    'left': {
+        'text-align': 'left',
+    },
+    'comment': {
+        'color': 'blue',
+    },
+    'underline': {
+        'text-decoration': 'underline',
+    },
+    'caps': {
+        'text-transform': 'uppercase',
+    },
+    'small-caps': {
+        'font-variant': 'small-caps',
+    },
+    'strike': {
+        'text-decoration': 'line-through',
+    },
+    'hidden': {
+        'visibility': 'hidden',
+    },
+    'tab': {
+        'display': 'inline-block',
+        'width': '4em',
+    },
+}
+
 
 class Docx2Html(DocxParser):
 
@@ -28,26 +69,28 @@ class Docx2Html(DocxParser):
 
     def style(self):
         width = self.page_width / POINTS_PER_EM
-        result = (
-            '<style>'
-            '.pydocx-insert {color:green;}'
-            '.pydocx-delete {color:red;text-decoration:line-through;}'
-            '.pydocx-center {text-align:center;}'
-            '.pydocx-right {text-align:right;}'
-            '.pydocx-left {text-align:left;}'
-            '.pydocx-comment {color:blue;}'
-            '.pydocx-underline {text-decoration: underline;}'
-            '.pydocx-caps {text-transform:uppercase;}'
-            '.pydocx-small-caps {font-variant: small-caps;}'
-            '.pydocx-strike {text-decoration: line-through;}'
-            '.pydocx-hidden {visibility: hidden;}'
-            '.pydocx-tab {display:inline-block;width:4em;}'
-            'body {width:%(width).2fem;margin:0px auto;}'
-            '</style>'
-        ) % {
-            'width': width,
+
+        styles = {
+            'body': {
+                'width': '%.2fem' % width,
+                'margin': '0px auto',
+            }
         }
-        return result
+
+        result = []
+        for name, definition in sorted(PYDOCX_STYLES.iteritems()):
+            result.append('.pydocx-%s {%s}' % (
+                name,
+                convert_dictionary_to_style_fragment(definition),
+            ))
+
+        for name, definition in sorted(styles.iteritems()):
+            result.append('%s {%s}' % (
+                name,
+                convert_dictionary_to_style_fragment(definition),
+            ))
+
+        return '<style>%s</style>' % ''.join(result)
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]

@@ -798,7 +798,7 @@ class LargeCellTestCase(_TranslationTestCase):
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):
     expected_output = '''
-        <p><span class='pydocx-insert'>insert </span>
+        <p><span class="pydocx-insert">insert </span>
         smarttag</p>
     '''
 
@@ -832,7 +832,7 @@ class DeleteTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA
-                <span class='pydocx-delete'>BBB</span>
+                <span class="pydocx-delete">BBB</span>
             </li>
             <li>CCC</li>
         </ol>
@@ -853,7 +853,7 @@ class DeleteTagInList(_TranslationTestCase):
 class InsertTagInList(_TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
-            <li>AAA<span class='pydocx-insert'>BBB</span>
+            <li>AAA<span class="pydocx-insert">BBB</span>
             </li>
             <li>CCC</li>
         </ol>

@@ -1,4 +1,3 @@
-#from unittest import TestCase
 import re
 from contextlib import contextmanager
 
@@ -12,19 +11,19 @@ from unittest import TestCase
 
 STYLE = (
     '<style>'
-    '.pydocx-insert {color:green;}'
-    '.pydocx-delete {color:red;text-decoration:line-through;}'
-    '.pydocx-center {text-align:center;}'
-    '.pydocx-right {text-align:right;}'
-    '.pydocx-left {text-align:left;}'
-    '.pydocx-comment {color:blue;}'
-    '.pydocx-underline {text-decoration: underline;}'
-    '.pydocx-caps {text-transform:uppercase;}'
-    '.pydocx-small-caps {font-variant: small-caps;}'
-    '.pydocx-strike {text-decoration: line-through;}'
-    '.pydocx-hidden {visibility: hidden;}'
-    '.pydocx-tab {display:inline-block;width:4em;}'
-    'body {width:612px;margin:0px auto;}'
+    '.pydocx-caps {text-transform:uppercase}'
+    '.pydocx-center {text-align:center}'
+    '.pydocx-comment {color:blue}'
+    '.pydocx-delete {color:red;text-decoration:line-through}'
+    '.pydocx-hidden {visibility:hidden}'
+    '.pydocx-insert {color:green}'
+    '.pydocx-left {text-align:left}'
+    '.pydocx-right {text-align:right}'
+    '.pydocx-small-caps {font-variant:small-caps}'
+    '.pydocx-strike {text-decoration:line-through}'
+    '.pydocx-tab {display:inline-block;width:4em}'
+    '.pydocx-underline {text-decoration:underline}'
+    'body {margin:0px auto;width:51.00em}'
     '</style>'
 )
 
@@ -116,8 +115,8 @@ class XMLDocx2Html(Docx2Html):
             )
             self.numbering_dict = numbering_dict
 
-        # This is the standard page width for a word document, Also the page
-        # width that we are looking for in the test.
+        # This is the standard page width for a word document (in points), Also
+        # the page width that we are looking for in the test.
         self.page_width = 612
 
         self.parse_begin(self.document.xml_tree)

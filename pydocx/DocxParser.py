@@ -25,6 +25,9 @@ logger = logging.getLogger("NewParser")
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
 
+# https://en.wikipedia.org/wiki/Twip
+TWIPS_PER_POINT = 20
+
 JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'
 JUSTIFY_RIGHT = 'right'
@@ -298,18 +301,11 @@ class DocxParser(MulitMemoizeMixin):
         if numbering:
             self.numbering_root = numbering.target.xml_tree
 
-        #divide by 20 to get to pt (Office works in 20th's of a point)
-        """
-        see http://msdn.microsoft.com/en-us/library/documentformat
-        .openxml.wordprocessing.indentation.aspx
-        """
-        if find_first(self.document.xml_tree, 'pgSz') is not None:
-            # TODO it's not clear that units page_width is in. The magic number
-            # 20 should be made into a CONSTANT to describe the conversion that
-            # is taking place here.
-            self.page_width = int(
-                find_first(self.document.xml_tree, 'pgSz').attrib['w']
-            ) / 20
+        pgSzEl = find_first(self.document.xml_tree, 'pgSz')
+        if pgSzEl is not None:
+            # pgSz is defined in twips, convert to points
+            pgSz = int(pgSzEl.attrib['w'])
+            self.page_width = pgSz / TWIPS_PER_POINT
 
         self.styles_dict = self._parse_styles()
         self.parse_begin(self.document.xml_tree)  # begin to parse
@@ -414,7 +410,7 @@ class DocxParser(MulitMemoizeMixin):
             return parsed
 
     def parse_page_break(self, el, text):
-        #TODO figure out what parsed is getting overwritten
+        # TODO figure out what parsed is getting overwritten
         return self.page_break()
 
     def parse_table(self, el, text):
@@ -549,33 +545,26 @@ class DocxParser(MulitMemoizeMixin):
         if paragraph_tag_property is None:
             return text
 
-        _justification = paragraph_tag_property.find('jc')
+        jc = paragraph_tag_property.find('jc')
         indentation = paragraph_tag_property.find('ind')
-        if _justification is None and indentation is None:
+        if jc is None and indentation is None:
             return text
         alignment = None
         right = None
         left = None
         firstLine = None
-        if _justification is not None:  # text alignments
-            value = _justification.attrib['val']
+        if jc is not None:  # text alignments
+            value = jc.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
 
         if indentation is not None:
             if INDENTATION_RIGHT in indentation.attrib:
-                right = indentation.attrib[INDENTATION_RIGHT]
-                # divide by 20 to get to pt. multiply by (4/3) to get to px
-                right = (int(right) / 20) * float(4) / float(3)
-                right = str(right)
+                right = int(indentation.attrib[INDENTATION_RIGHT])
             if INDENTATION_LEFT in indentation.attrib:
-                left = indentation.attrib[INDENTATION_LEFT]
-                left = (int(left) / 20) * float(4) / float(3)
-                left = str(left)
+                left = int(indentation.attrib[INDENTATION_LEFT])
             if INDENTATION_FIRST_LINE in indentation.attrib:
-                firstLine = indentation.attrib[INDENTATION_FIRST_LINE]
-                firstLine = (int(firstLine) / 20) * float(4) / float(3)
-                firstLine = str(firstLine)
+                firstLine = int(indentation.attrib[INDENTATION_FIRST_LINE])
         if any([alignment, firstLine, left, right]):
             return self.indent(text, alignment, firstLine, left, right)
         return text
@@ -1009,5 +998,12 @@ class DocxParser(MulitMemoizeMixin):
         return True
 
     @abstractmethod
-    def indent(self, text, left='', right='', firstLine=''):
-        return text  # TODO JUSTIFIED JUSTIFIED TEXT
+    def indent(
+        self,
+        text,
+        alignment=None,
+        left=None,
+        right=None,
+        firstLine=None,
+    ):
+        return text

@@ -75,9 +75,10 @@ class Docx2Html(DocxParser):
         }
 
     def head(self):
-        return "<head>%(style)s</head>" % {
-            'style': self.style(),
-        }
+        return self.make_element(
+            tag='head',
+            contents=self.style(),
+        )
 
     def style(self):
         width = self.page_width / POINTS_PER_EM
@@ -102,7 +103,10 @@ class Docx2Html(DocxParser):
                 convert_dictionary_to_style_fragment(definition),
             ))
 
-        return '<style>%s</style>' % ''.join(result)
+        return self.make_element(
+            tag='style',
+            contents=''.join(result),
+        )
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
@@ -111,30 +115,36 @@ class Docx2Html(DocxParser):
         return '<br />'
 
     def paragraph(self, text, pre=None):
-        return '<p>' + text + '</p>'
+        return self.make_element(
+            tag='p',
+            contents=text,
+        )
 
     def heading(self, text, heading_value):
-        return '<%(tag)s>%(text)s</%(tag)s>' % {
-            'tag': heading_value,
-            'text': text,
-        }
+        return self.make_element(
+            tag=heading_value,
+            contents=text,
+        )
 
     def insertion(self, text, author, date):
-        return (
-            "<span class='pydocx-insert'>%(text)s</span>"
-        ) % {
-            'author': author,
-            'date': date,
-            'text': text,
-        }
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-insert',
+            },
+        )
 
     def hyperlink(self, text, href):
         if text == '':
             return ''
-        return '<a href="%(href)s">%(text)s</a>' % {
-            'href': href,
-            'text': text,
-        }
+        return self.make_element(
+            tag='a',
+            contents=text,
+            attrs={
+                'href': href,
+            },
+        )
 
     def image_handler(self, image_data, filename):
         extension = filename.split('.')[-1].lower()
@@ -159,82 +169,139 @@ class Docx2Html(DocxParser):
             return '<img src="%s" />' % src
 
     def deletion(self, text, author, date):
-        return (
-            "<span class='pydocx-delete'>%(text)s</span>"
-        ) % {
-            'author': author,
-            'date': date,
-            'text': text,
-        }
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-delete',
+            },
+        )
 
     def list_element(self, text):
-        return "<li>%(text)s</li>" % {
-            'text': text,
-        }
+        return self.make_element(
+            tag='li',
+            contents=text,
+        )
 
     def ordered_list(self, text, list_style):
-        return '<ol list-style-type="%(list_style)s">%(text)s</ol>' % {
-            'text': text,
-            'list_style': list_style,
-        }
+        return self.make_element(
+            tag='ol',
+            contents=text,
+            attrs={
+                'list-style-type': list_style,
+            }
+        )
 
     def unordered_list(self, text):
-        return "<ul>%(text)s</ul>" % {
-            'text': text,
-        }
+        return self.make_element(
+            tag='ul',
+            contents=text,
+        )
 
     def bold(self, text):
-        return '<strong>' + text + '</strong>'
+        return self.make_element(
+            tag='strong',
+            contents=text,
+        )
 
     def italics(self, text):
-        return '<em>' + text + '</em>'
+        return self.make_element(
+            tag='em',
+            contents=text,
+        )
 
     def underline(self, text):
-        return '<span class="pydocx-underline">' + text + '</span>'
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-underline',
+            },
+        )
 
     def caps(self, text):
-        return '<span class="pydocx-caps">' + text + '</span>'
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-caps',
+            },
+        )
 
     def small_caps(self, text):
-        return '<span class="pydocx-small-caps">' + text + '</span>'
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-small-caps',
+            },
+        )
 
     def strike(self, text):
-        return '<span class="pydocx-strike">' + text + '</span>'
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-strike',
+            },
+        )
 
     def hide(self, text):
-        return '<span class="pydocx-hidden">' + text + '</span>'
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs={
+                'class': 'pydocx-hidden',
+            },
+        )
 
     def superscript(self, text):
-        return '<sup>%(text)s</sup>' % {
-            'text': text,
-        }
+        return self.make_element(
+            tag='sup',
+            contents=text,
+        )
 
     def subscript(self, text):
-        return '<sub>%(text)s</sub>' % {
-            'text': text,
-        }
+        return self.make_element(
+            tag='sub',
+            contents=text,
+        )
 
     def tab(self):
-        return '<span class="pydocx-tab"> </span>'
+        return self.make_element(
+            tag='span',
+            contents=' ',
+            attrs={
+                'class': 'pydocx-tab',
+            },
+        )
 
     def table(self, text):
-        return '<table border="1">' + text + '</table>'
+        return self.make_element(
+            tag='table',
+            contents=text,
+            attrs={
+                'border': '1',
+            },
+        )
 
     def table_row(self, text):
-        return '<tr>' + text + '</tr>'
+        return self.make_element(
+            tag='tr',
+            contents=text,
+        )
 
     def table_cell(self, text, col='', row=''):
-        slug = '<td'
+        attrs = {}
         if col:
-            slug += ' colspan="%(colspan)s"'
+            attrs['colspan'] = col
         if row:
-            slug += ' rowspan="%(rowspan)s"'
-        slug += '>%(text)s</td>'
-        return slug % {
-            'colspan': col,
-            'rowspan': row,
-            'text': text,
-        }
+            attrs['rowspan'] = row
+        return self.make_element(
+            tag='td',
+            contents=text,
+            attrs=attrs,
+        )
 
     def page_break(self):
         return '<hr />'

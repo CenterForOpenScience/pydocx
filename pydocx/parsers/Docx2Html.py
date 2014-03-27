@@ -62,6 +62,18 @@ class Docx2Html(DocxParser):
         }
         return unicode(content)
 
+    def make_element(self, tag, contents='', attrs=None):
+        html_attrs = convert_dictionary_to_html_attributes(attrs)
+        if html_attrs:
+            template = '<%(tag)s %(attrs)s>%(contents)s</%(tag)s>'
+        else:
+            template = '<%(tag)s>%(contents)s</%(tag)s>'
+        return template % {
+            'tag': tag,
+            'attrs': html_attrs,
+            'contents': contents,
+        }
+
     def head(self):
         return "<head>%(style)s</head>" % {
             'style': self.style(),
@@ -235,7 +247,6 @@ class Docx2Html(DocxParser):
         left=None,
         right=None,
     ):
-        tag = 'span'
         attrs = {}
         if alignment:
             attrs['class'] = 'pydocx-%s' % alignment
@@ -251,16 +262,11 @@ class Docx2Html(DocxParser):
             style['margin-right'] = '%.2fem' % right
         if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)
-        html_attrs = convert_dictionary_to_html_attributes(attrs)
-        if html_attrs:
-            template = '<%(tag)s %(attrs)s>%(text)s</%(tag)s>'
-        else:
-            template = '<%(tag)s>%(text)s</%(tag)s>'
-        return template % {
-            'tag': tag,
-            'attrs': html_attrs,
-            'text': text,
-        }
+        return self.make_element(
+            tag='span',
+            contents=text,
+            attrs=attrs,
+        )
 
     def break_tag(self):
         return '<br />'

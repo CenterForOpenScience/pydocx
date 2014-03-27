@@ -196,14 +196,14 @@ class Docx2Html(DocxParser):
         attrs = {}
         if alignment:
             attrs['class'] = 'pydocx-%s' % alignment
-        if firstLine or left or right:
-            style = {}
-            if firstLine:
-                style['text-indent'] = '%spx' % firstLine
-            if left:
-                style['margin-left'] = '%spx' % left
-            if right:
-                style['margin-right'] = '%spx' % right
+        style = {}
+        if firstLine:
+            style['text-indent'] = '%spx' % firstLine
+        if left:
+            style['margin-left'] = '%spx' % left
+        if right:
+            style['margin-right'] = '%spx' % right
+        if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)
         html_attrs = convert_dictionary_to_html_attributes(attrs)
         if html_attrs:

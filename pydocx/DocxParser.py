@@ -544,16 +544,16 @@ class DocxParser(MulitMemoizeMixin):
         if paragraph_tag_property is None:
             return text
 
-        _justification = paragraph_tag_property.find('jc')
+        jc = paragraph_tag_property.find('jc')
         indentation = paragraph_tag_property.find('ind')
-        if _justification is None and indentation is None:
+        if jc is None and indentation is None:
             return text
         alignment = None
         right = None
         left = None
         firstLine = None
-        if _justification is not None:  # text alignments
-            value = _justification.attrib['val']
+        if jc is not None:  # text alignments
+            value = jc.attrib['val']
             if value in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
                 alignment = value
 

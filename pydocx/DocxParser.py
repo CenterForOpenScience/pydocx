@@ -301,9 +301,10 @@ class DocxParser(MulitMemoizeMixin):
         if numbering:
             self.numbering_root = numbering.target.xml_tree
 
-        if find_first(self.document.xml_tree, 'pgSz') is not None:
+        pgSzEl = find_first(self.document.xml_tree, 'pgSz')
+        if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
-            pgSz = int(find_first(self.document.xml_tree, 'pgSz').attrib['w'])
+            pgSz = int(pgSzEl.attrib['w'])
             self.page_width = pgSz / TWIPS_PER_POINT
 
         self.styles_dict = self._parse_styles()

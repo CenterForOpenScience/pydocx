@@ -184,7 +184,14 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
-    def indent(self, text, alignment='', firstLine='', left='', right=''):
+    def indent(
+        self,
+        text,
+        alignment=None,
+        firstLine=None,
+        left=None,
+        right=None,
+    ):
         tag = 'span'
         attrs = {}
         if alignment:

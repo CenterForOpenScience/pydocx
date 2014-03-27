@@ -63,14 +63,14 @@ class Docx2Html(DocxParser):
         return unicode(content)
 
     def make_element(self, tag, contents='', attrs=None):
-        html_attrs = convert_dictionary_to_html_attributes(attrs)
-        if html_attrs:
+        if attrs:
+            attrs = convert_dictionary_to_html_attributes(attrs)
             template = '<%(tag)s %(attrs)s>%(contents)s</%(tag)s>'
         else:
             template = '<%(tag)s>%(contents)s</%(tag)s>'
         return template % {
             'tag': tag,
-            'attrs': html_attrs,
+            'attrs': attrs,
             'contents': contents,
         }
 

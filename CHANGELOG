@@ -3,6 +3,8 @@ Changelog
 =========
 * dev
     * Use inline span to define styles instead of div
+    * Use ems for HTML widths instead of pixels
+    * If a property value is "off", it is now considered disabled
 * 0.3.14
     * Use paths from _rels/.rels instead of hardcoding
 * 0.3.13

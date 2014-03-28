@@ -36,7 +36,6 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-DISABLED_STYLE_VALUES = ['false', '0', 'none']
 
 OPC_TAG_RELATIONSHIP = 'Relationship'
 OPC_TAG_RELATIONSHIP_ATTR_ID = 'Id'
@@ -795,14 +794,6 @@ class DocxParser(MulitMemoizeMixin):
             x,
             y,
         )
-
-    def _is_style_on(self, value):
-        """
-        For b, i, u (bold, italics, and underline) merely having the tag is not
-        sufficient. You need to check to make sure it is not set to "false" as
-        well.
-        """
-        return value not in DISABLED_STYLE_VALUES
 
     def parse_t(self, el, parsed):
         if el.text is None:

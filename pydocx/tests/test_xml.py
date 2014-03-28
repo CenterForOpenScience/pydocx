@@ -19,6 +19,7 @@ class StyleIsOnTestCase(_TranslationTestCase):
         <p>BBB</p>
         <p>CCC</p>
         <p>DDD</p>
+        <p>EEE</p>
     """
 
     def get_xml(self):
@@ -52,6 +53,14 @@ class StyleIsOnTestCase(_TranslationTestCase):
                     DXB.r_tag(
                         [DXB.t_tag('DDD')],
                         rpr=DXB.rpr_tag({'u': 'none'}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('EEE')],
+                        rpr=DXB.rpr_tag({'b': 'off'}),
                     ),
                 ],
             ),

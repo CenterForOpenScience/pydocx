@@ -278,6 +278,7 @@ class DocxParser(MulitMemoizeMixin):
             convert_root_level_upper_roman=False,
             *args,
             **kwargs):
+        self.path = path
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
@@ -285,10 +286,11 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
-        self._load(path, *args, **kwargs)
+        self.args = args
+        self.kwargs = kwargs
 
-    def _load(self, path_to_archive, *args, **kwargs):
-        package = WordprocessingMLPackage.load(path_to_archive)
+    def _load(self):
+        package = WordprocessingMLPackage.load(self.path)
 
         self.document = package.get_relationship_by_name(
             OPC_RELATIONSHIP_TYPE_OFFICE_DOCUMENT,
@@ -895,6 +897,8 @@ class DocxParser(MulitMemoizeMixin):
 
     @property
     def parsed(self):
+        if not self._parsed:
+            self._load()
         return self._parsed
 
     @property

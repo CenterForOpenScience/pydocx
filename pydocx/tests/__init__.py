@@ -91,16 +91,12 @@ class XMLDocx2Html(Docx2Html):
         # Pass in nothing for the path
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
-    def _load(
-        self,
-        path_to_archive,
-        document_xml=None,
-        relationships=None,
-        numbering_dict=None,
-        styles_dict=None,
-        *args,
-        **kwargs
-    ):
+    def _load(self):
+        document_xml = self.kwargs.get('document_xml')
+        relationships = self.kwargs.get('relationships')
+        numbering_dict = self.kwargs.get('numbering_dict')
+        styles_dict = self.kwargs.get('styles_dict')
+
         self.document = OPCPart(raw_data=document_xml)
         if relationships:
             for relationship in relationships:

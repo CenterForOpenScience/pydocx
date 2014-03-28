@@ -273,11 +273,10 @@ class DocxParser(MulitMemoizeMixin):
     pre_processor_class = PydocxPreProcessor
 
     def __init__(
-            self,
-            path,
-            convert_root_level_upper_roman=False,
-            *args,
-            **kwargs):
+        self,
+        path,
+        convert_root_level_upper_roman=False,
+    ):
         self.path = path
         self._parsed = ''
         self.block_text = ''
@@ -286,8 +285,6 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
-        self.args = args
-        self.kwargs = kwargs
 
     def _load(self):
         package = WordprocessingMLPackage.load(self.path)

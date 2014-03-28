@@ -5,6 +5,7 @@ import zipfile
 from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
 
+from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
@@ -853,6 +854,18 @@ class DocxParser(MulitMemoizeMixin):
             )
             run_properties.update(local_run_properties)
 
+        inline_tag_types = {
+            'b': types.OnOff,
+            'i': types.OnOff,
+            'u': types.Underline,
+            'caps': types.OnOff,
+            'smallCaps': types.OnOff,
+            'strike': types.OnOff,
+            'dstrike': types.OnOff,
+            'vanish': types.OnOff,
+            'webHidden': types.OnOff,
+        }
+
         inline_tag_handlers = {
             'b': self.bold,
             'i': self.italics,
@@ -876,8 +889,8 @@ class DocxParser(MulitMemoizeMixin):
                     styles_needing_application.append(self.subscript)
             else:
                 if (
-                        property_name in inline_tag_handlers and
-                        self._is_style_on(property_value)
+                    property_name in inline_tag_handlers and
+                    inline_tag_types.get(property_name)(property_value)
                 ):
                     styles_needing_application.append(
                         inline_tag_handlers[property_name],

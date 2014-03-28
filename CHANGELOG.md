@@ -1,11 +1,11 @@
-Changelog
-=========
+# Change Log
+
 * dev
-    * Use inline span to define styles instead of div #67
-    * Use ems for HTML widths instead of pixels #68
-    * If a property value is "off", it is now considered disabled #69
+    * #67 Use inline span to define styles instead of div
+    * #68 Use ems for HTML widths instead of pixels
+    * #69 If a property value is "off", it is now considered disabled
 * 0.3.14
-    * Use paths from _rels/.rels instead of hardcoding #66
+    * #66 Use paths from _rels/.rels instead of hardcoding
 * 0.3.13
     * Significant performance gains for documents with a large number of table
       cells.

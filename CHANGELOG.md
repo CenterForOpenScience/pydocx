@@ -1,4 +1,5 @@
-# Change Log
+Change Log
+==========
 
 * dev
     * #67 Use inline span to define styles instead of div

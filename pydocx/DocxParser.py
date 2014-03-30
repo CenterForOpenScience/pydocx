@@ -45,9 +45,9 @@ OPC_TAG_RELATIONSHIP_ATTR_TYPE = 'Type'
 
 OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL = 'External'
 
-OPC_RELATIONSHIP_TYPE_OFFICE_DOCUMENT = 'officeDocument'
-OPC_RELATIONSHIP_TYPE_NUMBERING = 'numbering'
-OPC_RELATIONSHIP_TYPE_STYLES = 'styles'
+OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument'  # noqa
+OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering'  # noqa
+OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
 
 # Add some helper functions to Element to make it slightly more readable
 
@@ -74,7 +74,6 @@ class OPCRelationship(object):
         self.target_path = target_path
         self.target = target
         self.external = external
-        self.namespace, self.name = os.path.split(self.rType)
         if external:
             self.container = None
             self.filename = None
@@ -99,7 +98,7 @@ class OPCPart(object):
     def __init__(self, raw_data=None):
         self.raw_data = raw_data
         self._xml_tree = None
-        self.relationships_by_name = {}
+        self.relationships_by_type = {}
         self.relationships_by_id = {}
 
     @property
@@ -110,15 +109,15 @@ class OPCPart(object):
             self._xml_tree = parse_xml_from_string(self.raw_data)
         return self._xml_tree
 
-    def get_relationship_by_name(self, name):
-        return self.relationships_by_name.get(name)
+    def get_relationship_by_type(self, name):
+        return self.relationships_by_type.get(name)
 
     def get_relationship_by_id(self, rId):
         return self.relationships_by_id.get(rId)
 
     def add_relationship(self, relationship):
         self.relationships_by_id[relationship.rId] = relationship
-        self.relationships_by_name[relationship.name] = relationship
+        self.relationships_by_type[relationship.rType] = relationship
 
 
 class WordprocessingMLPackage(object):
@@ -289,12 +288,12 @@ class DocxParser(MulitMemoizeMixin):
     def _load(self):
         package = WordprocessingMLPackage.load(self.path)
 
-        self.document = package.get_relationship_by_name(
-            OPC_RELATIONSHIP_TYPE_OFFICE_DOCUMENT,
+        self.document = package.get_relationship_by_type(
+            OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT,
         ).target
 
         self.numbering_root = None
-        numbering = self.document.get_relationship_by_name(
+        numbering = self.document.get_relationship_by_type(
             OPC_RELATIONSHIP_TYPE_NUMBERING,
         )
         if numbering:
@@ -337,7 +336,7 @@ class DocxParser(MulitMemoizeMixin):
         return run_properties
 
     def _parse_styles(self):
-        styles = self.document.get_relationship_by_name(
+        styles = self.document.get_relationship_by_type(
             OPC_RELATIONSHIP_TYPE_STYLES,
         )
         if not styles:

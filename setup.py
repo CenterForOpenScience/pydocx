@@ -19,7 +19,7 @@ def get_file(filename):
 
 
 def get_description():
-    return get_file('README.rst') + get_file('CHANGELOG')
+    return get_file('README.rst') + get_file('CHANGELOG.md')
 
 setup(
     name="PyDocX",

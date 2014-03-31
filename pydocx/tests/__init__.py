@@ -89,31 +89,23 @@ class XMLDocx2Html(Docx2Html):
     """
     def __init__(self, *args, **kwargs):
         # Pass in nothing for the path
+        self.document_xml = kwargs.pop('document_xml')
+        self.relationships = kwargs.pop('relationships')
+        self.numbering_dict = kwargs.pop('numbering_dict', None) or {}
+        self.styles_dict = kwargs.pop('styles_dict', None) or {}
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
-    def _load(
-        self,
-        path_to_archive,
-        document_xml=None,
-        relationships=None,
-        numbering_dict=None,
-        styles_dict=None,
-        *args,
-        **kwargs
-    ):
-        self.document = OPCPart(raw_data=document_xml)
-        if relationships:
-            for relationship in relationships:
+    def _load(self):
+        self.document = OPCPart(raw_data=self.document_xml)
+        if self.relationships:
+            for relationship in self.relationships:
                 self.document.add_relationship(OPCRelationship(**relationship))
 
-        self.styles_dict = styles_dict or {}
-
         self.numbering_root = None
-        if numbering_dict is not None:
+        if self.numbering_dict is not None:
             self.numbering_root = parse_xml_from_string(
-                DXB.numbering(numbering_dict),
+                DXB.numbering(self.numbering_dict),
             )
-            self.numbering_dict = numbering_dict
 
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.

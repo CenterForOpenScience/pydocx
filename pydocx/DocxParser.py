@@ -5,6 +5,7 @@ import zipfile
 from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
 
+from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
@@ -35,7 +36,6 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-DISABLED_STYLE_VALUES = ['false', '0', 'none']
 
 OPC_TAG_RELATIONSHIP = 'Relationship'
 OPC_TAG_RELATIONSHIP_ATTR_ID = 'Id'
@@ -45,9 +45,9 @@ OPC_TAG_RELATIONSHIP_ATTR_TYPE = 'Type'
 
 OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL = 'External'
 
-OPC_RELATIONSHIP_TYPE_OFFICE_DOCUMENT = 'officeDocument'
-OPC_RELATIONSHIP_TYPE_NUMBERING = 'numbering'
-OPC_RELATIONSHIP_TYPE_STYLES = 'styles'
+OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument'  # noqa
+OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering'  # noqa
+OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
 
 # Add some helper functions to Element to make it slightly more readable
 
@@ -74,7 +74,6 @@ class OPCRelationship(object):
         self.target_path = target_path
         self.target = target
         self.external = external
-        self.namespace, self.name = os.path.split(self.rType)
         if external:
             self.container = None
             self.filename = None
@@ -99,7 +98,7 @@ class OPCPart(object):
     def __init__(self, raw_data=None):
         self.raw_data = raw_data
         self._xml_tree = None
-        self.relationships_by_name = {}
+        self.relationships_by_type = {}
         self.relationships_by_id = {}
 
     @property
@@ -110,15 +109,15 @@ class OPCPart(object):
             self._xml_tree = parse_xml_from_string(self.raw_data)
         return self._xml_tree
 
-    def get_relationship_by_name(self, name):
-        return self.relationships_by_name.get(name)
+    def get_relationship_by_type(self, name):
+        return self.relationships_by_type.get(name)
 
     def get_relationship_by_id(self, rId):
         return self.relationships_by_id.get(rId)
 
     def add_relationship(self, relationship):
         self.relationships_by_id[relationship.rId] = relationship
-        self.relationships_by_name[relationship.name] = relationship
+        self.relationships_by_type[relationship.rType] = relationship
 
 
 class WordprocessingMLPackage(object):
@@ -273,11 +272,11 @@ class DocxParser(MulitMemoizeMixin):
     pre_processor_class = PydocxPreProcessor
 
     def __init__(
-            self,
-            path,
-            convert_root_level_upper_roman=False,
-            *args,
-            **kwargs):
+        self,
+        path,
+        convert_root_level_upper_roman=False,
+    ):
+        self.path = path
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
@@ -285,17 +284,16 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
-        self._load(path, *args, **kwargs)
 
-    def _load(self, path_to_archive, *args, **kwargs):
-        package = WordprocessingMLPackage.load(path_to_archive)
+    def _load(self):
+        package = WordprocessingMLPackage.load(self.path)
 
-        self.document = package.get_relationship_by_name(
-            OPC_RELATIONSHIP_TYPE_OFFICE_DOCUMENT,
+        self.document = package.get_relationship_by_type(
+            OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT,
         ).target
 
         self.numbering_root = None
-        numbering = self.document.get_relationship_by_name(
+        numbering = self.document.get_relationship_by_type(
             OPC_RELATIONSHIP_TYPE_NUMBERING,
         )
         if numbering:
@@ -338,7 +336,7 @@ class DocxParser(MulitMemoizeMixin):
         return run_properties
 
     def _parse_styles(self):
-        styles = self.document.get_relationship_by_name(
+        styles = self.document.get_relationship_by_type(
             OPC_RELATIONSHIP_TYPE_STYLES,
         )
         if not styles:
@@ -795,14 +793,6 @@ class DocxParser(MulitMemoizeMixin):
             y,
         )
 
-    def _is_style_on(self, value):
-        """
-        For b, i, u (bold, italics, and underline) merely having the tag is not
-        sufficient. You need to check to make sure it is not set to "false" as
-        well.
-        """
-        return value not in DISABLED_STYLE_VALUES
-
     def parse_t(self, el, parsed):
         if el.text is None:
             return ''
@@ -853,6 +843,18 @@ class DocxParser(MulitMemoizeMixin):
             )
             run_properties.update(local_run_properties)
 
+        inline_tag_types = {
+            'b': types.OnOff,
+            'i': types.OnOff,
+            'u': types.Underline,
+            'caps': types.OnOff,
+            'smallCaps': types.OnOff,
+            'strike': types.OnOff,
+            'dstrike': types.OnOff,
+            'vanish': types.OnOff,
+            'webHidden': types.OnOff,
+        }
+
         inline_tag_handlers = {
             'b': self.bold,
             'i': self.italics,
@@ -876,8 +878,8 @@ class DocxParser(MulitMemoizeMixin):
                     styles_needing_application.append(self.subscript)
             else:
                 if (
-                        property_name in inline_tag_handlers and
-                        self._is_style_on(property_value)
+                    property_name in inline_tag_handlers and
+                    inline_tag_types.get(property_name)(property_value)
                 ):
                     styles_needing_application.append(
                         inline_tag_handlers[property_name],
@@ -891,6 +893,8 @@ class DocxParser(MulitMemoizeMixin):
 
     @property
     def parsed(self):
+        if not self._parsed:
+            self._load()
         return self._parsed
 
     @property

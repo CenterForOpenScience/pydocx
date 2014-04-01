@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+* 0.3.16
+    * CHANGELOG.md was missing from the MANIFEST in 0.3.15 which would
+      cause the setup to fail.
 * 0.3.15
     * Use inline span to define styles instead of div
     * Use ems for HTML widths instead of pixels

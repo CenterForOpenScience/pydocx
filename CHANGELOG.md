@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+* dev
+    * In some cases, a hyperlink can be formatted using Complex Field
+      Characters. These types of hyperlinks are now converted correctly.
 * 0.3.16
     * CHANGELOG.md was missing from the MANIFEST in 0.3.15 which would
       cause the setup to fail.

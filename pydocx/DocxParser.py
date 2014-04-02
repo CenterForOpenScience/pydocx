@@ -284,6 +284,8 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
+        self.complex_field_char_depth = 0
+        self.complex_field_char_stack = []
 
     def _load(self):
         package = WordprocessingMLPackage.load(self.path)
@@ -400,6 +402,10 @@ class DocxParser(MulitMemoizeMixin):
             return self.parse_p(el, parsed)
         elif el.tag == 'ins':
             return self.parse_insertion(el, parsed)
+        elif el.tag == 'fldChar':
+            return self.parse_fld_char(el, parsed)
+        elif el.tag == 'instrText':
+            return self.parse_instr_text(el, parsed)
         elif el.tag == 'hyperlink':
             return self.parse_hyperlink(el, parsed)
         elif el.tag in ('pict', 'drawing'):
@@ -796,6 +802,9 @@ class DocxParser(MulitMemoizeMixin):
     def parse_t(self, el, parsed):
         if el.text is None:
             return ''
+        if self.complex_field_char_depth > 0:
+            self.complex_field_char_stack.append(el.text)
+            return ''
         return self.escape(el.text)
 
     def parse_tab(self, el, parsed):
@@ -890,6 +899,59 @@ class DocxParser(MulitMemoizeMixin):
             text = func(text)
 
         return text
+
+    def parse_instr_text(self, el, parsed):
+        self.complex_field_char_stack.append(
+            list(
+                text.strip('"\'') for text in
+                el.text.split()
+            )
+        )
+        return parsed
+
+    def purge_complex_field_char_stack(self):
+        def early_return():
+            logger.info(
+                'Not sure what to do here: %s',
+                str(self.complex_field_char_stack),
+            )
+            return ''.join(
+                self.escape(t)
+                for t in self.complex_field_char_stack
+                if isinstance(t, basestring)
+            )
+
+        def can_parse_char_stack():
+            transformation, text = self.complex_field_char_stack
+            if not isinstance(transformation, list):
+                return False
+            if not isinstance(text, basestring):
+                return False
+            if len(transformation) != 2:
+                return False
+            transformation_type, tranformation_attrib = transformation
+            if transformation_type.lower() != 'hyperlink':
+                return False
+            return True
+
+        if len(self.complex_field_char_stack) != 2:
+            return_value = early_return()
+        elif not can_parse_char_stack():
+            return_value = early_return()
+        else:
+            transformation, text = self.complex_field_char_stack
+            href = self.escape(transformation[1])
+            return_value = self.hyperlink(text, href)
+        self.complex_field_char_stack = []
+        return return_value
+
+    def parse_fld_char(self, el, parsed):
+        if el.attrib['fldCharType'] == 'begin':
+            self.complex_field_char_depth += 1
+        elif el.attrib['fldCharType'] == 'end':
+            self.complex_field_char_depth -= 1
+            return self.purge_complex_field_char_stack()
+        return parsed
 
     @property
     def parsed(self):

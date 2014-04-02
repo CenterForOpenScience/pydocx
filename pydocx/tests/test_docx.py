@@ -121,6 +121,19 @@ def test_inline_tags():
     ))
 
 
+def test_complex_hyperlink():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'complex_hyperlink.docx',
+    )
+    actual_html = convert(file_path)
+    assert_html_equal(actual_html, BASE_HTML % (
+        '<p><a href="https://www.google.com/">AAA</a></p>'
+    ))
+
+
 def test_all_configured_styles():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

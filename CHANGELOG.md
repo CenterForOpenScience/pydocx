@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+* dev
+    * Fixed attribute typo when attempting to generate an error message
+      for a missing required resource
 * 0.3.16
     * CHANGELOG.md was missing from the MANIFEST in 0.3.15 which would
       cause the setup to fail.

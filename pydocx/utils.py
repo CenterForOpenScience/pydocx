@@ -521,7 +521,9 @@ def zip_path_join(*parts):
     >>> zip_path_join('foo', 'bar')
     'foo/bar'
     '''
-    return '/'.join(parts)
+    return '/'.join([
+        str(part) for part in parts if part
+    ])
 
 
 @contextmanager

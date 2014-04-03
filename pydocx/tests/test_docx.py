@@ -15,6 +15,17 @@ def convert(path, *args, **kwargs):
     return Docx2Html(path, *args, **kwargs).parsed
 
 
+@raises(MalformedDocxException)
+def test_missing_relationships():
+    file_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+        'missing_relationships.docx',
+    )
+    convert(file_path)
+
+
 def test_extract_html():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),

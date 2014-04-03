@@ -232,7 +232,7 @@ class WordprocessingMLPackage(object):
 
         if not digraph_of_relationships:
             self.handle_required_resource_is_missing(
-                root.relationships_path,
+                root.relationship_path,
             )
         return digraph_of_relationships
 

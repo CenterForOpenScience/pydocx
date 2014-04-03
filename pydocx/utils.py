@@ -1,9 +1,8 @@
-import collections
 import re
 import zipfile
 from contextlib import contextmanager
 
-from collections import defaultdict
+from collections import Hashable, defaultdict
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
@@ -37,7 +36,7 @@ class MulitMemoize(object):
         self.func_names = func_names
 
     def __call__(self, func_name, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func_names[func_name](*args)

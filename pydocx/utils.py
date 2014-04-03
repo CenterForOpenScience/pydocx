@@ -503,3 +503,21 @@ def convert_dictionary_to_style_fragment(style):
 def convert_dictionary_to_html_attributes(attributes):
     items = sorted(attributes.iteritems())
     return ' '.join('%s="%s"' % item for item in items)
+
+
+def zip_path_join(*parts):
+    '''
+    Internally, ZipFile stores forward slashes as required by the zip
+    file specification. This occurs REGARDLESS of the operating
+    system, so we cannot use os.path.join.
+    See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+    Section 4.4.17
+
+    >>> zip_path_join()
+    ''
+    >>> zip_path_join('foo')
+    'foo'
+    >>> zip_path_join('foo', 'bar')
+    'foo/bar'
+    '''
+    return '/'.join(parts)

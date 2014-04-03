@@ -15,6 +15,7 @@ from pydocx.utils import (
     get_list_style,
     has_descendant_with_tag,
     parse_xml_from_string,
+    zip_path_join,
 )
 from pydocx.exceptions import MalformedDocxException
 
@@ -91,12 +92,7 @@ class OPCRelationship(object):
                     '_rels',
                     rels_file,
                 ]
-            # Internally, ZipFile stores forward slashes as required by the zip
-            # file specification. This occurs REGARDLESS of the operating
-            # system, so we cannot use os.path.join.
-            # See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-            # Section 4.4.17
-            self.relationship_path = '/'.join(relationship_path)
+            self.relationship_path = zip_path_join(*relationship_path)
 
 
 class OPCPart(object):

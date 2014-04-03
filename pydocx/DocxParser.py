@@ -70,15 +70,10 @@ class OPCRelationship(object):
             self.container, self.filename = os.path.split(self.target_path)
             rels_file = '%s.rels' % self.filename
             relationship_path = [
+                self.container,
                 '_rels',
                 rels_file,
             ]
-            if self.container:
-                relationship_path = [
-                    self.container,
-                    '_rels',
-                    rels_file,
-                ]
             self.relationship_path = zip_path_join(*relationship_path)
 
 

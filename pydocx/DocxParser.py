@@ -1,14 +1,13 @@
 import logging
 import os
-import zipfile
 
 from abc import abstractmethod, ABCMeta
-from contextlib import contextmanager
 
 from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
+    ZipFile,
     find_all,
     find_ancestor_with_tag,
     find_first,
@@ -51,16 +50,6 @@ OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocum
 OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
 
 # Add some helper functions to Element to make it slightly more readable
-
-
-@contextmanager
-def ZipFile(path):  # This is not needed in python 3.2+
-    try:
-        f = zipfile.ZipFile(path)
-    except zipfile.BadZipfile:
-        raise MalformedDocxException('Passed in document is not a docx')
-    yield f
-    f.close()
 
 
 class OPCRelationship(object):

@@ -1,5 +1,7 @@
-import re
 import collections
+import re
+import zipfile
+from contextlib import contextmanager
 
 from collections import defaultdict
 from xml.etree import cElementTree
@@ -521,3 +523,13 @@ def zip_path_join(*parts):
     'foo/bar'
     '''
     return '/'.join(parts)
+
+
+@contextmanager
+def ZipFile(path):  # This is not needed in python 3.2+
+    try:
+        f = zipfile.ZipFile(path)
+    except zipfile.BadZipfile:
+        raise MalformedDocxException('Passed in document is not a docx')
+    yield f
+    f.close()

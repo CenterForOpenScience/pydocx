@@ -516,10 +516,18 @@ def zip_path_join(*parts):
 
     >>> zip_path_join()
     ''
+    >>> zip_path_join('')
+    ''
+    >>> zip_path_join('', 'foo', '')
+    'foo'
     >>> zip_path_join('foo')
     'foo'
     >>> zip_path_join('foo', 'bar')
     'foo/bar'
+    >>> zip_path_join('', '', 'foo', 'bar', '',)
+    'foo/bar'
+    >>> zip_path_join(1, 2, 3)
+    '1/2/3'
     '''
     return '/'.join([
         str(part) for part in parts if part

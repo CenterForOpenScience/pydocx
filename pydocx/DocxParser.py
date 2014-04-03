@@ -80,11 +80,23 @@ class OPCRelationship(object):
             self.relationship_path = None
         else:
             self.container, self.filename = os.path.split(self.target_path)
-            self.relationship_path = os.path.join(
-                self.container,
+            rels_file = '%s.rels' % self.filename
+            relationship_path = [
                 '_rels',
-                '%s.rels' % self.filename,
-            )
+                rels_file,
+            ]
+            if self.container:
+                relationship_path = [
+                    self.container,
+                    '_rels',
+                    rels_file,
+                ]
+            # Internally, ZipFile stores forward slashes as required by the zip
+            # file specification. This occurs REGARDLESS of the operating
+            # system, so we cannot use os.path.join.
+            # See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+            # Section 4.4.17
+            self.relationship_path = '/'.join(relationship_path)
 
 
 class OPCPart(object):

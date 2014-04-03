@@ -49,8 +49,6 @@ OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT = 'http://schemas.openxmlformats.org/office
 OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering'  # noqa
 OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
 
-# Add some helper functions to Element to make it slightly more readable
-
 
 class OPCRelationship(object):
     '''

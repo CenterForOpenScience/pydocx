@@ -1,7 +1,8 @@
 import re
-import collections
+import zipfile
+from contextlib import contextmanager
 
-from collections import defaultdict
+from collections import Hashable, defaultdict
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
@@ -35,7 +36,7 @@ class MulitMemoize(object):
         self.func_names = func_names
 
     def __call__(self, func_name, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func_names[func_name](*args)
@@ -503,3 +504,41 @@ def convert_dictionary_to_style_fragment(style):
 def convert_dictionary_to_html_attributes(attributes):
     items = sorted(attributes.iteritems())
     return ' '.join('%s="%s"' % item for item in items)
+
+
+def zip_path_join(*parts):
+    '''
+    Internally, ZipFile stores forward slashes as required by the zip
+    file specification. This occurs REGARDLESS of the operating
+    system, so we cannot use os.path.join.
+    See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+    Section 4.4.17
+
+    >>> zip_path_join()
+    ''
+    >>> zip_path_join('')
+    ''
+    >>> zip_path_join('', 'foo', '')
+    'foo'
+    >>> zip_path_join('foo')
+    'foo'
+    >>> zip_path_join('foo', 'bar')
+    'foo/bar'
+    >>> zip_path_join('', '', 'foo', 'bar', '',)
+    'foo/bar'
+    >>> zip_path_join(1, 2, 3)
+    '1/2/3'
+    '''
+    return '/'.join([
+        str(part) for part in parts if part
+    ])
+
+
+@contextmanager
+def ZipFile(path):  # This is not needed in python 3.2+
+    try:
+        f = zipfile.ZipFile(path)
+    except zipfile.BadZipfile:
+        raise MalformedDocxException('Passed in document is not a docx')
+    yield f
+    f.close()

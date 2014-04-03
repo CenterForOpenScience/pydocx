@@ -1,20 +1,20 @@
 import logging
-import os
-import zipfile
+from os.path import split as path_split
 
 from abc import abstractmethod, ABCMeta
-from contextlib import contextmanager
 
 from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
+    ZipFile,
     find_all,
     find_ancestor_with_tag,
     find_first,
     get_list_style,
     has_descendant_with_tag,
     parse_xml_from_string,
+    zip_path_join,
 )
 from pydocx.exceptions import MalformedDocxException
 
@@ -49,18 +49,6 @@ OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT = 'http://schemas.openxmlformats.org/office
 OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering'  # noqa
 OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
 
-# Add some helper functions to Element to make it slightly more readable
-
-
-@contextmanager
-def ZipFile(path):  # This is not needed in python 3.2+
-    try:
-        f = zipfile.ZipFile(path)
-    except zipfile.BadZipfile:
-        raise MalformedDocxException('Passed in document is not a docx')
-    yield f
-    f.close()
-
 
 class OPCRelationship(object):
     '''
@@ -79,12 +67,14 @@ class OPCRelationship(object):
             self.filename = None
             self.relationship_path = None
         else:
-            self.container, self.filename = os.path.split(self.target_path)
-            self.relationship_path = os.path.join(
+            self.container, self.filename = path_split(self.target_path)
+            rels_file = '%s.rels' % self.filename
+            relationship_path = [
                 self.container,
                 '_rels',
-                '%s.rels' % self.filename,
-            )
+                rels_file,
+            ]
+            self.relationship_path = zip_path_join(*relationship_path)
 
 
 class OPCPart(object):
@@ -255,10 +245,7 @@ class WordprocessingMLPackage(object):
         if target_mode == OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL:
             external = True
         else:
-            target_path = os.path.join(
-                source.container,
-                target_path,
-            )
+            target_path = zip_path_join(source.container, target_path)
         return OPCRelationship(
             rId=rid,
             rType=element.get(OPC_TAG_RELATIONSHIP_ATTR_TYPE),

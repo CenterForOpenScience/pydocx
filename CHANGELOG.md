@@ -2,6 +2,7 @@ Change Log
 ==========
 
 * dev
+    * Fixed path issue on Windows for Zip archives
     * Fixed attribute typo when attempting to generate an error message
       for a missing required resource
 * 0.3.16

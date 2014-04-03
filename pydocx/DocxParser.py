@@ -250,10 +250,7 @@ class WordprocessingMLPackage(object):
         if target_mode == OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL:
             external = True
         else:
-            target_path = os.path.join(
-                source.container,
-                target_path,
-            )
+            target_path = zip_path_join(source.container, target_path)
         return OPCRelationship(
             rId=rid,
             rType=element.get(OPC_TAG_RELATIONSHIP_ATTR_TYPE),

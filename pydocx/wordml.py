@@ -108,15 +108,15 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
 
     @property
     def style_definitions_part(self):
-        return self.get_part_of_type(StyleDefinitionsPart)
+        return self.get_part_of_type(part_class=StyleDefinitionsPart)
 
     @property
     def numbering_definitions_part(self):
-        return self.get_part_of_type(NumberingDefinitionsPart)
+        return self.get_part_of_type(part_class=NumberingDefinitionsPart)
 
     @property
     def font_table_part(self):
-        return self.get_part_of_type(FontTablePart)
+        return self.get_part_of_type(part_class=FontTablePart)
 
     @property
     def image_parts(self):

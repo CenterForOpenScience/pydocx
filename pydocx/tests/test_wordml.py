@@ -66,7 +66,8 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
         namespace, tag = xml_tag_split(
             self.document.main_document_part.root_element.tag,
         )
-        self.assertEqual(namespace, self.document.namespace)
+        # We're currently ignoring namespaces, so this comes back as none
+        self.assertEqual(None, namespace)
         self.assertEqual(tag, 'document')
 
     def test_main_document_part_relationship_uri(self):

@@ -496,7 +496,7 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_hyperlink(self, el, text):
         relationship_id = el.get('id')
-        package_part = self.document.main_document_part.get_package_part()
+        package_part = self.document.main_document_part.package_part
         relationship = package_part.get_relationship(
             relationship_id=relationship_id,
         )

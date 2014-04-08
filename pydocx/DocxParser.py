@@ -714,12 +714,15 @@ class DocxParser(MulitMemoizeMixin):
         return parsed
 
     def parse_hyperlink(self, el, text):
-        rId = el.get('id')
-        relationship = self.document.get_relationship_by_id(rId)
+        relationship_id = el.get('id')
+        package_part = self.document.main_document_part.get_package_part()
+        relationship = package_part.get_relationship(
+            relationship_id=relationship_id,
+        )
         if not relationship:
             # Preserve the text even if we are unable to resolve the hyperlink
             return text
-        href = self.escape(relationship.target_path)
+        href = self.escape(relationship.target_uri)
         return self.hyperlink(text, href)
 
     def _get_image_id(self, el):

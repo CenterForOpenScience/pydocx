@@ -65,9 +65,11 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
     @property
     def style_definitions_part(self):
         self.ensure_parts_are_loaded()
-        return self.get_parts_of_type(
+        parts = self.get_parts_of_type(
             StyleDefinitionsPart.relationship_type,
-        )[0]
+        )
+        if parts:
+            return parts[0]
 
     @property
     def numbering_definitions_part(self):

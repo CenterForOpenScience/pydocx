@@ -20,6 +20,8 @@ class ChildPartLoader(object):
             relationships = relationship_lookup.get_relationships_by_type(
                 child_part_type.relationship_type,
             )
+            if not relationships:
+                continue
             relationship = relationships[0]
             base, _ = posixpath.split(relationship.source_uri)
             part_uri = posixpath.join(

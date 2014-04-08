@@ -173,6 +173,7 @@ class PartContainer(object):
             uri=uri,
         )
         self.parts[uri] = part
+        return part
 
     def part_exists(self, uri):
         return uri in self.parts

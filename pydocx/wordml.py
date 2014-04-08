@@ -38,6 +38,16 @@ class ChildPartLoader(object):
             )
 
 
+class ImagePart(OpenXmlPart):
+    relationship_type = '/'.join([
+        'http://schemas.openxmlformats.org',
+        'officeDocument',
+        '2006',
+        'relationships',
+        'image',
+    ])
+
+
 class StyleDefinitionsPart(OpenXmlPart):
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
@@ -79,6 +89,7 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
 
     child_part_types = [
         FontTablePart,
+        ImagePart,
         NumberingDefinitionsPart,
         StyleDefinitionsPart,
     ]
@@ -108,7 +119,9 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
 
     @property
     def image_parts(self):
-        pass
+        return self.get_parts_of_type(
+            relationship_type=ImagePart.relationship_type,
+        )
 
 
 class WordprocessingDocument(ChildPartLoader, OpenXmlPackage):

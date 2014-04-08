@@ -96,6 +96,14 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
         part = self.document.main_document_part.numbering_definitions_part
         self.assertIsNone(part, None)
 
+    def test_image_parts(self):
+        image_document = WordprocessingDocument(
+            path='pydocx/fixtures/has_image.docx',
+        )
+        parts = image_document.main_document_part.image_parts
+        self.assertEqual(len(parts), 1)
+        self.assertEqual(parts[0].uri, '/word/media/image1.gif')
+
 
 class XmlNamespaceManagerTestCase(unittest.TestCase):
     def test_namespace_manager(self):

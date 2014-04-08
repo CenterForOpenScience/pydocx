@@ -497,10 +497,11 @@ class DocxParser(MulitMemoizeMixin):
     def parse_hyperlink(self, el, text):
         relationship_id = el.get('id')
         package_part = self.document.main_document_part.package_part
-        relationship = package_part.get_relationship(
-            relationship_id=relationship_id,
-        )
-        if not relationship:
+        try:
+            relationship = package_part.get_relationship(
+                relationship_id=relationship_id,
+            )
+        except KeyError:
             # Preserve the text even if we are unable to resolve the hyperlink
             return text
         href = self.escape(relationship.target_uri)

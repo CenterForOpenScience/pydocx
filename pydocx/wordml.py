@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
+import posixpath
+
 from pydocx.openxml import (
     OpenXmlPart,
     OpenXmlPackage,
 )
-
-from pydocx.utils import zip_path_join
 
 
 class ChildPartLoader(object):
@@ -21,8 +21,9 @@ class ChildPartLoader(object):
                 child_part_type.relationship_type,
             )
             relationship = relationships[0]
-            part_uri = zip_path_join(
-                relationship.source_uri,
+            base, _ = posixpath.split(relationship.source_uri)
+            part_uri = posixpath.join(
+                base,
                 relationship.target_uri,
             )
             part = child_part_type(

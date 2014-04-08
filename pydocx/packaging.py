@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import posixpath
 import zipfile
 from collections import defaultdict
 from os.path import split as path_split
@@ -8,7 +9,6 @@ from xml.etree import cElementTree
 from pydocx.exceptions import MalformedDocxException
 from pydocx.utils import (
     xml_tag_split,
-    zip_path_join,
 )
 from pydocx.xml import XmlNamespaceManager
 
@@ -132,7 +132,7 @@ class PackagePart(RelationshipManager):
     def get_relationship_part_uri(part_uri):
         container, filename = path_split(part_uri)
         filename_rels = '%s.rels' % filename
-        return zip_path_join(container, '_rels', filename_rels)
+        return posixpath.join(container, '_rels', filename_rels)
 
     @property
     def stream(self):

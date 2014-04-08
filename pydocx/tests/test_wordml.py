@@ -69,6 +69,22 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
         self.assertEqual(namespace, self.document.namespace)
         self.assertEqual(tag, 'document')
 
+    def test_main_document_part_relationship_uri(self):
+        part = self.document.package.get_part(
+            self.document.main_document_part.uri,
+        )
+        self.assertEqual(
+            part.relationship_uri,
+            '/word/_rels/document.xml.rels',
+        )
+
+    def test_main_document_part_styles_uri(self):
+        styles = self.document.main_document_part.style_definitions_part
+        self.assertEqual(
+            styles.uri,
+            '/word/styles.xml',
+        )
+
 
 class XmlNamespaceManagerTestCase(unittest.TestCase):
     def test_namespace_manager(self):

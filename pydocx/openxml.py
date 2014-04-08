@@ -54,10 +54,13 @@ class OpenXmlPart(OpenXmlPartContainer):
     @property
     def root_element(self):
         if self._root_element is None:
-            part = self.open_xml_package.package.get_part(self.uri)
-            xml = part.stream.read()
-            self._root_element = cElementTree.fromstring(xml)
+            self._root_element = cElementTree.fromstring(self.stream.read())
         return self._root_element
+
+    @property
+    def stream(self):
+        part = self.open_xml_package.package.get_part(self.uri)
+        return part.stream
 
 
 class OpenXmlPackage(OpenXmlPartContainer):

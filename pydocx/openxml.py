@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 
 from collections import defaultdict
-from xml.etree import cElementTree
 
 from pydocx.packaging import ZipPackage
+from pydocx.utils import parse_xml_from_string
 
 
 class OpenXmlPartContainer(object):
@@ -62,7 +62,7 @@ class OpenXmlPart(OpenXmlPartContainer):
     @property
     def root_element(self):
         if self._root_element is None:
-            self._root_element = cElementTree.fromstring(self.stream.read())
+            self._root_element = parse_xml_from_string(self.stream.read())
         return self._root_element
 
     @property

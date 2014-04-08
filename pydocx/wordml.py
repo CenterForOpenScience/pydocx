@@ -95,7 +95,8 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
     ]
 
     def get_relationship_lookup(self):
-        return self.open_xml_package.package.get_part(self.uri)
+        package_lookup = self.open_xml_package.get_relationship_lookup()
+        return package_lookup.get_part(self.uri)
 
     def get_part_of_type(self, part_class):
         self.ensure_parts_are_loaded()

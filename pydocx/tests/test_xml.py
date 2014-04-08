@@ -4,13 +4,13 @@ import time
 
 from nose.plugins.skip import SkipTest
 
-from pydocx.DocxParser import OPCPart
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
     XMLDocx2Html,
     _TranslationTestCase,
 )
 from pydocx.utils import parse_xml_from_string, find_all
+from pydocx.wordml import ImagePart
 
 
 class StyleIsOnTestCase(_TranslationTestCase):
@@ -77,8 +77,8 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/hyperlink',
+            relationship_id='rId0',
+            relationship_type='foo/hyperlink',
             external=True,
             target_path='www.google.com',
         ),
@@ -101,8 +101,8 @@ class HyperlinkVanillaTestCase(_TranslationTestCase):
 class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/hyperlink',
+            relationship_id='rId0',
+            relationship_type='foo/hyperlink',
             external=True,
             target_path='www.google.com',
         ),
@@ -124,8 +124,8 @@ class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
 class HyperlinkNoTextTestCase(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/hyperlink',
+            relationship_id='rId0',
+            relationship_type='foo/hyperlink',
             external=True,
             target_path='www.google.com',
         ),
@@ -160,8 +160,8 @@ class HyperlinkWithoutDefinedRelationshipDictTestCase(_TranslationTestCase):
 class HyperlinkWithBreakTestCase(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/hyperlink',
+            relationship_id='rId0',
+            relationship_type='foo/hyperlink',
             external=True,
             target_path='www.google.com',
         ),
@@ -182,18 +182,18 @@ class HyperlinkWithBreakTestCase(_TranslationTestCase):
 class ImageLocal(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/image',
+            relationship_id='rId0',
+            relationship_type=ImagePart.relationship_type,
             external=False,
-            target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target_path='media/image1.jpeg',
+            data='content1',
         ),
         dict(
-            rId='rId1',
-            rType='foo/image',
+            relationship_id='rId1',
+            relationship_type=ImagePart.relationship_type,
             external=False,
-            target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target_path='media/image2.jpeg',
+            data='content2',
         ),
     ]
 
@@ -220,18 +220,18 @@ class ImageLocal(_TranslationTestCase):
 class ImageTestCase(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/image',
+            relationship_id='rId0',
+            relationship_type=ImagePart.relationship_type,
             external=False,
-            target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target_path='media/image1.jpeg',
+            data='content1',
         ),
         dict(
-            rId='rId1',
-            rType='foo/image',
+            relationship_id='rId1',
+            relationship_type=ImagePart.relationship_type,
             external=False,
-            target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target_path='media/image2.jpeg',
+            data='content2',
         ),
     ]
 
@@ -319,8 +319,8 @@ class ImageNotInRelsDictTestCase(_TranslationTestCase):
 class ImageNoSizeTestCase(_TranslationTestCase):
     relationships = [
         dict(
-            rId='rId0',
-            rType='foo/image',
+            relationship_id='rId0',
+            relationship_type=ImagePart.relationship_type,
             external=False,
             target_path=os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
@@ -328,7 +328,7 @@ class ImageNoSizeTestCase(_TranslationTestCase):
                 'fixtures',
                 'bullet_go_gray.png',
             ),
-            target=OPCPart(raw_data='content1'),
+            data='content1',
         )
     ]
     image_sizes = {

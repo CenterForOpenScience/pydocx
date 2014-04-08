@@ -97,9 +97,12 @@ class OpenXmlPart(OpenXmlPartContainer):
         return self._root_element
 
     @property
+    def package_part(self):
+        return self.open_xml_package.package.get_part(self.uri)
+
+    @property
     def stream(self):
-        part = self.open_xml_package.package.get_part(self.uri)
-        return part.stream
+        return self.package_part.stream
 
 
 class OpenXmlPackage(OpenXmlPartContainer):

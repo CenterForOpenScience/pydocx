@@ -48,6 +48,26 @@ class StyleDefinitionsPart(OpenXmlPart):
     ])
 
 
+class NumberingDefinitionsPart(OpenXmlPart):
+    relationship_type = '/'.join([
+        'http://schemas.openxmlformats.org',
+        'officeDocument',
+        '2006',
+        'relationships',
+        'numbering',
+    ])
+
+
+class FontTablePart(OpenXmlPart):
+    relationship_type = '/'.join([
+        'http://schemas.openxmlformats.org',
+        'officeDocument',
+        '2006',
+        'relationships',
+        'fontTable',
+    ])
+
+
 class MainDocumentPart(ChildPartLoader, OpenXmlPart):
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
@@ -58,24 +78,33 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
     ])
 
     child_part_types = [
+        FontTablePart,
+        NumberingDefinitionsPart,
         StyleDefinitionsPart,
     ]
 
     def get_relationship_lookup(self):
         return self.open_xml_package.package.get_part(self.uri)
 
-    @property
-    def style_definitions_part(self):
+    def get_part_of_type(self, part_class):
         self.ensure_parts_are_loaded()
         parts = self.get_parts_of_type(
-            StyleDefinitionsPart.relationship_type,
+            part_class.relationship_type,
         )
         if parts:
             return parts[0]
 
     @property
+    def style_definitions_part(self):
+        return self.get_part_of_type(StyleDefinitionsPart)
+
+    @property
     def numbering_definitions_part(self):
-        pass
+        return self.get_part_of_type(NumberingDefinitionsPart)
+
+    @property
+    def font_table_part(self):
+        return self.get_part_of_type(FontTablePart)
 
     @property
     def image_parts(self):

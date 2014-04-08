@@ -61,6 +61,10 @@ class WordprocessingDocument(OpenXmlPackage):
             open_xml_package=self,
             uri=part_uri,
         )
+        self.add_part(
+            part=self._main_document_part,
+            relationship_id=relationship.relationship_id,
+        )
 
 
 class Document(object):

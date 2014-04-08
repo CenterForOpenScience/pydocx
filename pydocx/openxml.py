@@ -16,6 +16,7 @@ class OpenXmlPartContainer(object):
     @property
     def parts(self):
         if self._parts is None:
+            self._parts = {}
             self.load_parts()
         return self._parts
 

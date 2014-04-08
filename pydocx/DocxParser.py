@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from os.path import split as path_split
+import posixpath
 
 from abc import abstractmethod, ABCMeta
 
@@ -69,7 +69,7 @@ class OPCRelationship(object):
             self.filename = None
             self.relationship_path = None
         else:
-            self.container, self.filename = path_split(self.target_path)
+            self.container, self.filename = posixpath.split(self.target_path)
             rels_file = '%s.rels' % self.filename
             relationship_path = [
                 self.container,

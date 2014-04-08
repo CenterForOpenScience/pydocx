@@ -98,25 +98,17 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
         package_lookup = self.open_xml_package.get_relationship_lookup()
         return package_lookup.get_part(self.uri)
 
-    def get_part_of_type(self, part_class):
-        self.ensure_parts_are_loaded()
-        parts = self.get_parts_of_type(
-            part_class.relationship_type,
-        )
-        if parts:
-            return parts[0]
-
     @property
     def style_definitions_part(self):
-        return self.get_part_of_type(part_class=StyleDefinitionsPart)
+        return self.get_part_of_class_type(part_class=StyleDefinitionsPart)
 
     @property
     def numbering_definitions_part(self):
-        return self.get_part_of_type(part_class=NumberingDefinitionsPart)
+        return self.get_part_of_class_type(part_class=NumberingDefinitionsPart)
 
     @property
     def font_table_part(self):
-        return self.get_part_of_type(part_class=FontTablePart)
+        return self.get_part_of_class_type(part_class=FontTablePart)
 
     @property
     def image_parts(self):
@@ -142,10 +134,7 @@ class WordprocessingDocument(ChildPartLoader, OpenXmlPackage):
 
     @property
     def main_document_part(self):
-        self.ensure_parts_are_loaded()
-        return self.get_parts_of_type(
-            MainDocumentPart.relationship_type,
-        )[0]
+        return self.get_part_of_class_type(part_class=MainDocumentPart)
 
 
 class Document(object):

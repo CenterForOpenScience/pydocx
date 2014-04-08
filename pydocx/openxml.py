@@ -33,6 +33,14 @@ class OpenXmlPartContainer(object):
     def get_part_by_id(self, relationship_id):
         return self.parts[relationship_id]
 
+    def get_part_of_class_type(self, part_class):
+        self.ensure_parts_are_loaded()
+        parts = self.get_parts_of_type(
+            part_class.relationship_type,
+        )
+        if parts:
+            return parts[0]
+
     def add_part(self, part, relationship_id=None):
         self.ensure_parts_are_loaded()
         if relationship_id is not None:

@@ -16,6 +16,11 @@ class ChildPartLoader(object):
 
     def load_parts(self):
         relationship_lookup = self.get_relationship_lookup()
+        # TODO I don't like this -Kyle
+        if isinstance(self, OpenXmlPackage):
+            open_xml_package = self
+        else:
+            open_xml_package = self.open_xml_package
         for child_part_type in self.child_part_types:
             relationships = relationship_lookup.get_relationships_by_type(
                 child_part_type.relationship_type,
@@ -29,7 +34,7 @@ class ChildPartLoader(object):
                 relationship.target_uri,
             )
             part = child_part_type(
-                open_xml_package=self,
+                open_xml_package=open_xml_package,
                 uri=part_uri,
             )
             self.add_part(

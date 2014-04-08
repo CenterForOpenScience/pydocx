@@ -546,3 +546,18 @@ def ZipFile(path):  # This is not needed in python 3.2+
         raise MalformedDocxException('Passed in document is not a docx')
     yield f
     f.close()
+
+
+def xml_tag_split(tag):
+    '''
+    Given a xml node tag, return the namespace and the tag name. The namespace
+    is optional and will be None if not present.
+
+    >>> xml_tag_split('{foo}bar')
+    ('foo', 'bar')
+    >>> xml_tag_split('bar')
+    (None, 'bar')
+    '''
+    m = re.match('({([^}]+)})?(.+)', tag)
+    groups = m.groups()
+    return groups[1], groups[2]

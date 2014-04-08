@@ -49,8 +49,11 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
         )
 
     def test_get_parts_of_type_office_document(self):
-        assert self.document.get_parts_of_type(
-            MainDocumentPart.relationship_type,
+        self.assertEqual(
+            self.document.get_parts_of_type(
+                MainDocumentPart.relationship_type,
+            )[0],
+            self.document.main_document_part,
         )
 
     def test_main_document_part_uri(self):

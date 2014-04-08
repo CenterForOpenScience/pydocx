@@ -68,9 +68,6 @@ class RelationshipManager(object):
     def ensure_relationships_are_loaded(self):
         return self.relationships
 
-    def load_relationships(self):
-        raise NotImplementedError
-
     def get_relationships_by_type(self, relationship_type):
         self.ensure_relationships_are_loaded()
         return list(self.relationships_by_type[relationship_type])
@@ -97,6 +94,32 @@ class RelationshipManager(object):
             self.relationships[relationship_id] = relationship
         self.relationships_by_type[relationship_type].append(relationship)
 
+    def get_part_container(self):
+        raise NotImplementedError
+
+    def load_relationships(self):
+        part_container = self.get_part_container()
+        if not part_container.part_exists(self.relationship_uri):
+            return
+        manager = XmlNamespaceManager()
+        manager.add_namespace(RelationshipManager.namespace)
+        stream = part_container.get_part(self.relationship_uri).stream
+        root = cElementTree.fromstring(stream.read())
+        for node in manager.select(root):
+            _, tag = xml_tag_split(node.tag)
+            if tag != RelationshipManager.XML_TAG_NAME:
+                continue
+            relationship_id = node.get(RelationshipManager.XML_ATTR_ID)
+            relationship_type = node.get(RelationshipManager.XML_ATTR_TYPE)
+            target_mode = node.get(RelationshipManager.XML_ATTR_TARGETMODE)
+            target_uri = node.get(RelationshipManager.XML_ATTR_TARGET)
+            self.create_relationship(
+                target_uri=target_uri,
+                target_mode=target_mode,
+                relationship_type=relationship_type,
+                relationship_id=relationship_id,
+            )
+
 
 class PackagePart(RelationshipManager):
     def __init__(self, uri, package):
@@ -114,6 +137,9 @@ class PackagePart(RelationshipManager):
     @property
     def stream(self):
         raise NotImplementedError
+
+    def get_part_container(self):
+        return self.package
 
 
 class PartContainer(object):
@@ -166,25 +192,8 @@ class Package(RelationshipManager, PartContainer):
         self.uri = '/'
         self.relationship_uri = PackagePart.get_relationship_part_uri(self.uri)
 
-    def load_relationships(self):
-        manager = XmlNamespaceManager()
-        manager.add_namespace(RelationshipManager.namespace)
-        stream = self.get_part(self.relationship_uri).stream
-        root = cElementTree.fromstring(stream.read())
-        for node in manager.select(root):
-            _, tag = xml_tag_split(node.tag)
-            if tag != RelationshipManager.XML_TAG_NAME:
-                continue
-            relationship_id = node.get(RelationshipManager.XML_ATTR_ID)
-            relationship_type = node.get(RelationshipManager.XML_ATTR_TYPE)
-            target_mode = node.get(RelationshipManager.XML_ATTR_TARGETMODE)
-            target_uri = node.get(RelationshipManager.XML_ATTR_TARGET)
-            self.create_relationship(
-                target_uri=target_uri,
-                target_mode=target_mode,
-                relationship_type=relationship_type,
-                relationship_id=relationship_id,
-            )
+    def get_part_container(self):
+        return self
 
 
 class ZipPackagePart(PackagePart):

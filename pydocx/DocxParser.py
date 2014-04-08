@@ -560,7 +560,7 @@ class DocxParser(MulitMemoizeMixin):
             image_part = self.document.main_document_part.get_part_by_id(
                 relationship_id=relationship_id,
             )
-        except IndexError:
+        except KeyError:
             return ''
         data = image_part.stream.read()
         _, filename = posixpath.split(image_part.uri)

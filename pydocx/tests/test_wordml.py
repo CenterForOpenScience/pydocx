@@ -85,6 +85,17 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
             '/word/styles.xml',
         )
 
+    def test_main_document_part_font_table_uri(self):
+        font_table = self.document.main_document_part.font_table_part
+        self.assertEqual(
+            font_table.uri,
+            '/word/fontTable.xml',
+        )
+
+    def test_nonexistent_part(self):
+        part = self.document.main_document_part.numbering_definitions_part
+        self.assertIsNone(part, None)
+
 
 class XmlNamespaceManagerTestCase(unittest.TestCase):
     def test_namespace_manager(self):

@@ -59,7 +59,7 @@ class MainDocumentPart(ChildPartLoader, OpenXmlPart):
     ]
 
     def get_relationship_lookup(self):
-        return self.package.get_part(self.uri)
+        return self.open_xml_package.package.get_part(self.uri)
 
     @property
     def style_definitions_part(self):

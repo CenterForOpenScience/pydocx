@@ -19,6 +19,7 @@ from pydocx.utils import (
     zip_path_join,
 )
 from pydocx.exceptions import MalformedDocxException
+from pydocx.wordml import WordprocessingDocument
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
@@ -275,27 +276,28 @@ class DocxParser(MulitMemoizeMixin):
         self.list_depth = 0
 
     def _load(self):
-        package = WordprocessingMLPackage.load(self.path)
+        self.document = WordprocessingDocument(path=self.path)
+        main_document_part = self.document.main_document_part
+        if main_document_part is None:
+            raise MalformedDocxException
 
-        self.document = package.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT,
-        ).target
-
+        self.root_element = main_document_part.root_element
         self.numbering_root = None
-        numbering = self.document.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_NUMBERING,
-        )
-        if numbering:
-            self.numbering_root = numbering.target.xml_tree
+        numbering_part = main_document_part.numbering_definitions_part
+        if numbering_part:
+            self.numbering_root = numbering_part.root_element
 
-        pgSzEl = find_first(self.document.xml_tree, 'pgSz')
+        pgSzEl = find_first(
+            self.root_element,
+            'pgSz',
+        )
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
             self.page_width = pgSz / TWIPS_PER_POINT
 
         self.styles_dict = self._parse_styles()
-        self.parse_begin(self.document.xml_tree)  # begin to parse
+        self.parse_begin(self.root_element)
 
     def _parse_run_properties(self, rPr):
         """
@@ -325,13 +327,12 @@ class DocxParser(MulitMemoizeMixin):
         return run_properties
 
     def _parse_styles(self):
-        styles = self.document.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_STYLES,
-        )
-        if not styles:
+        styles_part = self.document.main_document_part.style_definitions_part
+        if not styles_part:
             return {}
+        styles_root = styles_part.root_element
         styles_dict = {}
-        for style in find_all(styles.target.xml_tree, 'style'):
+        for style in find_all(styles_root, 'style'):
             style_val = find_first(style, 'name').attrib['val']
             run_properties = find_first(style, 'rPr')
             styles_dict[style.attrib['styleId']] = {
@@ -349,6 +350,7 @@ class DocxParser(MulitMemoizeMixin):
             'has_descendant_with_tag': has_descendant_with_tag,
             '_get_tcs_in_column': self._get_tcs_in_column,
         })
+
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             styles_dict=self.styles_dict,
@@ -769,15 +771,18 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_image(self, el):
         x, y = self._get_image_size(el)
-        rId = self._get_image_id(el)
-        relationship = self.document.get_relationship_by_id(rId)
-        if (not relationship or
-                not relationship.target or
-                not relationship.target.raw_data):
+        relationship_id = self._get_image_id(el)
+        try:
+            image_part = self.document.main_document_part.get_part_by_id(
+                relationship_id=relationship_id,
+            )
+        except IndexError:
             return ''
+        data = image_part.stream.read()
+        _, filename = posixpath.split(image_part.uri)
         return self.image(
-            relationship.target.raw_data,
-            relationship.filename,
+            data,
+            filename,
             x,
             y,
         )

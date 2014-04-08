@@ -212,6 +212,8 @@ class ZipPackage(Package):
         self.streams = {}
 
     def load_parts(self):
+        if self.path is None:
+            return
         try:
             f = zipfile.ZipFile(self.path)
         except zipfile.BadZipfile:

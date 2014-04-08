@@ -39,20 +39,20 @@ class OpenXmlPartContainer(object):
             )
             if not relationships:
                 continue
-            relationship = relationships[0]
-            base, _ = posixpath.split(relationship.source_uri)
-            part_uri = posixpath.join(
-                base,
-                relationship.target_uri,
-            )
-            part = child_part_type(
-                open_xml_package=open_xml_package,
-                uri=part_uri,
-            )
-            self.add_part(
-                part=part,
-                relationship_id=relationship.relationship_id,
-            )
+            for relationship in relationships:
+                base, _ = posixpath.split(relationship.source_uri)
+                part_uri = posixpath.join(
+                    base,
+                    relationship.target_uri,
+                )
+                part = child_part_type(
+                    open_xml_package=open_xml_package,
+                    uri=part_uri,
+                )
+                self.add_part(
+                    part=part,
+                    relationship_id=relationship.relationship_id,
+                )
 
     def ensure_parts_are_loaded(self):
         return self.parts

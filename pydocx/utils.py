@@ -508,37 +508,6 @@ def convert_dictionary_to_html_attributes(attributes):
     return ' '.join('%s="%s"' % item for item in items)
 
 
-def zip_path_join(*parts):
-    '''
-    Internally, ZipFile stores forward slashes as required by the zip
-    file specification. This occurs REGARDLESS of the operating
-    system, so we cannot use os.path.join.
-    See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-    Section 4.4.17
-
-    >>> zip_path_join()
-    ''
-    >>> zip_path_join('')
-    ''
-    >>> zip_path_join('', 'foo', '')
-    'foo'
-    >>> zip_path_join('foo')
-    'foo'
-    >>> zip_path_join('foo', 'bar')
-    'foo/bar'
-    >>> zip_path_join('', '', 'foo', 'bar', '',)
-    'foo/bar'
-    >>> zip_path_join(1, 2, 3)
-    '1/2/3'
-    >>> zip_path_join('/', 'foo/', '/bar', '/baz/')
-    '/foo/bar/baz'
-    '''
-
-    return '/'.join([
-        str(part).strip('/') for part in parts if part
-    ])
-
-
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
     try:

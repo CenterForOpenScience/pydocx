@@ -532,8 +532,6 @@ def zip_path_join(*parts):
     '1/2/3'
     >>> zip_path_join('/', 'foo/', '/bar', '/baz/')
     '/foo/bar/baz'
-    >>> zip_path_join('/foo/', '/bar', '/baz/')
-    '/foo/bar/baz'
     '''
 
     return '/'.join([

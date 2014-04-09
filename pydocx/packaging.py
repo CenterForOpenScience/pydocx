@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import posixpath
 import zipfile
 from collections import defaultdict
-from os.path import split as path_split
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
@@ -130,7 +129,7 @@ class PackagePart(RelationshipManager):
 
     @staticmethod
     def get_relationship_part_uri(part_uri):
-        container, filename = path_split(part_uri)
+        container, filename = posixpath.split(part_uri)
         filename_rels = '%s.rels' % filename
         return posixpath.join(container, '_rels', filename_rels)
 

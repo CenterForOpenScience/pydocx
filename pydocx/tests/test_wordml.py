@@ -95,7 +95,7 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
 
     def test_nonexistent_part(self):
         part = self.document.main_document_part.numbering_definitions_part
-        self.assertIsNone(part, None)
+        self.assertEqual(part, None)
 
     def test_image_parts(self):
         image_document = WordprocessingDocument(

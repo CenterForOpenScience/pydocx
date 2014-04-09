@@ -68,10 +68,7 @@ class DocxParser(MulitMemoizeMixin):
         if numbering_part:
             self.numbering_root = numbering_part.root_element
 
-        pgSzEl = find_first(
-            self.root_element,
-            'pgSz',
-        )
+        pgSzEl = find_first(self.root_element, 'pgSz')
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])

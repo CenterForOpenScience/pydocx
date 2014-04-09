@@ -67,9 +67,14 @@ def el_iter(el):
     Go through all elements
     """
     try:
-        return el.iter()
+        for child in el.iter():
+            yield child
     except AttributeError:
-        return el.findall('.//*')
+        # the behavior of el.iter is to return the element itself in addition
+        # to all of those under it
+        yield el
+        for child in el.findall('.//*'):
+            yield child
 
 
 def find_first(el, tag):

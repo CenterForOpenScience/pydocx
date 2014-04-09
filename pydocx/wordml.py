@@ -103,7 +103,3 @@ class WordprocessingDocument(OpenXmlPackage):
     @property
     def main_document_part(self):
         return self.get_part_of_class_type(part_class=MainDocumentPart)
-
-
-class Document(object):
-    pass

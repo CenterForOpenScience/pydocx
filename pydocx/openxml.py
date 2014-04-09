@@ -20,13 +20,13 @@ class OpenXmlPartContainer(object):
     def parts(self):
         if self._parts is None:
             self._parts = {}
-            self.load_parts()
+            self._load_parts()
         return self._parts
 
     def get_relationship_lookup(self):
         raise NotImplementedError
 
-    def load_parts(self):
+    def _load_parts(self):
         relationship_lookup = self.get_relationship_lookup()
         # TODO I don't like this -Kyle
         if isinstance(self, OpenXmlPackage):
@@ -54,18 +54,18 @@ class OpenXmlPartContainer(object):
                     relationship_id=relationship.relationship_id,
                 )
 
-    def ensure_parts_are_loaded(self):
+    def _ensure_parts_are_loaded(self):
         return self.parts
 
     def get_parts_of_type(self, relationship_type):
-        self.ensure_parts_are_loaded()
+        self._ensure_parts_are_loaded()
         return list(self.parts_of_type[relationship_type])
 
     def get_part_by_id(self, relationship_id):
         return self.parts[relationship_id]
 
     def get_part_of_class_type(self, part_class):
-        self.ensure_parts_are_loaded()
+        self._ensure_parts_are_loaded()
         parts = self.get_parts_of_type(
             part_class.relationship_type,
         )
@@ -73,7 +73,7 @@ class OpenXmlPartContainer(object):
             return parts[0]
 
     def add_part(self, part, relationship_id=None):
-        self.ensure_parts_are_loaded()
+        self._ensure_parts_are_loaded()
         if relationship_id is not None:
             self.parts[relationship_id] = part
         self.parts_of_type[part.relationship_type].append(part)

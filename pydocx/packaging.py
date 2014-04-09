@@ -61,7 +61,7 @@ class PackageRelationshipManager(object):
     def relationships(self):
         if self._relationships is None:
             self._relationships = {}
-            self.load_relationships()
+            self._load_relationships()
         return self._relationships
 
     def _ensure_relationships_are_loaded(self):
@@ -96,7 +96,7 @@ class PackageRelationshipManager(object):
     def get_part_container(self):
         raise NotImplementedError
 
-    def load_relationships(self):
+    def _load_relationships(self):
         part_container = self.get_part_container()
         if not part_container.part_exists(self.relationship_uri):
             return
@@ -158,7 +158,7 @@ class ZipPackage(PackageRelationshipManager):
             self.uri,
         )
 
-    def load_parts(self):
+    def _load_parts(self):
         if self.path is None:
             return
         try:
@@ -182,7 +182,7 @@ class ZipPackage(PackageRelationshipManager):
     def parts(self):
         if self._parts is None:
             self._parts = {}
-            self.load_parts()
+            self._load_parts()
         return self._parts
 
     def _ensure_parts_are_loaded(self):

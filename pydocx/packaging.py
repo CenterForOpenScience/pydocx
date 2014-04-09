@@ -141,10 +141,17 @@ class PackagePart(RelationshipManager):
         return self.package
 
 
-class PartContainer(object):
+class Package(RelationshipManager):
+    part_factory = PackagePart
+
     def __init__(self):
-        super(PartContainer, self).__init__()
+        super(Package, self).__init__()
+        self.uri = '/'
         self._parts = None
+        self.relationship_uri = PackagePart.get_relationship_part_uri(self.uri)
+
+    def get_part_container(self):
+        return self
 
     @property
     def parts(self):
@@ -182,18 +189,6 @@ class PartContainer(object):
 
     def get_part(self, uri):
         return self.parts[uri]
-
-
-class Package(RelationshipManager, PartContainer):
-    part_factory = PackagePart
-
-    def __init__(self):
-        super(Package, self).__init__()
-        self.uri = '/'
-        self.relationship_uri = PackagePart.get_relationship_part_uri(self.uri)
-
-    def get_part_container(self):
-        return self
 
 
 class ZipPackagePart(PackagePart):

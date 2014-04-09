@@ -13,8 +13,21 @@ from pydocx.xml import XmlNamespaceManager
 
 
 class PackageRelationship(object):
+    namespace = '/'.join([
+        'http://schemas.openxmlformats.org',
+        'package',
+        '2006',
+        'relationships',
+    ])
+
     TARGET_MODE_INTERNAL = 'Internal'
     TARGET_MODE_EXTERNAL = 'External'
+
+    XML_TAG_NAME = 'Relationship'
+    XML_ATTR_ID = 'Id'
+    XML_ATTR_TARGETMODE = 'TargetMode'
+    XML_ATTR_TARGET = 'Target'
+    XML_ATTR_TYPE = 'Type'
 
     def __init__(
         self,
@@ -39,19 +52,6 @@ class PackageRelationship(object):
 
 
 class PackageRelationshipManager(object):
-    namespace = '/'.join([
-        'http://schemas.openxmlformats.org',
-        'package',
-        '2006',
-        'relationships',
-    ])
-
-    XML_TAG_NAME = 'Relationship'
-    XML_ATTR_ID = 'Id'
-    XML_ATTR_TARGETMODE = 'TargetMode'
-    XML_ATTR_TARGET = 'Target'
-    XML_ATTR_TYPE = 'Type'
-
     def __init__(self):
         super(PackageRelationshipManager, self).__init__()
         self._relationships = None
@@ -101,21 +101,17 @@ class PackageRelationshipManager(object):
         if not part_container.part_exists(self.relationship_uri):
             return
         manager = XmlNamespaceManager()
-        manager.add_namespace(PackageRelationshipManager.namespace)
+        manager.add_namespace(PackageRelationship.namespace)
         stream = part_container.get_part(self.relationship_uri).stream
         root = cElementTree.fromstring(stream.read())
         for node in manager.select(root):
             _, tag = xml_tag_split(node.tag)
-            if tag != PackageRelationshipManager.XML_TAG_NAME:
+            if tag != PackageRelationship.XML_TAG_NAME:
                 continue
-            relationship_id = node.get(PackageRelationshipManager.XML_ATTR_ID)
-            relationship_type = node.get(
-                PackageRelationshipManager.XML_ATTR_TYPE,
-            )
-            target_mode = node.get(
-                PackageRelationshipManager.XML_ATTR_TARGETMODE,
-            )
-            target_uri = node.get(PackageRelationshipManager.XML_ATTR_TARGET)
+            relationship_id = node.get(PackageRelationship.XML_ATTR_ID)
+            relationship_type = node.get(PackageRelationship.XML_ATTR_TYPE)
+            target_mode = node.get(PackageRelationship.XML_ATTR_TARGETMODE)
+            target_uri = node.get(PackageRelationship.XML_ATTR_TARGET)
             self.create_relationship(
                 target_uri=target_uri,
                 target_mode=target_mode,

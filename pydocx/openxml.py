@@ -8,6 +8,11 @@ from pydocx.utils import parse_xml_from_string
 
 
 class OpenXmlPartContainer(object):
+    '''
+    Represents a container for other OpenXmlParts that are associated with a
+    OpenXmlPackage.
+    '''
+
     child_part_types = NotImplemented
 
     def __init__(self):
@@ -80,6 +85,11 @@ class OpenXmlPartContainer(object):
 
 
 class OpenXmlPart(OpenXmlPartContainer):
+    '''
+    An OpenXmlPart is a part associated with either another OpenXmlPart or an
+    OpenXmlPackage.
+    '''
+
     def __init__(
         self,
         uri,
@@ -106,6 +116,10 @@ class OpenXmlPart(OpenXmlPartContainer):
 
 
 class OpenXmlPackage(OpenXmlPartContainer):
+    '''
+    Creates a ZipPackage and manages package-level OpenXmlParts.
+    '''
+
     def __init__(self, path):
         super(OpenXmlPackage, self).__init__()
         self.package = ZipPackage(path=path)

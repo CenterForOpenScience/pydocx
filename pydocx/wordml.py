@@ -7,6 +7,10 @@ from pydocx.openxml import (
 
 
 class ImagePart(OpenXmlPart):
+    '''
+    Represents an image part relationship within a Word document container.
+    '''
+
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
         'officeDocument',
@@ -17,6 +21,10 @@ class ImagePart(OpenXmlPart):
 
 
 class StyleDefinitionsPart(OpenXmlPart):
+    '''
+    Represents style definitions within a Word document container.
+    '''
+
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
         'officeDocument',
@@ -27,6 +35,10 @@ class StyleDefinitionsPart(OpenXmlPart):
 
 
 class NumberingDefinitionsPart(OpenXmlPart):
+    '''
+    Represents the list numbering definitions within a document container.
+    '''
+
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
         'officeDocument',
@@ -37,6 +49,10 @@ class NumberingDefinitionsPart(OpenXmlPart):
 
 
 class FontTablePart(OpenXmlPart):
+    '''
+    Represents the fonts associated within a document container.
+    '''
+
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
         'officeDocument',
@@ -47,6 +63,12 @@ class FontTablePart(OpenXmlPart):
 
 
 class MainDocumentPart(OpenXmlPart):
+    '''
+    Represents the actual document XML tree within a Word document container.
+    This OpenXmlPart exposes several child parts for styles, numbering, fonts
+    and images.
+    '''
+
     relationship_type = '/'.join([
         'http://schemas.openxmlformats.org',
         'officeDocument',
@@ -82,10 +104,16 @@ class MainDocumentPart(OpenXmlPart):
     def image_parts(self):
         return self.get_parts_of_type(
             relationship_type=ImagePart.relationship_type,
+
         )
 
 
 class WordprocessingDocument(OpenXmlPackage):
+    '''
+    The top-most level of a Word document container which is an OpenXmlPackage
+    that exposes a single child part, `main_document_part`.
+    '''
+
     namespace = '/'.join([
         'http://schemas.openxmlformats.org',
         'wordprocessingml',

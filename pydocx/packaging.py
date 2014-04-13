@@ -13,6 +13,11 @@ from pydocx.xml import XmlNamespaceManager
 
 
 class PackageRelationship(object):
+    '''
+    Represents an association between a source Package or PackagePart, and a
+    target object which can be a PackagePart or external resource.
+    '''
+
     namespace = '/'.join([
         'http://schemas.openxmlformats.org',
         'package',
@@ -52,6 +57,11 @@ class PackageRelationship(object):
 
 
 class PackageRelationshipManager(object):
+    '''
+    An internal class used by ZipPackage and ZipPackagePart to abstract the
+    package and part-level relationship management.
+    '''
+
     def __init__(self):
         super(PackageRelationshipManager, self).__init__()
         self._relationships = None
@@ -121,6 +131,10 @@ class PackageRelationshipManager(object):
 
 
 class ZipPackagePart(PackageRelationshipManager):
+    '''
+    Represents a data part within a ZipPackage.
+    '''
+
     def __init__(self, uri, package):
         super(ZipPackagePart, self).__init__()
         self.uri = uri
@@ -144,6 +158,11 @@ class ZipPackagePart(PackageRelationshipManager):
 
 
 class ZipPackage(PackageRelationshipManager):
+    '''
+    Represents a container that can that can store multiple data objects using
+    a ZIP archive as a data store.
+    '''
+
     def __init__(self, path):
         super(ZipPackage, self).__init__()
         self.path = path

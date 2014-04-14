@@ -520,20 +520,20 @@ def zip_path_join(*parts):
     See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
     Section 4.4.17
 
-    >>> zip_path_join()
-    ''
-    >>> zip_path_join('')
-    ''
-    >>> zip_path_join('', 'foo', '')
-    'foo'
-    >>> zip_path_join('foo')
-    'foo'
-    >>> zip_path_join('foo', 'bar')
-    'foo/bar'
-    >>> zip_path_join('', '', 'foo', 'bar', '',)
-    'foo/bar'
-    >>> zip_path_join(1, 2, 3)
-    '1/2/3'
+    >>> '' == zip_path_join()
+    True
+    >>> '' == zip_path_join('')
+    True
+    >>> 'foo' == zip_path_join('', 'foo', '')
+    True
+    >>> 'foo' == zip_path_join('foo')
+    True
+    >>> 'foo/bar' == zip_path_join('foo', 'bar')
+    True
+    >>> 'foo/bar' == zip_path_join('', '', 'foo', 'bar', '',)
+    True
+    >>> '1/2/3' == zip_path_join(1, 2, 3)
+    True
     '''
     return '/'.join([
         string(part) for part in parts if part

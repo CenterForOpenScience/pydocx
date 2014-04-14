@@ -204,14 +204,14 @@ class ImageLocal(_TranslationTestCase):
             rType='foo/image',
             external=False,
             target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target=OPCPart(raw_data=b'content1'),
         ),
         dict(
             rId='rId1',
             rType='foo/image',
             external=False,
             target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target=OPCPart(raw_data=b'content2'),
         ),
     ]
 
@@ -242,14 +242,14 @@ class ImageTestCase(_TranslationTestCase):
             rType='foo/image',
             external=False,
             target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target=OPCPart(raw_data=b'content1'),
         ),
         dict(
             rId='rId1',
             rType='foo/image',
             external=False,
             target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target=OPCPart(raw_data=b'content2'),
         ),
     ]
 

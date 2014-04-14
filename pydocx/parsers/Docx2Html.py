@@ -153,7 +153,7 @@ class Docx2Html(DocxParser):
         extension = filename.split('.')[-1].lower()
         b64_encoded_src = 'data:image/%s;base64,%s' % (
             extension,
-            base64.b64encode(bytes(string(image_data), 'utf-8')).decode(),
+            base64.b64encode(image_data).decode(),
         )
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src

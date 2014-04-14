@@ -2,6 +2,9 @@ class SimpleType(object):
     def __init__(self, value):
         self.value = value
 
+    def __bool__(self):
+        return self.__nonzero__()
+
 
 class OnOff(SimpleType):
     '''

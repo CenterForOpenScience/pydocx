@@ -124,7 +124,7 @@ def remove_namespaces(document):
         re.DOTALL | re.MULTILINE,
     )
     encoding = 'us-ascii'
-    m = encoding_regex.match(document)
+    m = encoding_regex.match(string(document))
     if m:
         encoding = m.groups(0)[0]
     try:
@@ -175,6 +175,9 @@ class NamespacedNumId(object):
             self._num_tables,
         )
 
+    def __str__(self, *args, **kwargs):
+        return super(NamespacedNumId, self).__unicode__(*args, **kwargs)
+
     def __repr__(self, *args, **kwargs):
         return self.__unicode__(*args, **kwargs)
 
@@ -191,6 +194,9 @@ class NamespacedNumId(object):
     @property
     def num_id(self):
         return self._num_id
+
+    def __hash__(self):
+        return id(self)
 
 
 class PydocxPreProcessor(MulitMemoizeMixin):
@@ -497,12 +503,12 @@ def parse_xml_from_string(xml):
 
 
 def convert_dictionary_to_style_fragment(style):
-    items = sorted(style.iteritems())
+    items = sorted(style.items())
     return ';'.join("%s:%s" % item for item in items)
 
 
 def convert_dictionary_to_html_attributes(attributes):
-    items = sorted(attributes.iteritems())
+    items = sorted(attributes.items())
     return ' '.join('%s="%s"' % item for item in items)
 
 
@@ -530,7 +536,7 @@ def zip_path_join(*parts):
     '1/2/3'
     '''
     return '/'.join([
-        str(part) for part in parts if part
+        string(part) for part in parts if part
     ])
 
 
@@ -542,3 +548,10 @@ def ZipFile(path):  # This is not needed in python 3.2+
         raise MalformedDocxException('Passed in document is not a docx')
     yield f
     f.close()
+
+
+def string(*args, **kwargs):
+    try:
+        return unicode(*args, **kwargs)
+    except NameError:
+        return str(*args, **kwargs)

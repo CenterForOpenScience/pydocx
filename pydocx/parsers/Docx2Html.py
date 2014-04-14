@@ -5,6 +5,7 @@ from pydocx.DocxParser import DocxParser, TWIPS_PER_POINT
 from pydocx.utils import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
+    string,
 )
 
 POINTS_PER_EM = 12
@@ -60,7 +61,7 @@ class Docx2Html(DocxParser):
             'head': self.head(),
             'content': content,
         }
-        return unicode(content)
+        return string(content)
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
@@ -91,13 +92,13 @@ class Docx2Html(DocxParser):
         }
 
         result = []
-        for name, definition in sorted(PYDOCX_STYLES.iteritems()):
+        for name, definition in sorted(PYDOCX_STYLES.items()):
             result.append('.pydocx-%s {%s}' % (
                 name,
                 convert_dictionary_to_style_fragment(definition),
             ))
 
-        for name, definition in sorted(styles.iteritems()):
+        for name, definition in sorted(styles.items()):
             result.append('%s {%s}' % (
                 name,
                 convert_dictionary_to_style_fragment(definition),
@@ -150,7 +151,7 @@ class Docx2Html(DocxParser):
         extension = filename.split('.')[-1].lower()
         b64_encoded_src = 'data:image/%s;base64,%s' % (
             extension,
-            base64.b64encode(image_data),
+            base64.b64encode(bytes(string(image_data), 'utf-8')).decode(),
         )
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src

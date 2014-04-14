@@ -38,6 +38,8 @@ class Underline(SimpleType):
 
     >>> bool(Underline('none'))
     False
+    >>> bool(Underline(''))
+    False
     >>> bool(Underline('single'))
     True
     '''

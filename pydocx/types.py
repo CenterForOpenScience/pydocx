@@ -45,4 +45,5 @@ class Underline(SimpleType):
     '''
 
     def __nonzero__(self):
-        return self.value != 'none'
+        OFF_VALUES = ['none', '', None]
+        return self.value not in OFF_VALUES

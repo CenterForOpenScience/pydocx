@@ -1,6 +1,9 @@
 Change Log
 ==========
 
+* 0.3.18
+    * Fixed an issue with marking runs as underline when they were not supposed
+      to be.
 * 0.3.17
     * Fixed path issue on Windows for Zip archives
     * Fixed attribute typo when attempting to generate an error message

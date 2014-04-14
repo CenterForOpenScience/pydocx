@@ -38,9 +38,12 @@ class Underline(SimpleType):
 
     >>> bool(Underline('none'))
     False
+    >>> bool(Underline(''))
+    False
     >>> bool(Underline('single'))
     True
     '''
 
     def __nonzero__(self):
-        return self.value != 'none'
+        OFF_VALUES = ['none', '', None]
+        return self.value not in OFF_VALUES

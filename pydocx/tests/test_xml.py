@@ -20,6 +20,8 @@ class StyleIsOnTestCase(_TranslationTestCase):
         <p>CCC</p>
         <p>DDD</p>
         <p>EEE</p>
+        <p>FFF</p>
+        <p>GGG</p>
     """
 
     def get_xml(self):
@@ -60,6 +62,22 @@ class StyleIsOnTestCase(_TranslationTestCase):
                 [
                     DXB.r_tag(
                         [DXB.t_tag('EEE')],
+                        rpr=DXB.rpr_tag({'u': ''}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('FFF')],
+                        rpr=DXB.rpr_tag({'u': None}),
+                    ),
+                ],
+            ),
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('GGG')],
                         rpr=DXB.rpr_tag({'b': 'off'}),
                     ),
                 ],
@@ -1291,7 +1309,7 @@ class AvaliableInlineTags(_TranslationTestCase):
                 [
                     DXB.r_tag(
                         [DXB.t_tag('bbb')],
-                        rpr=DXB.rpr_tag({'u': None}),
+                        rpr=DXB.rpr_tag({'u': 'single'}),
                     ),
                 ],
             ),

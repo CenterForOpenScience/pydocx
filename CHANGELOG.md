@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-* 0.3.18dev
+* 0.3.18
     * Fixed an issue with marking runs as underline when they were not supposed
       to be.
 * 0.3.17

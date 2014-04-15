@@ -262,7 +262,7 @@ Running tests
 
 .. code-block:: shell-session
 
-   $ pip install -r requirements.txt
+   $ pip install -r test_requirements.txt
 
 2. Run ``./run_tests.sh`` in the project root.
    This will run ``nosetests`` with coverage and also display any ``flake8`` errors.

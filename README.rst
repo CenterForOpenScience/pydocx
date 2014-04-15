@@ -14,6 +14,8 @@ to create your own methods for a markup language not yet supported.
 Currently Supported
 ###################
 
+Python versions: 2.6, 2.7
+
 * tables
     * nested tables
     * rowspans

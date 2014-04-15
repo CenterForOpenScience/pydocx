@@ -276,6 +276,7 @@ Setting up tox
       `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
 
 2. ``pip install tox``
+3. `Configure tox <http://tox.readthedocs.org/en/latest>`_
 
 
 Getting involved

@@ -246,3 +246,16 @@ Deviations from the ECMA-376 Specification
   See also http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
 
    If the val attribute is not specified, Word defaults to the value defined in the style hierarchy and then to no underline.
+
+Development
+###########
+
+Running tests
+=============
+
+requirements
+  tox (optional), nosetests, coverage, flake8
+
+1. Run ``nosetests`` in the project root
+2. Run ``./run_tests.sh`` in the project root. This will run ``nosetests`` with coverage and also display any flake8 errors
+3. Run ``tox`` in the project root. This will run nosetests against each of the versions of Python that is supported, in addition to coverage and flake8.

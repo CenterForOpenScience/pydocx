@@ -361,14 +361,15 @@ The PyDocX project welcomes help in any of the following ways:
 Release process
 ===============
 
-1. Bump the version number in
+#. Bump the version number in
    `setup.py <https://github.com/CenterForOpenScience/pydocx/blob/master/setup.py>`_,
    and the version number in
    `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
    on master.
-2. Update
+#. Update
    `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.md>`_
    version
    (remove/replace "dev" at the top, if present).
-3. Tag the version.
-4. Push to PyPI.
+#. Update version in ``docs/conf.py``.
+#. Tag the version.
+#. Push to PyPI.

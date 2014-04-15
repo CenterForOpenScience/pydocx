@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
 import time
 
 from nose.plugins.skip import SkipTest
@@ -794,9 +793,11 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            expected_time = 3
-            if sys.version_info[0] == 3:
-                expected_time = 4  # Little slower on python 3
+            expected_time = self.get_expected_time_based_on_version(
+                python2_time=3,
+                python3_time=4,
+                pypy_time=4,
+            )
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,
                 expected_time,
@@ -828,9 +829,11 @@ class LargeCellTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            expected_time = 3
-            if sys.version_info[0] == 3:
-                expected_time = 4  # Little slower on python 3
+            expected_time = self.get_expected_time_based_on_version(
+                python2_time=3,
+                python3_time=4,
+                pypy_time=4,
+            )
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,
                 expected_time,

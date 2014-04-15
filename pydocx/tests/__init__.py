@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import re
+import sys
 from contextlib import contextmanager
 
 from pydocx.DocxParser import OPCPart, OPCRelationship
@@ -144,6 +145,19 @@ class _TranslationTestCase(TestCase):
     parser = XMLDocx2Html
     use_base_html = True
     convert_root_level_upper_roman = False
+
+    def get_expected_time_based_on_version(
+        self,
+        python2_time,
+        python3_time,
+        pypy_time,
+    ):
+        expected_time = python2_time
+        if hasattr(sys, 'pypy_version_info'):
+            expected_time = pypy_time
+        elif sys.version_info[0] == 3:
+            expected_time = python3_time
+        return expected_time
 
     def get_xml(self):
         raise NotImplementedError()

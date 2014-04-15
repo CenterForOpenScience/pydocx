@@ -454,8 +454,6 @@ def test_has_image():
 
     actual_html = convert(file_path)
     image_data = get_image_data(file_path, 'image1.gif')
-    with open('test.html', 'w') as f:
-        f.write(actual_html)
     assert_html_equal(actual_html, BASE_HTML % '''
         <p>
             AAA

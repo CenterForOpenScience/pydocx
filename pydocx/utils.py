@@ -114,19 +114,23 @@ def remove_namespaces(document):
     """
     >>> exception_raised = False
     >>> try:
-    ...     remove_namespaces('junk')
+    ...     remove_namespaces(b'junk')
     ... except MalformedDocxException:
     ...     exception_raised = True
     >>> assert exception_raised
     """
     encoding_regex = re.compile(
-        r'<\?xml.*encoding="(.+?)"',
+        br'<\?xml.*encoding="(.+?)"',
         re.DOTALL | re.MULTILINE,
     )
     encoding = 'us-ascii'
-    m = encoding_regex.match(string(document))
+    if not isinstance(document, bytes):
+        document = bytes(document.encode('utf-8'))
+    m = encoding_regex.match(document)
     if m:
         encoding = m.groups(0)[0]
+        if isinstance(encoding, bytes):
+            encoding = encoding.decode()
     try:
         root = cElementTree.fromstring(document)
     except SyntaxError:
@@ -137,7 +141,7 @@ def remove_namespaces(document):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root, encoding=encoding)
+    return cElementTree.tostring(root, encoding=str(encoding))
 
 
 def get_list_style(numbering_root, num_id, ilvl):

@@ -261,3 +261,11 @@ requirements
 1. Run ``nosetests`` in the project root
 2. Run ``./run_tests.sh`` in the project root. This will run ``nosetests`` with coverage and also display any flake8 errors
 3. Run ``tox`` in the project root. This will run nosetests against each of the versions of Python that is supported, in addition to coverage and flake8.
+
+Getting involved
+================
+
+The PyDocX project welcomes help in any of the following ways:
+
+* Making pull requests on github for code, tests and documentation.
+* Participating on open issues and pull requests, reviewing changes

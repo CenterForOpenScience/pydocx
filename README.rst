@@ -11,6 +11,29 @@ will be available soon. You can extend any of the available parsers to customize
 to your needs. You can also create your own class that inherits DocxParser
 to create your own methods for a markup language not yet supported.
 
+Quick start
+###########
+
+Installation
+============
+
+pydocx can be installed using using ``pip``.
+
+.. code-block:: shell-session
+
+   $ pip install pydocx
+
+Converting files using the command line
+=======================================
+
+Using the ``pydocx`` command,
+you can specify the output format
+with the input and output files:
+
+.. code-block:: shell-session
+
+   $ pydocx --html input.docx output.html
+
 Currently Supported
 ###################
 
@@ -250,24 +273,6 @@ Optional Arguments
 ##################
 
 You can pass in ``convert_root_level_upper_roman=True`` to the parser and it will convert all root level upper roman lists to headings instead.
-
-Command Line Execution
-######################
-
-First you have to install pydocx:
-
-.. code-block:: shell-session
-
-   $ pip install pydocx
-
-Then,
-using the ``pydocx`` command,
-you can specify the output format
-with the input and output files:
-
-.. code-block:: shell-session
-
-   $ pydocx --html input.docx output.html
 
 Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_ Specification
 #####################################################################################################################

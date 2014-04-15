@@ -441,7 +441,7 @@ def get_image_data(docx_file_path, image_name):
         if not images:
             raise AssertionError('%s not in %s' % (image_name, docx_file_path))
         data = f.read(images[0].filename)
-    return base64.b64encode(data)
+    return base64.b64encode(data).decode()
 
 
 def test_has_image():
@@ -728,11 +728,11 @@ def test_justification():
         Right justified and pushed in from right
     </span></p>
     <p><span class="pydocx-center"
-            style="margin-left:15.00em;margin-right:6.00em">
+            style="margin-left:15.75em;margin-right:6.00em">
         Center justified and pushed in from left and it is great and it is the
         coolest thing of all time and I like it and I think it is cool
     </span></p>
-    <p><span style="margin-left:15.00em;margin-right:6.00em">
+    <p><span style="margin-left:15.75em;margin-right:6.00em">
         Left justified and pushed in from left
     </span></p>
     ''')

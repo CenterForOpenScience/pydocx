@@ -114,19 +114,23 @@ def remove_namespaces(document):
     """
     >>> exception_raised = False
     >>> try:
-    ...     remove_namespaces('junk')
+    ...     remove_namespaces(b'junk')
     ... except MalformedDocxException:
     ...     exception_raised = True
     >>> assert exception_raised
     """
     encoding_regex = re.compile(
-        r'<\?xml.*encoding="(.+?)"',
+        br'<\?xml.*encoding="(.+?)"',
         re.DOTALL | re.MULTILINE,
     )
     encoding = 'us-ascii'
+    if not isinstance(document, bytes):
+        document = bytes(document.encode('utf-8'))
     m = encoding_regex.match(document)
     if m:
         encoding = m.groups(0)[0]
+        if isinstance(encoding, bytes):
+            encoding = encoding.decode()
     try:
         root = cElementTree.fromstring(document)
     except SyntaxError:
@@ -137,7 +141,7 @@ def remove_namespaces(document):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root, encoding=encoding)
+    return cElementTree.tostring(root, encoding=str(encoding))
 
 
 def get_list_style(numbering_root, num_id, ilvl):
@@ -175,6 +179,9 @@ class NamespacedNumId(object):
             self._num_tables,
         )
 
+    def __str__(self, *args, **kwargs):
+        return super(NamespacedNumId, self).__unicode__(*args, **kwargs)
+
     def __repr__(self, *args, **kwargs):
         return self.__unicode__(*args, **kwargs)
 
@@ -191,6 +198,9 @@ class NamespacedNumId(object):
     @property
     def num_id(self):
         return self._num_id
+
+    def __hash__(self):
+        return id(self)
 
 
 class PydocxPreProcessor(MulitMemoizeMixin):
@@ -497,12 +507,12 @@ def parse_xml_from_string(xml):
 
 
 def convert_dictionary_to_style_fragment(style):
-    items = sorted(style.iteritems())
+    items = sorted(style.items())
     return ';'.join("%s:%s" % item for item in items)
 
 
 def convert_dictionary_to_html_attributes(attributes):
-    items = sorted(attributes.iteritems())
+    items = sorted(attributes.items())
     return ' '.join('%s="%s"' % item for item in items)
 
 
@@ -514,23 +524,23 @@ def zip_path_join(*parts):
     See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
     Section 4.4.17
 
-    >>> zip_path_join()
-    ''
-    >>> zip_path_join('')
-    ''
-    >>> zip_path_join('', 'foo', '')
-    'foo'
-    >>> zip_path_join('foo')
-    'foo'
-    >>> zip_path_join('foo', 'bar')
-    'foo/bar'
-    >>> zip_path_join('', '', 'foo', 'bar', '',)
-    'foo/bar'
-    >>> zip_path_join(1, 2, 3)
-    '1/2/3'
+    >>> '' == zip_path_join()
+    True
+    >>> '' == zip_path_join('')
+    True
+    >>> 'foo' == zip_path_join('', 'foo', '')
+    True
+    >>> 'foo' == zip_path_join('foo')
+    True
+    >>> 'foo/bar' == zip_path_join('foo', 'bar')
+    True
+    >>> 'foo/bar' == zip_path_join('', '', 'foo', 'bar', '',)
+    True
+    >>> '1/2/3' == zip_path_join(1, 2, 3)
+    True
     '''
     return '/'.join([
-        str(part) for part in parts if part
+        string(part) for part in parts if part
     ])
 
 
@@ -542,3 +552,14 @@ def ZipFile(path):  # This is not needed in python 3.2+
         raise MalformedDocxException('Passed in document is not a docx')
     yield f
     f.close()
+
+
+def string(*args, **kwargs):
+    """
+    The unicode function does not exist in python3, so if we want to makes
+    things unicode in python2 we need a function like this to make that happen.
+    """
+    try:
+        return unicode(*args, **kwargs)
+    except NameError:
+        return str(*args, **kwargs)

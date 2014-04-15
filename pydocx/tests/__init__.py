@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import re
 from contextlib import contextmanager
 
@@ -5,6 +7,7 @@ from pydocx.DocxParser import OPCPart, OPCRelationship
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
     parse_xml_from_string,
+    string,
 )
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
@@ -49,18 +52,18 @@ def collapse_html(html):
     """
     Remove insignificant whitespace from the html.
 
-    >>> print collapse_html('''\\
+    >>> print(collapse_html('''\\
     ...     <h1>
     ...         Heading
     ...     </h1>
-    ... ''')
+    ... '''))
     <h1>Heading</h1>
-    >>> print collapse_html('''\\
+    >>> print(collapse_html('''\\
     ...     <p>
     ...         Paragraph with
     ...         multiple lines.
     ...     </p>
-    ... ''')
+    ... '''))
     <p>Paragraph with multiple lines.</p>
     """
     def smart_space(match):
@@ -77,7 +80,7 @@ def collapse_html(html):
     html = re.sub(
         r'(>?)\s*\n\s*(<?)',
         smart_space,
-        html,
+        string(html),
     )
     return html.strip()
 

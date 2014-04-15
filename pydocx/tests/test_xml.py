@@ -828,7 +828,14 @@ class LargeCellTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 3, total_time
+            expected_time = 3
+            if sys.version_info[0] == 3:
+                expected_time = 4  # Little slower on python 3
+            error_message = 'Total time: %s; Expected time: %d' % (
+                total_time,
+                expected_time,
+            )
+            assert total_time < expected_time, error_message
 
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):

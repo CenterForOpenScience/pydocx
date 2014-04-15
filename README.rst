@@ -255,6 +255,26 @@ Missing val attribute in underline tag
 Development
 ###########
 
+Installing requirements
+=======================
+
+Using pip
+---------
+
+.. code-block:: shell-session
+
+   $ pip install -r requirements/docs.txt -r requirements/testing.txt
+
+Using `terrarium <https://github.com/PolicyStat/terrarium>`_
+------------------------------------------------------------
+
+Terrarium will package up and compress a virtualenv for you based on pip
+requirements and then let you ship that environment around.
+
+.. code-block:: shell-session
+
+   $ terrarium install requirements/*.txt
+
 Building the documentation locally
 ==================================
 

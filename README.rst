@@ -14,7 +14,7 @@ to create your own methods for a markup language not yet supported.
 Currently Supported
 ###################
 
-Python versions: 2.6, 2.7
+Python versions: 2.6, 2.7, 3.3
 
 * tables
     * nested tables

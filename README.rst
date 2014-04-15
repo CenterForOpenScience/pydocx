@@ -240,8 +240,11 @@ Command Line Execution
 
 First you have to install pydocx, this can be done by running the command `pip install pydocx`. From there you can simply call the command `pydocx --html path/to/file.docx path/to/output.html`. Change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.
 
-Deviations from the ECMA-376 Specification
-##########################################
+Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_ Specification
+#####################################################################################################################
+
+Missing val attribute in underline tag
+======================================
 
 * In the event that the ``val`` attribute is missing from a ``u`` (``ST_Underline`` type),
   we treat the underline as off, or none.

@@ -262,6 +262,22 @@ requirements
 2. Run ``./run_tests.sh`` in the project root. This will run ``nosetests`` with coverage and also display any flake8 errors
 3. Run ``tox`` in the project root. This will run nosetests against each of the versions of Python that is supported, in addition to coverage and flake8.
 
+Setting up tox
+--------------
+
+1. Decide how you want to manage multiple python versions.
+
+   a. System level using a package manager such as ``apt-get``.
+      This approach will likely require adding additional ``apt-get`` sources in
+      order to install alternative versions of python.
+   b. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
+      to manage and install multiple python versions.
+      After installation, see the
+      `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
+
+2. ``pip install tox``
+
+
 Getting involved
 ================
 

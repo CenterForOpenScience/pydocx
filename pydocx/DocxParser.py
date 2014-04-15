@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging
 from os.path import split as path_split
 
@@ -662,17 +664,17 @@ class DocxParser(MulitMemoizeMixin):
             restart_in_v_merge = 'restart' in v_merge.attrib['val']
 
         if not restart_in_v_merge:
-            return ''
+            return -1
 
         current_row = self.pre_processor.row_index(el)
         current_col = self.pre_processor.column_index(el)
         rowspan = 1
-        result = ''
+        result = -1
         tbl = find_ancestor_with_tag(self.pre_processor, el, 'tbl')
         # We only want table cells that have a higher row_index that is greater
         # than the current_row and that are on the current_col
         if tbl is None:
-            return ''
+            return -1
 
         tcs = [
             tc for tc in self.memod_tree_op(
@@ -692,7 +694,7 @@ class DocxParser(MulitMemoizeMixin):
                 rowspan = 1
             if rowspan > 1:
                 result = rowspan
-        return str(result)
+        return result
 
     def get_colspan(self, el):
         grid_span = find_first(el, 'gridSpan')

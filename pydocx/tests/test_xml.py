@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import time
 
 from nose.plugins.skip import SkipTest
@@ -204,14 +205,14 @@ class ImageLocal(_TranslationTestCase):
             rType='foo/image',
             external=False,
             target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target=OPCPart(raw_data=b'content1'),
         ),
         dict(
             rId='rId1',
             rType='foo/image',
             external=False,
             target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target=OPCPart(raw_data=b'content2'),
         ),
     ]
 
@@ -242,14 +243,14 @@ class ImageTestCase(_TranslationTestCase):
             rType='foo/image',
             external=False,
             target_path='word/media/image1.jpeg',
-            target=OPCPart(raw_data='content1'),
+            target=OPCPart(raw_data=b'content1'),
         ),
         dict(
             rId='rId1',
             rType='foo/image',
             external=False,
             target_path='word/media/image2.jpeg',
-            target=OPCPart(raw_data='content2'),
+            target=OPCPart(raw_data=b'content2'),
         ),
     ]
 
@@ -793,7 +794,14 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 3, total_time
+            expected_time = 3
+            if sys.version_info[0] == 3:
+                expected_time = 4  # Little slower on python 3
+            error_message = 'Total time: %s; Expected time: %d' % (
+                total_time,
+                expected_time,
+            )
+            assert total_time < expected_time, error_message
 
 
 class LargeCellTestCase(_TranslationTestCase):
@@ -820,7 +828,14 @@ class LargeCellTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 3, total_time
+            expected_time = 3
+            if sys.version_info[0] == 3:
+                expected_time = 4  # Little slower on python 3
+            error_message = 'Total time: %s; Expected time: %d' % (
+                total_time,
+                expected_time,
+            )
+            assert total_time < expected_time, error_message
 
 
 class NonStandardTextTagsTestCase(_TranslationTestCase):

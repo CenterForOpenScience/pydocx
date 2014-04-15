@@ -278,40 +278,40 @@ requirements and then let you ship that environment around.
 Building the documentation locally
 ==================================
 
-1. Install the documentation requirements:
+#. Install the documentation requirements:
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ pip install -r requirements/docs.txt
+      $ pip install -r requirements/docs.txt
 
-2. Change directory to ``docs`` and run ``make html``:
+#. Change directory to ``docs`` and run ``make html``:
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ cd docs
-   $ make html
+      $ cd docs
+      $ make html
 
-3. Load HTML documentation in a web browser of your choice:
+#. Load HTML documentation in a web browser of your choice:
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ firefox docs/_build/html/index.html
+      $ firefox docs/_build/html/index.html
 
 Running tests
 =============
 
-1. Install the development requirements:
+#. Install the development requirements:
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ pip install -r requirements/testing.txt
+      $ pip install -r requirements/testing.txt
 
-2. Run ``./run_tests.sh`` in the project root.
+#. Run ``./run_tests.sh`` in the project root.
    This will run ``nosetests`` with coverage and also display any ``flake8`` errors.
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ ./run_tests.sh
+      $ ./run_tests.sh
 
 To run all tests against all supported versions of python, use ``tox``.
 
@@ -323,23 +323,23 @@ Running tests with tox
 Setting up tox
 ^^^^^^^^^^^^^^
 
-1. Decide how you want to manage multiple python versions.
+#. Decide how you want to manage multiple python versions.
 
-   a. System level using a package manager such as ``apt-get``.
+   #. System level using a package manager such as ``apt-get``.
       This approach will likely require adding additional ``apt-get`` sources in
       order to install alternative versions of python.
-   b. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
+   #. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
       to manage and install multiple python versions.
       After installation, see the
       `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
 
-2. Install ``tox``
+#. Install ``tox``
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ pip install tox
+       $ pip install tox
 
-3. `Configure tox <http://tox.readthedocs.org/en/latest>`_
+#. `Configure tox <http://tox.readthedocs.org/en/latest>`_
 
 Running tox
 ^^^^^^^^^^^

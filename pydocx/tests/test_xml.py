@@ -796,7 +796,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             expected_time = self.get_expected_time_based_on_version(
                 python2_time=3,
                 python3_time=4,
-                pypy_time=5,
+                pypy_time=1,
             )
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,
@@ -832,7 +832,7 @@ class LargeCellTestCase(_TranslationTestCase):
             expected_time = self.get_expected_time_based_on_version(
                 python2_time=3,
                 python3_time=4,
-                pypy_time=30,
+                pypy_time=1,
             )
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,

@@ -14,6 +14,8 @@ to create your own methods for a markup language not yet supported.
 Currently Supported
 ###################
 
+Python versions: 2.6, 2.7, 3.3
+
 * tables
     * nested tables
     * rowspans
@@ -237,3 +239,94 @@ Command Line Execution
 ######################
 
 First you have to install pydocx, this can be done by running the command `pip install pydocx`. From there you can simply call the command `pydocx --html path/to/file.docx path/to/output.html`. Change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.
+
+Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_ Specification
+#####################################################################################################################
+
+Missing val attribute in underline tag
+======================================
+
+* In the event that the ``val`` attribute is missing from a ``u`` (``ST_Underline`` type),
+  we treat the underline as off, or none.
+  See also http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
+
+   If the val attribute is not specified, Word defaults to the value defined in the style hierarchy and then to no underline.
+
+Development
+###########
+
+Running tests
+=============
+
+1. Install the development requirements:
+
+.. code-block:: shell-session
+
+   $ pip install -r test_requirements.txt
+
+2. Run ``./run_tests.sh`` in the project root.
+   This will run ``nosetests`` with coverage and also display any ``flake8`` errors.
+
+.. code-block:: shell-session
+
+   $ ./run_tests.sh
+
+To run all tests against all supported versions of python, use ``tox``.
+
+Running tests with tox
+----------------------
+
+``tox`` allows us to use one command to run tests against all versions of python that we support.
+
+Setting up tox
+^^^^^^^^^^^^^^
+
+1. Decide how you want to manage multiple python versions.
+
+   a. System level using a package manager such as ``apt-get``.
+      This approach will likely require adding additional ``apt-get`` sources in
+      order to install alternative versions of python.
+   b. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
+      to manage and install multiple python versions.
+      After installation, see the
+      `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
+
+2. Install ``tox``
+
+.. code-block:: shell-session
+
+   $ pip install tox
+
+3. `Configure tox <http://tox.readthedocs.org/en/latest>`_
+
+Running tox
+^^^^^^^^^^^
+
+Now that you have ``tox`` setup, you just need to run the command ``tox`` from the project root directory.
+
+.. code-block:: shell-session
+
+   $ tox
+
+Getting involved
+================
+
+The PyDocX project welcomes help in any of the following ways:
+
+* Making pull requests on github for code, tests and documentation.
+* Participating on open issues and pull requests, reviewing changes
+
+Release process
+===============
+
+1. Bump the version number in
+   `setup.py <https://github.com/CenterForOpenScience/pydocx/blob/master/setup.py>`_,
+   and the version number in
+   `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
+   on master.
+2. Update
+   `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.md>`_
+   version
+   (remove/replace "dev" at the top, if present).
+3. Tag the version.
+4. Push to PyPI.

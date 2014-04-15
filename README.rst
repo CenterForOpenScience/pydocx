@@ -258,15 +258,28 @@ Development
 Running tests
 =============
 
-requirements
-  tox (optional), nosetests, coverage, flake8
+1. Install the development requirements:
 
-1. Run ``nosetests`` in the project root
-2. Run ``./run_tests.sh`` in the project root. This will run ``nosetests`` with coverage and also display any flake8 errors
-3. Run ``tox`` in the project root. This will run nosetests against each of the versions of Python that is supported, in addition to coverage and flake8.
+.. code-block:: shell-session
+
+   $ pip install -r requirements.txt
+
+2. Run ``./run_tests.sh`` in the project root.
+   This will run ``nosetests`` with coverage and also display any ``flake8`` errors.
+
+.. code-block:: shell-session
+
+   $ ./run_tests.sh
+
+To run all tests against all supported versions of python, use ``tox``.
+
+Running tests with tox
+----------------------
+
+``tox`` allows us to use one command to run tests against all versions of python that we support.
 
 Setting up tox
---------------
+^^^^^^^^^^^^^^
 
 1. Decide how you want to manage multiple python versions.
 
@@ -278,9 +291,22 @@ Setting up tox
       After installation, see the
       `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
 
-2. ``pip install tox``
+2. Install ``tox``
+
+.. code-block:: shell-session
+
+   $ pip install tox
+
 3. `Configure tox <http://tox.readthedocs.org/en/latest>`_
 
+Running tox
+^^^^^^^^^^^
+
+Now that you have ``tox`` setup, you just need to run the command ``tox`` from the project root directory.
+
+.. code-block:: shell-session
+
+   $ tox
 
 Getting involved
 ================

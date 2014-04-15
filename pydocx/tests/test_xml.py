@@ -797,7 +797,11 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             expected_time = 3
             if sys.version_info[0] == 3:
                 expected_time = 4  # Little slower on python 3
-            assert total_time < expected_time, total_time
+            error_message = 'Total time: %s; Expected time: %d' % (
+                total_time,
+                expected_time,
+            )
+            assert total_time < expected_time, error_message
 
 
 class LargeCellTestCase(_TranslationTestCase):

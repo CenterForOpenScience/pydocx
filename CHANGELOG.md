@@ -3,6 +3,7 @@ Change Log
 
 * 0.3.19dev
     * Added support for python 3.3
+    * Added support for pypy
 * 0.3.18
     * Fixed an issue with marking runs as underline when they were not supposed
       to be.

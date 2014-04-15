@@ -255,6 +255,28 @@ Missing val attribute in underline tag
 Development
 ###########
 
+Building the documentation locally
+==================================
+
+1. Install the documentation requirements:
+
+.. code-block:: shell-session
+
+   $ pip install -r requirements/docs.txt
+
+2. Change directory to ``docs`` and run ``make html``:
+
+.. code-block:: shell-session
+
+   $ cd docs
+   $ make html
+
+3. Load HTML documentation in a web browser of your choice:
+
+.. code-block:: shell-session
+
+   $ firefox docs/_build/html/index.html
+
 Running tests
 =============
 

@@ -237,3 +237,12 @@ Command Line Execution
 ######################
 
 First you have to install pydocx, this can be done by running the command `pip install pydocx`. From there you can simply call the command `pydocx --html path/to/file.docx path/to/output.html`. Change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.
+
+Deviations from the ECMA-376 Specification
+##########################################
+
+* In the event that the ``val`` attribute is missing from a ``u`` (``ST_Underline`` type),
+  we treat the underline as off, or none.
+  See also http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
+
+   If the val attribute is not specified, Word defaults to the value defined in the style hierarchy and then to no underline.

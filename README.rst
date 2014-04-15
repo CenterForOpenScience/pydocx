@@ -255,21 +255,63 @@ Missing val attribute in underline tag
 Development
 ###########
 
+Installing requirements
+=======================
+
+Using pip
+---------
+
+.. code-block:: shell-session
+
+   $ pip install -r requirements/docs.txt -r requirements/testing.txt
+
+Using `terrarium <https://github.com/PolicyStat/terrarium>`_
+------------------------------------------------------------
+
+Terrarium will package up and compress a virtualenv for you based on pip
+requirements and then let you ship that environment around.
+
+.. code-block:: shell-session
+
+   $ terrarium install requirements/*.txt
+
+Building the documentation locally
+==================================
+
+#. Install the documentation requirements:
+
+   .. code-block:: shell-session
+
+      $ pip install -r requirements/docs.txt
+
+#. Change directory to ``docs`` and run ``make html``:
+
+   .. code-block:: shell-session
+
+      $ cd docs
+      $ make html
+
+#. Load HTML documentation in a web browser of your choice:
+
+   .. code-block:: shell-session
+
+      $ firefox docs/_build/html/index.html
+
 Running tests
 =============
 
-1. Install the development requirements:
+#. Install the development requirements:
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ pip install -r test_requirements.txt
+      $ pip install -r requirements/testing.txt
 
-2. Run ``./run_tests.sh`` in the project root.
+#. Run ``./run_tests.sh`` in the project root.
    This will run ``nosetests`` with coverage and also display any ``flake8`` errors.
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ ./run_tests.sh
+      $ ./run_tests.sh
 
 To run all tests against all supported versions of python, use ``tox``.
 
@@ -281,23 +323,23 @@ Running tests with tox
 Setting up tox
 ^^^^^^^^^^^^^^
 
-1. Decide how you want to manage multiple python versions.
+#. Decide how you want to manage multiple python versions.
 
-   a. System level using a package manager such as ``apt-get``.
+   #. System level using a package manager such as ``apt-get``.
       This approach will likely require adding additional ``apt-get`` sources in
       order to install alternative versions of python.
-   b. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
+   #. Use `pyenv <https://github.com/yyuu/pyenv-installer#installation>`_
       to manage and install multiple python versions.
       After installation, see the
       `pyenv command reference <https://github.com/yyuu/pyenv/blob/master/COMMANDS.md>`_
 
-2. Install ``tox``
+#. Install ``tox``
 
-.. code-block:: shell-session
+   .. code-block:: shell-session
 
-   $ pip install tox
+       $ pip install tox
 
-3. `Configure tox <http://tox.readthedocs.org/en/latest>`_
+#. `Configure tox <http://tox.readthedocs.org/en/latest>`_
 
 Running tox
 ^^^^^^^^^^^
@@ -319,14 +361,15 @@ The PyDocX project welcomes help in any of the following ways:
 Release process
 ===============
 
-1. Bump the version number in
+#. Bump the version number in
    `setup.py <https://github.com/CenterForOpenScience/pydocx/blob/master/setup.py>`_,
    and the version number in
    `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
    on master.
-2. Update
+#. Update
    `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.md>`_
    version
    (remove/replace "dev" at the top, if present).
-3. Tag the version.
-4. Push to PyPI.
+#. Update version in ``docs/conf.py``.
+#. Tag the version.
+#. Push to PyPI.

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import time
 
 from nose.plugins.skip import SkipTest
@@ -793,7 +794,10 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             end_time = time.time()
             total_time = end_time - start_time
             # This finishes in under a second on python 2.7
-            assert total_time < 3, total_time
+            expected_time = 3
+            if sys.version_info[0] == 3:
+                expected_time = 4  # Little slower on python 3
+            assert total_time < expected_time, total_time
 
 
 class LargeCellTestCase(_TranslationTestCase):

@@ -269,3 +269,11 @@ The PyDocX project welcomes help in any of the following ways:
 
 * Making pull requests on github for code, tests and documentation.
 * Participating on open issues and pull requests, reviewing changes
+
+Release process
+===============
+
+1. Bump the version number in setup.py, and the version number in __init__.py on master.
+2. Update the CHANGELOG version (remove/replace "dev" at the top, if present).
+3. Tag the version.
+4. Push to PyPI.

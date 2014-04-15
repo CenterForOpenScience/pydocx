@@ -555,6 +555,10 @@ def ZipFile(path):  # This is not needed in python 3.2+
 
 
 def string(*args, **kwargs):
+    """
+    The unicode function does not exist in python3, so if we want to makes
+    things unicode in python2 we need a function like this to make that happen.
+    """
     try:
         return unicode(*args, **kwargs)
     except NameError:

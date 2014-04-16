@@ -11,7 +11,7 @@ def docx2html(path):
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
 
-VERSION = '0.3.18'
+__version__ = '0.3.18'
 
 
 def main():

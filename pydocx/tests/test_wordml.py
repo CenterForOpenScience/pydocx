@@ -33,7 +33,7 @@ class ZipPackageTestCase(unittest.TestCase):
         part = self.package.get_part('/_rels/.rels')
         data = part.stream.read()
         assert data
-        assert data.startswith('<?xml version="1.0" encoding="UTF-8"?>')
+        assert data.startswith(b'<?xml version="1.0" encoding="UTF-8"?>')
 
 
 class WordprocessingDocumentTestCase(unittest.TestCase):

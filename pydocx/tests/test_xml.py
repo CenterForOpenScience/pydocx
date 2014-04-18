@@ -232,8 +232,7 @@ class ImageLocal(_TranslationTestCase):
         for el in tags:
             body += el
 
-        xml = DXB.xml(body)
-        return xml
+        return DXB.xml(body)
 
 
 class ImageTestCase(_TranslationTestCase):
@@ -1421,7 +1420,7 @@ class UnicodeTestCase(_TranslationTestCase):
         for tag in tags:
             body += tag
         xml = DXB.xml(body)
-        return xml.encode('utf-8')
+        return xml
 
 
 class NoTextInTTagTestCase(_TranslationTestCase):
@@ -1442,5 +1441,4 @@ class NoTextInTTagTestCase(_TranslationTestCase):
         body = ''
         for tag in tags:
             body += tag
-        xml = DXB.xml(body)
-        return xml.encode('utf-8')
+        return DXB.xml(body)

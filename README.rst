@@ -396,14 +396,11 @@ Release process
 ===============
 
 #. Bump the version number in
-   `setup.py <https://github.com/CenterForOpenScience/pydocx/blob/master/setup.py>`_,
-   and the version number in
    `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
    on master.
 #. Update
    `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.md>`_
    version
    (remove/replace "dev" at the top, if present).
-#. Update version in ``docs/conf.py``.
 #. Tag the version.
 #. Push to PyPI.

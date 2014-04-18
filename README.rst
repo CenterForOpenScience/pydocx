@@ -64,10 +64,10 @@ Python versions: 2.6, 2.7, 3.3
 
 * headings
 
-Usage
-#####
+Customizing The Parser
+######################
 
-DocxParser includes abstracts methods that each parser overwrites to satsify its own needs.
+DocxParser includes abstracts methods that each parser overwrites to satisfy its own needs.
 The abstract methods are as follows:
 
 .. code-block:: python

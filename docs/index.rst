@@ -5,6 +5,6 @@ PyDocX
    :maxdepth: 2
 
    installation
-   quickstart
+   usage
    development
    release_notes

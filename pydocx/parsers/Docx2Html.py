@@ -1,3 +1,5 @@
+from __future__ import division
+
 import base64
 import xml.sax.saxutils
 
@@ -5,6 +7,7 @@ from pydocx.DocxParser import DocxParser, TWIPS_PER_POINT
 from pydocx.utils import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
+    string,
 )
 
 POINTS_PER_EM = 12
@@ -60,7 +63,7 @@ class Docx2Html(DocxParser):
             'head': self.head(),
             'content': content,
         }
-        return unicode(content)
+        return string(content)
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
@@ -91,13 +94,13 @@ class Docx2Html(DocxParser):
         }
 
         result = []
-        for name, definition in sorted(PYDOCX_STYLES.iteritems()):
+        for name, definition in sorted(PYDOCX_STYLES.items()):
             result.append('.pydocx-%s {%s}' % (
                 name,
                 convert_dictionary_to_style_fragment(definition),
             ))
 
-        for name, definition in sorted(styles.iteritems()):
+        for name, definition in sorted(styles.items()):
             result.append('%s {%s}' % (
                 name,
                 convert_dictionary_to_style_fragment(definition),
@@ -150,7 +153,7 @@ class Docx2Html(DocxParser):
         extension = filename.split('.')[-1].lower()
         b64_encoded_src = 'data:image/%s;base64,%s' % (
             extension,
-            base64.b64encode(image_data),
+            base64.b64encode(image_data).decode(),
         )
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src
@@ -306,6 +309,14 @@ class Docx2Html(DocxParser):
     def page_break(self):
         return '<hr />'
 
+    def _convert_measurement(self, value):
+        '''
+        >>> parser = Docx2Html('foo')
+        >>> parser._convert_measurement(30)
+        0.125
+        '''
+        return value / TWIPS_PER_POINT / POINTS_PER_EM
+
     def indent(
         self,
         text,
@@ -319,13 +330,13 @@ class Docx2Html(DocxParser):
             attrs['class'] = 'pydocx-%s' % alignment
         style = {}
         if firstLine:
-            firstLine = firstLine / TWIPS_PER_POINT / POINTS_PER_EM
+            firstLine = self._convert_measurement(firstLine)
             style['text-indent'] = '%.2fem' % firstLine
         if left:
-            left = left / TWIPS_PER_POINT / POINTS_PER_EM
+            left = self._convert_measurement(left)
             style['margin-left'] = '%.2fem' % left
         if right:
-            right = right / TWIPS_PER_POINT / POINTS_PER_EM
+            right = self._convert_measurement(right)
             style['margin-right'] = '%.2fem' % right
         if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)

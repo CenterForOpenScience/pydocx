@@ -11,36 +11,66 @@ will be available soon. You can extend any of the available parsers to customize
 to your needs. You can also create your own class that inherits DocxParser
 to create your own methods for a markup language not yet supported.
 
+Quick start
+###########
+
+Installation
+============
+
+pydocx can be installed using using ``pip``.
+
+.. code-block:: shell-session
+
+   $ pip install pydocx
+
+Converting files using the command line
+=======================================
+
+Using the ``pydocx`` command,
+you can specify the output format
+with the input and output files:
+
+.. code-block:: shell-session
+
+   $ pydocx --html input.docx output.html
+
 Currently Supported
 ###################
 
 Python versions: 2.6, 2.7, 3.3
 
 * tables
-    * nested tables
-    * rowspans
-    * colspans
-    * lists in tables
+
+  * nested tables
+  * rowspans
+  * colspans
+  * lists in tables
+
 * lists
-    * list styles
-    * nested lists
-    * list of tables
-    * list of pragraphs
+
+  * list styles
+  * nested lists
+  * list of tables
+  * list of pragraphs
+
 * justification
 * images
 * styles
-    * bold
-    * italics
-    * underline
-    * hyperlinks
+
+  * bold
+  * italics
+  * underline
+  * hyperlinks
+
 * headings
 
-Usage
-#####
+Customizing The Parser
+######################
 
-DocxParser includes abstracts methods that each parser overwrites to satsify its own needs. The abstract methods are as follows:
+DocxParser includes abstracts methods that each parser overwrites to satisfy its own needs.
+The abstract methods are as follows:
 
-::
+.. code-block:: python
 
     class DocxParser:
 
@@ -141,7 +171,7 @@ DocxParser includes abstracts methods that each parser overwrites to satsify its
 
 Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
 
-::
+.. code-block:: python
 
     class Docx2Html(DocxParser):
 
@@ -158,9 +188,12 @@ Docx2Html inherits DocxParser and implements basic HTML handling. Ex.
             return '<p>' + text + '</p>'
 
 
-However, let's say you want to add a specific style to your HTML document. In order to do this, you want to make each paragraph a class of type `my_implementation`. Simply extend docx2Html and add what you need.
+However,
+let's say you want to add a specific style to your HTML document.
+In order to do this, you want to make each paragraph a class of type ``my_implementation``.
+Simply extend ``Docx2Html`` and add what you need.
 
-::
+.. code-block:: python
 
      class My_Implementation_of_Docx2Html(Docx2Html):
 
@@ -169,9 +202,12 @@ However, let's say you want to add a specific style to your HTML document. In or
 
 
 
-OR, let's say FOO is your new favorite markup language. Simply customize your own new parser, overwritting the abstract methods of DocxParser
+OR,
+let's say FOO is your new favorite markup language.
+Simply customize your own new parser,
+overwritting the abstract methods of ``DocxParser``.
 
-::
+.. code-block:: python
 
     class Docx2Foo(DocxParser):
 
@@ -182,17 +218,18 @@ OR, let's say FOO is your new favorite markup language. Simply customize your ow
 Custom Pre-Processor
 ####################
 
-When creating your own Parser (as described above) you can now add in your own custom Pre Processor. To do so you will need to set the `pre_processor` field on the custom parser, like so:
+When creating your own Parser (as described above) you can now add in your own custom Pre Processor.
+To do so you will need to set the ``pre_processor`` field on the custom parser.
 
-::
+.. code-block:: python
 
     class Docx2Foo(DocxParser):
         pre_processor_class = FooPreProcessor
 
 
-The `FooPreProcessor` will need a few things to get you going:
+The ``FooPreProcessor`` will need a few things to get you going:
 
-::
+.. code-block:: python
 
     class FooPreProcessor(PydocxPreProcessor):
         def perform_pre_processing(self, root, *args, **kwargs):
@@ -202,43 +239,40 @@ The `FooPreProcessor` will need a few things to get you going:
         def _set_foo(self, root):
             pass
 
-If you want `_set_foo` to be called you must add it to `perform_pre_processing` which is called in the base parser for pydocx.
+If you want ``_set_foo`` to be called you must add it to ``perform_pre_processing`` which is called in the base parser for pydocx.
 
-Everything done during pre-processing is executed prior to `parse` being called for the first time.
+Everything done during pre-processing is executed prior to ``parse`` being called for the first time.
 
 
 Styles
 ######
 
-The base parser `Docx2Html` relies on certain css class being set for certain behaviour to occur. Currently these include:
+The base parser ``Docx2Html`` relies on certain css class being set for certain behaviour to occur.
+Currently these include:
 
-* class `pydocx-insert` -> Turns the text green.
-* class `pydocx-delete` -> Turns the text red and draws a line through the text.
-* class `pydocx-center` -> Aligns the text to the center.
-* class `pydocx-right` -> Aligns the text to the right.
-* class `pydocx-left` -> Aligns the text to the left.
-* class `pydocx-comment` -> Turns the text blue.
-* class `pydocx-underline` -> Underlines the text.
-* class `pydocx-caps` -> Makes all text uppercase.
-* class `pydocx-small-caps` -> Makes all text uppercase, however truly lowercase letters will be small than their uppercase counterparts.
-* class `pydocx-strike` -> Strike a line through.
-* class `pydocx-hidden` -> Hide the text.
-* class `pydocx-tab` -> Represents a tab within the document.
+* class ``pydocx-insert`` -> Turns the text green.
+* class ``pydocx-delete`` -> Turns the text red and draws a line through the text.
+* class ``pydocx-center`` -> Aligns the text to the center.
+* class ``pydocx-right`` -> Aligns the text to the right.
+* class ``pydocx-left`` -> Aligns the text to the left.
+* class ``pydocx-comment`` -> Turns the text blue.
+* class ``pydocx-underline`` -> Underlines the text.
+* class ``pydocx-caps`` -> Makes all text uppercase.
+* class ``pydocx-small-caps`` -> Makes all text uppercase, however truly lowercase letters will be small than their uppercase counterparts.
+* class ``pydocx-strike`` -> Strike a line through.
+* class ``pydocx-hidden`` -> Hide the text.
+* class ``pydocx-tab`` -> Represents a tab within the document.
 
 Exceptions
 ##########
 
-Right now there is only one custom exception (`MalformedDocxException`). It is raised if either the `xml` or `zipfile` libraries raise an exception.
+There is only one custom exception (``MalformedDocxException``).
+It is raised if either the ``xml`` or ``zipfile`` libraries raise an exception.
 
 Optional Arguments
 ##################
 
-You can pass in `convert_root_level_upper_roman=True` to the parser and it will convert all root level upper roman lists to headings instead.
-
-Command Line Execution
-######################
-
-First you have to install pydocx, this can be done by running the command `pip install pydocx`. From there you can simply call the command `pydocx --html path/to/file.docx path/to/output.html`. Change `pydocx --html` to `pydocx --markdown` in order to convert to markdown instead.
+You can pass in ``convert_root_level_upper_roman=True`` to the parser and it will convert all root level upper roman lists to headings instead.
 
 Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_ Specification
 #####################################################################################################################

@@ -34,7 +34,7 @@ def find_version(*file_paths):
 
 
 def get_description():
-    return read('README.rst') + read('CHANGELOG.md')
+    return read('README.rst') + read('CHANGELOG.rst')
 
 setup(
     name="PyDocX",

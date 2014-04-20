@@ -1,7 +1,9 @@
+from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
-from .parsers import Docx2Html, Docx2Markdown
+
+from pydocx.parsers import Docx2Html, Docx2Markdown
 
 
 def docx2html(path):

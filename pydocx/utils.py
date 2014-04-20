@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import re
 import zipfile
 from contextlib import contextmanager
@@ -65,9 +67,14 @@ def el_iter(el):
     Go through all elements
     """
     try:
-        return el.iter()
+        for child in el.iter():
+            yield child
     except AttributeError:
-        return el.findall('.//*')
+        # the behavior of el.iter is to return the element itself in addition
+        # to all of those under it
+        yield el
+        for child in el.findall('.//*'):
+            yield child
 
 
 def find_first(el, tag):
@@ -516,34 +523,6 @@ def convert_dictionary_to_html_attributes(attributes):
     return ' '.join('%s="%s"' % item for item in items)
 
 
-def zip_path_join(*parts):
-    '''
-    Internally, ZipFile stores forward slashes as required by the zip
-    file specification. This occurs REGARDLESS of the operating
-    system, so we cannot use os.path.join.
-    See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-    Section 4.4.17
-
-    >>> '' == zip_path_join()
-    True
-    >>> '' == zip_path_join('')
-    True
-    >>> 'foo' == zip_path_join('', 'foo', '')
-    True
-    >>> 'foo' == zip_path_join('foo')
-    True
-    >>> 'foo/bar' == zip_path_join('foo', 'bar')
-    True
-    >>> 'foo/bar' == zip_path_join('', '', 'foo', 'bar', '',)
-    True
-    >>> '1/2/3' == zip_path_join(1, 2, 3)
-    True
-    '''
-    return '/'.join([
-        string(part) for part in parts if part
-    ])
-
-
 @contextmanager
 def ZipFile(path):  # This is not needed in python 3.2+
     try:
@@ -552,6 +531,21 @@ def ZipFile(path):  # This is not needed in python 3.2+
         raise MalformedDocxException('Passed in document is not a docx')
     yield f
     f.close()
+
+
+def xml_tag_split(tag):
+    '''
+    Given a xml node tag, return the namespace and the tag name. The namespace
+    is optional and will be None if not present.
+
+    >>> xml_tag_split('{foo}bar')
+    ('foo', 'bar')
+    >>> xml_tag_split('bar')
+    (None, 'bar')
+    '''
+    m = re.match('({([^}]+)})?(.+)', tag)
+    groups = m.groups()
+    return groups[1], groups[2]
 
 
 def string(*args, **kwargs):

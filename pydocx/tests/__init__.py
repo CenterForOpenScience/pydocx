@@ -1,9 +1,16 @@
 from __future__ import print_function
 
+import posixpath
 import re
 from contextlib import contextmanager
 
-from pydocx.DocxParser import OPCPart, OPCRelationship
+try:
+    from io import BytesIO
+except ImportError:
+    from StringIO import StringIO
+    BytesIO = StringIO
+
+from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
     parse_xml_from_string,
@@ -99,10 +106,37 @@ class XMLDocx2Html(Docx2Html):
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
-        self.document = OPCPart(raw_data=self.document_xml)
+        self.document = WordprocessingDocument(path=None)
+        package = self.document.package
+        document_part = package.create_part(
+            uri='/word/document.xml',
+        )
+
         if self.relationships:
             for relationship in self.relationships:
-                self.document.add_relationship(OPCRelationship(**relationship))
+                target_mode = 'Internal'
+                if relationship['external']:
+                    target_mode = 'External'
+                target_uri = relationship['target_path']
+                if 'data' in relationship:
+                    full_target_uri = posixpath.join('/word', target_uri)
+                    package.streams[full_target_uri] = BytesIO(
+                        relationship['data'],
+                    )
+                    package.create_part(uri=full_target_uri)
+                document_part.create_relationship(
+                    target_uri=target_uri,
+                    target_mode=target_mode,
+                    relationship_type=relationship['relationship_type'],
+                    relationship_id=relationship['relationship_id'],
+                )
+
+        package.streams['/word/document.xml'] = BytesIO(self.document_xml)
+        package.create_relationship(
+            target_uri=document_part.uri,
+            target_mode='Internal',
+            relationship_type=MainDocumentPart.relationship_type,
+        )
 
         self.numbering_root = None
         if self.numbering_dict is not None:
@@ -114,7 +148,7 @@ class XMLDocx2Html(Docx2Html):
         # the page width that we are looking for in the test.
         self.page_width = 612
 
-        self.parse_begin(self.document.xml_tree)
+        self.parse_begin(self.document.main_document_part.root_element)
 
     def get_list_style(self, num_id, ilvl):
         try:

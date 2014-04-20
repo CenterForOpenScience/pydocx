@@ -7,7 +7,7 @@ from nose.tools import raises
 
 from pydocx.tests import assert_html_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.DocxParser import ZipFile
+from pydocx.utils import ZipFile
 from pydocx.exceptions import MalformedDocxException
 
 

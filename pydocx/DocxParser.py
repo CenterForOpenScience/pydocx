@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 from __future__ import division
 
 import logging
-from os.path import split as path_split
+import posixpath
 
 from abc import abstractmethod, ABCMeta
 
@@ -9,16 +10,14 @@ from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
-    ZipFile,
     find_all,
     find_ancestor_with_tag,
     find_first,
     get_list_style,
     has_descendant_with_tag,
-    parse_xml_from_string,
-    zip_path_join,
 )
 from pydocx.exceptions import MalformedDocxException
+from pydocx.wordml import WordprocessingDocument
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
@@ -38,222 +37,6 @@ JUSTIFY_RIGHT = 'right'
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
-
-OPC_TAG_RELATIONSHIP = 'Relationship'
-OPC_TAG_RELATIONSHIP_ATTR_ID = 'Id'
-OPC_TAG_RELATIONSHIP_ATTR_TARGET_MODE = 'TargetMode'
-OPC_TAG_RELATIONSHIP_ATTR_TARGET = 'Target'
-OPC_TAG_RELATIONSHIP_ATTR_TYPE = 'Type'
-
-OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL = 'External'
-
-OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument'  # noqa
-OPC_RELATIONSHIP_TYPE_NUMBERING = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering'  # noqa
-OPC_RELATIONSHIP_TYPE_STYLES = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles'  # noqa
-
-
-class OPCRelationship(object):
-    '''
-    In Open Packaging Convention, a relationship is an association between a
-    part and another part, or a part and an external resource.
-    '''
-
-    def __init__(self, rId, rType, target_path, external, target=None):
-        self.rId = rId
-        self.rType = rType
-        self.target_path = target_path
-        self.target = target
-        self.external = external
-        if external:
-            self.container = None
-            self.filename = None
-            self.relationship_path = None
-        else:
-            self.container, self.filename = path_split(self.target_path)
-            rels_file = '%s.rels' % self.filename
-            relationship_path = [
-                self.container,
-                '_rels',
-                rels_file,
-            ]
-            self.relationship_path = zip_path_join(*relationship_path)
-
-
-class OPCPart(object):
-    '''
-    In Open Packaging Convention, the term part corresponds to a file stored
-    within the ZIP archive.
-
-    A part may have relationships to other parts or external resources.
-    '''
-
-    def __init__(self, raw_data=None):
-        self.raw_data = raw_data
-        self._xml_tree = None
-        self.relationships_by_type = {}
-        self.relationships_by_id = {}
-
-    @property
-    def xml_tree(self):
-        if self._xml_tree is not None:
-            return self._xml_tree
-        if self.raw_data is not None:
-            self._xml_tree = parse_xml_from_string(self.raw_data)
-        return self._xml_tree
-
-    def get_relationship_by_type(self, name):
-        return self.relationships_by_type.get(name)
-
-    def get_relationship_by_id(self, rId):
-        return self.relationships_by_id.get(rId)
-
-    def add_relationship(self, relationship):
-        self.relationships_by_id[relationship.rId] = relationship
-        self.relationships_by_type[relationship.rType] = relationship
-
-
-class WordprocessingMLPackage(object):
-    '''
-    An interface to a WordprocessingML package
-
-    Example:
-
-    package = WordprocessingMLPackage.load('path/file.docx')
-    for el in package.get_relationship('officeDocument').target.xml_tree:
-        pass
-    '''
-    @staticmethod
-    def load(path_to_archive):
-        package = WordprocessingMLPackage()
-        with ZipFile(path_to_archive) as zip_file_handle:
-            return package._load(
-                file_handle=zip_file_handle,
-            )
-
-    def handle_required_resource_is_missing(self, resource):
-        raise MalformedDocxException(
-            'A required resource is missing: %s' % resource
-        )
-
-    def _read_resource_from_file(self, file_handle, resource_path):
-        try:
-            return file_handle.read(resource_path)
-        except KeyError:
-            return None
-
-    def _load(self, file_handle):
-        root = OPCRelationship(
-            rId=None,
-            rType='',
-            target_path='',
-            external=False,
-            target=OPCPart(),
-        )
-
-        relationship_digraph = self._load_relationships(
-            file_handle=file_handle,
-            root=root,
-        )
-
-        self._build_and_associate_parts(
-            file_handle=file_handle,
-            relationship_digraph=relationship_digraph,
-            root=root,
-        )
-        return root.target
-
-    def _build_and_associate_parts(
-        self,
-        file_handle,
-        relationship_digraph,
-        root,
-    ):
-        target_path_to_part_map = {}
-        # Load data for the individual parts
-        for parent, relationships in relationship_digraph.items():
-            for relationship in relationships.values():
-                if relationship.external:
-                    # External relationships don't have content in the archive,
-                    # so we skip building a part
-                    continue
-
-                if relationship.target is None:
-                    # The part for this endpoint may have already been created.
-                    part = target_path_to_part_map.get(
-                        relationship.target_path,
-                    )
-                    relationship.target = part
-                    # If it wasn't created, this is just being set to None
-                    # again
-
-                if relationship.target is None:
-                    # Create the part for this endpoint
-                    raw_data = self._read_resource_from_file(
-                        file_handle=file_handle,
-                        resource_path=relationship.target_path,
-                    )
-                    part = OPCPart(raw_data=raw_data)
-                    # Maintain a list of created parts so we only create one
-                    # for each local endpoint
-                    target_path_to_part_map[relationship.target_path] = part
-                    relationship.target = part
-
-        # Add relationships to parts
-        for parent, relationships in relationship_digraph.items():
-            for relationship in relationships.values():
-                parent.target.add_relationship(relationship)
-
-    def _load_relationships(self, file_handle, root):
-        digraph_of_relationships = {}
-        stack = [root]
-        while len(stack) > 0:
-            relationship = stack.pop()
-            data = self._read_resource_from_file(
-                file_handle=file_handle,
-                resource_path=relationship.relationship_path,
-            )
-            if data is None:
-                continue
-            xml = parse_xml_from_string(data)
-            relationships = self._parse_relationship_xml(
-                xml=xml,
-                source=relationship,
-            )
-            digraph_of_relationships[relationship] = relationships
-            stack.extend(relationships.values())
-
-        if not digraph_of_relationships:
-            self.handle_required_resource_is_missing(
-                root.relationship_path,
-            )
-        return digraph_of_relationships
-
-    def _parse_relationship_xml(self, xml, source):
-        relationships = {}
-        for child in xml:
-            if child.tag == OPC_TAG_RELATIONSHIP:
-                relationship = self._create_relationship_from_element(
-                    element=child,
-                    source=source,
-                )
-                relationships[relationship.rId] = relationship
-        return relationships
-
-    def _create_relationship_from_element(self, element, source):
-        rid = element.get(OPC_TAG_RELATIONSHIP_ATTR_ID)
-        target_mode = element.get(OPC_TAG_RELATIONSHIP_ATTR_TARGET_MODE)
-        external = False
-        target_path = element.get(OPC_TAG_RELATIONSHIP_ATTR_TARGET)
-        if target_mode == OPC_RELATIONSHIP_TARGET_MODE_EXTERNAL:
-            external = True
-        else:
-            target_path = zip_path_join(source.container, target_path)
-        return OPCRelationship(
-            rId=rid,
-            rType=element.get(OPC_TAG_RELATIONSHIP_ATTR_TYPE),
-            target_path=target_path,
-            external=external,
-        )
 
 
 class DocxParser(MulitMemoizeMixin):
@@ -275,27 +58,25 @@ class DocxParser(MulitMemoizeMixin):
         self.list_depth = 0
 
     def _load(self):
-        package = WordprocessingMLPackage.load(self.path)
+        self.document = WordprocessingDocument(path=self.path)
+        main_document_part = self.document.main_document_part
+        if main_document_part is None:
+            raise MalformedDocxException
 
-        self.document = package.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_OFFICEDOCUMENT,
-        ).target
-
+        self.root_element = main_document_part.root_element
         self.numbering_root = None
-        numbering = self.document.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_NUMBERING,
-        )
-        if numbering:
-            self.numbering_root = numbering.target.xml_tree
+        numbering_part = main_document_part.numbering_definitions_part
+        if numbering_part:
+            self.numbering_root = numbering_part.root_element
 
-        pgSzEl = find_first(self.document.xml_tree, 'pgSz')
+        pgSzEl = find_first(self.root_element, 'pgSz')
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
             self.page_width = pgSz / TWIPS_PER_POINT
 
         self.styles_dict = self._parse_styles()
-        self.parse_begin(self.document.xml_tree)  # begin to parse
+        self.parse_begin(self.root_element)
 
     def _parse_run_properties(self, rPr):
         """
@@ -325,13 +106,12 @@ class DocxParser(MulitMemoizeMixin):
         return run_properties
 
     def _parse_styles(self):
-        styles = self.document.get_relationship_by_type(
-            OPC_RELATIONSHIP_TYPE_STYLES,
-        )
-        if not styles:
+        styles_part = self.document.main_document_part.style_definitions_part
+        if not styles_part:
             return {}
+        styles_root = styles_part.root_element
         styles_dict = {}
-        for style in find_all(styles.target.xml_tree, 'style'):
+        for style in find_all(styles_root, 'style'):
             style_val = find_first(style, 'name').attrib['val']
             run_properties = find_first(style, 'rPr')
             styles_dict[style.attrib['styleId']] = {
@@ -349,6 +129,7 @@ class DocxParser(MulitMemoizeMixin):
             'has_descendant_with_tag': has_descendant_with_tag,
             '_get_tcs_in_column': self._get_tcs_in_column,
         })
+
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             styles_dict=self.styles_dict,
@@ -712,12 +493,16 @@ class DocxParser(MulitMemoizeMixin):
         return parsed
 
     def parse_hyperlink(self, el, text):
-        rId = el.get('id')
-        relationship = self.document.get_relationship_by_id(rId)
-        if not relationship:
+        relationship_id = el.get('id')
+        package_part = self.document.main_document_part.package_part
+        try:
+            relationship = package_part.get_relationship(
+                relationship_id=relationship_id,
+            )
+        except KeyError:
             # Preserve the text even if we are unable to resolve the hyperlink
             return text
-        href = self.escape(relationship.target_path)
+        href = self.escape(relationship.target_uri)
         return self.hyperlink(text, href)
 
     def _get_image_id(self, el):
@@ -769,15 +554,18 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_image(self, el):
         x, y = self._get_image_size(el)
-        rId = self._get_image_id(el)
-        relationship = self.document.get_relationship_by_id(rId)
-        if (not relationship or
-                not relationship.target or
-                not relationship.target.raw_data):
+        relationship_id = self._get_image_id(el)
+        try:
+            image_part = self.document.main_document_part.get_part_by_id(
+                relationship_id=relationship_id,
+            )
+        except KeyError:
             return ''
+        data = image_part.stream.read()
+        _, filename = posixpath.split(image_part.uri)
         return self.image(
-            relationship.target.raw_data,
-            relationship.filename,
+            data,
+            filename,
             x,
             y,
         )

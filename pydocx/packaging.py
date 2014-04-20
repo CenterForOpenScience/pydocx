@@ -116,7 +116,7 @@ class PackageRelationshipManager(object):
         manager.add_namespace(PackageRelationship.namespace)
         stream = part_container.get_part(self.relationship_uri).stream
         root = cElementTree.fromstring(stream.read())
-        for node in manager.select(root):
+        for node in manager.iterate_children(root):
             _, tag = xml_tag_split(node.tag)
             if tag != PackageRelationship.XML_TAG_NAME:
                 continue

@@ -189,11 +189,10 @@ class ZipPackage(PackageRelationshipManager):
         try:
             uris = f.namelist()
             for uri in uris:
-                self.streams['/' + uri] = f.open(uri, 'r')
+                self.streams[self.uri + uri] = f.open(uri, 'r')
         finally:
             f.close()
         for uri in self.streams:
-            # The file paths in the zip package do not start with /
             self.create_part(uri)
 
     def get_part_container(self):

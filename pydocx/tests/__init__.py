@@ -119,7 +119,11 @@ class XMLDocx2Html(Docx2Html):
                     target_mode = 'External'
                 target_uri = relationship['target_path']
                 if 'data' in relationship:
-                    full_target_uri = posixpath.join('/word', target_uri)
+                    full_target_uri = posixpath.join(
+                        package.uri,
+                        'word',
+                        target_uri,
+                    )
                     package.streams[full_target_uri] = BytesIO(
                         relationship['data'],
                     )
@@ -131,7 +135,7 @@ class XMLDocx2Html(Docx2Html):
                     relationship_id=relationship['relationship_id'],
                 )
 
-        package.streams['/word/document.xml'] = BytesIO(self.document_xml)
+        package.streams[document_part.uri] = BytesIO(self.document_xml)
         package.create_relationship(
             target_uri=document_part.uri,
             target_mode='Internal',

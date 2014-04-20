@@ -9,6 +9,8 @@ from pydocx.openxml import (
 class ImagePart(OpenXmlPart):
     '''
     Represents an image part relationship within a Word document container.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.imagepart%28v=office.14%29.aspx  # noqa
     '''
 
     relationship_type = '/'.join([
@@ -23,6 +25,8 @@ class ImagePart(OpenXmlPart):
 class StyleDefinitionsPart(OpenXmlPart):
     '''
     Represents style definitions within a Word document container.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.styledefinitionspart%28v=office.14%29.aspx  # noqa
     '''
 
     relationship_type = '/'.join([
@@ -51,6 +55,8 @@ class NumberingDefinitionsPart(OpenXmlPart):
 class FontTablePart(OpenXmlPart):
     '''
     Represents the fonts associated within a document container.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.fonttablepart%28v=office.14%29.aspx  # noqa
     '''
 
     relationship_type = '/'.join([
@@ -67,6 +73,8 @@ class MainDocumentPart(OpenXmlPart):
     Represents the actual document XML tree within a Word document container.
     This OpenXmlPart exposes several child parts for styles, numbering, fonts
     and images.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.maindocumentpart%28v=office.14%29.aspx  # noqa
     '''
 
     relationship_type = '/'.join([
@@ -112,6 +120,8 @@ class WordprocessingDocument(OpenXmlPackage):
     '''
     The top-most level of a Word document container which is an OpenXmlPackage
     that exposes a single child part, `main_document_part`.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.wordprocessingdocument%28v=office.14%29.aspx  # noqa
     '''
 
     namespace = '/'.join([

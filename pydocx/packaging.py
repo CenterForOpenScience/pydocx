@@ -16,6 +16,8 @@ class PackageRelationship(object):
     '''
     Represents an association between a source Package or PackagePart, and a
     target object which can be a PackagePart or external resource.
+
+    See also: http://msdn.microsoft.com/en-us/library/system.io.packaging.packagerelationship.aspx  # noqa
     '''
 
     namespace = '/'.join([
@@ -133,6 +135,8 @@ class PackageRelationshipManager(object):
 class ZipPackagePart(PackageRelationshipManager):
     '''
     Represents a data part within a ZipPackage.
+
+    See also: http://msdn.microsoft.com/en-us/library/system.io.packaging.zippackagepart.aspx  # noqa
     '''
 
     def __init__(self, uri, package):
@@ -161,6 +165,8 @@ class ZipPackage(PackageRelationshipManager):
     '''
     Represents a container that can that can store multiple data objects using
     a ZIP archive as a data store.
+
+    See also: http://msdn.microsoft.com/en-us/library/system.io.packaging.zippackage.aspx  # noqa
     '''
 
     def __init__(self, path):

@@ -11,6 +11,8 @@ class OpenXmlPartContainer(object):
     '''
     Represents a container for other OpenXmlParts that are associated with a
     OpenXmlPackage.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.openxmlpartcontainer%28v=office.14%29.aspx  # noqa
     '''
 
     child_part_types = NotImplemented
@@ -88,6 +90,8 @@ class OpenXmlPart(OpenXmlPartContainer):
     '''
     An OpenXmlPart is a part associated with either another OpenXmlPart or an
     OpenXmlPackage.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.openxmlpart%28v=office.14%29.aspx  # noqa
     '''
 
     def __init__(
@@ -118,6 +122,8 @@ class OpenXmlPart(OpenXmlPartContainer):
 class OpenXmlPackage(OpenXmlPartContainer):
     '''
     Creates a ZipPackage and manages package-level OpenXmlParts.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.openxmlpackage%28v=office.14%29.aspx  # noqa
     '''
 
     def __init__(self, path):

@@ -120,7 +120,7 @@ class XmlNamespaceManagerTestCase(unittest.TestCase):
         manager = XmlNamespaceManager()
         manager.add_namespace('http://example/test')
         tags = []
-        for element in manager.select(root):
+        for element in manager.iterate_children(root):
             tags.append(element.tag)
         expected_tags = [
             '{http://example/test}cat',
@@ -130,7 +130,7 @@ class XmlNamespaceManagerTestCase(unittest.TestCase):
 
         manager.add_namespace('http://example2/test2')
         tags = []
-        for element in manager.select(root):
+        for element in manager.iterate_children(root):
             tags.append(element.tag)
         expected_tags = [
             '{http://example/test}cat',
@@ -142,7 +142,7 @@ class XmlNamespaceManagerTestCase(unittest.TestCase):
         manager = XmlNamespaceManager()
         manager.add_namespace('http://example2/test2')
         tags = []
-        for element in manager.select(root):
+        for element in manager.iterate_children(root):
             tags.append(element.tag)
         expected_tags = [
             '{http://example2/test2}dog',

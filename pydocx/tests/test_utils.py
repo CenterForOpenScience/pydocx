@@ -13,10 +13,10 @@ def elements_to_tags(elements):
 
 class UtilsTestCase(TestCase):
     def test_el_iter(self):
-        xml = b'<?xml version="1.0" ?><one><two><three/></two></one>'
+        xml = b'<?xml version="1.0" ?><one><two><three/><three/></two></one>'
         root = cElementTree.fromstring(xml)
 
-        expected = ['one', 'two', 'three']
+        expected = ['one', 'two', 'three', 'three']
         result = el_iter(root)
 
         self.assertEqual(list(elements_to_tags(result)), expected)

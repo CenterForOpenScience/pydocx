@@ -112,7 +112,6 @@ class MainDocumentPart(OpenXmlPart):
     def image_parts(self):
         return self.get_parts_of_type(
             relationship_type=ImagePart.relationship_type,
-
         )
 
 

@@ -3,7 +3,12 @@ from __future__ import absolute_import
 from unittest import TestCase
 from xml.etree import cElementTree
 
-from pydocx.utils import el_iter, find_all, find_first
+from pydocx.utils import (
+    el_iter,
+    find_all,
+    find_first,
+    remove_namespaces,
+)
 
 
 def elements_to_tags(elements):
@@ -14,6 +19,10 @@ def elements_to_tags(elements):
 def make_xml(s):
     xml = b'<?xml version="1.0"?>' + s
     return cElementTree.fromstring(xml)
+
+
+def remove_whitespace(s):
+    return ''.join(s.split())
 
 
 class UtilsTestCase(TestCase):
@@ -52,3 +61,17 @@ class UtilsTestCase(TestCase):
 
         result = find_all(root, 'two')
         self.assertEqual(list(elements_to_tags(result)), ['two'])
+
+    def test_remove_namespaces(self):
+        xml = b'''<?xml version="1.0"?>
+            <w:one xmlns:w="foo">
+                <w:two>
+                    <w:three/>
+                    <w:three/>
+                </w:two>
+            </w:one>
+        '''
+        expected = '<one><two><three/><three/></two></one>'
+        result = remove_namespaces(xml)
+        result = remove_whitespace(result.decode('utf-8'))
+        self.assertEqual(result, expected)

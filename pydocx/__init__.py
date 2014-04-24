@@ -4,6 +4,8 @@ import sys
 
 from pydocx.parsers import Docx2Html, Docx2Markdown
 
+__version__ = '0.3.18'
+
 
 def docx2html(path):
     return Docx2Html(path).parsed
@@ -11,8 +13,6 @@ def docx2html(path):
 
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
-
-__version__ = '0.3.18'
 
 
 def main():

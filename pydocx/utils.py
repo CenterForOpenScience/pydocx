@@ -117,8 +117,11 @@ def _filter_children(element, tags):
     ]
 
 
-def remove_namespaces(document):
+def remove_namespaces(xml_bytes):
     """
+    Given a stream of xml bytes, strip all namespaces from tag and attribute
+    names.
+
     >>> exception_raised = False
     >>> try:
     ...     remove_namespaces(b'junk')
@@ -126,20 +129,8 @@ def remove_namespaces(document):
     ...     exception_raised = True
     >>> assert exception_raised
     """
-    encoding_regex = re.compile(
-        br'<\?xml.*encoding="(.+?)"',
-        re.DOTALL | re.MULTILINE,
-    )
-    encoding = 'us-ascii'
-    if not isinstance(document, bytes):
-        document = bytes(document.encode('utf-8'))
-    m = encoding_regex.match(document)
-    if m:
-        encoding = m.groups(0)[0]
-        if isinstance(encoding, bytes):
-            encoding = encoding.decode()
     try:
-        root = cElementTree.fromstring(document)
+        root = cElementTree.fromstring(xml_bytes)
     except SyntaxError:
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
@@ -148,7 +139,7 @@ def remove_namespaces(document):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root, encoding=str(encoding))
+    return cElementTree.tostring(root, encoding='utf-8')
 
 
 def get_list_style(numbering_root, num_id, ilvl):

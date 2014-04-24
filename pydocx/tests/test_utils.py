@@ -22,7 +22,9 @@ class UtilsTestCase(TestCase):
         self.assertEqual(list(elements_to_tags(result)), expected)
 
     def test_find_first(self):
-        xml = b'<?xml version="1.0" ?><one><two><three/></two></one>'
+        xml = b'''<?xml version="1.0" ?>
+            <one><two><three v="1"/><three v="2"/></two></one>
+        '''
         root = cElementTree.fromstring(xml)
 
         # Can't find the root element
@@ -31,6 +33,7 @@ class UtilsTestCase(TestCase):
 
         result = find_first(root, 'three')
         self.assertEqual(result.tag, 'three')
+        self.assertEqual(result.get('v'), '1')
 
         result = find_first(root, 'two')
         self.assertEqual(result.tag, 'two')

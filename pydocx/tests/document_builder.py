@@ -46,7 +46,7 @@ class DocxBuilder(object):
         template = env.get_template(templates['main'])
         return template_render(
             template,
-            body=body,
+            body=body.decode('utf-8'),
         )
 
     @classmethod
@@ -68,26 +68,22 @@ class DocxBuilder(object):
             run_tags = [self.r_tag([])]
         template = env.get_template(templates['p'])
 
-        kwargs = {
-            'run_tags': run_tags,
-            'style': style,
-            'jc': jc,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            run_tags=run_tags,
+            style=style,
+            jc=jc,
+        )
 
     @classmethod
     def linebreak(self):
         template = env.get_template(templates['linebreak'])
-        kwargs = {}
-        return template.render(**kwargs)
+        return template_render(template)
 
     @classmethod
     def t_tag(self, text):
         template = env.get_template(templates['t'])
-        kwargs = {
-            'text': text,
-        }
-        return template.render(**kwargs)
+        return template_render(template, text=text)
 
     @classmethod
     def r_tag(
@@ -98,11 +94,11 @@ class DocxBuilder(object):
         template = env.get_template(templates['r'])
         if rpr is None:
             rpr = DocxBuilder.rpr_tag()
-        kwargs = {
-            'elements': elements,
-            'rpr': rpr,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            elements=elements,
+            rpr=rpr,
+        )
 
     @classmethod
     def rpr_tag(self, inline_styles=None, *args, **kwargs):
@@ -124,51 +120,51 @@ class DocxBuilder(object):
             if key not in valid_styles:
                 raise AssertionError('%s is not a valid style' % key)
         template = env.get_template(templates['rpr'])
-        kwargs = {
-            'tags': inline_styles,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            tags=inline_styles,
+        )
 
     @classmethod
     def hyperlink_tag(self, r_id, run_tags):
         template = env.get_template(templates['hyperlink'])
-        kwargs = {
-            'r_id': r_id,
-            'run_tags': run_tags,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            r_id=r_id,
+            run_tags=run_tags,
+        )
 
     @classmethod
     def insert_tag(self, run_tags):
         template = env.get_template(templates['insert'])
-        kwargs = {
-            'run_tags': run_tags,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            run_tags=run_tags,
+        )
 
     @classmethod
     def delete_tag(self, deleted_texts):
         template = env.get_template(templates['delete'])
-        kwargs = {
-            'deleted_texts': deleted_texts,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            deleted_texts=deleted_texts,
+        )
 
     @classmethod
     def smart_tag(self, run_tags):
         template = env.get_template(templates['smartTag'])
-        kwargs = {
-            'run_tags': run_tags,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            run_tags=run_tags,
+        )
 
     @classmethod
     def sdt_tag(self, p_tag):
         template = env.get_template(templates['sdt'])
-        kwargs = {
-            'p_tag': p_tag,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            p_tag=p_tag,
+        )
 
     @classmethod
     def li(self, text, ilvl, numId, bold=False):
@@ -189,33 +185,39 @@ class DocxBuilder(object):
             raise AssertionError('text must be a string or a list')
         template = env.get_template(templates['p'])
 
-        kwargs = {
-            'run_tags': run_tags,
-            'is_list': True,
-            'ilvl': ilvl,
-            'numId': numId,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            run_tags=run_tags,
+            is_list=True,
+            ilvl=ilvl,
+            numId=numId,
+        )
 
     @classmethod
     def table_cell(self, paragraph, merge=False, merge_continue=False):
-        kwargs = {
-            'paragraph': paragraph,
-            'merge': merge,
-            'merge_continue': merge_continue
-        }
         template = env.get_template(templates['tc'])
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            paragraph=paragraph,
+            merge=merge,
+            merge_continue=merge_continue,
+        )
 
     @classmethod
     def table_row(self, tcs):
         template = env.get_template(templates['tr'])
-        return template.render(table_cells=tcs)
+        return template_render(
+            template,
+            table_cells=tcs,
+        )
 
     @classmethod
     def table(self, trs):
         template = env.get_template(templates['table'])
-        return template.render(table_rows=trs)
+        return template_render(
+            template,
+            table_rows=trs,
+        )
 
     @classmethod
     def drawing(self, r_id, height=None, width=None):
@@ -224,58 +226,52 @@ class DocxBuilder(object):
             height = height * EMUS_PER_PIXEL
         if width is not None:
             width = width * EMUS_PER_PIXEL
-        kwargs = {
-            'r_id': r_id,
-            'height': height,
-            'width': width,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            r_id=r_id,
+            height=height,
+            width=width,
+        )
 
     @classmethod
     def pict(self, r_id=None, height=None, width=None):
         template = env.get_template(templates['pict'])
-        kwargs = {
-            'r_id': r_id,
-            'height': height,
-            'width': width,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            r_id=r_id,
+            height=height,
+            width=width,
+        )
 
     @classmethod
     def sectPr_tag(self, p_tag):
         template = env.get_template(templates['sectPr'])
-
-        kwargs = {
-            'p_tag': p_tag,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            p_tag=p_tag,
+        )
 
     @classmethod
     def styles_xml(self, style_tags):
         template = env.get_template(templates['styles'])
-
-        kwargs = {
-            'style_tags': style_tags,
-        }
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            style_tags=style_tags,
+        )
 
     @classmethod
     def style(self, style_id, value):
         template = env.get_template(templates['style'])
-
-        kwargs = {
-            'style_id': style_id,
-            'value': value,
-        }
-
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            style_id=style_id,
+            value=value,
+        )
 
     @classmethod
     def numbering(self, numbering_dict):
         template = env.get_template(templates['numbering'])
-
-        kwargs = {
-            'numbering_dict': numbering_dict,
-        }
-
-        return template.render(**kwargs)
+        return template_render(
+            template,
+            numbering_dict=numbering_dict,
+        )

@@ -70,10 +70,8 @@ def el_iter(el):
         for child in el.iter():
             yield child
     except AttributeError:
-        # the behavior of el.iter is to return the element itself in addition
-        # to all of those under it
-        yield el
-        for child in el.findall('.//*'):
+        # iter isn't available in < python 2.7
+        for child in el.getiterator():
             yield child
 
 

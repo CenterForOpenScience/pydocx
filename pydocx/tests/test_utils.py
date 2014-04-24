@@ -73,5 +73,6 @@ class UtilsTestCase(TestCase):
         '''
         expected = '<one><two><three/><three/></two></one>'
         result = remove_namespaces(xml)
+        assert isinstance(result, bytes)
         result = remove_whitespace(result.decode('utf-8'))
         self.assertEqual(result, expected)

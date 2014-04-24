@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from unittest import TestCase
 from xml.etree import cElementTree
 
+from pydocx.exceptions import MalformedDocxException
 from pydocx.utils import (
     el_iter,
     find_all,
@@ -76,3 +77,9 @@ class UtilsTestCase(TestCase):
         assert isinstance(result, bytes)
         result = remove_whitespace(result.decode('utf-8'))
         self.assertEqual(result, expected)
+
+    def test_remove_namespaces_junk_xml_causes_malformed_exception(self):
+        self.assertRaises(
+            MalformedDocxException,
+            lambda: remove_namespaces('foo')
+        )

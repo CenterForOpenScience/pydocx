@@ -119,13 +119,6 @@ def remove_namespaces(xml_bytes):
     """
     Given a stream of xml bytes, strip all namespaces from tag and attribute
     names.
-
-    >>> exception_raised = False
-    >>> try:
-    ...     remove_namespaces(b'junk')
-    ... except MalformedDocxException:
-    ...     exception_raised = True
-    >>> assert exception_raised
     """
     try:
         root = cElementTree.fromstring(xml_bytes)

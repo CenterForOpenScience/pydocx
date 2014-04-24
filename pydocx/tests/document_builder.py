@@ -1,6 +1,5 @@
 from jinja2 import Environment, PackageLoader
 from pydocx.DocxParser import EMUS_PER_PIXEL
-from pydocx.utils import string
 
 templates = {
     'delete': 'text_delete.xml',
@@ -33,12 +32,22 @@ env = Environment(
 )
 
 
+def template_render(template, **render_args):
+    '''
+    Return a utf-8 bytestream of the rendered template
+    '''
+    return template.render(**render_args).encode('utf-8')
+
+
 class DocxBuilder(object):
 
     @classmethod
     def xml(self, body):
         template = env.get_template(templates['main'])
-        return string(template.render(body=body)).encode('utf-8')
+        return template_render(
+            template,
+            body=body,
+        )
 
     @classmethod
     def p_tag(

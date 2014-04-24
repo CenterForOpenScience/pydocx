@@ -14,7 +14,6 @@ from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
     parse_xml_from_string,
-    string,
 )
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
@@ -87,7 +86,7 @@ def collapse_html(html):
     html = re.sub(
         r'(>?)\s*\n\s*(<?)',
         smart_space,
-        string(html),
+        html,
     )
     return html.strip()
 

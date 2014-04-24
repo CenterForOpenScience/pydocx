@@ -168,11 +168,7 @@ class DocxBuilder(object):
 
     @classmethod
     def li(self, text, ilvl, numId, bold=False):
-        if isinstance(text, str):
-            # Use create a single r tag based on the text and the bold
-            run_tag = DocxBuilder.r_tag([DocxBuilder.t_tag(text)], bold)
-            run_tags = [run_tag]
-        elif isinstance(text, list):
+        if isinstance(text, list):
             run_tags = []
             for run_text, run_bold in text:
                 run_tags.append(
@@ -182,7 +178,10 @@ class DocxBuilder(object):
                     ),
                 )
         else:
-            raise AssertionError('text must be a string or a list')
+            # Assume a string type
+            # Use create a single r tag based on the text and the bold
+            run_tag = DocxBuilder.r_tag([DocxBuilder.t_tag(text)], bold)
+            run_tags = [run_tag]
         template = env.get_template(templates['p'])
 
         return template_render(

@@ -1,9 +1,14 @@
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 
 from pydocx.parsers import Docx2Html, Docx2Markdown
+
+__version__ = '0.3.18'
 
 
 def docx2html(path):
@@ -12,8 +17,6 @@ def docx2html(path):
 
 def docx2markdown(path):
     return Docx2Markdown(path).parsed
-
-__version__ = '0.3.18'
 
 
 def main():

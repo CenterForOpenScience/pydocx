@@ -1,3 +1,9 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
 import base64
 from os import path
 from tempfile import NamedTemporaryFile
@@ -176,7 +182,7 @@ def test_unicode():
     )
     actual_html = convert(file_path)
     assert actual_html is not None
-    assert u'\u0391\u03b1' in actual_html
+    assert '\u0391\u03b1' in actual_html
 
 
 def test_special_chars():

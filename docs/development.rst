@@ -115,6 +115,32 @@ The PyDocX project welcomes help in any of the following ways:
 * Participating on open issues and pull requests,
   reviewing changes
 
+Coding Standards
+################
+
+* All python source files **must** be
+  `PEP8 <http://legacy.python.org/dev/peps/pep-0008>`_
+  compliant.
+* All python source files **must** include the following import declaration
+  at the top of the file:
+
+  .. code-block:: python
+
+    from __future__ import (
+        absolute_import,
+        print_function,
+        unicode_literals,
+   )
+
+Unicode Data
+============
+
+* All stream data is assumed to be a UTF-8 bytestream unless specified
+  otherwise.
+  What this means is that when you are writing test cases for a particular function,
+  any input data you define which would have otherwise have come from a file source
+  must be encoded as UTF-8.
+
 Release process
 ###############
 

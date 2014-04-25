@@ -1,4 +1,8 @@
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
 
 from pydocx.openxml import (
     OpenXmlPart,
@@ -112,7 +116,6 @@ class MainDocumentPart(OpenXmlPart):
     def image_parts(self):
         return self.get_parts_of_type(
             relationship_type=ImagePart.relationship_type,
-
         )
 
 

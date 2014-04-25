@@ -36,7 +36,6 @@ def find_version(*file_paths):
 def main():
     setup(
         name="PyDocX",
-        # Edit here and pydocx.__init__
         version=find_version('pydocx', '__init__.py'),
         description="docx (OOXML) to html converter",
         author="Jason Ward, Sam Portnow",

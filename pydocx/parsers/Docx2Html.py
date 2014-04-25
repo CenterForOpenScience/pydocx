@@ -1,4 +1,9 @@
-from __future__ import division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import base64
 import xml.sax.saxutils
@@ -7,7 +12,6 @@ from pydocx.DocxParser import DocxParser, TWIPS_PER_POINT
 from pydocx.utils import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
-    string,
 )
 
 POINTS_PER_EM = 12
@@ -63,7 +67,7 @@ class Docx2Html(DocxParser):
             'head': self.head(),
             'content': content,
         }
-        return string(content)
+        return content
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:

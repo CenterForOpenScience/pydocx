@@ -1,4 +1,8 @@
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
 
 import re
 import zipfile
@@ -70,10 +74,8 @@ def el_iter(el):
         for child in el.iter():
             yield child
     except AttributeError:
-        # the behavior of el.iter is to return the element itself in addition
-        # to all of those under it
-        yield el
-        for child in el.findall('.//*'):
+        # iter isn't available in < python 2.7
+        for child in el.getiterator():
             yield child
 
 
@@ -81,14 +83,24 @@ def find_first(el, tag):
     """
     Find the first occurrence of a tag beneath the current element.
     """
-    return el.find('.//' + tag)
+    search_path = './/' + tag
+    # Due to a bug in python 2.6's ElementPath implementation, we have to
+    # strictly pass in a string
+    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
+    search_path = str(search_path)
+    return el.find(search_path)
 
 
 def find_all(el, tag):
     """
     Find all occurrences of a tag
     """
-    return el.findall('.//' + tag)
+    search_path = './/' + tag
+    # Due to a bug in python 2.6's ElementPath implementation, we have to
+    # strictly pass in a string
+    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
+    search_path = str(search_path)
+    return el.findall(search_path)
 
 
 def find_ancestor_with_tag(pre_processor, el, tag):
@@ -117,29 +129,13 @@ def _filter_children(element, tags):
     ]
 
 
-def remove_namespaces(document):
+def remove_namespaces(xml_bytes):
     """
-    >>> exception_raised = False
-    >>> try:
-    ...     remove_namespaces(b'junk')
-    ... except MalformedDocxException:
-    ...     exception_raised = True
-    >>> assert exception_raised
+    Given a stream of xml bytes, strip all namespaces from tag and attribute
+    names.
     """
-    encoding_regex = re.compile(
-        br'<\?xml.*encoding="(.+?)"',
-        re.DOTALL | re.MULTILINE,
-    )
-    encoding = 'us-ascii'
-    if not isinstance(document, bytes):
-        document = bytes(document.encode('utf-8'))
-    m = encoding_regex.match(document)
-    if m:
-        encoding = m.groups(0)[0]
-        if isinstance(encoding, bytes):
-            encoding = encoding.decode()
     try:
-        root = cElementTree.fromstring(document)
+        root = cElementTree.fromstring(xml_bytes)
     except SyntaxError:
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
@@ -148,7 +144,10 @@ def remove_namespaces(document):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
-    return cElementTree.tostring(root, encoding=str(encoding))
+    # Regardless of whatever the original encoding was
+    # (fromstring deals with it for us), always deal in terms of utf-8
+    # internally.
+    return cElementTree.tostring(root, encoding='utf-8')
 
 
 def get_list_style(numbering_root, num_id, ilvl):
@@ -537,23 +536,7 @@ def xml_tag_split(tag):
     '''
     Given a xml node tag, return the namespace and the tag name. The namespace
     is optional and will be None if not present.
-
-    >>> xml_tag_split('{foo}bar')
-    ('foo', 'bar')
-    >>> xml_tag_split('bar')
-    (None, 'bar')
     '''
     m = re.match('({([^}]+)})?(.+)', tag)
     groups = m.groups()
     return groups[1], groups[2]
-
-
-def string(*args, **kwargs):
-    """
-    The unicode function does not exist in python3, so if we want to makes
-    things unicode in python2 we need a function like this to make that happen.
-    """
-    try:
-        return unicode(*args, **kwargs)
-    except NameError:
-        return str(*args, **kwargs)

@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
 import os
 import sys
 import time
@@ -85,7 +91,7 @@ class StyleIsOnTestCase(_TranslationTestCase):
             ),
         ]
 
-        body = ''
+        body = b''
         for tag in tags:
             body += tag
         xml = DXB.xml(body)
@@ -228,7 +234,7 @@ class ImageLocal(_TranslationTestCase):
             drawing,
             pict,
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -271,7 +277,7 @@ class ImageTestCase(_TranslationTestCase):
             drawing,
             pict,
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -372,7 +378,7 @@ class ImageNoSizeTestCase(_TranslationTestCase):
         tags = [
             drawing,
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -524,7 +530,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
             ('AAA', 0, 1),
             ('BBB', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
         els = [
@@ -532,7 +538,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
             DXB.p_tag('CCC'),
             DXB.p_tag('DDD'),
         ]
-        td = ''
+        td = b''
         for el in els:
             td += el
         cell1 = DXB.table_cell(td)
@@ -565,7 +571,7 @@ class SimpleListTestCase(_TranslationTestCase):
             ('BBB', 0, 1),
             ('CCC', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
 
@@ -591,7 +597,7 @@ class SingleListItemTestCase(_TranslationTestCase):
         li_text = [
             ('AAA', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
 
@@ -633,7 +639,7 @@ class ListWithContinuationTestCase(_TranslationTestCase):
             table,
             DXB.li(text='HHH', ilvl=0, numId=1),
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -673,7 +679,7 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
             table2,
             DXB.li(text='DDD', ilvl=0, numId=1),
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -701,7 +707,7 @@ class MangledIlvlTestCase(_TranslationTestCase):
             ('BBB', 1, 1),
             ('CCC', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
 
@@ -731,7 +737,7 @@ class SeperateListsTestCase(_TranslationTestCase):
             ('BBB', 0, 1),
             ('CCC', 0, 2),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
 
@@ -760,7 +766,7 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
             DXB.li(text='BBB', ilvl=3, numId=1),
             DXB.li(text='CCC', ilvl=2, numId=1),
         ]
-        body = ''
+        body = b''
         for el in tags:
             body += el
 
@@ -1016,7 +1022,7 @@ class MissingIlvl(_TranslationTestCase):
             ('BBB', None, 1),  # Because why not.
             ('CCC', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
         body = lis
@@ -1053,13 +1059,13 @@ class SameNumIdInTable(_TranslationTestCase):
         li_text = [
             ('BBB', 0, 1),
         ]
-        lis = ''
+        lis = b''
         for text, ilvl, numId in li_text:
             lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
         cell1 = DXB.table_cell(lis)
         rows = DXB.table_row([cell1])
         table = DXB.table([rows])
-        lis = ''
+        lis = b''
         lis += DXB.li(text='AAA', ilvl=0, numId=1)
         lis += table
         lis += DXB.li(text='CCC', ilvl=0, numId=1)
@@ -1078,7 +1084,7 @@ class SDTTestCase(_TranslationTestCase):
     '''
 
     def get_xml(self):
-        body = ''
+        body = b''
         body += DXB.li(text='AAA', ilvl=0, numId=0)
         body += DXB.sdt_tag(p_tag=DXB.p_tag(text='BBB'))
         body += DXB.li(text='CCC', ilvl=0, numId=0)
@@ -1129,7 +1135,7 @@ class HeadingTestCase(_TranslationTestCase):
             DXB.p_tag(text='GGG', style='style5'),
             DXB.p_tag(text='HHH', style='garbage'),
         ]
-        body = ''
+        body = b''
         for tag in p_tags:
             body += tag
 
@@ -1177,7 +1183,7 @@ class StyledBoldingTestCase(_TranslationTestCase):
                 style='style0',
             ),
         ]
-        body = ''
+        body = b''
         for tag in p_tags:
             body += tag
 
@@ -1233,7 +1239,7 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
             ('FFF', 1, 3),
             ('GGG', 2, 3),
         ]
-        body = ''
+        body = b''
         for text, ilvl, numId in li_text:
             body += DXB.li(text=text, ilvl=ilvl, numId=numId)
 
@@ -1287,7 +1293,7 @@ class SuperAndSubScripts(_TranslationTestCase):
                 ],
             ),
         ]
-        body = ''
+        body = b''
         for p_tag in p_tags:
             body += p_tag
 
@@ -1392,7 +1398,7 @@ class AvaliableInlineTags(_TranslationTestCase):
                 ],
             ),
         ]
-        body = ''
+        body = b''
         for p_tag in p_tags:
             body += p_tag
 
@@ -1401,7 +1407,7 @@ class AvaliableInlineTags(_TranslationTestCase):
 
 
 class UnicodeTestCase(_TranslationTestCase):
-    expected_output = u"""
+    expected_output = """
         <p>\U0010001f</p>
     """
 
@@ -1416,7 +1422,7 @@ class UnicodeTestCase(_TranslationTestCase):
             ),
         ]
 
-        body = ''
+        body = b''
         for tag in tags:
             body += tag
         xml = DXB.xml(body)
@@ -1424,7 +1430,7 @@ class UnicodeTestCase(_TranslationTestCase):
 
 
 class NoTextInTTagTestCase(_TranslationTestCase):
-    expected_output = u"""
+    expected_output = """
     """
 
     def get_xml(self):
@@ -1438,7 +1444,7 @@ class NoTextInTTagTestCase(_TranslationTestCase):
             ),
         ]
 
-        body = ''
+        body = b''
         for tag in tags:
             body += tag
         return DXB.xml(body)

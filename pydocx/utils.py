@@ -144,6 +144,9 @@ def remove_namespaces(xml_bytes):
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()
         )
+    # Regardless of whatever the original encoding was
+    # (fromstring deals with it for us), always deal in terms of utf-8
+    # internally.
     return cElementTree.tostring(root, encoding='utf-8')
 
 

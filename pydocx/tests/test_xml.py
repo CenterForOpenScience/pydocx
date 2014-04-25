@@ -1407,7 +1407,7 @@ class AvaliableInlineTags(_TranslationTestCase):
 
 
 class UnicodeTestCase(_TranslationTestCase):
-    expected_output = u"""
+    expected_output = """
         <p>\U0010001f</p>
     """
 
@@ -1430,7 +1430,7 @@ class UnicodeTestCase(_TranslationTestCase):
 
 
 class NoTextInTTagTestCase(_TranslationTestCase):
-    expected_output = u"""
+    expected_output = """
     """
 
     def get_xml(self):

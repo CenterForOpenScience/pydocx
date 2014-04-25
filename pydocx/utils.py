@@ -83,14 +83,24 @@ def find_first(el, tag):
     """
     Find the first occurrence of a tag beneath the current element.
     """
-    return el.find('.//' + tag)
+    search_path = './/' + tag
+    # Due to a bug in python 2.6's ElementPath implementation, we have to
+    # strictly pass in a string
+    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
+    search_path = str(search_path)
+    return el.find(search_path)
 
 
 def find_all(el, tag):
     """
     Find all occurrences of a tag
     """
-    return el.findall('.//' + tag)
+    search_path = './/' + tag
+    # Due to a bug in python 2.6's ElementPath implementation, we have to
+    # strictly pass in a string
+    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
+    search_path = str(search_path)
+    return el.findall(search_path)
 
 
 def find_ancestor_with_tag(pre_processor, el, tag):

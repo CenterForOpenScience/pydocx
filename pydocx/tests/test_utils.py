@@ -9,6 +9,7 @@ from pydocx.utils import (
     find_all,
     find_first,
     remove_namespaces,
+    xml_tag_split,
 )
 
 
@@ -83,3 +84,7 @@ class UtilsTestCase(TestCase):
             MalformedDocxException,
             lambda: remove_namespaces('foo')
         )
+
+    def test_xml_tag_split(self):
+        self.assertEqual(xml_tag_split('{foo}bar'), ('foo', 'bar'))
+        self.assertEqual(xml_tag_split('bar'), (None, 'bar'))

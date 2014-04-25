@@ -132,6 +132,9 @@ Coding Standards
         unicode_literals,
    )
 
+Unicode Data
+============
+
 * All stream data is assumed to be a UTF-8 bytestream unless specified
   otherwise.
   What this means is that when you are writing test cases for a particular function,

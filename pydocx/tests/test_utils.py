@@ -1,4 +1,8 @@
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
 
 from unittest import TestCase
 from xml.etree import cElementTree

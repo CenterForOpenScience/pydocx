@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
+
 class XmlNamespaceManager(object):
     '''
     Provides an interface for iterating through elements within an XML tree

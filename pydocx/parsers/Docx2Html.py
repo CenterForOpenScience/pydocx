@@ -1,4 +1,9 @@
-from __future__ import division
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import base64
 import xml.sax.saxutils

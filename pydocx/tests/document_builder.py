@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
+
 from jinja2 import Environment, PackageLoader
 from pydocx.DocxParser import EMUS_PER_PIXEL
 

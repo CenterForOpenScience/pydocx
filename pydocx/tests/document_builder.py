@@ -31,6 +31,11 @@ env = Environment(
     ),
 )
 
+try:
+    string_types = (str, unicode)
+except NameError:
+    string_types = str
+
 
 def template_render(template, **render_args):
     '''
@@ -56,7 +61,7 @@ class DocxBuilder(object):
             style='style0',
             jc=None,
     ):
-        if isinstance(text, str):
+        if isinstance(text, string_types):
             # Use create a single r tag based on the text and the bold
             run_tag = DocxBuilder.r_tag(
                 [DocxBuilder.t_tag(text)],

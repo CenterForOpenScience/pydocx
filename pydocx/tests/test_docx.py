@@ -7,11 +7,12 @@ from __future__ import (
 import base64
 from os import path
 from tempfile import NamedTemporaryFile
+from unittest import TestCase
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises
 
-from pydocx.tests import assert_html_equal, BASE_HTML
+from pydocx.tests import assert_html_equal, html_is_equal, BASE_HTML
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import ZipFile
 from pydocx.exceptions import MalformedDocxException
@@ -19,6 +20,44 @@ from pydocx.exceptions import MalformedDocxException
 
 def convert(path, *args, **kwargs):
     return Docx2Html(path, *args, **kwargs).parsed
+
+
+class ConvertDocxToHtmlTestCase(TestCase):
+    cases_path = path.join(
+        path.abspath(path.dirname(__file__)),
+        '..',
+        'fixtures',
+    )
+
+    cases = (
+        'simple',
+    )
+
+    @classmethod
+    def create(cls, name):
+        def run_test(self):
+            docx_path = path.join(cls.cases_path, '%s.docx' % name)
+            expected_path = path.join(cls.cases_path, '%s.html' % name)
+
+            expected = ''
+            with open(expected_path) as f:
+                expected = f.read()
+
+            expected = BASE_HTML % expected
+            result = convert(docx_path)
+            assert html_is_equal(result, expected)
+        return run_test
+
+    @classmethod
+    def generate(cls):
+        for case in cls.cases:
+            test_method = cls.create(case)
+            name = str('test_%s' % case)
+            test_method.__name__ = name
+            setattr(cls, name, test_method)
+
+
+ConvertDocxToHtmlTestCase.generate()
 
 
 @raises(MalformedDocxException)
@@ -30,36 +69,6 @@ def test_missing_relationships():
         'missing_relationships.docx',
     )
     convert(file_path)
-
-
-def test_extract_html():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'simple.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p>
-          Simple text
-        </p>
-        <ol list-style-type="decimal">
-          <li>one</li>
-          <li>two</li>
-          <li>three</li>
-        </ol>
-        <table border="1">
-          <tr>
-            <td>Cell1</td>
-            <td>Cell2</td>
-          </tr>
-          <tr>
-            <td>Cell3</td>
-            <td>Cell4</td>
-          </tr>
-        </table>
-    ''')
 
 
 def test_nested_list():

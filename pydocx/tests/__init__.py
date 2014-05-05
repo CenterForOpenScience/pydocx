@@ -57,11 +57,7 @@ def html_is_equal(a, b):
 
 
 def assert_html_equal(actual_html, expected_html):
-    assert collapse_html(
-        actual_html,
-    ) == collapse_html(
-        expected_html
-    ), actual_html
+    assert html_is_equal(actual_html, expected_html), actual_html
 
 
 def collapse_html(html):

@@ -50,6 +50,12 @@ BASE_HTML = '''
 ''' % STYLE
 
 
+def html_is_equal(a, b):
+    a = collapse_html(a)
+    b = collapse_html(b)
+    return a == b
+
+
 def assert_html_equal(actual_html, expected_html):
     assert collapse_html(
         actual_html,

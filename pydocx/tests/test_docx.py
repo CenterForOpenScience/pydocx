@@ -53,6 +53,10 @@ class ConvertDocxToHtmlTestCase(TestCase):
         'styled_bolding',
         'no_break_hyphen',
         'shift_enter',
+        # In the expected HTML output for "list_to_header", the list element
+        # GGG is expected to be "upperRoman". This is showing that only top
+        # level upperRomans are converted.
+        'list_to_header',
     )
 
     @classmethod
@@ -66,7 +70,10 @@ class ConvertDocxToHtmlTestCase(TestCase):
                 expected = f.read()
 
             expected = BASE_HTML % expected
-            result = self.convert_docx_to_html(docx_path)
+            result = self.convert_docx_to_html(
+                docx_path,
+                convert_root_level_upper_roman=True,
+            )
             self.assertHtmlEqual(result, expected)
         return run_test
 
@@ -92,42 +99,12 @@ class ConvertDocxToHtmlTestCase(TestCase):
         self.convert_docx_to_html(docx_path)
 
     def test_unicode(self):
-        file_path = os.path.join(self.cases_path, 'greek_alphabet.docx')
-        actual_html = convert(file_path)
+        docx_path = os.path.join(self.cases_path, 'greek_alphabet.docx')
+        actual_html = self.convert_docx_to_html(docx_path)
         assert actual_html is not None
         assert '\u0391\u03b1' in actual_html
 
 ConvertDocxToHtmlTestCase.generate()
-
-
-def test_list_to_header():
-    file_path = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'list_to_header.docx',
-    )
-    actual_html = convert(file_path, convert_root_level_upper_roman=True)
-    # It should be noted that list item `GGG` is upper roman in the word
-    # document to show that only top level upper romans get converted.
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <h2>AAA</h2>
-        <ol list-style-type="decimal">
-            <li>BBB</li>
-        </ol>
-        <h2>CCC</h2>
-        <ol list-style-type="decimal">
-            <li>DDD</li>
-        </ol>
-        <h2>EEE</h2>
-        <ol list-style-type="decimal">
-            <li>FFF
-                <ol list-style-type="upperRoman">
-                    <li>GGG</li>
-                </ol>
-            </li>
-        </ol>
-    ''')
 
 
 def get_image_data(docx_file_path, image_name):

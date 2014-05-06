@@ -67,8 +67,8 @@ class ConvertDocxToHtmlTestCase(TestCase):
     @classmethod
     def create(cls, name):
         def run_test(self):
-            docx_path = os.path.join(cls.cases_path, '%s.docx' % name)
-            expected_path = os.path.join(cls.cases_path, '%s.html' % name)
+            docx_path = self.get_path_to_fixture('%s.docx' % name)
+            expected_path = self.get_path_to_fixture('%s.html' % name)
 
             expected = ''
             with open(expected_path) as f:
@@ -99,13 +99,16 @@ class ConvertDocxToHtmlTestCase(TestCase):
             message = 'The expected HTML did not match the actual HTML:'
             raise AssertionError(message + '\n' + actual)
 
+    def get_path_to_fixture(self, fixture):
+        return os.path.join(self.cases_path, fixture)
+
     @raises(MalformedDocxException)
     def test_raises_malformed_when_relationships_are_missing(self):
-        docx_path = os.path.join(self.cases_path, 'missing_relationships.docx')
+        docx_path = self.get_path_to_fixture('missing_relationships.docx')
         self.convert_docx_to_html(docx_path)
 
     def test_unicode(self):
-        docx_path = os.path.join(self.cases_path, 'greek_alphabet.docx')
+        docx_path = self.get_path_to_fixture('greek_alphabet.docx')
         actual_html = self.convert_docx_to_html(docx_path)
         assert actual_html is not None
         assert '\u0391\u03b1' in actual_html

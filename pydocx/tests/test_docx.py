@@ -86,31 +86,48 @@ class ConvertDocxToHtmlTestCase(TestCase):
         b = collapse_html(b)
         self.assertEqual(a, b)
 
+    @raises(MalformedDocxException)
+    def test_raises_malformed_when_relationships_are_missing(self):
+        docx_path = path.join(self.cases_path, 'missing_relationships.docx')
+        self.convert_docx_to_html(docx_path)
+
+    def test_unicode(self):
+        file_path = path.join(self.cases_path, 'greek_alphabet.docx')
+        actual_html = convert(file_path)
+        assert actual_html is not None
+        assert '\u0391\u03b1' in actual_html
 
 ConvertDocxToHtmlTestCase.generate()
 
 
-@raises(MalformedDocxException)
-def test_missing_relationships():
+def test_list_to_header():
     file_path = path.join(
         path.abspath(path.dirname(__file__)),
         '..',
         'fixtures',
-        'missing_relationships.docx',
+        'list_to_header.docx',
     )
-    convert(file_path)
-
-
-def test_unicode():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'greek_alphabet.docx',
-    )
-    actual_html = convert(file_path)
-    assert actual_html is not None
-    assert '\u0391\u03b1' in actual_html
+    actual_html = convert(file_path, convert_root_level_upper_roman=True)
+    # It should be noted that list item `GGG` is upper roman in the word
+    # document to show that only top level upper romans get converted.
+    assert_html_equal(actual_html, BASE_HTML % '''
+        <h2>AAA</h2>
+        <ol list-style-type="decimal">
+            <li>BBB</li>
+        </ol>
+        <h2>CCC</h2>
+        <ol list-style-type="decimal">
+            <li>DDD</li>
+        </ol>
+        <h2>EEE</h2>
+        <ol list-style-type="decimal">
+            <li>FFF
+                <ol list-style-type="upperRoman">
+                    <li>GGG</li>
+                </ol>
+            </li>
+        </ol>
+    ''')
 
 
 def get_image_data(docx_file_path, image_name):
@@ -249,36 +266,6 @@ def test_fake_headings_by_length():
         <p>
         <strong>This is not a heading because it is too many words.</strong>
         </p>
-    ''')
-
-
-def test_list_to_header():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'list_to_header.docx',
-    )
-    actual_html = convert(file_path, convert_root_level_upper_roman=True)
-    # It should be noted that list item `GGG` is upper roman in the word
-    # document to show that only top level upper romans get converted.
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <h2>AAA</h2>
-        <ol list-style-type="decimal">
-            <li>BBB</li>
-        </ol>
-        <h2>CCC</h2>
-        <ol list-style-type="decimal">
-            <li>DDD</li>
-        </ol>
-        <h2>EEE</h2>
-        <ol list-style-type="decimal">
-            <li>FFF
-                <ol list-style-type="upperRoman">
-                    <li>GGG</li>
-                </ol>
-            </li>
-        </ol>
     ''')
 
 

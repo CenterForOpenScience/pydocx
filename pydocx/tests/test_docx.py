@@ -5,13 +5,19 @@ from __future__ import (
 )
 
 import base64
-from os import path
+import os
 from tempfile import NamedTemporaryFile
+from unittest import TestCase
 
 from nose.plugins.skip import SkipTest
 from nose.tools import raises
 
-from pydocx.tests import assert_html_equal, BASE_HTML
+from pydocx.tests import (
+    assert_html_equal,
+    html_is_equal,
+    prettify,
+    BASE_HTML,
+)
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import ZipFile
 from pydocx.exceptions import MalformedDocxException
@@ -21,417 +27,93 @@ def convert(path, *args, **kwargs):
     return Docx2Html(path, *args, **kwargs).parsed
 
 
-@raises(MalformedDocxException)
-def test_missing_relationships():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+class ConvertDocxToHtmlTestCase(TestCase):
+    cases_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
-        'missing_relationships.docx',
-    )
-    convert(file_path)
-
-
-def test_extract_html():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'simple.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p>
-          Simple text
-        </p>
-        <ol list-style-type="decimal">
-          <li>one</li>
-          <li>two</li>
-          <li>three</li>
-        </ol>
-        <table border="1">
-          <tr>
-            <td>Cell1</td>
-            <td>Cell2</td>
-          </tr>
-          <tr>
-            <td>Cell3</td>
-            <td>Cell4</td>
-          </tr>
-        </table>
-    ''')
-
-
-def test_nested_list():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'nested_lists.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <ol list-style-type="decimal">
-            <li>one</li>
-            <li>two</li>
-            <li>three
-                <ol list-style-type="decimal">
-                    <li>AAA</li>
-                    <li>BBB</li>
-                    <li>CCC
-                        <ol list-style-type="decimal">
-                            <li>alpha</li>
-                        </ol>
-                    </li>
-                </ol>
-            </li>
-            <li>four</li>
-        </ol>
-        <ol list-style-type="decimal">
-            <li>xxx
-                <ol list-style-type="decimal">
-                    <li>yyy</li>
-                </ol>
-            </li>
-        </ol>
-        <ul>
-            <li>www
-                <ul>
-                    <li>zzz</li>
-                </ul>
-            </li>
-        </ul>
-    ''')
-
-
-def test_simple_list():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'simple_lists.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <ol list-style-type="decimal">
-            <li>One</li>
-        </ol>
-        <ul>
-            <li>two</li>
-        </ul>
-    ''')
-
-
-def test_inline_tags():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'inline_tags.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % (
-        '<p>This sentence has some <strong>bold</strong>, '
-        'some <em>italics</em> and some '
-        '<span class="pydocx-underline">underline</span>, '
-        'as well as a <a href="http://www.google.com/">hyperlink</a>.</p>'
-    ))
-
-
-def test_all_configured_styles():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'all_configured_styles.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p><strong>aaa</strong></p>
-        <p><span class="pydocx-underline">bbb</span></p>
-        <p><em>ccc</em></p>
-        <p><span class="pydocx-caps">ddd</span></p>
-        <p><span class="pydocx-small-caps">eee</span></p>
-        <p><span class="pydocx-strike">fff</span></p>
-        <p><span class="pydocx-strike">ggg</span></p>
-        <p><span class="pydocx-hidden">hhh</span></p>
-        <p><span class="pydocx-hidden">iii</span></p>
-    ''')
-
-
-def test_super_and_subscript():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'super_and_subscript.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p>AAA<sup>BBB</sup></p>
-        <p><sub>CCC</sub>DDD</p>
-    ''')
-
-
-def test_unicode():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'greek_alphabet.docx',
-    )
-    actual_html = convert(file_path)
-    assert actual_html is not None
-    assert '\u0391\u03b1' in actual_html
-
-
-def test_special_chars():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'special_chars.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>&amp; &lt; &gt; <a href="https://www.google.com/?test=1&amp;more=2">link</a></p>''')  # noqa
-
-
-def test_include_tabs():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'include_tabs.docx',
-    )
-    actual_html = convert(file_path)
-    expected_html = BASE_HTML % (
-        '<p>AAA<span class="pydocx-tab"> </span>BBB</p>'
-    )
-    assert_html_equal(actual_html, expected_html)
-
-
-def test_table_col_row_span():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'table_col_row_span.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-      <table border="1">
-        <tr>
-          <td colspan="2">AAA</td>
-        </tr>
-        <tr>
-          <td rowspan="2">BBB</td>
-          <td>CCC</td>
-        </tr>
-        <tr>
-          <td>DDD</td>
-        </tr>
-        <tr>
-          <td>
-              <span class="pydocx-right">EEE</span>
-          </td>
-          <td rowspan="2">FFF</td>
-        </tr>
-        <tr>
-          <td>
-           <span class="pydocx-right">GGG</span>
-          </td>
-        </tr>
-      </table>
-      <table border="1">
-        <tr>
-          <td>1</td>
-          <td>2</td>
-          <td>3</td>
-          <td>4</td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td colspan="2" rowspan="2">6</td>
-          <td>7</td>
-        </tr>
-        <tr>
-          <td>8</td>
-          <td>9</td>
-        </tr>
-        <tr>
-          <td>10</td>
-          <td>11</td>
-          <td>12</td>
-          <td>13</td>
-        </tr>
-      </table>
-    ''')
-
-
-def test_nested_table_rowspan():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'nested_table_rowspan.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <table border="1">
-            <tr>
-                <td colspan="2">AAA</td>
-            </tr>
-            <tr>
-                <td>BBB</td>
-                <td>
-                    <table border="1">
-                        <tr>
-                            <td rowspan="2">CCC</td>
-                            <td>DDD</td>
-                        </tr>
-                        <tr>
-                            <td>EEE</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    ''')
-
-
-def test_nested_tables():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'nested_tables.docx',
-    )
-    actual_html = convert(file_path)
-    # Find out why br tag is there.
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <table border="1">
-            <tr>
-                <td>AAA</td>
-                <td>BBB</td>
-            </tr>
-            <tr>
-                <td>CCC</td>
-                <td>
-                    <table border="1">
-                        <tr>
-                            <td>DDD</td>
-                            <td>EEE</td>
-                        </tr>
-                        <tr>
-                            <td>FFF</td>
-                            <td>GGG</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    ''')
-
-
-def test_list_in_table():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'list_in_table.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <table border="1">
-          <tr>
-            <td>
-              <ol list-style-type="decimal">
-                <li>AAA</li>
-                <li>BBB</li>
-                <li>CCC</li>
-              </ol>
-            </td>
-          </tr>
-        </table>
-    ''')
-
-
-def test_tables_in_lists():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'tables_in_lists.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <ol list-style-type="decimal">
-            <li>AAA</li>
-            <li>BBB
-                <table border="1">
-                    <tr>
-                        <td>CCC</td>
-                        <td>DDD</td>
-                    </tr>
-                    <tr>
-                        <td>EEE</td>
-                        <td>FFF</td>
-                    </tr>
-                </table>
-            </li>
-            <li>GGG</li>
-        </ol>
-    ''')
-
-
-def test_track_changes_on():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'track_changes_on.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>This was some content.</p>
-    ''')
-
-
-def test_headers():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'headers.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <h1>This is an H1</h1>
-        <h2>This is an H2</h2>
-        <h3>This is an H3</h3>
-        <h4>This is an H4</h4>
-        <h5>This is an H5</h5>
-        <h6>This is an H6</h6>
-        <h6>This is an H7</h6>
-        <h6>This is an H8</h6>
-        <h6>This is an H9</h6>
-        <h6>This is an H10</h6>
-    ''')
-
-
-def test_split_headers():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'split_header.docx',
     )
 
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <h1>AAA</h1><p>BBB</p><h1>CCC</h1>
-    ''')
+    cases = (
+        'simple',
+        'nested_lists',
+        'simple_lists',
+        'inline_tags',
+        'all_configured_styles',
+        'special_chars',
+        'table_col_row_span',
+        'nested_table_rowspan',
+        'nested_tables',
+        'list_in_table',
+        'tables_in_lists',
+        'track_changes_on',
+        'headers',
+        'split_header',
+        'lists_with_styles',
+        'has_title',
+        'simple_table',
+        'justification',
+        'missing_style',
+        'missing_numbering',
+        'styled_bolding',
+        'no_break_hyphen',
+        'shift_enter',
+        # In the expected HTML output for "list_to_header", the list element
+        # GGG is expected to be "upperRoman". This is showing that only top
+        # level upperRomans are converted.
+        'list_to_header',
+    )
+
+    @classmethod
+    def create(cls, name):
+        def run_test(self):
+            docx_path = self.get_path_to_fixture('%s.docx' % name)
+            expected_path = self.get_path_to_fixture('%s.html' % name)
+
+            expected = ''
+            with open(expected_path) as f:
+                expected = f.read()
+
+            expected = BASE_HTML % expected
+            result = self.convert_docx_to_html(
+                docx_path,
+                convert_root_level_upper_roman=True,
+            )
+            self.assertHtmlEqual(result, expected)
+        return run_test
+
+    @classmethod
+    def generate(cls):
+        for case in cls.cases:
+            test_method = cls.create(case)
+            name = str('test_%s' % case)
+            test_method.__name__ = name
+            setattr(cls, name, test_method)
+
+    def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
+        return Docx2Html(path_to_docx, *args, **kwargs).parsed
+
+    def assertHtmlEqual(self, actual, expected):
+        if not html_is_equal(actual, expected):
+            actual = prettify(actual)
+            message = 'The expected HTML did not match the actual HTML:'
+            raise AssertionError(message + '\n' + actual)
+
+    def get_path_to_fixture(self, fixture):
+        return os.path.join(self.cases_path, fixture)
+
+    @raises(MalformedDocxException)
+    def test_raises_malformed_when_relationships_are_missing(self):
+        docx_path = self.get_path_to_fixture('missing_relationships.docx')
+        self.convert_docx_to_html(docx_path)
+
+    def test_unicode(self):
+        docx_path = self.get_path_to_fixture('greek_alphabet.docx')
+        actual_html = self.convert_docx_to_html(docx_path)
+        assert actual_html is not None
+        assert '\u0391\u03b1' in actual_html
+
+ConvertDocxToHtmlTestCase.generate()
 
 
 def get_image_data(docx_file_path, image_name):
@@ -451,8 +133,8 @@ def get_image_data(docx_file_path, image_name):
 
 
 def test_has_image():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
@@ -471,8 +153,8 @@ def test_has_image():
 def test_local_dpi():
     # The image in this file does not have a set height or width, show that the
     # html will generate without it.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'localDpi.docx',
@@ -486,8 +168,8 @@ def test_local_dpi():
 
 def test_has_image_using_image_handler():
     raise SkipTest('This needs to be converted to an xml test')
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
@@ -505,8 +187,8 @@ def test_headers_with_full_line_styles():
     raise SkipTest('This test is not yet passing')
     # Show that if a natural header is completely bold/italics that
     # bold/italics will get stripped out.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'headers_with_full_line_styles.docx',
@@ -523,8 +205,8 @@ def test_convert_p_to_h():
     raise SkipTest('This test is not yet passing')
     # Show when it is correct to convert a p tag to an h tag based on
     # bold/italics
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'convert_p_to_h.docx',
@@ -557,8 +239,8 @@ def test_fake_headings_by_length():
     # Show that converting p tags to h tags has a length limit. If the p tag is
     # supposed to be converted to an h tag but has more than seven words in the
     # paragraph do not convert it.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'fake_headings_by_length.docx',
@@ -573,114 +255,10 @@ def test_fake_headings_by_length():
     ''')
 
 
-def test_shift_enter():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'shift_enter.docx',
-    )
-
-    # Test just the convert without clean_html to make sure the first
-    # break tag is present.
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p>AAA<br />BBB</p>
-        <p>CCC</p>
-        <ol list-style-type="decimal">
-            <li>DDD<br />EEE</li>
-            <li>FFF</li>
-        </ol>
-        <table border="1">
-            <tr>
-                <td>GGG<br />HHH</td>
-                <td>III<br />JJJ</td>
-            </tr>
-            <tr>
-                <td>KKK</td>
-                <td>LLL</td>
-            </tr>
-        </table>
-    ''')
-
-
-def test_lists_with_styles():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'lists_with_styles.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <ol list-style-type="decimal">
-            <li>AAA</li>
-            <li>BBB
-                <ol list-style-type="lowerRoman">
-                    <li>CCC</li>
-                    <li>DDD
-                        <ol list-style-type="upperLetter">
-                            <li>EEE
-                                <ol list-style-type="lowerLetter">
-                                    <li>FFF</li>
-                                </ol>
-                            </li>
-                        </ol>
-                    </li>
-                </ol>
-            </li>
-        </ol>
-    ''')
-
-
-def test_list_to_header():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'list_to_header.docx',
-    )
-    actual_html = convert(file_path, convert_root_level_upper_roman=True)
-    # It should be noted that list item `GGG` is upper roman in the word
-    # document to show that only top level upper romans get converted.
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <h2>AAA</h2>
-        <ol list-style-type="decimal">
-            <li>BBB</li>
-        </ol>
-        <h2>CCC</h2>
-        <ol list-style-type="decimal">
-            <li>DDD</li>
-        </ol>
-        <h2>EEE</h2>
-        <ol list-style-type="decimal">
-            <li>FFF
-                <ol list-style-type="upperRoman">
-                    <li>GGG</li>
-                </ol>
-            </li>
-        </ol>
-    ''')
-
-
-def test_has_title():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'has_title.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p>Title</p>
-        <p><span class="pydocx-left">Text</span></p>
-    ''')
-
-
 def test_upper_alpha_all_bold():
     raise SkipTest('This test is not yet passing')
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'upper_alpha_all_bold.docx',
@@ -690,112 +268,6 @@ def test_upper_alpha_all_bold():
         <h2>AAA</h2>
         <h2>BBB</h2>
         <h2>CCC</h2>
-    ''')
-
-
-def test_simple_table():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'simple_table.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <table border="1">
-        <tr>
-            <td rowspan="2">
-                Cell1<br />
-                Cell3
-            </td>
-            <td>Cell2<br />
-                And I am writing in the table
-            </td>
-        </tr>
-        <tr>
-            <td>Cell4</td>
-        </tr>
-    </table>
-    ''')
-
-
-def test_justification():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'justification.docx',
-    )
-    actual_html = convert(file_path)
-    expected_html = BASE_HTML % ('''
-    <p><span class="pydocx-center">Center Justified</span></p>
-    <p><span class="pydocx-right">Right justified</span></p>
-    <p><span class="pydocx-right" style="margin-right:6.00em">
-        Right justified and pushed in from right
-    </span></p>
-    <p><span class="pydocx-center"
-            style="margin-left:15.75em;margin-right:6.00em">
-        Center justified and pushed in from left and it is great and it is the
-        coolest thing of all time and I like it and I think it is cool
-    </span></p>
-    <p><span style="margin-left:15.75em;margin-right:6.00em">
-        Left justified and pushed in from left
-    </span></p>
-    ''')
-    assert_html_equal(actual_html, expected_html)
-
-
-def test_missing_style():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'missing_style.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>AAA</p>
-    ''')
-
-
-def test_missing_numbering():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'missing_numbering.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>AAA</p>
-    <p>BBB</p>
-    ''')
-
-
-def test_styled_bolding():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'styled_bolding.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p><strong>AAA</strong></p>
-    <p><strong>BBB</strong></p>
-    ''')
-
-
-def test_no_break_hyphen():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'no_break_hyphen.docx',
-    )
-    actual_html = convert(file_path)
-    assert_html_equal(actual_html, BASE_HTML % '''
-    <p>AAA-BBB</p>
     ''')
 
 

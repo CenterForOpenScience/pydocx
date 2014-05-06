@@ -7,6 +7,7 @@ from __future__ import (
 import posixpath
 import re
 from contextlib import contextmanager
+from xml.dom import minidom
 
 try:
     from io import BytesIO
@@ -50,12 +51,21 @@ BASE_HTML = '''
 ''' % STYLE
 
 
+def prettify(xml_string):
+    """Return a pretty-printed XML string for the Element.
+    """
+    parsed = minidom.parseString(xml_string)
+    return parsed.toprettyxml(indent='\t')
+
+
+def html_is_equal(a, b):
+    a = collapse_html(a)
+    b = collapse_html(b)
+    return a == b
+
+
 def assert_html_equal(actual_html, expected_html):
-    assert collapse_html(
-        actual_html,
-    ) == collapse_html(
-        expected_html
-    ), actual_html
+    assert html_is_equal(actual_html, expected_html), actual_html
 
 
 def collapse_html(html):

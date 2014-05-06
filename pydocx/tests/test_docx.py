@@ -5,7 +5,7 @@ from __future__ import (
 )
 
 import base64
-from os import path
+import os
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
@@ -23,8 +23,8 @@ def convert(path, *args, **kwargs):
 
 
 class ConvertDocxToHtmlTestCase(TestCase):
-    cases_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    cases_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
     )
@@ -58,8 +58,8 @@ class ConvertDocxToHtmlTestCase(TestCase):
     @classmethod
     def create(cls, name):
         def run_test(self):
-            docx_path = path.join(cls.cases_path, '%s.docx' % name)
-            expected_path = path.join(cls.cases_path, '%s.html' % name)
+            docx_path = os.path.join(cls.cases_path, '%s.docx' % name)
+            expected_path = os.path.join(cls.cases_path, '%s.html' % name)
 
             expected = ''
             with open(expected_path) as f:
@@ -88,11 +88,11 @@ class ConvertDocxToHtmlTestCase(TestCase):
 
     @raises(MalformedDocxException)
     def test_raises_malformed_when_relationships_are_missing(self):
-        docx_path = path.join(self.cases_path, 'missing_relationships.docx')
+        docx_path = os.path.join(self.cases_path, 'missing_relationships.docx')
         self.convert_docx_to_html(docx_path)
 
     def test_unicode(self):
-        file_path = path.join(self.cases_path, 'greek_alphabet.docx')
+        file_path = os.path.join(self.cases_path, 'greek_alphabet.docx')
         actual_html = convert(file_path)
         assert actual_html is not None
         assert '\u0391\u03b1' in actual_html
@@ -101,8 +101,8 @@ ConvertDocxToHtmlTestCase.generate()
 
 
 def test_list_to_header():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'list_to_header.docx',
@@ -147,8 +147,8 @@ def get_image_data(docx_file_path, image_name):
 
 
 def test_has_image():
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
@@ -167,8 +167,8 @@ def test_has_image():
 def test_local_dpi():
     # The image in this file does not have a set height or width, show that the
     # html will generate without it.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'localDpi.docx',
@@ -182,8 +182,8 @@ def test_local_dpi():
 
 def test_has_image_using_image_handler():
     raise SkipTest('This needs to be converted to an xml test')
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'has_image.docx',
@@ -201,8 +201,8 @@ def test_headers_with_full_line_styles():
     raise SkipTest('This test is not yet passing')
     # Show that if a natural header is completely bold/italics that
     # bold/italics will get stripped out.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'headers_with_full_line_styles.docx',
@@ -219,8 +219,8 @@ def test_convert_p_to_h():
     raise SkipTest('This test is not yet passing')
     # Show when it is correct to convert a p tag to an h tag based on
     # bold/italics
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'convert_p_to_h.docx',
@@ -253,8 +253,8 @@ def test_fake_headings_by_length():
     # Show that converting p tags to h tags has a length limit. If the p tag is
     # supposed to be converted to an h tag but has more than seven words in the
     # paragraph do not convert it.
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'fake_headings_by_length.docx',
@@ -271,8 +271,8 @@ def test_fake_headings_by_length():
 
 def test_upper_alpha_all_bold():
     raise SkipTest('This test is not yet passing')
-    file_path = path.join(
-        path.abspath(path.dirname(__file__)),
+    file_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
         '..',
         'fixtures',
         'upper_alpha_all_bold.docx',

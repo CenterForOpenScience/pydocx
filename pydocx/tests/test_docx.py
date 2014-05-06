@@ -12,7 +12,12 @@ from unittest import TestCase
 from nose.plugins.skip import SkipTest
 from nose.tools import raises
 
-from pydocx.tests import assert_html_equal, collapse_html, BASE_HTML
+from pydocx.tests import (
+    assert_html_equal,
+    html_is_equal,
+    prettify,
+    BASE_HTML,
+)
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import ZipFile
 from pydocx.exceptions import MalformedDocxException
@@ -88,10 +93,11 @@ class ConvertDocxToHtmlTestCase(TestCase):
     def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
         return Docx2Html(path_to_docx, *args, **kwargs).parsed
 
-    def assertHtmlEqual(self, a, b):
-        a = collapse_html(a)
-        b = collapse_html(b)
-        self.assertEqual(a, b)
+    def assertHtmlEqual(self, actual, expected):
+        if not html_is_equal(actual, expected):
+            actual = prettify(actual)
+            message = 'The expected HTML did not match the actual HTML:'
+            raise AssertionError(message + '\n' + actual)
 
     @raises(MalformedDocxException)
     def test_raises_malformed_when_relationships_are_missing(self):

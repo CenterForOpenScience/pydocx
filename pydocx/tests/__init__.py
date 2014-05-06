@@ -7,6 +7,7 @@ from __future__ import (
 import posixpath
 import re
 from contextlib import contextmanager
+from xml.dom import minidom
 
 try:
     from io import BytesIO
@@ -48,6 +49,13 @@ BASE_HTML = '''
     <body>%%s</body>
 </html>
 ''' % STYLE
+
+
+def prettify(xml_string):
+    """Return a pretty-printed XML string for the Element.
+    """
+    parsed = minidom.parseString(xml_string)
+    return parsed.toprettyxml(indent='\t')
 
 
 def html_is_equal(a, b):

@@ -67,7 +67,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
 
             expected = BASE_HTML % expected
             result = convert(docx_path)
-            assert html_is_equal(result, expected)
+            self.assertHtmlEqual(result, expected)
         return run_test
 
     @classmethod
@@ -77,6 +77,11 @@ class ConvertDocxToHtmlTestCase(TestCase):
             name = str('test_%s' % case)
             test_method.__name__ = name
             setattr(cls, name, test_method)
+
+    def assertHtmlEqual(self, a, b):
+        a = collapse_html(a)
+        b = collapse_html(b)
+        self.assertEqual(a, b)
 
 
 ConvertDocxToHtmlTestCase.generate()

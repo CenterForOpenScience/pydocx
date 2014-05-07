@@ -153,9 +153,7 @@ class DocxParser(MulitMemoizeMixin):
             for child in el
         )
 
-        if el.tag == 'br' and el.attrib.get('type') == 'page':
-            return self.parse_page_break(el, parsed)
-        elif el.tag == 'tbl':
+        if el.tag == 'tbl':
             return self.parse_table(el, parsed)
         elif el.tag == 'tr':
             return self.parse_table_row(el, parsed)
@@ -170,6 +168,8 @@ class DocxParser(MulitMemoizeMixin):
         elif el.tag == 'noBreakHyphen':
             return self.parse_hyphen(el, parsed)
         elif el.tag == 'br':
+            if el.attrib.get('type') == 'page':
+                return self.parse_page_break(el, parsed)
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)

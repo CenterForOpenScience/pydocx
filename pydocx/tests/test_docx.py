@@ -52,6 +52,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         'nested_table_rowspan',
         'nested_tables',
         'no_break_hyphen',
+        'pstyle_defines_bold_and_italic',
         'shift_enter',
         'simple',
         'simple_lists',

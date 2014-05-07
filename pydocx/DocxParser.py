@@ -67,20 +67,21 @@ class DocxParser(MulitMemoizeMixin):
         if main_document_part is None:
             raise MalformedDocxException
 
-        self.root_element = main_document_part.root_element
         self.numbering_root = None
         numbering_part = main_document_part.numbering_definitions_part
         if numbering_part:
             self.numbering_root = numbering_part.root_element
 
-        pgSzEl = find_first(self.root_element, 'pgSz')
+        self.page_width = self._get_page_width(main_document_part.root_element)
+        self.styles_dict = self._parse_styles()
+        self.parse_begin(main_document_part.root_element)
+
+    def _get_page_width(self, root_element):
+        pgSzEl = find_first(root_element, 'pgSz')
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
-            self.page_width = pgSz / TWIPS_PER_POINT
-
-        self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root_element)
+            return pgSz / TWIPS_PER_POINT
 
     def _parse_run_properties(self, rPr):
         """

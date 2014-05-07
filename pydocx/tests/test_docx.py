@@ -54,6 +54,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         'no_break_hyphen',
         'pstyle_defines_bold_and_italic',
         'rstyle_defines_bold_and_italic',
+        'rstyle_merges_with_and_overrides_pstyle_bold_off_italic_on',
         'shift_enter',
         'simple',
         'simple_lists',

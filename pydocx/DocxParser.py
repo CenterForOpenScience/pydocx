@@ -147,10 +147,12 @@ class DocxParser(MulitMemoizeMixin):
         if el in self.visited:
             return ''
         self.visited.add(el)
-        parsed = ''
-        for child in el:
-            # recursive. So you can get all the way to the bottom
-            parsed += self.parse(child)
+
+        parsed = ''.join(
+            self.parse(child)
+            for child in el
+        )
+
         if el.tag == 'br' and el.attrib.get('type') == 'page':
             return self.parse_page_break(el, parsed)
         elif el.tag == 'tbl':

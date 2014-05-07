@@ -651,7 +651,7 @@ class DocxParser(MulitMemoizeMixin):
             'webHidden': self.hide,
         }
         styles_needing_application = []
-        for property_name, property_value in run_properties.items():
+        for property_name, property_value in sorted(run_properties.items()):
             # These tags are a little different, handle them separately
             # from the rest.
             # This could be a superscript or a subscript

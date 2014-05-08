@@ -145,20 +145,20 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse(self, el):
         ooxml_tag_to_parse_function = {
-            'tbl': self.parse_table,
-            'tr': self.parse_table_row,
-            'tc': self.parse_table_cell,
-            'r': self.parse_r,
-            't': self.parse_t,
-            'tab': self.parse_tab,
-            'noBreakHyphen': self.parse_hyphen,
             'br': self.parse_break_tag,
             'delText': self.parse_deletion,
-            'p': self.parse_p,
-            'ins': self.parse_insertion,
-            'hyperlink': self.parse_hyperlink,
-            'pict': self.parse_image,
             'drawing': self.parse_image,
+            'hyperlink': self.parse_hyperlink,
+            'ins': self.parse_insertion,
+            'noBreakHyphen': self.parse_hyphen,
+            'pict': self.parse_image,
+            'p': self.parse_p,
+            'r': self.parse_r,
+            'tab': self.parse_tab,
+            'tbl': self.parse_table,
+            'tc': self.parse_table_cell,
+            'tr': self.parse_table_row,
+            't': self.parse_t,
         }
 
         # A stack to preserve a child iterator, the node and the node's output

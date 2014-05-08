@@ -60,6 +60,10 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
+        self.properties = {
+            'character': {},
+            'paragraph': {},
+        }
 
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
@@ -154,6 +158,7 @@ class DocxParser(MulitMemoizeMixin):
             'pict': self.parse_image,
             'p': self.parse_p,
             'r': self.parse_r,
+            'rPr': self.parse_run_properties,
             'tab': self.parse_tab,
             'tbl': self.parse_table,
             'tc': self.parse_table_cell,
@@ -209,6 +214,11 @@ class DocxParser(MulitMemoizeMixin):
                 current_output_stack = []
                 current_iter = iter(next_item)
         return ''.join(current_output_stack)
+
+    def parse_run_properties(self, el, parsed, stack):
+        _, parent, _ = stack[-1]
+        properties = self._parse_run_properties(el)
+        self.properties['character'][parent] = properties
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten

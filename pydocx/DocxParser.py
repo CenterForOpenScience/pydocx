@@ -153,34 +153,27 @@ class DocxParser(MulitMemoizeMixin):
             for child in el
         )
 
-        if el.tag == 'tbl':
-            return self.parse_table(el, parsed)
-        elif el.tag == 'tr':
-            return self.parse_table_row(el, parsed)
-        elif el.tag == 'tc':
-            return self.parse_table_cell(el, parsed)
-        elif el.tag == 'r':
-            return self.parse_r(el, parsed)
-        elif el.tag == 't':
-            return self.parse_t(el, parsed)
-        elif el.tag == 'tab':
-            return self.parse_tab(el, parsed)
-        elif el.tag == 'noBreakHyphen':
-            return self.parse_hyphen(el, parsed)
-        elif el.tag == 'br':
-            return self.parse_break_tag(el, parsed)
-        elif el.tag == 'delText':
-            return self.parse_deletion(el, parsed)
-        elif el.tag == 'p':
-            return self.parse_p(el, parsed)
-        elif el.tag == 'ins':
-            return self.parse_insertion(el, parsed)
-        elif el.tag == 'hyperlink':
-            return self.parse_hyperlink(el, parsed)
-        elif el.tag in ('pict', 'drawing'):
-            return self.parse_image(el)
-        else:
-            return parsed
+        parse_map = {
+            'tbl': self.parse_table,
+            'tr': self.parse_table_row,
+            'tc': self.parse_table_cell,
+            'r': self.parse_r,
+            't': self.parse_t,
+            'tab': self.parse_tab,
+            'noBreakHyphen': self.parse_hyphen,
+            'br': self.parse_break_tag,
+            'delText': self.parse_deletion,
+            'p': self.parse_p,
+            'ins': self.parse_insertion,
+            'hyperlink': self.parse_hyperlink,
+            'pict': self.parse_image,
+            'drawing': self.parse_image,
+        }
+
+        func = parse_map.get(el.tag)
+        if callable(func):
+            return func(el, parsed)
+        return parsed
 
     def parse_page_break(self, el, text):
         # TODO figure out what parsed is getting overwritten
@@ -557,7 +550,7 @@ class DocxParser(MulitMemoizeMixin):
             return x, y
         return 0, 0
 
-    def parse_image(self, el):
+    def parse_image(self, el, parsed):
         x, y = self._get_image_size(el)
         relationship_id = self._get_image_id(el)
         try:

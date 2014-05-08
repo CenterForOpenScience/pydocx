@@ -657,13 +657,9 @@ class DocxParser(MulitMemoizeMixin):
                 style_defaults.get('default_run_properties', {}),
             )
 
-        # Get the rPr for the current r tag, they are overrides.
-        run_properties_element = el.find('rPr')
-        if run_properties_element:
-            local_run_properties = self._parse_run_properties(
-                run_properties_element,
-            )
-            run_properties.update(local_run_properties)
+        properties = self.properties['character'].get(el)
+        if properties:
+            run_properties.update(properties)
 
         inline_tag_types = {
             'b': types.OnOff,

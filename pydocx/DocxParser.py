@@ -168,8 +168,6 @@ class DocxParser(MulitMemoizeMixin):
         elif el.tag == 'noBreakHyphen':
             return self.parse_hyphen(el, parsed)
         elif el.tag == 'br':
-            if el.attrib.get('type') == 'page':
-                return self.parse_page_break(el, parsed)
             return self.parse_break_tag(el, parsed)
         elif el.tag == 'delText':
             return self.parse_deletion(el, parsed)
@@ -589,6 +587,8 @@ class DocxParser(MulitMemoizeMixin):
         return '-'
 
     def parse_break_tag(self, el, parsed):
+        if el.attrib.get('type') == 'page':
+            return self.parse_page_break(el, parsed)
         return self.break_tag()
 
     def parse_deletion(self, el, parsed):

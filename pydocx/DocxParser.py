@@ -190,7 +190,7 @@ class DocxParser(MulitMemoizeMixin):
 
                     func = ooxml_tag_to_parse_function.get(parent_item.tag)
                     if callable(func):
-                        result = func(parent_item, parsed)
+                        result = func(parent_item, parsed, stack)
                         if result:
                             parsed = result
                     parent_output_stack.append(parsed)
@@ -210,17 +210,17 @@ class DocxParser(MulitMemoizeMixin):
                 current_iter = iter(next_item)
         return ''.join(current_output_stack)
 
-    def parse_page_break(self, el, text):
+    def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
         return self.page_break()
 
-    def parse_table(self, el, text):
+    def parse_table(self, el, text, stack):
         return self.table(text)
 
-    def parse_table_row(self, el, text):
+    def parse_table_row(self, el, text, stack):
         return self.table_row(text)
 
-    def parse_table_cell(self, el, text):
+    def parse_table_cell(self, el, text, stack):
         v_merge = find_first(el, 'vMerge')
         if v_merge is not None and (
                 'restart' != v_merge.get('val', '')):
@@ -233,7 +233,7 @@ class DocxParser(MulitMemoizeMixin):
             rowspan = ''
         return self.table_cell(text, colspan, rowspan)
 
-    def parse_list(self, el, text):
+    def parse_list(self, el, text, stack):
         """
         All the meat of building the list is done in _parse_list, however we
         call this method for two reasons: It is the naming convention we are
@@ -242,10 +242,10 @@ class DocxParser(MulitMemoizeMixin):
         this in _parse_list, however it seemed cleaner to do it here.
         """
         self.list_depth += 1
-        parsed = self._parse_list(el, text)
+        parsed = self._parse_list(el, text, stack)
         self.list_depth -= 1
         if self.pre_processor.is_in_table(el):
-            return self.parse_table_cell_contents(el, parsed)
+            return self.parse_table_cell_contents(el, parsed, stack)
         return parsed
 
     def get_list_style(self, num_id, ilvl):
@@ -268,8 +268,8 @@ class DocxParser(MulitMemoizeMixin):
                 lst_style,
             )
 
-    def _parse_list(self, el, text):
-        parsed = self.parse_list_item(el, text)
+    def _parse_list(self, el, text, stack):
+        parsed = self.parse_list_item(el, text, stack)
         num_id = self.pre_processor.num_id(el)
         ilvl = self.pre_processor.ilvl(el)
         # Everything after this point assumes the first element is not also the
@@ -370,7 +370,7 @@ class DocxParser(MulitMemoizeMixin):
             return self.indent(text, alignment, firstLine, left, right)
         return text
 
-    def parse_p(self, el, text):
+    def parse_p(self, el, text, stack):
         if text == '':
             return ''
         # TODO This is still not correct, however it fixes the bug. We need to
@@ -378,13 +378,13 @@ class DocxParser(MulitMemoizeMixin):
         # but that is for another ticket.
         text = self.justification(el, text)
         if self.pre_processor.is_first_list_item(el):
-            return self.parse_list(el, text)
+            return self.parse_list(el, text, stack)
         if self.pre_processor.heading_level(el):
-            return self.parse_heading(el, text)
+            return self.parse_heading(el, text, stack)
         if self.pre_processor.is_list_item(el):
-            return self.parse_list_item(el, text)
+            return self.parse_list_item(el, text, stack)
         if self.pre_processor.is_in_table(el):
-            return self.parse_table_cell_contents(el, text)
+            return self.parse_table_cell_contents(el, text, stack)
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
@@ -420,16 +420,16 @@ class DocxParser(MulitMemoizeMixin):
             return False
         return True
 
-    def parse_heading(self, el, parsed):
+    def parse_heading(self, el, parsed, stack):
         return self.heading(parsed, self.pre_processor.heading_level(el))
 
-    def parse_list_item(self, el, text):
+    def parse_list_item(self, el, text, stack):
         # If for whatever reason we are not currently in a list, then start
         # a list here. This will only happen if the num_id/ilvl combinations
         # between lists is not well formed.
         parsed = text
         if self.list_depth == 0:
-            return self.parse_list(el, parsed)
+            return self.parse_list(el, parsed, stack)
 
         def _should_parse_next_as_content(el):
             """
@@ -516,7 +516,7 @@ class DocxParser(MulitMemoizeMixin):
             return ''
         return grid_span.attrib['val']
 
-    def parse_table_cell_contents(self, el, text):
+    def parse_table_cell_contents(self, el, text, stack):
         parsed = text
 
         next_el = self.pre_processor.next(el)
@@ -525,7 +525,7 @@ class DocxParser(MulitMemoizeMixin):
                 parsed += self.break_tag()
         return parsed
 
-    def parse_hyperlink(self, el, text):
+    def parse_hyperlink(self, el, text, stack):
         relationship_id = el.get('id')
         package_part = self.document.main_document_part.package_part
         try:
@@ -585,7 +585,7 @@ class DocxParser(MulitMemoizeMixin):
             return x, y
         return 0, 0
 
-    def parse_image(self, el, parsed):
+    def parse_image(self, el, parsed, stack):
         x, y = self._get_image_size(el)
         relationship_id = self._get_image_id(el)
         try:
@@ -603,31 +603,31 @@ class DocxParser(MulitMemoizeMixin):
             y,
         )
 
-    def parse_t(self, el, parsed):
+    def parse_t(self, el, parsed, stack):
         if el.text is None:
             return ''
         return self.escape(el.text)
 
-    def parse_tab(self, el, parsed):
+    def parse_tab(self, el, parsed, stack):
         return self.tab()
 
-    def parse_hyphen(self, el, parsed):
+    def parse_hyphen(self, el, parsed, stack):
         return '-'
 
-    def parse_break_tag(self, el, parsed):
+    def parse_break_tag(self, el, parsed, stack):
         if el.attrib.get('type') == 'page':
-            return self.parse_page_break(el, parsed)
+            return self.parse_page_break(el, parsed, stack)
         return self.break_tag()
 
-    def parse_deletion(self, el, parsed):
+    def parse_deletion(self, el, parsed, stack):
         if el.text is None:
             return ''
         return self.deletion(el.text, '', '')
 
-    def parse_insertion(self, el, parsed):
+    def parse_insertion(self, el, parsed, stack):
         return self.insertion(parsed, '', '')
 
-    def parse_r(self, el, parsed):
+    def parse_r(self, el, parsed, stack):
         """
         Parse the running text.
         """

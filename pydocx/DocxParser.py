@@ -144,15 +144,6 @@ class DocxParser(MulitMemoizeMixin):
         self._parsed += self.parse(el)
 
     def parse(self, el):
-        if el in self.visited:
-            return ''
-        self.visited.add(el)
-
-        parsed = ''.join(
-            self.parse(child)
-            for child in el
-        )
-
         parse_map = {
             'tbl': self.parse_table,
             'tr': self.parse_table_row,
@@ -170,10 +161,52 @@ class DocxParser(MulitMemoizeMixin):
             'drawing': self.parse_image,
         }
 
-        func = parse_map.get(el.tag)
-        if callable(func):
-            return func(el, parsed)
-        return parsed
+        # A stack to preserve a child iterator, the node and the node's output
+        stack = []
+
+        # A stack to preserve the output generated at the current node level.
+        # This stack gets joined together and pushed onto the parent node's
+        # stack when a level is finished
+        current_output_stack = []
+
+        # An iterator over the node's children
+        current_iter = iter([el])
+        while True:
+            next_item = None
+            try:
+                next_item = next(current_iter)
+            except StopIteration:
+                # If this happens it means that there are no more children in
+                # this node
+                pass
+
+            if next_item is None:
+                # There are no more children in this node, so we need to jump
+                # back to the parent node and render it
+                if stack:
+                    parent_iter, parent_item, parent_output_stack = stack.pop()
+
+                    parsed = ''.join(current_output_stack)
+
+                    func = parse_map.get(parent_item.tag)
+                    if callable(func):
+                        parsed = func(parent_item, parsed)
+                    parent_output_stack.append(parsed)
+
+                    # Update our state to the parent's
+                    current_iter = parent_iter
+                    current_output_stack = parent_output_stack
+                else:
+                    # There are no more parent nodes, we're done
+                    break
+            elif next_item not in self.visited:
+                self.visited.add(next_item)
+                stack.append(
+                    (current_iter, next_item, current_output_stack)
+                )
+                current_output_stack = []
+                current_iter = iter(next_item)
+        return ''.join(current_output_stack)
 
     def parse_page_break(self, el, text):
         # TODO figure out what parsed is getting overwritten

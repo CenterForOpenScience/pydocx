@@ -144,7 +144,7 @@ class DocxParser(MulitMemoizeMixin):
         self._parsed += self.parse(el)
 
     def parse(self, el):
-        parse_map = {
+        ooxml_tag_to_parse_function = {
             'tbl': self.parse_table,
             'tr': self.parse_table_row,
             'tc': self.parse_table_cell,
@@ -188,7 +188,7 @@ class DocxParser(MulitMemoizeMixin):
 
                     parsed = ''.join(current_output_stack)
 
-                    func = parse_map.get(parent_item.tag)
+                    func = ooxml_tag_to_parse_function.get(parent_item.tag)
                     if callable(func):
                         parsed = func(parent_item, parsed)
                     parent_output_stack.append(parsed)

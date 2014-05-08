@@ -190,7 +190,9 @@ class DocxParser(MulitMemoizeMixin):
 
                     func = ooxml_tag_to_parse_function.get(parent_item.tag)
                     if callable(func):
-                        parsed = func(parent_item, parsed)
+                        result = func(parent_item, parsed)
+                        if result:
+                            parsed = result
                     parent_output_stack.append(parsed)
 
                     # Update our state to the parent's

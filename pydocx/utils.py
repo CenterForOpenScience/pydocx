@@ -186,7 +186,7 @@ class NamespacedNumId(object):
         )
 
     def __str__(self, *args, **kwargs):
-        return super(NamespacedNumId, self).__unicode__(*args, **kwargs)
+        return self.__unicode__(*args, **kwargs)
 
     def __repr__(self, *args, **kwargs):
         return self.__unicode__(*args, **kwargs)
@@ -206,7 +206,7 @@ class NamespacedNumId(object):
         return self._num_id
 
     def __hash__(self):
-        return id(self)
+        return id(self.__str__())
 
 
 class PydocxPreProcessor(MulitMemoizeMixin):

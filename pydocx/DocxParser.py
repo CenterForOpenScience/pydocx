@@ -263,7 +263,7 @@ class DocxParser(MulitMemoizeMixin):
             if self.pre_processor.num_id(next_el) != num_id:
                 # The next element is a new list entirely
                 return False
-            if self.pre_processor.ilvl(next_el) < ilvl:
+            if int(self.pre_processor.ilvl(next_el)) < int(ilvl):
                 # The next element is de-indented, so this is really the last
                 # element in the list
                 return False

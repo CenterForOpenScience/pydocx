@@ -418,6 +418,10 @@ class DocxParser(MulitMemoizeMixin):
                 return True
             if self.pre_processor.is_first_list_item(next_el):
                 if (
+                        int(self.pre_processor.ilvl(next_el)) <=
+                        int(self.pre_processor.ilvl(el))):
+                    return False
+                if (
                         self.pre_processor.num_id(next_el) ==
                         self.pre_processor.num_id(el)):
                     return True

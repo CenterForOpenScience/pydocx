@@ -224,19 +224,19 @@ class DocxParser(MulitMemoizeMixin):
 
     def _build_list(self, el, text):
         # Get the list style for the pending list.
-        lst_style = self.get_list_style(
+        list_style = self.get_list_style(
             self.pre_processor.num_id(el).num_id,
             self.pre_processor.ilvl(el),
         )
 
         parsed = text
         # Create the actual list and return it.
-        if lst_style == 'bullet':
+        if list_style == 'bullet':
             return self.unordered_list(parsed)
         else:
             return self.ordered_list(
                 parsed,
-                lst_style,
+                list_style,
             )
 
     def _parse_list(self, el, text):

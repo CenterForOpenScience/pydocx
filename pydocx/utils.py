@@ -356,8 +356,11 @@ class PydocxPreProcessor(MulitMemoizeMixin):
                 ]
                 if not filtered_list_elements:
                     continue
+                # The root list needs to be handled a little differently. We
+                # only care about the first element in the root list.
                 if int(ilvl) == lowest_ilvl:
                     filtered_list_elements = [filtered_list_elements[0]]
+
                 first_one_marked = False
                 for el in filtered_list_elements:
                     prev_el = self.previous(el)

@@ -693,11 +693,10 @@ class MangledIlvlTestCase(_TranslationTestCase):
             <li>AAA</li>
         </ol>
         <ol list-style-type="decimal">
-            <li>BBB
-                <ol list-style-type="decimal">
-                    <li>CCC</li>
-                </ol>
-            </li>
+            <li>BBB</li>
+        </ol>
+        <ol list-style-type="decimal">
+            <li>CCC</li>
         </ol>
     '''
 
@@ -750,13 +749,12 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
         <ol list-style-type="decimal">
             <li>AAA
                 <ol list-style-type="decimal">
-                    <li>BBB
-                        <ol list-style-type="decimal">
-                            <li>CCC</li>
-                        </ol>
-                    </li>
+                    <li>BBB</li>
                 </ol>
             </li>
+        </ol>
+        <ol list-style-type="decimal">
+            <li>CCC</li>
         </ol>
     '''
 
@@ -1448,3 +1446,39 @@ class NoTextInTTagTestCase(_TranslationTestCase):
         for tag in tags:
             body += tag
         return DXB.xml(body)
+
+
+class NestedListTestCase(_TranslationTestCase):
+    expected_output = u"""
+    <ol list-style-type="decimal">
+        <li>AAA
+            <ol list-style-type="decimal">
+                <li>BBB</li>
+            </ol>
+        </li>
+        <li>CCC
+            <ol list-style-type="decimal">
+                <li>DDD
+                    <ol list-style-type="decimal">
+                        <li>EEE</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+    </ol>
+    """
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', 1, 1),
+            ('CCC', 0, 1),
+            ('DDD', 1, 1),
+            ('EEE', 2, 1),
+        ]
+        lis = b''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml

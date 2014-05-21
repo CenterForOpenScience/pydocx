@@ -1,6 +1,7 @@
 **0.3.19** *dev*
 
 - Added support for python 3.3
+- Fixed a problem with list nesting with nested sublists that have the same ilvl.
 
 **0.3.18**
 

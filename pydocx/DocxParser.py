@@ -224,19 +224,19 @@ class DocxParser(MulitMemoizeMixin):
 
     def _build_list(self, el, text):
         # Get the list style for the pending list.
-        lst_style = self.get_list_style(
+        list_style = self.get_list_style(
             self.pre_processor.num_id(el).num_id,
             self.pre_processor.ilvl(el),
         )
 
         parsed = text
         # Create the actual list and return it.
-        if lst_style == 'bullet':
+        if list_style == 'bullet':
             return self.unordered_list(parsed)
         else:
             return self.ordered_list(
                 parsed,
-                lst_style,
+                list_style,
             )
 
     def _parse_list(self, el, text):
@@ -263,7 +263,7 @@ class DocxParser(MulitMemoizeMixin):
             if self.pre_processor.num_id(next_el) != num_id:
                 # The next element is a new list entirely
                 return False
-            if self.pre_processor.ilvl(next_el) < ilvl:
+            if int(self.pre_processor.ilvl(next_el)) < int(ilvl):
                 # The next element is de-indented, so this is really the last
                 # element in the list
                 return False
@@ -417,6 +417,10 @@ class DocxParser(MulitMemoizeMixin):
             ):
                 return True
             if self.pre_processor.is_first_list_item(next_el):
+                if (
+                        int(self.pre_processor.ilvl(next_el)) <=
+                        int(self.pre_processor.ilvl(el))):
+                    return False
                 if (
                         self.pre_processor.num_id(next_el) ==
                         self.pre_processor.num_id(el)):

@@ -64,8 +64,13 @@ def html_is_equal(a, b):
     return a == b
 
 
-def assert_html_equal(actual_html, expected_html):
-    assert html_is_equal(actual_html, expected_html), prettify(actual_html)
+def assert_html_equal(actual_html, expected_html, filename=None):
+    if not html_is_equal(actual_html, expected_html):
+        html = prettify(actual_html)
+        if filename:
+            with open('pydocx/tests/failures/%s.html' % filename, 'w') as f:
+                f.write(html)
+        raise AssertionError(html)
 
 
 def collapse_html(html):
@@ -226,6 +231,14 @@ class _TranslationTestCase(TestCase):
         ).parsed
 
         if self.use_base_html:
-            assert_html_equal(html, BASE_HTML % self.expected_output)
+            assert_html_equal(
+                html,
+                BASE_HTML % self.expected_output,
+                filename=self.__class__.__name__,
+            )
         else:
-            assert_html_equal(html, self.expected_output)
+            assert_html_equal(
+                html,
+                self.expected_output,
+                filename=self.__class__.__name__,
+            )

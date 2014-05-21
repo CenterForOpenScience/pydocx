@@ -206,7 +206,7 @@ class NamespacedNumId(object):
         return self._num_id
 
     def __hash__(self):
-        return id(self.__str__())
+        return id(str(self))
 
 
 class PydocxPreProcessor(MulitMemoizeMixin):

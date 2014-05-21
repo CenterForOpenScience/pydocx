@@ -1,4 +1,4 @@
-**0.3.19** *dev*
+**0.3.19**
 
 - Added support for python 3.3
 - Fixed a problem with list nesting with nested sublists that have the same ilvl.

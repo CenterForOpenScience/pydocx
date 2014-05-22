@@ -1,3 +1,7 @@
+**0.3.20** *dev*
+
+- Fixed a problem with list nesting. We were marking list items as the first list item in error.
+
 **0.3.19**
 
 - Added support for python 3.3

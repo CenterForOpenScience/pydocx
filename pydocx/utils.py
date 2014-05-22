@@ -367,7 +367,9 @@ class PydocxPreProcessor(MulitMemoizeMixin):
                     if prev_el is None:
                         self.meta_data[el]['is_first_list_item'] = True
 
-                    if self.ilvl(prev_el) != self.ilvl(el):
+                    # If the current ilvl is greater than the previous then we
+                    # are starting a new list.
+                    if int(self.ilvl(prev_el) or 0) < int(self.ilvl(el)):
                         self.meta_data[el]['is_first_list_item'] = True
                     # The first list element in filtered_list_elements is
                     # always the first list item, no matter what.

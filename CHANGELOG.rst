@@ -1,4 +1,4 @@
-**0.3.20** *dev*
+**0.3.20**
 
 - Fixed a problem with list nesting. We were marking list items as the first list item in error.
 

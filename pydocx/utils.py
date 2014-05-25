@@ -186,7 +186,7 @@ class NamespacedNumId(object):
         )
 
     def __str__(self, *args, **kwargs):
-        return super(NamespacedNumId, self).__unicode__(*args, **kwargs)
+        return self.__unicode__(*args, **kwargs)
 
     def __repr__(self, *args, **kwargs):
         return self.__unicode__(*args, **kwargs)
@@ -206,7 +206,7 @@ class NamespacedNumId(object):
         return self._num_id
 
     def __hash__(self):
-        return id(self)
+        return id(str(self))
 
 
 class PydocxPreProcessor(MulitMemoizeMixin):
@@ -233,6 +233,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         self._set_is_in_table(root)
 
         body = find_first(root, 'body')
+        self._set_next(body)
         p_elements = [
             child for child in find_all(body, 'p')
         ]
@@ -248,7 +249,6 @@ class PydocxPreProcessor(MulitMemoizeMixin):
 
         self._set_headers(p_elements)
         self._convert_upper_roman(body)
-        self._set_next(body)
 
     def is_first_list_item(self, el):
         return self.meta_data[el].get('is_first_list_item', False)
@@ -342,6 +342,9 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         # Lists are grouped by having the same `num_id` and `ilvl`. The first
         # list item is the first list item found for each `num_id` and `ilvl`
         # combination.
+        if not ilvls:
+            return
+        lowest_ilvl = min(int(i) for i in ilvls)
         for num_id in num_ids:
             for ilvl in ilvls:
                 filtered_list_elements = [
@@ -353,8 +356,26 @@ class PydocxPreProcessor(MulitMemoizeMixin):
                 ]
                 if not filtered_list_elements:
                     continue
-                first_el = filtered_list_elements[0]
-                self.meta_data[first_el]['is_first_list_item'] = True
+                # The root list needs to be handled a little differently. We
+                # only care about the first element in the root list.
+                if int(ilvl) == lowest_ilvl:
+                    filtered_list_elements = [filtered_list_elements[0]]
+
+                first_one_marked = False
+                for el in filtered_list_elements:
+                    prev_el = self.previous(el)
+                    if prev_el is None:
+                        self.meta_data[el]['is_first_list_item'] = True
+
+                    # If the current ilvl is greater than the previous then we
+                    # are starting a new list.
+                    if int(self.ilvl(prev_el) or 0) < int(self.ilvl(el)):
+                        self.meta_data[el]['is_first_list_item'] = True
+                    # The first list element in filtered_list_elements is
+                    # always the first list item, no matter what.
+                    if not first_one_marked:
+                        self.meta_data[el]['is_first_list_item'] = True
+                        first_one_marked = True
 
     def _set_last_list_item(self, num_ids, list_elements):
         # Find last list elements. Only mark list tags as the last list tag if

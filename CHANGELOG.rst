@@ -1,6 +1,15 @@
-**0.3.19** *dev*
+**0.3.21**
+
+- We are once again supporting files that are missing images.
+
+**0.3.20**
+
+- Fixed a problem with list nesting. We were marking list items as the first list item in error.
+
+**0.3.19**
 
 - Added support for python 3.3
+- Fixed a problem with list nesting with nested sublists that have the same ilvl.
 
 **0.3.18**
 

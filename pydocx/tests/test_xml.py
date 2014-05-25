@@ -693,11 +693,10 @@ class MangledIlvlTestCase(_TranslationTestCase):
             <li>AAA</li>
         </ol>
         <ol list-style-type="decimal">
-            <li>BBB
-                <ol list-style-type="decimal">
-                    <li>CCC</li>
-                </ol>
-            </li>
+            <li>BBB</li>
+        </ol>
+        <ol list-style-type="decimal">
+            <li>CCC</li>
         </ol>
     '''
 
@@ -750,13 +749,12 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
         <ol list-style-type="decimal">
             <li>AAA
                 <ol list-style-type="decimal">
-                    <li>BBB
-                        <ol list-style-type="decimal">
-                            <li>CCC</li>
-                        </ol>
-                    </li>
+                    <li>BBB</li>
                 </ol>
             </li>
+        </ol>
+        <ol list-style-type="decimal">
+            <li>CCC</li>
         </ol>
     '''
 
@@ -1448,3 +1446,158 @@ class NoTextInTTagTestCase(_TranslationTestCase):
         for tag in tags:
             body += tag
         return DXB.xml(body)
+
+
+class NestedListTestCase(_TranslationTestCase):
+    expected_output = u"""
+    <ol list-style-type="decimal">
+        <li>AAA
+            <ol list-style-type="decimal">
+                <li>BBB</li>
+            </ol>
+        </li>
+        <li>CCC
+            <ol list-style-type="decimal">
+                <li>DDD
+                    <ol list-style-type="decimal">
+                        <li>EEE</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+    </ol>
+    """
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', 1, 1),
+            ('CCC', 0, 1),
+            ('DDD', 1, 1),
+            ('EEE', 2, 1),
+        ]
+        lis = b''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml
+
+
+class MultipleNestedListTestCase(_TranslationTestCase):
+    expected_output = u"""
+    <ol list-style-type="decimal">
+            <li>
+                    AAA
+                    <ol list-style-type="decimal">
+                            <li>
+                                    BBB
+                                    <ol list-style-type="decimal">
+                                            <li>
+                                                    CCC
+                                            </li>
+                                            <li>
+                                                    DDD
+                                            </li>
+                                    </ol>
+                            </li>
+                            <li>
+                                    EEE
+                                    <ol list-style-type="decimal">
+                                            <li>
+                                                    FFF
+                                            </li>
+                                            <li>
+                                                    GGG
+                                            </li>
+                                    </ol>
+                            </li>
+                            <li>
+                                    HHH
+                                    <ol list-style-type="decimal">
+                                            <li>
+                                                    III
+                                            </li>
+                                            <li>
+                                                    JJJ
+                                            </li>
+                                    </ol>
+                            </li>
+                    </ol>
+            </li>
+            <li>
+                    KKK
+            </li>
+    </ol>
+    <ol list-style-type="lowerLetter">
+            <li>
+                    LLL
+                    <ol list-style-type="lowerLetter">
+                            <li>
+                                    MMM
+                            </li>
+                            <li>
+                                    NNN
+                            </li>
+                    </ol>
+            </li>
+            <li>
+                    OOO
+                    <ol list-style-type="lowerLetter">
+                            <li>
+                                    PPP
+                            </li>
+                            <li>
+                                    QQQ
+                                    <ol list-style-type="decimal">
+                                            <li>
+                                                    RRR
+                                            </li>
+                                    </ol>
+                            </li>
+                    </ol>
+            </li>
+            <li>
+                    SSS
+                    <ol list-style-type="lowerLetter">
+                            <li>
+                                    TTT
+                            </li>
+                            <li>
+                                    UUU
+                            </li>
+                    </ol>
+            </li>
+    </ol>
+    """
+
+    def get_xml(self):
+        li_text = [
+            ('AAA', 0, 1),
+            ('BBB', 1, 1),
+            ('CCC', 2, 1),
+            ('DDD', 2, 1),
+            ('EEE', 1, 1),
+            ('FFF', 2, 1),
+            ('GGG', 2, 1),
+            ('HHH', 1, 1),
+            ('III', 2, 1),
+            ('JJJ', 2, 1),
+            ('KKK', 0, 1),
+            ('LLL', 0, 2),
+            ('MMM', 1, 2),
+            ('NNN', 1, 2),
+            ('OOO', 0, 2),
+            ('PPP', 1, 2),
+            ('QQQ', 1, 2),
+            ('RRR', 2, 2),
+            ('SSS', 0, 2),
+            ('TTT', 1, 2),
+            ('UUU', 1, 2),
+        ]
+        lis = b''
+        for text, ilvl, numId in li_text:
+            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+
+        xml = DXB.xml(lis)
+        return xml

@@ -153,6 +153,7 @@ class DocxParser(MulitMemoizeMixin):
             'ins': self.parse_insertion,
             'noBreakHyphen': self.parse_hyphen,
             'pict': self.parse_image,
+            'pPr': self.parse_properties,
             'p': self.parse_p,
             'r': self.parse_r,
             'rPr': self.parse_properties,
@@ -648,15 +649,14 @@ class DocxParser(MulitMemoizeMixin):
 
         run_properties = {}
 
-        # Get the rPr for the current style, they are the defaults.
-        p = find_ancestor_with_tag(self.pre_processor, el, 'p')
-        paragraph_style = self.memod_tree_op('find_first', p, 'pStyle')
-        if paragraph_style is not None:
-            style = paragraph_style.get('val')
-            style_defaults = self.styles_dict.get(style, {})
+        properties = self.properties.get(stack[-1][1])
+        if properties:
+            pstyle = properties.get('pStyle')
+            style_definition = self.styles_dict.get(pstyle, {})
             run_properties.update(
-                style_defaults.get('default_run_properties', {}),
+                style_definition.get('default_run_properties', {}),
             )
+            run_properties.update(properties)
 
         properties = self.properties.get(el)
         if properties:

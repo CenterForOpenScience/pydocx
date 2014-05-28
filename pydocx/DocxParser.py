@@ -664,11 +664,10 @@ class DocxParser(MulitMemoizeMixin):
     def parse_insertion(self, el, parsed, stack):
         return self.insertion(parsed, '', '')
 
-    def parse_r(self, el, parsed, stack):
+    def parse_r(self, el, text, stack):
         """
         Parse the running text.
         """
-        text = parsed
         if not text:
             return ''
 

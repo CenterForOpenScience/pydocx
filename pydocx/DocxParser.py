@@ -111,6 +111,29 @@ class DocxParser(MulitMemoizeMixin):
             run_properties[run_property.tag] = val
         return run_properties
 
+    def get_properties_for_element(self, el, stack):
+        properties = {}
+
+        parent_properties = self.properties.get(stack[-1]['element'])
+        if parent_properties:
+            pstyle = parent_properties.get('pStyle')
+            style_definition = self.styles_dict.get(pstyle, {})
+            properties.update(
+                style_definition.get('default_run_properties', {}),
+            )
+            properties.update(parent_properties)
+
+        element_properties = self.properties.get(el)
+        if element_properties:
+            rstyle = element_properties.get('rStyle')
+            style_definition = self.styles_dict.get(rstyle, {})
+            properties.update(
+                style_definition.get('default_run_properties', {}),
+            )
+            properties.update(element_properties)
+
+        return properties
+
     def _parse_styles(self):
         styles_part = self.document.main_document_part.style_definitions_part
         if not styles_part:
@@ -187,36 +210,38 @@ class DocxParser(MulitMemoizeMixin):
                 # There are no more children in this node, so we need to jump
                 # back to the parent node and render it
                 if stack:
-                    parent_iter, parent_item, parent_output_stack = stack.pop()
-
+                    parent = stack.pop()
                     parsed = ''.join(current_output_stack)
 
-                    func = ooxml_tag_to_parse_function.get(parent_item.tag)
+                    func = ooxml_tag_to_parse_function.get(
+                        parent['element'].tag,
+                    )
                     if callable(func):
-                        result = func(parent_item, parsed, stack)
+                        result = func(parent['element'], parsed, stack)
                         if result:
                             parsed = result
-                    parent_output_stack.append(parsed)
+                    parent['output'].append(parsed)
 
                     # Update our state to the parent's
-                    current_iter = parent_iter
-                    current_output_stack = parent_output_stack
+                    current_iter = parent['iterator']
+                    current_output_stack = parent['output']
                 else:
                     # There are no more parent nodes, we're done
                     break
             elif next_item not in self.visited:
                 self.visited.add(next_item)
-                stack.append(
-                    (current_iter, next_item, current_output_stack)
-                )
+                stack.append({
+                    'element': next_item,
+                    'iterator': current_iter,
+                    'output': current_output_stack,
+                })
                 current_output_stack = []
                 current_iter = iter(next_item)
         return ''.join(current_output_stack)
 
     def parse_properties(self, el, parsed, stack):
-        _, parent, _ = stack[-1]
         properties = self._parse_run_properties(el)
-        self.properties[parent] = properties
+        self.properties[stack[-1]['element']] = properties
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
@@ -647,25 +672,7 @@ class DocxParser(MulitMemoizeMixin):
         if not text:
             return ''
 
-        run_properties = {}
-
-        properties = self.properties.get(stack[-1][1])
-        if properties:
-            pstyle = properties.get('pStyle')
-            style_definition = self.styles_dict.get(pstyle, {})
-            run_properties.update(
-                style_definition.get('default_run_properties', {}),
-            )
-            run_properties.update(properties)
-
-        properties = self.properties.get(el)
-        if properties:
-            rstyle = properties.get('rStyle')
-            style_definition = self.styles_dict.get(rstyle, {})
-            run_properties.update(
-                style_definition.get('default_run_properties', {}),
-            )
-            run_properties.update(properties)
+        properties = self.get_properties_for_element(el, stack)
 
         inline_tag_types = {
             'b': types.OnOff,
@@ -691,7 +698,7 @@ class DocxParser(MulitMemoizeMixin):
             'webHidden': self.hide,
         }
         styles_needing_application = []
-        for property_name, property_value in sorted(run_properties.items()):
+        for property_name, property_value in sorted(properties.items()):
             # These tags are a little different, handle them separately
             # from the rest.
             # This could be a superscript or a subscript

@@ -674,7 +674,7 @@ class DocxParser(MulitMemoizeMixin):
 
         properties = self.get_properties_for_element(el, stack)
 
-        inline_tag_types = {
+        property_types = {
             'b': types.OnOff,
             'i': types.OnOff,
             'u': types.Underline,
@@ -708,13 +708,12 @@ class DocxParser(MulitMemoizeMixin):
                 elif property_value == 'subscript':
                     styles_needing_application.append(self.subscript)
             else:
-                if (
-                    property_name in inline_tag_handlers and
-                    inline_tag_types.get(property_name)(property_value)
-                ):
-                    styles_needing_application.append(
-                        inline_tag_handlers[property_name],
-                    )
+                property_type_handler = property_types.get(property_name)
+                if property_type_handler:
+                    if property_type_handler(property_value):
+                        styles_needing_application.append(
+                            inline_tag_handlers[property_name],
+                        )
 
         # Apply all the handlers.
         for func in styles_needing_application:

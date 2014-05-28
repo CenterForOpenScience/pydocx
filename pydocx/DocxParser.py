@@ -114,23 +114,19 @@ class DocxParser(MulitMemoizeMixin):
     def get_properties_for_element(self, el, stack):
         properties = {}
 
-        parent_properties = self.properties.get(stack[-1]['element'])
-        if parent_properties:
-            pstyle = parent_properties.get('pStyle')
-            style_definition = self.styles_dict.get(pstyle, {})
-            properties.update(
-                style_definition.get('default_run_properties', {}),
-            )
-            properties.update(parent_properties)
+        elements = [entry['element'] for entry in stack]
+        elements.append(el)
 
-        element_properties = self.properties.get(el)
-        if element_properties:
-            rstyle = element_properties.get('rStyle')
-            style_definition = self.styles_dict.get(rstyle, {})
-            properties.update(
-                style_definition.get('default_run_properties', {}),
-            )
-            properties.update(element_properties)
+        for element in elements:
+            entry_properties = self.properties.get(element)
+            if entry_properties:
+                style_id_keyword = '%sStyle' % element.tag
+                style_id = entry_properties.get(style_id_keyword)
+                style_def = self.styles_dict.get(style_id, {})
+                properties.update(
+                    style_def.get('default_run_properties', {}),
+                )
+                properties.update(entry_properties)
 
         return properties
 

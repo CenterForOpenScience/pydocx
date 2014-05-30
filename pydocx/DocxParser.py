@@ -711,6 +711,12 @@ class DocxParser(MulitMemoizeMixin):
                             inline_tag_handlers[property_name],
                         )
 
+        if self.underline in styles_needing_application:
+            for item in stack:
+                # If we're handling a hyperlink, disable underline styling
+                if item['element'].tag == 'hyperlink':
+                    styles_needing_application.remove(self.underline)
+
         # Apply all the handlers.
         for func in styles_needing_application:
             text = func(text)

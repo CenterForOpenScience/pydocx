@@ -237,7 +237,8 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_properties(self, el, parsed, stack):
         properties = self._parse_run_properties(el)
-        self.properties[stack[-1]['element']] = properties
+        parent = stack[-1]['element']
+        self.properties[parent] = properties
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten

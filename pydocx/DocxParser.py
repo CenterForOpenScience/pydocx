@@ -43,6 +43,83 @@ INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'
 
 
+class IterativeXmlParser(object):
+    def __init__(self, visited=None):
+        self.visited = visited
+        if self.visited is None:
+            self.visited = set()
+
+    def process_tag_completion(self, result_stack, parent_element, stack):
+        return result_stack
+
+    def parse(self, el):
+        # A stack to preserve a child iterator, the node and the node's output
+        stack = []
+
+        # A stack to preserve the output generated at the current node level.
+        # This stack gets joined together and pushed onto the parent node's
+        # stack when a level is finished
+        result_stack = []
+
+        # An iterator over the node's children
+        current_iter = iter([el])
+        while True:
+            next_item = None
+            try:
+                next_item = next(current_iter)
+            except StopIteration:
+                # If this happens it means that there are no more children in
+                # this node
+                pass
+
+            if next_item is None:
+                # There are no more children in this node, so we need to jump
+                # back to the parent node and render it
+                if stack:
+                    parent = stack.pop()
+                    current_iter = parent['iterator']
+                    result = self.process_tag_completion(
+                        result_stack,
+                        parent['element'],
+                        stack,
+                    )
+                    if result:
+                        parent['result'].append(result)
+                    result_stack = parent['result']
+                else:
+                    # There are no more parent nodes, we're done
+                    break
+            elif next_item not in self.visited:
+                self.visited.add(next_item)
+                stack.append({
+                    'element': next_item,
+                    'iterator': current_iter,
+                    'result': result_stack,
+                })
+                result_stack = []
+                current_iter = iter(next_item)
+        return result_stack
+
+
+class DocumentIterativeXmlParser(IterativeXmlParser):
+    def __init__(self, tag_callback, visited=None):
+        super(DocumentIterativeXmlParser, self).__init__(visited=visited)
+        self.tag_callback = tag_callback
+
+    def parse(self, el):
+        result = super(DocumentIterativeXmlParser, self).parse(el)
+        return ''.join(result)
+
+    def process_tag_completion(self, result_stack, parent_element, stack):
+        result = ''.join(result_stack)
+        func = self.tag_callback.get(
+            parent_element.tag,
+        )
+        if callable(func):
+            result = func(parent_element, result, stack)
+        return result
+
+
 class DocxParser(MulitMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
@@ -62,6 +139,29 @@ class DocxParser(MulitMemoizeMixin):
         self.list_depth = 0
         self.properties = {}
 
+        self.parser_tag_callback = {
+            'br': self.parse_break_tag,
+            'delText': self.parse_deletion,
+            'drawing': self.parse_image,
+            'hyperlink': self.parse_hyperlink,
+            'ins': self.parse_insertion,
+            'noBreakHyphen': self.parse_hyphen,
+            'pict': self.parse_image,
+            'pPr': self.parse_properties,
+            'p': self.parse_p,
+            'r': self.parse_r,
+            'rPr': self.parse_properties,
+            'tab': self.parse_tab,
+            'tbl': self.parse_table,
+            'tc': self.parse_table_cell,
+            'tr': self.parse_table_row,
+            't': self.parse_t,
+        }
+        self.parser = DocumentIterativeXmlParser(
+            tag_callback=self.parser_tag_callback,
+            visited=self.visited,
+        )
+
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
         main_document_part = self.document.main_document_part
@@ -76,6 +176,22 @@ class DocxParser(MulitMemoizeMixin):
         self.page_width = self._get_page_width(main_document_part.root_element)
         self.styles_dict = self._parse_styles()
         self.parse_begin(main_document_part.root_element)
+
+    def parse_begin(self, el):
+        self.populate_memoization({
+            'find_all': find_all,
+            'find_first': find_first,
+            'has_descendant_with_tag': has_descendant_with_tag,
+            '_get_tcs_in_column': self._get_tcs_in_column,
+        })
+
+        self.pre_processor = self.pre_processor_class(
+            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
+            styles_dict=self.styles_dict,
+            numbering_root=self.numbering_root,
+        )
+        self.pre_processor.perform_pre_processing(el)
+        self._parsed = self.parser.parse(el)
 
     def _get_page_width(self, root_element):
         pgSzEl = find_first(root_element, 'pgSz')
@@ -146,94 +262,6 @@ class DocxParser(MulitMemoizeMixin):
                 ),
             }
         return styles_dict
-
-    def parse_begin(self, el):
-        self.populate_memoization({
-            'find_all': find_all,
-            'find_first': find_first,
-            'has_descendant_with_tag': has_descendant_with_tag,
-            '_get_tcs_in_column': self._get_tcs_in_column,
-        })
-
-        self.pre_processor = self.pre_processor_class(
-            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles_dict=self.styles_dict,
-            numbering_root=self.numbering_root,
-        )
-        self.pre_processor.perform_pre_processing(el)
-        self._parsed += self.parse(el)
-
-    def parse(self, el):
-        ooxml_tag_to_parse_function = {
-            'br': self.parse_break_tag,
-            'delText': self.parse_deletion,
-            'drawing': self.parse_image,
-            'hyperlink': self.parse_hyperlink,
-            'ins': self.parse_insertion,
-            'noBreakHyphen': self.parse_hyphen,
-            'pict': self.parse_image,
-            'pPr': self.parse_properties,
-            'p': self.parse_p,
-            'r': self.parse_r,
-            'rPr': self.parse_properties,
-            'tab': self.parse_tab,
-            'tbl': self.parse_table,
-            'tc': self.parse_table_cell,
-            'tr': self.parse_table_row,
-            't': self.parse_t,
-        }
-
-        # A stack to preserve a child iterator, the node and the node's output
-        stack = []
-
-        # A stack to preserve the output generated at the current node level.
-        # This stack gets joined together and pushed onto the parent node's
-        # stack when a level is finished
-        current_output_stack = []
-
-        # An iterator over the node's children
-        current_iter = iter([el])
-        while True:
-            next_item = None
-            try:
-                next_item = next(current_iter)
-            except StopIteration:
-                # If this happens it means that there are no more children in
-                # this node
-                pass
-
-            if next_item is None:
-                # There are no more children in this node, so we need to jump
-                # back to the parent node and render it
-                if stack:
-                    parent = stack.pop()
-                    parsed = ''.join(current_output_stack)
-
-                    func = ooxml_tag_to_parse_function.get(
-                        parent['element'].tag,
-                    )
-                    if callable(func):
-                        result = func(parent['element'], parsed, stack)
-                        if result:
-                            parsed = result
-                    parent['output'].append(parsed)
-
-                    # Update our state to the parent's
-                    current_iter = parent['iterator']
-                    current_output_stack = parent['output']
-                else:
-                    # There are no more parent nodes, we're done
-                    break
-            elif next_item not in self.visited:
-                self.visited.add(next_item)
-                stack.append({
-                    'element': next_item,
-                    'iterator': current_iter,
-                    'output': current_output_stack,
-                })
-                current_output_stack = []
-                current_iter = iter(next_item)
-        return ''.join(current_output_stack)
 
     def parse_properties(self, el, parsed, stack):
         properties = self._parse_run_properties(el)

@@ -88,14 +88,15 @@ class Docx2Html(DocxParser):
         )
 
     def style(self):
-        width = self.page_width / POINTS_PER_EM
-
         styles = {
             'body': {
-                'width': '%.2fem' % width,
                 'margin': '0px auto',
             }
         }
+
+        if self.page_width:
+            width = self.page_width / POINTS_PER_EM
+            styles['body']['width'] = '%.2fem' % width
 
         result = []
         for name, definition in sorted(PYDOCX_STYLES.items()):

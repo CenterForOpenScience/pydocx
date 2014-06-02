@@ -544,9 +544,9 @@ def convert_dictionary_to_html_attributes(attributes):
 
 
 @contextmanager
-def ZipFile(path):  # This is not needed in python 3.2+
+def ZipFile(path, mode='r'):  # This is not needed in python 3.2+
     try:
-        f = zipfile.ZipFile(path)
+        f = zipfile.ZipFile(path, mode)
     except zipfile.BadZipfile:
         raise MalformedDocxException('Passed in document is not a docx')
     yield f

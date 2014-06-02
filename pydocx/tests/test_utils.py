@@ -83,6 +83,14 @@ class UtilsTestCase(TestCase):
         result = remove_whitespace(result.decode('utf-8'))
         self.assertEqual(result, expected)
 
+    def test_remove_namespaces_on_namespaceless_xml(self):
+        xml = b'<?xml version="1.0"?><one><two><three/><three/></two></one>'
+        expected = '<one><two><three/><three/></two></one>'
+        result = remove_namespaces(xml)
+        assert isinstance(result, bytes)
+        result = remove_whitespace(result.decode('utf-8'))
+        self.assertEqual(result, expected)
+
     def test_remove_namespaces_junk_xml_causes_malformed_exception(self):
         self.assertRaises(
             MalformedDocxException,

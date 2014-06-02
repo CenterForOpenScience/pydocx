@@ -191,7 +191,10 @@ class DocxParser(MulitMemoizeMixin):
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(el)
-        self._parsed = self.parser.parse(el)
+        self._parsed = self.parse(el)
+
+    def parse(self, el):
+        return self.parser.parse(el)
 
     def _get_page_width(self, root_element):
         pgSzEl = find_first(root_element, 'pgSz')

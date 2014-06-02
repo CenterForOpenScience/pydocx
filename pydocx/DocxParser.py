@@ -256,10 +256,13 @@ class DocxParser(MulitMemoizeMixin):
         styles_root = styles_part.root_element
         styles_dict = {}
         for style in find_all(styles_root, 'style'):
-            style_val = find_first(style, 'name').attrib['val']
+            name_tag = find_first(style, 'name')
+            name = ''
+            if name_tag:
+                name = name_tag.attrib['val']
             run_properties = find_first(style, 'rPr')
             styles_dict[style.attrib['styleId']] = {
-                'style_name': style_val,
+                'style_name': name,
                 'default_run_properties': self._parse_run_properties(
                     run_properties,
                 ),

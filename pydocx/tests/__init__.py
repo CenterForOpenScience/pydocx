@@ -4,8 +4,10 @@ from __future__ import (
     unicode_literals,
 )
 
+import os
 import posixpath
 import re
+import tempfile
 from contextlib import contextmanager
 from xml.dom import minidom
 
@@ -19,6 +21,7 @@ from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
     parse_xml_from_string,
+    ZipFile,
 )
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
@@ -49,6 +52,14 @@ BASE_HTML = '''
     <body>%%s</body>
 </html>
 ''' % STYLE
+
+
+BASE_HTML_NO_STYLE = '''
+<html>
+    <head></head>
+    <body>%s</body>
+</html>
+'''
 
 
 def prettify(xml_string):
@@ -108,6 +119,83 @@ def collapse_html(html):
         html,
     )
     return html.strip()
+
+
+class Docx2HtmlNoStyle(Docx2Html):
+    def style(self):
+        return ''
+
+
+class DocumentGeneratorTestCase(TestCase):
+    def wrap_body_xml(self, body_xml):
+        xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        <document><body>%s</body></document>
+        ''' % body_xml
+        return xml
+
+    def wrap_style_xml(self, style_xml):
+        xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        <styles>%s</styles>
+        ''' % style_xml
+        return xml
+
+    @contextmanager
+    def build_and_convert_document_to_html(self, body=None, style=None):
+        fixture_path = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'fixtures',
+        )
+        docx_structure_fixture = os.path.join(fixture_path, 'docx_structure')
+        word_directory = os.path.join(docx_structure_fixture, 'word')
+        document_xml_path = os.path.join(word_directory, 'document.xml')
+        style_xml_path = os.path.join(word_directory, 'styles.xml')
+        files_to_cleanup = []
+        try:
+            if body is not None:
+                with open(document_xml_path, 'w') as f:
+                    f.write(self.wrap_body_xml(body))
+                files_to_cleanup.append(document_xml_path)
+            if style is not None:
+                with open(style_xml_path, 'w') as f:
+                    f.write(self.wrap_style_xml(style))
+                files_to_cleanup.append(style_xml_path)
+            zip_file = tempfile.NamedTemporaryFile()
+            with ZipFile(zip_file.name, 'w') as zf:
+                for root, dirs, files in os.walk(docx_structure_fixture):
+                    for f in files:
+                        full_path = os.path.join(root, f)
+                        arcname = os.path.relpath(
+                            full_path,
+                            docx_structure_fixture,
+                        )
+                        zf.write(full_path, arcname)
+            yield zip_file.name
+        finally:
+            for f in files_to_cleanup:
+                os.unlink(f)
+
+    def assert_xml_body_matches_expected_html(
+        self,
+        body,
+        expected,
+        style=None,
+    ):
+        '''
+        Given an XML body, generate a document container, then convert that
+        container to HTML and compare it with the given result.
+        '''
+        manager = self.build_and_convert_document_to_html(
+            body=body,
+            style=style,
+        )
+        with manager as docx_path:
+            actual = Docx2HtmlNoStyle(docx_path).parsed
+            expected = BASE_HTML_NO_STYLE % expected
+            if not html_is_equal(actual, expected):
+                actual = prettify(actual)
+                message = 'The expected HTML did not match the actual HTML:'
+                raise AssertionError(message + '\n' + actual)
 
 
 class XMLDocx2Html(Docx2Html):

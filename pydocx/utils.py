@@ -139,7 +139,7 @@ def remove_namespaces(xml_bytes):
     except SyntaxError:
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
-        child.tag = child.tag.split("}")[1]
+        child.tag = child.tag.split("}")[-1]
         child.attrib = dict(
             (k.split("}")[-1], v)
             for k, v in child.attrib.items()

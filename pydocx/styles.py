@@ -53,6 +53,10 @@ class Style(object):
 class Styles(object):
     def __init__(self, styles):
         self.styles = styles
+        styles_by_type = defaultdict(dict)
+        for style in self.styles:
+            styles_by_type[style.style_type][style.style_id] = style
+        self.styles_by_type = dict(styles_by_type)
 
     @staticmethod
     def load(root):
@@ -62,3 +66,6 @@ class Styles(object):
             if element.tag == 'style'
         ]
         return Styles(styles)
+
+    def get_styles_by_type(self, style_type):
+        return self.styles_by_type.get(style_type, {})

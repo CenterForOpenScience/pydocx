@@ -1,6 +1,63 @@
 from pydocx.tests import DocumentGeneratorTestCase
 
 
+class PageBreakTestCase(DocumentGeneratorTestCase):
+    def test_before_text_run(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+            <p>
+              <r>
+                <br type="page"/>
+                <t>bbb</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p>aaa</p><p><hr />bbb</p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_between_paragraphs(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+            <p>
+              <r>
+                <br type="page"/>
+              </r>
+            </p>
+            <p>
+              <r>
+                <t>bbb</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p>aaa</p><p><hr /></p><p>bbb</p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_after_text_run(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t>aaa</t>
+                <br type="page"/>
+              </r>
+            </p>
+            <p>
+              <r>
+                <t>bbb</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p>aaa<hr /></p><p>bbb</p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+
 class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
     def test_local_character_style(self):
         xml_body = '''

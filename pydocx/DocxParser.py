@@ -48,12 +48,33 @@ INDENTATION_FIRST_LINE = 'firstLine'
 
 
 class IterativeXmlParser(object):
+    '''
+    The IterativeXmlParser is an abstract class for parsing/processing each
+    level of an XML data source.
+
+    `visited` may optionally be passed in as an external object for keeping
+    track of elements that have been processed. If not passed in, this class
+    maintains its own list of visited elements.
+
+    To be useful, this class must be subclassed to override the
+    `process_tag_completion` method.
+    '''
+
     def __init__(self, visited=None):
         self.visited = visited
         if self.visited is None:
             self.visited = set()
 
-    def process_tag_completion(self, result_stack, parent_element, stack):
+    def process_tag_completion(self, result_stack, element, stack):
+        '''
+        This handler is called when a level is completed, which means that all
+        nested levels have also been completed.
+
+        `result_stack` is a list of nested level results
+        `element` is the level that is being completed
+        `stack` is the stack elements above this element which are still being
+        processed.
+        '''
         return result_stack
 
     def parse(self, el):
@@ -105,22 +126,35 @@ class IterativeXmlParser(object):
         return result_stack
 
 
-class DocumentIterativeXmlParser(IterativeXmlParser):
+class TagCallBackStringJoinedIterativeXmlParser(IterativeXmlParser):
+    '''
+    An IterativeXmlParser that uses a tag-callback mechanism for revaluating
+    results at each tag level.
+    `tag_callback` is a dictionary consisting of the tag name as the key, and
+    the handler as the value.
+
+    When a tag is encountered, the handler is called. The handler must accept
+    three parameters: the element itself, the current result, and the parent
+    stack of elements.
+    '''
+
     def __init__(self, tag_callback, visited=None):
-        super(DocumentIterativeXmlParser, self).__init__(visited=visited)
+        super(TagCallBackStringJoinedIterativeXmlParser, self).__init__(
+            visited=visited,
+        )
         self.tag_callback = tag_callback
 
     def parse(self, el):
-        result = super(DocumentIterativeXmlParser, self).parse(el)
+        result = super(TagCallBackStringJoinedIterativeXmlParser, self).parse(
+            el,
+        )
         return ''.join(result)
 
-    def process_tag_completion(self, result_stack, parent_element, stack):
+    def process_tag_completion(self, result_stack, element, stack):
         result = ''.join(result_stack)
-        func = self.tag_callback.get(
-            parent_element.tag,
-        )
+        func = self.tag_callback.get(element.tag)
         if callable(func):
-            result = func(parent_element, result, stack)
+            result = func(element, result, stack)
         return result
 
 
@@ -161,7 +195,7 @@ class DocxParser(MulitMemoizeMixin):
             'tr': self.parse_table_row,
             't': self.parse_t,
         }
-        self.parser = DocumentIterativeXmlParser(
+        self.parser = TagCallBackStringJoinedIterativeXmlParser(
             tag_callback=self.parser_tag_callback,
             visited=self.visited,
         )

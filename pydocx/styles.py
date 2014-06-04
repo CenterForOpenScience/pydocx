@@ -9,45 +9,101 @@ from collections import defaultdict
 from pydocx.types import OnOff
 
 
-class RunProperties(object):
-    def __init__(self, bold=False):
-        self.bold = bool(OnOff(bold))
-
-    @staticmethod
-    def load(element):
-        bold = False
-        for child in element:
-            if child.tag == 'b' and not bold:
-                bold = child.attrib.get('val', '')
-        return RunProperties(
-            bold=bold,
-        )
-
-
-class Style(object):
-    def __init__(self, style_id, style_type, name, run_properties):
-        self.style_id = style_id
-        self.style_type = style_type
+class XmlField(object):
+    def __init__(self, name=None, default=None, type=None):
         self.name = name
-        self.run_properties = run_properties
+        self.default = default
+        self.type = type
 
-    @staticmethod
-    def load(element):
-        style_type = element.attrib.get('type', 'paragraph')
-        style_id = element.attrib.get('styleId', '')
-        name = ''
-        run_properties = None
-        for child in element:
-            if child.tag == 'name' and not name:
-                name = child.attrib.get('val', '')
-            if child.tag == 'rPr' and not run_properties:
-                run_properties = RunProperties.load(child)
-        return Style(
-            style_id=style_id,
-            style_type=style_type,
+
+class Attribute(XmlField):
+    pass
+
+
+class ChildTag(XmlField):
+    def __init__(self, name=None, default=None, type=None, attrname=None):
+        super(ChildTag, self).__init__(
             name=name,
-            run_properties=run_properties,
+            default=default,
+            type=type,
         )
+        self.attrname = attrname
+
+
+class XmlModel(object):
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            field_def = self.__class__.__dict__.get(k, None)
+            if field_def:
+                setattr(self, k, v)
+            else:
+                raise RuntimeError(
+                    'Unexpected keyword argument "%s"' % k
+                )
+
+    @classmethod
+    def load(cls, element):
+        attribute_fields = {}
+        tag_fields = {}
+        for field_name, field in cls.__dict__.items():
+            if isinstance(field, Attribute):
+                attribute_fields[field_name] = field
+            if isinstance(field, ChildTag):
+                tag_fields[field_name] = field
+
+        kwargs = {}
+        for field_name, field in attribute_fields.items():
+            attr_name = field_name
+            if field.name is not None:
+                attr_name = field.name
+            value = element.attrib.get(attr_name, field.default)
+            kwargs[field_name] = value
+
+        tag_name_to_field_name = {}
+        child_handlers = {}
+
+        def create_child_handler(field):
+            def child_handler(child):
+                if field.attrname:
+                    value = child.attrib.get(field.attrname, field.default)
+                else:
+                    value = child
+
+                if field.type and issubclass(field.type, XmlModel):
+                    return field.type.load(value)
+                elif callable(field.type):
+                    return field.type(value)
+                else:
+                    return value
+            return child_handler
+
+        for field_name, field in tag_fields.items():
+            tag_name = field_name
+            if field.name is not None:
+                tag_name = field.name
+
+            tag_name_to_field_name[tag_name] = field_name
+            child_handlers[tag_name] = create_child_handler(field)
+
+        for child in element:
+            field_name = tag_name_to_field_name.get(child.tag, None)
+            if field_name:
+                handler = child_handlers.get(child.tag, None)
+                if callable(handler):
+                    kwargs[field_name] = handler(child)
+
+        return cls(**kwargs)
+
+
+class RunProperties(XmlModel):
+    bold = ChildTag(type=OnOff, name='b', attrname='val')
+
+
+class Style(XmlModel):
+    style_type = Attribute(name='type', default='paragraph')
+    style_id = Attribute(name='styleId', default='')
+    name = ChildTag(attrname='val')
+    run_properties = ChildTag(type=RunProperties, name='rPr')
 
 
 class Styles(object):

@@ -1091,54 +1091,6 @@ class SDTTestCase(_TranslationTestCase):
         return xml
 
 
-class StyledBoldingTestCase(_TranslationTestCase):
-    expected_output = '''
-        <p><strong>AAA</strong></p>
-        <p><strong>BBB</strong></p>
-        <p>CCC</p>
-    '''
-
-    styles_dict = {
-        'style0': {
-            'style_name': 'p1',
-            'default_run_properties': {
-                'b': '',
-            }
-        },
-    }
-
-    def get_xml(self):
-        p_tags = [
-            DXB.p_tag(text='AAA', style='style0'),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('BBB')],
-                        # Don't do duplicates
-                        rpr=DXB.rpr_tag({'b': None}),
-                    ),
-                ],
-                style='style0',
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('CCC')],
-                        # Overwrite the current style
-                        rpr=DXB.rpr_tag({'b': 'false'}),
-                    ),
-                ],
-                style='style0',
-            ),
-        ]
-        body = b''
-        for tag in p_tags:
-            body += tag
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class RomanNumeralToHeadingTestCase(_TranslationTestCase):
     convert_root_level_upper_roman = True
     numbering_dict = {

@@ -126,33 +126,33 @@ class IterativeXmlParser(object):
         return result_stack
 
 
-class TagCallBackStringJoinedIterativeXmlParser(IterativeXmlParser):
+class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
     '''
-    An IterativeXmlParser that uses a tag-callback mechanism for revaluating
+    An IterativeXmlParser that uses a tag-evaluating mechanism for evaluating
     results at each tag level.
-    `tag_callback` is a dictionary consisting of the tag name as the key, and
-    the handler as the value.
+    `tag_evaluator_mapping` is a dictionary consisting of the tag name as the
+    key, and the handler as the value.
 
     When a tag is encountered, the handler is called. The handler must accept
     three parameters: the element itself, the current result, and the parent
     stack of elements.
     '''
 
-    def __init__(self, tag_callback, visited=None):
-        super(TagCallBackStringJoinedIterativeXmlParser, self).__init__(
+    def __init__(self, tag_evaluator_mapping, visited=None):
+        super(TagEvaluatorStringJoinedIterativeXmlParser, self).__init__(
             visited=visited,
         )
-        self.tag_callback = tag_callback
+        self.tag_evaluator_mapping = tag_evaluator_mapping
 
     def parse(self, el):
-        result = super(TagCallBackStringJoinedIterativeXmlParser, self).parse(
+        result = super(TagEvaluatorStringJoinedIterativeXmlParser, self).parse(
             el,
         )
         return ''.join(result)
 
     def process_tag_completion(self, result_stack, element, stack):
         result = ''.join(result_stack)
-        func = self.tag_callback.get(element.tag)
+        func = self.tag_evaluator_mapping.get(element.tag)
         if callable(func):
             result = func(element, result, stack)
         return result
@@ -177,7 +177,7 @@ class DocxParser(MulitMemoizeMixin):
         self.list_depth = 0
         self.properties = {}
 
-        self.parser_tag_callback = {
+        self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
             'delText': self.parse_deletion,
             'drawing': self.parse_image,
@@ -195,8 +195,8 @@ class DocxParser(MulitMemoizeMixin):
             'tr': self.parse_table_row,
             't': self.parse_t,
         }
-        self.parser = TagCallBackStringJoinedIterativeXmlParser(
-            tag_callback=self.parser_tag_callback,
+        self.parser = TagEvaluatorStringJoinedIterativeXmlParser(
+            tag_evaluator_mapping=self.parse_tag_evaluator_mapping,
             visited=self.visited,
         )
 

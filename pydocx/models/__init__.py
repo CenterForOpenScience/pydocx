@@ -28,14 +28,10 @@ class ChildTag(XmlField):
 
 class XmlModel(object):
     def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            field_def = self.__class__.__dict__.get(k, None)
-            if field_def:
-                setattr(self, k, v)
-            else:
-                raise RuntimeError(
-                    'Unexpected keyword argument "%s"' % k
-                )
+        for field_name, field in self.__class__.__dict__.items():
+            if isinstance(field, XmlField):
+                value = kwargs.get(field_name, field.default)
+                setattr(self, field_name, value)
 
     @classmethod
     def load(cls, element):

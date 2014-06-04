@@ -155,12 +155,9 @@ class StylesTestCase(TestCase):
         paragraph_styles = styles.get_styles_by_type('paragraph')
         self.assertEqual(paragraph_styles['foo'].name, 'One')
         self.assertEqual(paragraph_styles['bar'].name, 'Two')
-        with self.assertRaises(KeyError):
-            paragraph_styles['baz']
+        self.assertRaises(KeyError, lambda: paragraph_styles['baz'])
 
         character_styles = styles.get_styles_by_type('character')
         self.assertEqual(character_styles['baz'].name, 'Three')
-        with self.assertRaises(KeyError):
-            character_styles['foo']
-        with self.assertRaises(KeyError):
-            character_styles['bar']
+        self.assertRaises(KeyError, lambda: character_styles['foo'])
+        self.assertRaises(KeyError, lambda: character_styles['bar'])

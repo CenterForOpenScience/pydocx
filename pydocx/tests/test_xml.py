@@ -833,7 +833,7 @@ class LargeCellTestCase(_TranslationTestCase):
             # This finishes in under a second on python 2.7
             expected_time = 3
             if sys.version_info[0] == 3:
-                expected_time = 5  # Slower on python 3
+                expected_time = 6  # Slower on python 3
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,
                 expected_time,

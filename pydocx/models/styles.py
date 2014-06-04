@@ -20,6 +20,12 @@ class RunProperties(XmlModel):
     dstrike = ChildTag(type=OnOff, attrname='val')
     vanish = ChildTag(type=OnOff, attrname='val')
     hidden = ChildTag(type=OnOff, name='webHidden', attrname='val')
+    vertical_align = ChildTag(name='vertAlign', attrname='val')
+    parent_style = ChildTag(name='rStyle', attrname='val')
+
+
+class ParagraphProperties(XmlModel):
+    parent_style = ChildTag(name='pStyle', attrname='val')
 
 
 class Style(XmlModel):

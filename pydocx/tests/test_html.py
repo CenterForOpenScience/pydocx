@@ -7,6 +7,125 @@ from __future__ import (
 from pydocx.tests import DocumentGeneratorTestCase
 
 
+class HeadingTestCase(DocumentGeneratorTestCase):
+    def test_character_stylings_are_ignored(self):
+        # Even though the heading1 style has bold enabled, it's being ignored
+        # because the style is for a header
+        style = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <b val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+              </pPr>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+        expected_html = '''
+            <h1>aaa</h1>
+        '''
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )
+
+    def test_each_heading_level(self):
+        style = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+            <style styleId="heading2" type="paragraph">
+              <name val="Heading 2"/>
+            </style>
+            <style styleId="heading3" type="paragraph">
+              <name val="Heading 3"/>
+            </style>
+            <style styleId="heading4" type="paragraph">
+              <name val="Heading 4"/>
+            </style>
+            <style styleId="heading5" type="paragraph">
+              <name val="Heading 5"/>
+            </style>
+            <style styleId="heading6" type="paragraph">
+              <name val="Heading 6"/>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+              </pPr>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading2"/>
+              </pPr>
+              <r>
+                <t>bbb</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading3"/>
+              </pPr>
+              <r>
+                <t>ccc</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading4"/>
+              </pPr>
+              <r>
+                <t>ddd</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading5"/>
+              </pPr>
+              <r>
+                <t>eee</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading6"/>
+              </pPr>
+              <r>
+                <t>fff</t>
+              </r>
+            </p>
+        '''
+        expected_html = '''
+            <h1>aaa</h1>
+            <h2>bbb</h2>
+            <h3>ccc</h3>
+            <h4>ddd</h4>
+            <h5>eee</h5>
+            <h6>fff</h6>
+        '''
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )
+
+
 class PageBreakTestCase(DocumentGeneratorTestCase):
     def test_before_text_run(self):
         xml_body = '''

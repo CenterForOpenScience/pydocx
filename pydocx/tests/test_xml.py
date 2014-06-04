@@ -1091,56 +1091,6 @@ class SDTTestCase(_TranslationTestCase):
         return xml
 
 
-class HeadingTestCase(_TranslationTestCase):
-    expected_output = '''
-        <h1>AAA</h1>
-        <h2>BBB</h2>
-        <h3>CCC</h3>
-        <h4>DDD</h4>
-        <h5>EEE</h5>
-        <h6>GGG</h6>
-        <p>HHH</p>
-    '''
-
-    styles_dict = {
-        'style0': {
-            'style_name': 'heading 1',
-        },
-        'style1': {
-            'style_name': 'heading 2',
-        },
-        'style2': {
-            'style_name': 'heading 3',
-        },
-        'style3': {
-            'style_name': 'heading 4',
-        },
-        'style4': {
-            'style_name': 'heading 5',
-        },
-        'style5': {
-            'style_name': 'heading 6',
-        },
-    }
-
-    def get_xml(self):
-        p_tags = [
-            DXB.p_tag(text='AAA', style='style0'),
-            DXB.p_tag(text='BBB', style='style1'),
-            DXB.p_tag(text='CCC', style='style2'),
-            DXB.p_tag(text='DDD', style='style3'),
-            DXB.p_tag(text='EEE', style='style4'),
-            DXB.p_tag(text='GGG', style='style5'),
-            DXB.p_tag(text='HHH', style='garbage'),
-        ]
-        body = b''
-        for tag in p_tags:
-            body += tag
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class StyledBoldingTestCase(_TranslationTestCase):
     expected_output = '''
         <p><strong>AAA</strong></p>

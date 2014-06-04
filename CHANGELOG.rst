@@ -1,3 +1,13 @@
+**0.3.22**
+
+- Fixed a bug in which the run paragraph mark properties were used as run
+  properties (pPr > rPr within a style definition)
+- Fixed a bug in which the run paragraph properties defined a global style
+  identifier, any of those styles defined globally were ignored.
+- Fixed a bug which allowed run properties to reference paragraph properties,
+  and paragraph properties to reference run properties. Such instances are now
+  ignored.
+
 **0.3.21**
 
 - We are once again supporting files that are missing images.

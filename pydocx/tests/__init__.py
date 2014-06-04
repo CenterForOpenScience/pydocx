@@ -128,6 +128,14 @@ class Docx2HtmlNoStyle(Docx2Html):
 
 
 class DocumentGeneratorTestCase(TestCase):
+    '''
+    A test case class that can be inherited to compare xml fragments with their
+    resulting HTML output.  This is achieved by generating a document container
+    on the fly in a temporary location and then using the parser to convert
+    that document.
+    Each test case needs to call `assert_xml_body_matches_expected_html`
+    '''
+
     def wrap_body_xml(self, body_xml):
         xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <document><body>%s</body></document>

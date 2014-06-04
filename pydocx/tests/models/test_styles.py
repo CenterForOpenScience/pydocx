@@ -39,6 +39,22 @@ class RunPropertiesTestCase(TestCase):
         self.assertEqual(properties.bold.value, 'off')
         assert not bool(properties.bold)
 
+    def test_items(self):
+        xml = b'''
+            <rPr>
+              <b val='off' />
+              <i val='on' />
+            </rPr>
+        '''
+        properties = self._load_styles_from_xml(xml)
+        result = dict(properties.items())
+        self.assertEqual(
+            sorted(result.keys()),
+            sorted(['bold', 'italic']),
+        )
+        assert not bool(result['bold'])
+        assert bool(result['italic'])
+
 
 class StyleTestCase(TestCase):
     def _load_styles_from_xml(self, xml):

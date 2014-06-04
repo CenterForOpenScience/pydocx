@@ -33,6 +33,13 @@ class XmlModel(object):
                 value = kwargs.get(field_name, field.default)
                 setattr(self, field_name, value)
 
+    def items(self):
+        for field_name, field in self.__class__.__dict__.items():
+            if isinstance(field, XmlField):
+                value = getattr(self, field_name, field.default)
+                if value != field.default:
+                    yield field_name, value
+
     @classmethod
     def load(cls, element):
         attribute_fields = {}

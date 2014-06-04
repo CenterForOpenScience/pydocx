@@ -17,6 +17,7 @@ except ImportError:
     from StringIO import StringIO
     BytesIO = StringIO
 
+from pydocx.models.styles import Styles
 from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.utils import (
@@ -208,7 +209,7 @@ class XMLDocx2Html(Docx2Html):
         self.document_xml = kwargs.pop('document_xml')
         self.relationships = kwargs.pop('relationships')
         self.numbering_dict = kwargs.pop('numbering_dict', None) or {}
-        self.styles_dict = kwargs.pop('styles_dict', None) or {}
+        self.styles = Styles([])
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
@@ -282,7 +283,6 @@ DEFAULT_NUMBERING_DICT = {
 class _TranslationTestCase(TestCase):
     expected_output = None
     relationships = None
-    styles_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
     parser = XMLDocx2Html
@@ -315,7 +315,6 @@ class _TranslationTestCase(TestCase):
             document_xml=tree,
             relationships=self.relationships,
             numbering_dict=self.numbering_dict,
-            styles_dict=self.styles_dict,
         ).parsed
 
         if self.use_base_html:

@@ -10,7 +10,6 @@ import posixpath
 
 from abc import abstractmethod, ABCMeta
 
-from pydocx import types
 from pydocx.utils import (
     MulitMemoizeMixin,
     PydocxPreProcessor,
@@ -21,6 +20,11 @@ from pydocx.utils import (
     has_descendant_with_tag,
 )
 from pydocx.exceptions import MalformedDocxException
+from pydocx.models.styles import (
+    ParagraphProperties,
+    RunProperties,
+    Styles,
+)
 from pydocx.wordml import WordprocessingDocument
 
 logging.basicConfig(level=logging.DEBUG)
@@ -147,10 +151,10 @@ class DocxParser(MulitMemoizeMixin):
             'ins': self.parse_insertion,
             'noBreakHyphen': self.parse_hyphen,
             'pict': self.parse_image,
-            'pPr': self.parse_properties,
+            'pPr': self.parse_paragraph_properties,
             'p': self.parse_p,
             'r': self.parse_r,
-            'rPr': self.parse_properties,
+            'rPr': self.parse_run_properties,
             'tab': self.parse_tab,
             'tbl': self.parse_table,
             'tc': self.parse_table_cell,
@@ -161,6 +165,16 @@ class DocxParser(MulitMemoizeMixin):
             tag_callback=self.parser_tag_callback,
             visited=self.visited,
         )
+
+    def parse_run_properties(self, el, parsed, stack):
+        properties = RunProperties.load(el)
+        parent = stack[-1]['element']
+        self.properties[parent] = properties
+
+    def parse_paragraph_properties(self, el, parsed, stack):
+        properties = ParagraphProperties.load(el)
+        parent = stack[-1]['element']
+        self.properties[parent] = properties
 
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
@@ -174,7 +188,11 @@ class DocxParser(MulitMemoizeMixin):
             self.numbering_root = numbering_part.root_element
 
         self.page_width = self._get_page_width(main_document_part.root_element)
-        self.styles_dict = self._parse_styles()
+        if main_document_part.style_definitions_part:
+            root = main_document_part.style_definitions_part.root_element
+        else:
+            root = []
+        self.styles = Styles.load(root)
         self.parse_begin(main_document_part.root_element)
 
     def parse_begin(self, el):
@@ -187,7 +205,7 @@ class DocxParser(MulitMemoizeMixin):
 
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles_dict=self.styles_dict,
+            styles=self.styles,
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(el)
@@ -203,76 +221,11 @@ class DocxParser(MulitMemoizeMixin):
             pgSz = int(pgSzEl.attrib['w'])
             return pgSz / TWIPS_PER_POINT
 
-    def _parse_run_properties(self, rPr):
-        """
-        Takes an `rPr` and returns a dictionary contain the tag name mapped to
-        the child's value property.
-
-        If you have an rPr that looks like this:
-        <w:rPr>
-            <w:b/>
-            <w:u val="false"/>
-            <w:sz val="16"/>
-        </w:rPr>
-
-        That will result in a dictionary that looks like this:
-        {
-            'b': '',
-            'u': 'false',
-            'sz': '16',
-        }
-        """
-        run_properties = {}
-        if rPr is None:
-            return {}
-        for run_property in rPr:
-            val = run_property.get('val', '').lower()
-            run_properties[run_property.tag] = val
-        return run_properties
-
     def get_properties_for_element(self, el, stack):
-        properties = {}
-
-        elements = [entry['element'] for entry in stack]
-        elements.append(el)
-
-        for element in elements:
-            entry_properties = self.properties.get(element)
-            if entry_properties:
-                style_id_keyword = '%sStyle' % element.tag
-                style_id = entry_properties.get(style_id_keyword)
-                style_def = self.styles_dict.get(style_id, {})
-                properties.update(
-                    style_def.get('default_run_properties', {}),
-                )
-                properties.update(entry_properties)
-
+        properties = self.properties.get(el)
+        if not properties:
+            properties = RunProperties()
         return properties
-
-    def _parse_styles(self):
-        styles_part = self.document.main_document_part.style_definitions_part
-        if not styles_part:
-            return {}
-        styles_root = styles_part.root_element
-        styles_dict = {}
-        for style in find_all(styles_root, 'style'):
-            name_tag = find_first(style, 'name')
-            name = ''
-            if name_tag is not None:
-                name = name_tag.attrib['val']
-            run_properties = find_first(style, 'rPr')
-            styles_dict[style.attrib['styleId']] = {
-                'style_name': name,
-                'default_run_properties': self._parse_run_properties(
-                    run_properties,
-                ),
-            }
-        return styles_dict
-
-    def parse_properties(self, el, parsed, stack):
-        properties = self._parse_run_properties(el)
-        parent = stack[-1]['element']
-        self.properties[parent] = properties
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
@@ -704,46 +657,25 @@ class DocxParser(MulitMemoizeMixin):
 
         properties = self.get_properties_for_element(el, stack)
 
-        property_types = {
-            'b': types.OnOff,
-            'i': types.OnOff,
-            'u': types.Underline,
-            'caps': types.OnOff,
-            'smallCaps': types.OnOff,
-            'strike': types.OnOff,
-            'dstrike': types.OnOff,
-            'vanish': types.OnOff,
-            'webHidden': types.OnOff,
-        }
-
-        inline_tag_handlers = {
-            'b': self.bold,
-            'i': self.italics,
-            'u': self.underline,
-            'caps': self.caps,
-            'smallCaps': self.small_caps,
-            'strike': self.strike,
-            'dstrike': self.strike,
-            'vanish': self.hide,
-            'webHidden': self.hide,
-        }
         styles_needing_application = []
-        for property_name, property_value in sorted(properties.items()):
-            # These tags are a little different, handle them separately
-            # from the rest.
-            # This could be a superscript or a subscript
-            if property_name == 'vertAlign':
-                if property_value == 'superscript':
-                    styles_needing_application.append(self.superscript)
-                elif property_value == 'subscript':
-                    styles_needing_application.append(self.subscript)
-            else:
-                property_type_handler = property_types.get(property_name)
-                if property_type_handler:
-                    if property_type_handler(property_value):
-                        styles_needing_application.append(
-                            inline_tag_handlers[property_name],
-                        )
+
+        property_rules = [
+            (properties.bold, True, self.bold),
+            (properties.italic, True, self.italics),
+            (properties.underline, True, self.underline),
+            (properties.caps, True, self.caps),
+            (properties.small_caps, True, self.small_caps),
+            (properties.strike, True, self.strike),
+            (properties.dstrike, True, self.strike),
+            (properties.vanish, True, self.hide),
+            (properties.hidden, True, self.hide),
+            (properties.vertical_align, 'superscript', self.superscript),
+            (properties.vertical_align, 'subscript', self.subscript),
+        ]
+        for actual_value, enabled_value, handler in property_rules:
+            if enabled_value is True and actual_value or (
+                    actual_value == enabled_value):
+                styles_needing_application.append(handler)
 
         if self.underline in styles_needing_application:
             for item in stack:

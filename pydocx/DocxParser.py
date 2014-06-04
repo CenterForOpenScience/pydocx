@@ -258,7 +258,7 @@ class DocxParser(MulitMemoizeMixin):
         for style in find_all(styles_root, 'style'):
             name_tag = find_first(style, 'name')
             name = ''
-            if name_tag:
+            if name_tag is not None:
                 name = name_tag.attrib['val']
             run_properties = find_first(style, 'rPr')
             styles_dict[style.attrib['styleId']] = {

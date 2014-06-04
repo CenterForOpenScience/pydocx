@@ -45,11 +45,11 @@ class Styles(object):
 
     @staticmethod
     def load(root):
-        styles = [
-            Style.load(element=element)
-            for element in root
-            if element.tag == 'style'
-        ]
+        styles = []
+        for element in root:
+            if element.tag == 'style':
+                style = Style.load(element)
+                styles.append(style)
         return Styles(styles)
 
     def get_styles_by_type(self, style_type):

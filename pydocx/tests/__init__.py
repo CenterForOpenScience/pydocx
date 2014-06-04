@@ -129,13 +129,13 @@ class Docx2HtmlNoStyle(Docx2Html):
 
 class DocumentGeneratorTestCase(TestCase):
     def wrap_body_xml(self, body_xml):
-        xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <document><body>%s</body></document>
         ''' % body_xml
         return xml
 
     def wrap_style_xml(self, style_xml):
-        xml = b'''<?xml version="1.0" encoding="UTF-8"?>
+        xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <styles>%s</styles>
         ''' % style_xml
         return xml

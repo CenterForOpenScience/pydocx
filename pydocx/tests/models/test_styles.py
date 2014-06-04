@@ -7,7 +7,7 @@ from __future__ import (
 from unittest import TestCase
 from xml.etree import cElementTree
 
-from pydocx.styles import (
+from pydocx.models.styles import (
     Styles,
     Style,
     RunProperties,

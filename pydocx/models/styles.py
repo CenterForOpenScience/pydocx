@@ -37,7 +37,9 @@ class Style(XmlModel):
 
 
 class Styles(object):
-    def __init__(self, styles):
+    def __init__(self, styles=None):
+        if styles is None:
+            styles = []
         self.styles = styles
         styles_by_type = defaultdict(dict)
         for style in self.styles:

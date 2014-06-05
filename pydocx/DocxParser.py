@@ -21,10 +21,10 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.exceptions import MalformedDocxException
+from pydocx.managers.styles import StylesManager
 from pydocx.models.styles import (
     ParagraphProperties,
     RunProperties,
-    Styles,
 )
 from pydocx.util.memoize import MulitMemoizeMixin
 from pydocx.util.preprocessor import PydocxPreProcessor
@@ -216,11 +216,10 @@ class DocxParser(MulitMemoizeMixin):
             self.numbering_root = numbering_part.root_element
 
         self.page_width = self._get_page_width(main_document_part.root_element)
-        if main_document_part.style_definitions_part:
-            root = main_document_part.style_definitions_part.root_element
-        else:
-            root = []
-        self.styles = Styles.load(root)
+        styles_manager = StylesManager(
+            main_document_part.style_definitions_part,
+        )
+        self.styles = styles_manager.styles
         self.parse_begin(main_document_part.root_element)
 
     def parse_begin(self, el):

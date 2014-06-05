@@ -10,15 +10,6 @@ import posixpath
 
 from abc import abstractmethod, ABCMeta
 
-from pydocx.utils import (
-    MulitMemoizeMixin,
-    PydocxPreProcessor,
-    find_all,
-    find_ancestor_with_tag,
-    find_first,
-    get_list_style,
-    has_descendant_with_tag,
-)
 from pydocx.constants import (
     EMUS_PER_PIXEL,
     INDENTATION_FIRST_LINE,
@@ -34,6 +25,15 @@ from pydocx.models.styles import (
     ParagraphProperties,
     RunProperties,
     Styles,
+)
+from pydocx.util.memoize import MulitMemoizeMixin
+from pydocx.util.preprocessor import PydocxPreProcessor
+from pydocx.util.xml import (
+    find_all,
+    find_ancestor_with_tag,
+    find_first,
+    get_list_style,
+    has_descendant_with_tag,
 )
 from pydocx.wordml import WordprocessingDocument
 

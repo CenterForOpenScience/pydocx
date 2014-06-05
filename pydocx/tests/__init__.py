@@ -20,9 +20,9 @@ except ImportError:
 from pydocx.models.styles import Styles
 from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.util.zip import ZipFile
 from pydocx.utils import (
     parse_xml_from_string,
-    ZipFile,
 )
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase

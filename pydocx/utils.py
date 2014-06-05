@@ -5,8 +5,6 @@ from __future__ import (
 )
 
 import re
-import zipfile
-from contextlib import contextmanager
 
 from collections import Hashable, defaultdict
 from xml.etree import cElementTree
@@ -530,16 +528,6 @@ def convert_dictionary_to_style_fragment(style):
 def convert_dictionary_to_html_attributes(attributes):
     items = sorted(attributes.items())
     return ' '.join('%s="%s"' % item for item in items)
-
-
-@contextmanager
-def ZipFile(path, mode='r'):  # This is not needed in python 3.2+
-    try:
-        f = zipfile.ZipFile(path, mode)
-    except zipfile.BadZipfile:
-        raise MalformedDocxException('Passed in document is not a docx')
-    yield f
-    f.close()
 
 
 def xml_tag_split(tag):

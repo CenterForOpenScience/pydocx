@@ -18,7 +18,7 @@ from pydocx.tests import (
     BASE_HTML,
 )
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.utils import ZipFile
+from pydocx.util.zip import ZipFile
 from pydocx.exceptions import MalformedDocxException
 
 

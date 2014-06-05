@@ -480,3 +480,71 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             expected_html,
             style=style,
         )
+
+    def test_character_style_may_only_be_based_on_character_style(self):
+        # character styles may only be based on other character styles
+        # otherwise, the based on specification should be ignored
+        style = '''
+            <style styleId="one" type="paragraph">
+              <rPr>
+                <b val="on"/>
+              </rPr>
+            </style>
+            <style styleId="two" type="character">
+              <basedOn val="one"/>
+              <rPr>
+                <i val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <r>
+                <rPr>
+                  <rStyle val="two"/>
+                </rPr>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p><em>aaa</em></p>'
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )
+
+    def test_paragraph_style_may_only_be_based_on_paragraph_style(self):
+        # paragraph styles may only be based on other paragraph styles
+        # otherwise, the based on specification should be ignored
+        style = '''
+            <style styleId="one" type="character">
+              <rPr>
+                <b val="on"/>
+              </rPr>
+            </style>
+            <style styleId="two" type="paragraph">
+              <basedOn val="one"/>
+              <rPr>
+                <i val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <pPr>
+                <pStyle val="two"/>
+              </pPr>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p><em>aaa</em></p>'
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )

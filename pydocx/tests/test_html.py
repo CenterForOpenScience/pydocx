@@ -494,11 +494,11 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '''
             <p>
-              <strong>
+              <span class="pydocx-underline">
                 <em>
-                  <span class="pydocx-underline">aaa</span>
+                  <strong>aaa</strong>
                 </em>
-              </strong>
+              </span>
             </p>
         '''
         self.assert_xml_body_matches_expected_html(

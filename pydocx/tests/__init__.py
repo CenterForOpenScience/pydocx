@@ -17,6 +17,7 @@ except ImportError:
     from StringIO import StringIO
     BytesIO = StringIO
 
+from pydocx.managers.styles import StylesManager
 from pydocx.models.styles import Styles
 from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.parsers.Docx2Html import Docx2Html
@@ -215,7 +216,8 @@ class XMLDocx2Html(Docx2Html):
         self.document_xml = kwargs.pop('document_xml')
         self.relationships = kwargs.pop('relationships')
         self.numbering_dict = kwargs.pop('numbering_dict', None) or {}
-        self.styles = Styles([])
+        self.styles = Styles()
+        self.styles_manager = StylesManager()
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):

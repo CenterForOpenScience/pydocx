@@ -169,7 +169,6 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
-        self.properties = {}
 
         self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
@@ -197,12 +196,12 @@ class DocxParser(MulitMemoizeMixin):
     def parse_run_properties(self, el, parsed, stack):
         properties = RunProperties.load(el)
         parent = stack[-1]['element']
-        self.properties[parent] = properties
+        self.styles_manager.save_properties_for_element(parent, properties)
 
     def parse_paragraph_properties(self, el, parsed, stack):
         properties = ParagraphProperties.load(el)
         parent = stack[-1]['element']
-        self.properties[parent] = properties
+        self.styles_manager.save_properties_for_element(parent, properties)
 
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
@@ -216,10 +215,10 @@ class DocxParser(MulitMemoizeMixin):
             self.numbering_root = numbering_part.root_element
 
         self.page_width = self._get_page_width(main_document_part.root_element)
-        styles_manager = StylesManager(
+        self.styles_manager = StylesManager(
             main_document_part.style_definitions_part,
         )
-        self.styles = styles_manager.styles
+        self.styles = self.styles_manager.styles
         self.parse_begin(main_document_part.root_element)
 
     def parse_begin(self, el):
@@ -247,41 +246,6 @@ class DocxParser(MulitMemoizeMixin):
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
             return pgSz / TWIPS_PER_POINT
-
-    def resolve_properties_for_run(self, el, stack):
-        parent_paragraph = stack[-1]['element']
-        parent_paragraph_properties = self.properties.get(parent_paragraph)
-
-        properties = {}
-        if parent_paragraph_properties and \
-                parent_paragraph_properties.parent_style:
-            paragraph_styles = self.styles.get_styles_by_type('paragraph')
-            parent_paragraph_style = paragraph_styles.get(
-                parent_paragraph_properties.parent_style,
-            )
-            if parent_paragraph_style and \
-                    parent_paragraph_style.run_properties:
-                properties = dict(
-                    parent_paragraph_style.run_properties.items()
-                )
-
-        direct_properties = self.properties.get(el)
-        if direct_properties:
-            if direct_properties.parent_style:
-                character_styles = self.styles.get_styles_by_type('character')
-                parent_character_style = character_styles.get(
-                    direct_properties.parent_style,
-                )
-                if parent_character_style and \
-                        parent_character_style.run_properties:
-                    properties.update(
-                        dict(parent_character_style.run_properties.items())
-                    )
-
-            properties.update(dict(direct_properties.items()))
-
-        run_properties = RunProperties(**properties)
-        return run_properties
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
@@ -711,7 +675,10 @@ class DocxParser(MulitMemoizeMixin):
         if not text:
             return ''
 
-        properties = self.resolve_properties_for_run(el, stack)
+        properties = self.styles_manager.get_resolved_properties_for_element(
+            el,
+            stack,
+        )
 
         styles_needing_application = []
 

@@ -4,13 +4,14 @@ from __future__ import (
     unicode_literals,
 )
 
-from collections import Hashable, defaultdict
+from collections import defaultdict
 
 from pydocx.constants import (
     UPPER_ROMAN_TO_HEADING_VALUE,
     TAGS_HOLDING_CONTENT_TAGS,
     TAGS_CONTAINING_CONTENT,
 )
+from pydocx.util.memoize import MulitMemoizeMixin
 from pydocx.util.xml import (
     filter_children,
     find_first,
@@ -19,43 +20,6 @@ from pydocx.util.xml import (
     get_list_style,
     has_descendant_with_tag,
 )
-
-
-class MulitMemoize(object):
-    '''
-    Adapted from: https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
-    func_names = {
-        'find_all': find_all,
-        ...
-    }
-    '''
-    def __init__(self, func_names):
-        self.cache = dict((func_name, {}) for func_name in func_names)
-        self.func_names = func_names
-
-    def __call__(self, func_name, *args):
-        if not isinstance(args, Hashable):
-            # uncacheable. a list, for instance.
-            # better to not cache than blow up.
-            return self.func_names[func_name](*args)
-        if args in self.cache[func_name]:
-            return self.cache[func_name][args]
-        else:
-            value = self.func_names[func_name](*args)
-            self.cache[func_name][args] = value
-            return value
-
-
-class MulitMemoizeMixin(object):
-    def __init__(self, *args, **kwargs):
-        super(MulitMemoizeMixin, self).__init__(*args, **kwargs)
-        self._memoization = None
-
-    def memod_tree_op(self, func_name, *args):
-        return self._memoization(func_name, *args)
-
-    def populate_memoization(self, func_names):
-        self._memoization = MulitMemoize(func_names)
 
 
 class NamespacedNumId(object):

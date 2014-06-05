@@ -12,19 +12,13 @@ from pydocx.constants import (
     TAGS_CONTAINING_CONTENT,
 )
 from pydocx.util.xml import (
+    filter_children,
     find_first,
     find_all,
     find_ancestor_with_tag,
     get_list_style,
     has_descendant_with_tag,
 )
-
-
-def _filter_children(element, tags):
-    return [
-        el for el in element.getchildren()
-        if el.tag in tags
-    ]
 
 
 class MulitMemoize(object):
@@ -285,11 +279,11 @@ class PydocxPreProcessor(MulitMemoizeMixin):
     def _set_table_attributes(self, el):
         tables = find_all(el, 'tbl')
         for table in tables:
-            rows = _filter_children(table, ['tr'])
+            rows = filter_children(table, ['tr'])
             if rows is None:
                 continue
             for i, row in enumerate(rows):
-                tcs = _filter_children(row, ['tc'])
+                tcs = filter_children(row, ['tc'])
                 for j, child in enumerate(tcs):
                     self.meta_data[child]['row_index'] = i
                     self.meta_data[child]['column_index'] = j
@@ -388,7 +382,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         def _get_children_with_content(el):
             # We only care about children if they have text in them.
             children = []
-            for child in _filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
+            for child in filter_children(el, TAGS_HOLDING_CONTENT_TAGS):
                 _has_descendant_with_tag = any(
                     has_descendant_with_tag(child, tag) for
                     tag in TAGS_CONTAINING_CONTENT

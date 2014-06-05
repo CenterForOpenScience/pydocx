@@ -10,6 +10,13 @@ from xml.etree import cElementTree
 from pydocx.exceptions import MalformedDocxException
 
 
+def filter_children(element, tags):
+    return [
+        el for el in element.getchildren()
+        if el.tag in tags
+    ]
+
+
 def el_iter(el):
     """
     Go through all elements

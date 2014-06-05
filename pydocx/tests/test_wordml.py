@@ -5,12 +5,10 @@ from __future__ import (
 )
 
 import unittest
-from xml.etree import cElementTree
 
 from pydocx.packaging import ZipPackage
 from pydocx.util.xml import xml_tag_split
 from pydocx.wordml import MainDocumentPart, WordprocessingDocument
-from pydocx.xml import XmlNamespaceManager
 
 
 class ZipPackageTestCase(unittest.TestCase):
@@ -106,47 +104,3 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
         parts = image_document.main_document_part.image_parts
         self.assertEqual(len(parts), 1)
         self.assertEqual(parts[0].uri, '/word/media/image1.gif')
-
-
-class XmlNamespaceManagerTestCase(unittest.TestCase):
-    def test_namespace_manager(self):
-        xml = '''<?xml version="1.0" encoding="UTF-8"?>
-            <a:foo
-                xmlns:a="http://example/test" xmlns:b="http://example2/test2">
-                <a:cat />
-                <b:dog />
-                <a:mouse><a:bat /></a:mouse>
-            </a:foo>
-        '''
-        root = cElementTree.fromstring(xml)
-        manager = XmlNamespaceManager()
-        manager.add_namespace('http://example/test')
-        tags = []
-        for element in manager.iterate_children(root):
-            tags.append(element.tag)
-        expected_tags = [
-            '{http://example/test}cat',
-            '{http://example/test}mouse',
-        ]
-        self.assertEqual(tags, expected_tags)
-
-        manager.add_namespace('http://example2/test2')
-        tags = []
-        for element in manager.iterate_children(root):
-            tags.append(element.tag)
-        expected_tags = [
-            '{http://example/test}cat',
-            '{http://example2/test2}dog',
-            '{http://example/test}mouse',
-        ]
-        self.assertEqual(tags, expected_tags)
-
-        manager = XmlNamespaceManager()
-        manager.add_namespace('http://example2/test2')
-        tags = []
-        for element in manager.iterate_children(root):
-            tags.append(element.tag)
-        expected_tags = [
-            '{http://example2/test2}dog',
-        ]
-        self.assertEqual(tags, expected_tags)

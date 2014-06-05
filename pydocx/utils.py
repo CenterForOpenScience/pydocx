@@ -11,22 +11,12 @@ from contextlib import contextmanager
 from collections import Hashable, defaultdict
 from xml.etree import cElementTree
 
+from pydocx.constants import (
+    UPPER_ROMAN_TO_HEADING_VALUE,
+    TAGS_HOLDING_CONTENT_TAGS,
+    TAGS_CONTAINING_CONTENT,
+)
 from pydocx.exceptions import MalformedDocxException
-
-
-UPPER_ROMAN_TO_HEADING_VALUE = 'h2'
-TAGS_CONTAINING_CONTENT = (
-    't',
-    'pict',
-    'drawing',
-    'delText',
-    'ins',
-)
-TAGS_HOLDING_CONTENT_TAGS = (
-    'p',
-    'tbl',
-    'sdt',
-)
 
 
 class MulitMemoize(object):

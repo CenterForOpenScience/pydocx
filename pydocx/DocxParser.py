@@ -19,6 +19,16 @@ from pydocx.utils import (
     get_list_style,
     has_descendant_with_tag,
 )
+from pydocx.constants import (
+    EMUS_PER_PIXEL,
+    INDENTATION_FIRST_LINE,
+    INDENTATION_LEFT,
+    INDENTATION_RIGHT,
+    JUSTIFY_CENTER,
+    JUSTIFY_LEFT,
+    JUSTIFY_RIGHT,
+    TWIPS_PER_POINT,
+)
 from pydocx.exceptions import MalformedDocxException
 from pydocx.models.styles import (
     ParagraphProperties,
@@ -29,22 +39,6 @@ from pydocx.wordml import WordprocessingDocument
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
-
-
-# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
-EMUS_PER_PIXEL = 9525
-USE_ALIGNMENTS = True
-
-# https://en.wikipedia.org/wiki/Twip
-TWIPS_PER_POINT = 20
-
-JUSTIFY_CENTER = 'center'
-JUSTIFY_LEFT = 'left'
-JUSTIFY_RIGHT = 'right'
-
-INDENTATION_RIGHT = 'right'
-INDENTATION_LEFT = 'left'
-INDENTATION_FIRST_LINE = 'firstLine'
 
 
 class IterativeXmlParser(object):

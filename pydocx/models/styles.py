@@ -33,6 +33,7 @@ class Style(XmlModel):
     style_id = Attribute(name='styleId', default='')
     name = ChildTag(attrname='val', default='')
     run_properties = ChildTag(type=RunProperties, name='rPr')
+    parent_style = ChildTag(name='basedOn', attrname='val')
 
 
 class Styles(object):

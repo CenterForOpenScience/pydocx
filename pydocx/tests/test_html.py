@@ -399,3 +399,84 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
             expected_html,
             style=style,
         )
+
+
+class StyleBasedOnTestCase(DocumentGeneratorTestCase):
+    def test_loop_detection(self):
+        style = '''
+            <style styleId="one">
+              <basedOn val="three"/>
+              <rPr>
+                <b val="on"/>
+              </rPr>
+            </style>
+            <style styleId="two">
+              <basedOn val="one"/>
+            </style>
+            <style styleId="three">
+              <basedOn val="two"/>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <pPr>
+                <pStyle val="three"/>
+              </pPr>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p><strong>aaa</strong></p>'
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )
+
+    def test_styles_are_inherited(self):
+        style = '''
+            <style styleId="one">
+              <rPr>
+                <b val="on"/>
+              </rPr>
+            </style>
+            <style styleId="two">
+              <basedOn val="one"/>
+              <rPr>
+                <i val="on"/>
+              </rPr>
+            </style>
+            <style styleId="three">
+              <basedOn val="two"/>
+              <rPr>
+                <u val="single"/>
+              </rPr>
+            </style>
+        '''
+
+        xml_body = '''
+            <p>
+              <pPr>
+                <pStyle val="three"/>
+              </pPr>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+        expected_html = '''
+            <p>
+              <strong>
+                <em>
+                  <span class="pydocx-underline">aaa</span>
+                </em>
+              </strong>
+            </p>
+        '''
+        self.assert_xml_body_matches_expected_html(
+            xml_body,
+            expected_html,
+            style=style,
+        )

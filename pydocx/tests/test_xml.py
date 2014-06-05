@@ -1147,25 +1147,6 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
         return xml
 
 
-class MultipleTTagsInRTag(_TranslationTestCase):
-    expected_output = '''
-        <p>ABC</p>
-    '''
-
-    def get_xml(self):
-        r_tag = DXB.r_tag(
-            [DXB.t_tag(letter) for letter in 'ABC'],
-        )
-        p_tag = DXB.p_tag(
-            [r_tag],
-            jc='start',
-        )
-        body = p_tag
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class SuperAndSubScripts(_TranslationTestCase):
     expected_output = '''
         <p>AAA<sup>BBB</sup></p>
@@ -1327,27 +1308,6 @@ class UnicodeTestCase(_TranslationTestCase):
             body += tag
         xml = DXB.xml(body)
         return xml
-
-
-class NoTextInTTagTestCase(_TranslationTestCase):
-    expected_output = """
-    """
-
-    def get_xml(self):
-        tags = [
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag(None)],
-                    ),
-                ],
-            ),
-        ]
-
-        body = b''
-        for tag in tags:
-            body += tag
-        return DXB.xml(body)
 
 
 class NestedListTestCase(_TranslationTestCase):

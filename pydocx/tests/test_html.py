@@ -7,6 +7,32 @@ from __future__ import (
 from pydocx.tests import DocumentGeneratorTestCase
 
 
+class ParagraphTestCase(DocumentGeneratorTestCase):
+    def test_multiple_text_tags_in_a_single_run_tag(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t>A</t>
+                <t>B</t>
+                <t>C</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p>ABC</p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_empty_text_tag(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t></t>
+              </r>
+            </p>
+        '''
+        expected_html = ''
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+
 class HeadingTestCase(DocumentGeneratorTestCase):
     def test_character_stylings_are_ignored(self):
         # Even though the heading1 style has bold enabled, it's being ignored

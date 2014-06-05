@@ -8,7 +8,7 @@ import posixpath
 from collections import defaultdict
 
 from pydocx.packaging import ZipPackage
-from pydocx.utils import parse_xml_from_string
+from pydocx.util.xml import parse_xml_from_string
 
 
 class OpenXmlPartContainer(object):

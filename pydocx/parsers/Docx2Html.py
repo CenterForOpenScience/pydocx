@@ -14,7 +14,7 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.DocxParser import DocxParser
-from pydocx.utils import (
+from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
 )

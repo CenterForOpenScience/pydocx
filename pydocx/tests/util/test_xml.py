@@ -8,7 +8,7 @@ from unittest import TestCase
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
-from pydocx.utils import (
+from pydocx.util.xml import (
     el_iter,
     find_all,
     find_first,

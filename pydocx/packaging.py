@@ -10,9 +10,7 @@ from collections import defaultdict
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
-from pydocx.utils import (
-    xml_tag_split,
-)
+from pydocx.util.xml import xml_tag_split
 from pydocx.xml import XmlNamespaceManager
 
 

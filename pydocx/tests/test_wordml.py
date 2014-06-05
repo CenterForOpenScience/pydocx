@@ -8,9 +8,7 @@ import unittest
 from xml.etree import cElementTree
 
 from pydocx.packaging import ZipPackage
-from pydocx.utils import (
-    xml_tag_split,
-)
+from pydocx.util.xml import xml_tag_split
 from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 from pydocx.xml import XmlNamespaceManager
 

@@ -16,7 +16,7 @@ from pydocx.tests import (
     XMLDocx2Html,
     _TranslationTestCase,
 )
-from pydocx.utils import parse_xml_from_string, find_all
+from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
 
 

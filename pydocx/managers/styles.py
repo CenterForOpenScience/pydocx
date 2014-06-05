@@ -19,43 +19,42 @@ class StylesManager(object):
         else:
             self.styles = Styles()
         self.properties_for_elements = {}
+        self.properties_cache = {}
+        self.tag_to_style_type_map = {
+            'p': 'paragraph',
+            'r': 'character',
+        }
+
+    def get_style_type_for_element(self, element):
+        return self.tag_to_style_type_map.get(element.tag)
 
     def save_properties_for_element(self, element, properties):
         self.properties_for_elements[element] = properties
 
+    def resolve_properties_for_element(self, element):
+        properties_dict = {}
+        properties = self.properties_for_elements.get(element)
+        style_type = self.get_style_type_for_element(element)
+        if properties and style_type:
+            if properties.parent_style:
+                styles = self.styles.get_styles_by_type(style_type)
+                style = styles.get(properties.parent_style)
+                if style and style.run_properties:
+                    properties_dict.update(dict(style.run_properties.items()))
+            if style_type == 'character':
+                properties_dict.update(dict(properties.items()))
+        return properties_dict
+
     def get_resolved_properties_for_element(self, el, stack):
-        parent_paragraph = stack[-1]['element']
-        parent_paragraph_properties = self.properties_for_elements.get(
-            parent_paragraph,
-        )
-
         properties = {}
-        if parent_paragraph_properties and \
-                parent_paragraph_properties.parent_style:
-            paragraph_styles = self.styles.get_styles_by_type('paragraph')
-            parent_paragraph_style = paragraph_styles.get(
-                parent_paragraph_properties.parent_style,
-            )
-            if parent_paragraph_style and \
-                    parent_paragraph_style.run_properties:
-                properties = dict(
-                    parent_paragraph_style.run_properties.items()
-                )
 
-        direct_properties = self.properties_for_elements.get(el)
-        if direct_properties:
-            if direct_properties.parent_style:
-                character_styles = self.styles.get_styles_by_type('character')
-                parent_character_style = character_styles.get(
-                    direct_properties.parent_style,
-                )
-                if parent_character_style and \
-                        parent_character_style.run_properties:
-                    properties.update(
-                        dict(parent_character_style.run_properties.items())
-                    )
+        for item in stack:
+            element = item['element']
+            properties.update(self.resolve_properties_for_element(element))
 
-            properties.update(dict(direct_properties.items()))
+        properties.update(
+            self.resolve_properties_for_element(el),
+        )
 
         run_properties = RunProperties(**properties)
         return run_properties

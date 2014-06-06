@@ -141,18 +141,28 @@ class DocumentGeneratorTestCase(TestCase):
     def wrap_xml(self, xml):
         return '<?xml version="1.0" encoding="UTF-8"?>%s' % xml
 
-    def wrap_body_xml(self, body_xml):
+    def wrap_body_xml(self, xml):
         return self.wrap_xml(
-            '<document><body>%s</body></document>' % body_xml,
+            '<document><body>%s</body></document>' % xml,
         )
 
-    def wrap_style_xml(self, style_xml):
+    def wrap_style_xml(self, xml):
         return self.wrap_xml(
-            '<styles>%s</styles>' % style_xml,
+            '<styles>%s</styles>' % xml,
+        )
+
+    def wrap_numbering_xml(self, xml):
+        return self.wrap_xml(
+            '<numbering>%s</numbering>' % xml,
         )
 
     @contextmanager
-    def build_and_convert_document_to_html(self, body=None, style=None):
+    def build_and_convert_document_to_html(
+        self,
+        body=None,
+        style=None,
+        numbering=None,
+    ):
         fixture_path = os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
@@ -162,26 +172,35 @@ class DocumentGeneratorTestCase(TestCase):
         word_directory = os.path.join(docx_structure_fixture, 'word')
         document_xml_path = os.path.join(word_directory, 'document.xml')
         style_xml_path = os.path.join(word_directory, 'styles.xml')
+        numbering_xml_path = os.path.join(word_directory, 'numbering.xml')
+        files_to_generate = [
+            (body, document_xml_path, self.wrap_body_xml),
+            (style, style_xml_path, self.wrap_style_xml),
+            (numbering, numbering_xml_path, self.wrap_numbering_xml),
+        ]
         files_to_cleanup = []
         try:
-            if body is not None:
-                with open(document_xml_path, 'w') as f:
-                    f.write(self.wrap_body_xml(body))
-                files_to_cleanup.append(document_xml_path)
-            if style is not None:
-                with open(style_xml_path, 'w') as f:
-                    f.write(self.wrap_style_xml(style))
-                files_to_cleanup.append(style_xml_path)
+            for xml, xml_path, wrapper in files_to_generate:
+                if xml is None:
+                    continue
+                with open(xml_path, 'w') as f:
+                    f.write(wrapper(xml))
+                files_to_cleanup.append(xml_path)
+
+            list_of_files_to_archive = []
+            for root, dirs, files in os.walk(docx_structure_fixture):
+                for f in files:
+                    full_path = os.path.join(root, f)
+                    arcname = os.path.relpath(
+                        full_path,
+                        docx_structure_fixture,
+                    )
+                    list_of_files_to_archive.append((full_path, arcname))
+
             zip_file = tempfile.NamedTemporaryFile()
             with ZipFile(zip_file.name, 'w') as zf:
-                for root, dirs, files in os.walk(docx_structure_fixture):
-                    for f in files:
-                        full_path = os.path.join(root, f)
-                        arcname = os.path.relpath(
-                            full_path,
-                            docx_structure_fixture,
-                        )
-                        zf.write(full_path, arcname)
+                for full_path, arcname in list_of_files_to_archive:
+                    zf.write(full_path, arcname)
             yield zip_file.name
         finally:
             for f in files_to_cleanup:

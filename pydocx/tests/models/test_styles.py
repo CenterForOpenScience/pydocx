@@ -92,7 +92,7 @@ class StyleTestCase(TestCase):
         self.assertEqual(style.run_properties.bold.value, 'on')
         assert bool(style.run_properties.bold)
 
-    def test_based_on_parent_style(self):
+    def test_basedOn_sets_parent_style_attribute(self):
         xml = b'''
             <style styleId="foo">
               <basedOn val="bar" />

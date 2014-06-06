@@ -66,77 +66,42 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         )
 
     def test_each_heading_level(self):
-        style = '''
-            <style styleId="heading1" type="paragraph">
-              <name val="Heading 1"/>
-            </style>
-            <style styleId="heading2" type="paragraph">
-              <name val="Heading 2"/>
-            </style>
-            <style styleId="heading3" type="paragraph">
-              <name val="Heading 3"/>
-            </style>
-            <style styleId="heading4" type="paragraph">
-              <name val="Heading 4"/>
-            </style>
-            <style styleId="heading5" type="paragraph">
-              <name val="Heading 5"/>
-            </style>
-            <style styleId="heading6" type="paragraph">
-              <name val="Heading 6"/>
+        style_template = '''
+            <style styleId="heading%s" type="paragraph">
+              <name val="Heading %s"/>
             </style>
         '''
 
-        xml_body = '''
+        style = ''.join(
+            style_template % (i, i)
+            for i in range(1, 7)
+        )
+
+        paragraph_template = '''
             <p>
               <pPr>
-                <pStyle val="heading1"/>
+                <pStyle val="%s"/>
               </pPr>
               <r>
-                <t>aaa</t>
-              </r>
-            </p>
-            <p>
-              <pPr>
-                <pStyle val="heading2"/>
-              </pPr>
-              <r>
-                <t>bbb</t>
-              </r>
-            </p>
-            <p>
-              <pPr>
-                <pStyle val="heading3"/>
-              </pPr>
-              <r>
-                <t>ccc</t>
-              </r>
-            </p>
-            <p>
-              <pPr>
-                <pStyle val="heading4"/>
-              </pPr>
-              <r>
-                <t>ddd</t>
-              </r>
-            </p>
-            <p>
-              <pPr>
-                <pStyle val="heading5"/>
-              </pPr>
-              <r>
-                <t>eee</t>
-              </r>
-            </p>
-            <p>
-              <pPr>
-                <pStyle val="heading6"/>
-              </pPr>
-              <r>
-                <t>fff</t>
+                <t>%s</t>
               </r>
             </p>
         '''
+
+        style_to_text = [
+            ('heading1', 'aaa'),
+            ('heading2', 'bbb'),
+            ('heading3', 'ccc'),
+            ('heading4', 'ddd'),
+            ('heading5', 'eee'),
+            ('heading6', 'fff'),
+        ]
+
+        xml_body = ''.join(
+            paragraph_template % entry
+            for entry in style_to_text
+        )
+
         expected_html = '''
             <h1>aaa</h1>
             <h2>bbb</h2>

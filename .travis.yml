@@ -1,6 +1,6 @@
 language: python
 install: pip install tox
-script: tox -v
+script: tox -v -- --verbose
 notifications:
   email:
     - jason.louard.ward@gmail.com

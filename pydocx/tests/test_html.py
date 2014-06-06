@@ -558,3 +558,79 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             expected_html,
             style=style,
         )
+
+
+class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
+    def test_default_no_val_set(self):
+        xml_body = '''
+            <p>
+              <r>
+                <rPr>
+                  <b />
+                </rPr>
+                <t>foo</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p><strong>foo</strong></p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_enabled(self):
+        vals = [
+            'true',
+            'on',
+            '1',
+            '',
+        ]
+        paragraph_template = '''
+            <p>
+              <r>
+                <rPr>
+                  <b val="%s" />
+                </rPr>
+                <t>foo</t>
+              </r>
+            </p>
+        '''
+        xml_body = ''.join(
+            paragraph_template % val
+            for val in vals
+        )
+
+        expected_html = '''
+            <p><strong>foo</strong></p>
+            <p><strong>foo</strong></p>
+            <p><strong>foo</strong></p>
+            <p><strong>foo</strong></p>
+        '''
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_disabled(self):
+        vals = [
+            'off',
+            'false',
+            'none',
+            '0',
+        ]
+        paragraph_template = '''
+            <p>
+              <r>
+                <rPr>
+                  <b val="%s" />
+                </rPr>
+                <t>foo</t>
+              </r>
+            </p>
+        '''
+        xml_body = ''.join(
+            paragraph_template % val
+            for val in vals
+        )
+
+        expected_html = '''
+            <p>foo</p>
+            <p>foo</p>
+            <p>foo</p>
+            <p>foo</p>
+        '''
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)

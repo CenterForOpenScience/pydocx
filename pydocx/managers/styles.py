@@ -24,9 +24,6 @@ class StylesManager(object):
             'r': 'character',
         }
 
-    def get_style_type_for_element(self, element):
-        return self.tag_to_style_type_map.get(element.tag)
-
     def save_properties_for_element(self, element, properties):
         self.properties_for_elements[element] = properties
 
@@ -103,7 +100,7 @@ class StylesManager(object):
         '''
         properties_dict = {}
         properties = self.properties_for_elements.get(element)
-        style_type = self.get_style_type_for_element(element)
+        style_type = self.tag_to_style_type_map.get(element.tag)
         if properties and style_type:
             if properties.parent_style:
                 run_properties_dict = self._get_merged_style_chain(

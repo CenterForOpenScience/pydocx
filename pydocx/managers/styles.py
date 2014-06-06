@@ -12,6 +12,11 @@ from pydocx.models.styles import (
 
 
 class StylesManager(object):
+    '''
+    A class that is responsible for managing per-element direct formatting
+    properties, and resolving style chain references defined within that
+    formatting.
+    '''
     def __init__(self, style_definitions_part=None):
         self.style_definitions_part = style_definitions_part
         if style_definitions_part:

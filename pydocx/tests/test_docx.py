@@ -36,7 +36,6 @@ class ConvertDocxToHtmlTestCase(TestCase):
     cases = (
         'all_configured_styles',
         'has_title',
-        'headers',
         'inline_tags',
         'has_missing_image',
         'justification',

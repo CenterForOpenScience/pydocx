@@ -636,3 +636,29 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p>foo</p>
         '''
         self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
+    def test_invalid_vals_do_not_create_strong(self):
+        vals = [
+            'foo',
+            'bar',
+        ]
+        paragraph_template = '''
+            <p>
+              <r>
+                <rPr>
+                  <b val="%s" />
+                </rPr>
+                <t>foo</t>
+              </r>
+            </p>
+        '''
+        xml_body = ''.join(
+            paragraph_template % val
+            for val in vals
+        )
+
+        expected_html = '''
+            <p>foo</p>
+            <p>foo</p>
+        '''
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)

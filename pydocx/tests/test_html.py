@@ -8,7 +8,9 @@ from pydocx.tests import DocumentGeneratorTestCase
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):
-    def test_multiple_text_tags_in_a_single_run_tag(self):
+    def test_multiple_text_tags_in_a_single_run_tag_create_single_paragraph(
+        self,
+    ):
         xml_body = '''
             <p>
               <r>
@@ -21,7 +23,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>ABC</p>'
         self.assert_xml_body_matches_expected_html(xml_body, expected_html)
 
-    def test_empty_text_tag(self):
+    def test_empty_text_tag_does_not_create_paragraph(self):
         xml_body = '''
             <p>
               <r>
@@ -412,7 +414,7 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
 
 
 class StyleBasedOnTestCase(DocumentGeneratorTestCase):
-    def test_loop_detection(self):
+    def test_style_chain_ends_when_loop_is_detected(self):
         style = '''
             <style styleId="one">
               <basedOn val="three"/>
@@ -491,7 +493,7 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             style=style,
         )
 
-    def test_character_style_may_only_be_based_on_character_style(self):
+    def test_basedon_ignored_for_character_based_on_paragraph(self):
         # character styles may only be based on other character styles
         # otherwise, the based on specification should be ignored
         style = '''
@@ -525,7 +527,7 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             style=style,
         )
 
-    def test_paragraph_style_may_only_be_based_on_paragraph_style(self):
+    def test_basedon_ignored_for_paragraph_based_on_character(self):
         # paragraph styles may only be based on other paragraph styles
         # otherwise, the based on specification should be ignored
         style = '''
@@ -575,7 +577,7 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
         expected_html = '<p><strong>foo</strong></p>'
         self.assert_xml_body_matches_expected_html(xml_body, expected_html)
 
-    def test_enabled(self):
+    def test_valid_enable_vals_create_strong(self):
         vals = [
             'true',
             'on',
@@ -605,7 +607,7 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_xml_body_matches_expected_html(xml_body, expected_html)
 
-    def test_disabled(self):
+    def test_valid_disabled_vals_do_not_create_strong(self):
         vals = [
             'off',
             'false',

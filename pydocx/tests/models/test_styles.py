@@ -92,6 +92,15 @@ class StyleTestCase(TestCase):
         self.assertEqual(style.run_properties.bold.value, 'on')
         assert bool(style.run_properties.bold)
 
+    def test_basedOn_sets_parent_style_attribute(self):
+        xml = b'''
+            <style styleId="foo">
+              <basedOn val="bar" />
+            </style>
+        '''
+        style = self._load_styles_from_xml(xml)
+        self.assertEqual(style.parent_style, 'bar')
+
 
 class StylesTestCase(TestCase):
     def _load_styles_from_xml(self, xml):

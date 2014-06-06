@@ -8,54 +8,16 @@ from __future__ import (
 import base64
 import xml.sax.saxutils
 
-from pydocx.DocxParser import DocxParser, TWIPS_PER_POINT
-from pydocx.utils import (
+from pydocx.constants import (
+    POINTS_PER_EM,
+    PYDOCX_STYLES,
+    TWIPS_PER_POINT,
+)
+from pydocx.DocxParser import DocxParser
+from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
 )
-
-POINTS_PER_EM = 12
-
-PYDOCX_STYLES = {
-    'insert': {
-        'color': 'green',
-    },
-    'delete': {
-        'color': 'red',
-        'text-decoration': 'line-through',
-    },
-    'center': {
-        'text-align': 'center',
-    },
-    'right': {
-        'text-align': 'right',
-    },
-    'left': {
-        'text-align': 'left',
-    },
-    'comment': {
-        'color': 'blue',
-    },
-    'underline': {
-        'text-decoration': 'underline',
-    },
-    'caps': {
-        'text-transform': 'uppercase',
-    },
-    'small-caps': {
-        'font-variant': 'small-caps',
-    },
-    'strike': {
-        'text-decoration': 'line-through',
-    },
-    'hidden': {
-        'visibility': 'hidden',
-    },
-    'tab': {
-        'display': 'inline-block',
-        'width': '4em',
-    },
-}
 
 
 class Docx2Html(DocxParser):

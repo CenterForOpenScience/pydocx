@@ -33,10 +33,13 @@ class Style(XmlModel):
     style_id = Attribute(name='styleId', default='')
     name = ChildTag(attrname='val', default='')
     run_properties = ChildTag(type=RunProperties, name='rPr')
+    parent_style = ChildTag(name='basedOn', attrname='val')
 
 
 class Styles(object):
-    def __init__(self, styles):
+    def __init__(self, styles=None):
+        if styles is None:
+            styles = []
         self.styles = styles
         styles_by_type = defaultdict(dict)
         for style in self.styles:

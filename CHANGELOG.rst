@@ -1,3 +1,7 @@
+**0.3.23**
+
+- Added support for style basedOn property
+
 **0.3.22**
 
 - Fixed a bug in which the run paragraph mark properties were used as run

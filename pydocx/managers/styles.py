@@ -31,7 +31,23 @@ class StylesManager(object):
     def save_properties_for_element(self, element, properties):
         self.properties_for_elements[element] = properties
 
-    def get_style(self, style_type, style_id):
+    def _get_style_chain_stack(self, style_type, style_id):
+        '''
+        Given a style_type and style_id, return the hierarchy of styles ordered
+        ascending.
+
+        For example, given the following style specification:
+
+        styleA -> styleB
+        styleB -> styleC
+
+        If this method is called using style_id=styleA, the result will be:
+
+        styleA
+        styleB
+        styleC
+        '''
+
         visited_styles = set()
         visited_styles.add(style_id)
 
@@ -56,6 +72,14 @@ class StylesManager(object):
             visited_styles.add(style.style_id)
             style_stack.append(style)
             current_style = style
+        return style_stack
+
+    def _get_merged_style_chain(self, style_type, style_id):
+        '''
+        Given a style type and style id, calculate the style chain stack and
+        return the merged properties between each style in the stack.
+        '''
+        style_stack = self._get_style_chain_stack(style_type, style_id)
 
         run_properties = {}
         for style in reversed(style_stack):
@@ -63,13 +87,28 @@ class StylesManager(object):
                 run_properties.update(dict(style.run_properties.items()))
         return run_properties
 
-    def resolve_properties_for_element(self, element):
+    def _resolve_properties_for_element(self, element):
+        '''
+        Given an element return the "resolved" properties for that element.
+
+        A resolved property set includes the element's direct properties, plus
+        any globally defined styles that the element may reference.
+
+        For example, given the following direct formatting:
+
+        bold=True
+        style="Normal"
+
+        The returned result would be a merge between the properties defined by
+        the style chain defined by "Normal" and the direct formatting specified
+        by the element, with the direct formatting taking precedence.
+        '''
         properties_dict = {}
         properties = self.properties_for_elements.get(element)
         style_type = self.get_style_type_for_element(element)
         if properties and style_type:
             if properties.parent_style:
-                run_properties_dict = self.get_style(
+                run_properties_dict = self._get_merged_style_chain(
                     style_type,
                     properties.parent_style,
                 )
@@ -79,15 +118,16 @@ class StylesManager(object):
         return properties_dict
 
     def get_resolved_properties_for_element(self, el, stack):
+        '''
+        Given an element and a stack of ancestors, calculate the properties at
+        each level, merge the properties, and return the result.
+        '''
         properties = {}
 
         for item in stack:
             element = item['element']
-            properties.update(self.resolve_properties_for_element(element))
+            properties.update(self._resolve_properties_for_element(element))
 
-        properties.update(
-            self.resolve_properties_for_element(el),
-        )
-
+        properties.update(self._resolve_properties_for_element(el))
         run_properties = RunProperties(**properties)
         return run_properties

@@ -47,7 +47,6 @@ class StylesManager(object):
         styleB
         styleC
         '''
-
         visited_styles = set()
         visited_styles.add(style_id)
 

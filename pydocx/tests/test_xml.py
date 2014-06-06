@@ -1287,29 +1287,6 @@ class AvaliableInlineTags(_TranslationTestCase):
         return xml
 
 
-class UnicodeTestCase(_TranslationTestCase):
-    expected_output = """
-        <p>\U0010001f</p>
-    """
-
-    def get_xml(self):
-        tags = [
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag(r'&#x10001F;')],
-                    ),
-                ],
-            ),
-        ]
-
-        body = b''
-        for tag in tags:
-            body += tag
-        xml = DXB.xml(body)
-        return xml
-
-
 class NestedListTestCase(_TranslationTestCase):
     expected_output = u"""
     <ol list-style-type="decimal">

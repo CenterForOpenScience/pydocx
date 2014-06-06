@@ -32,6 +32,17 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = ''
         self.assert_xml_body_matches_expected_html(xml_body, expected_html)
 
+    def test_unicode_character(self):
+        xml_body = '''
+            <p>
+              <r>
+                <t>&#x10001F;</t>
+              </r>
+            </p>
+        '''
+        expected_html = '<p>\U0010001f</p>'
+        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+
 
 class HeadingTestCase(DocumentGeneratorTestCase):
     def test_character_stylings_are_ignored(self):

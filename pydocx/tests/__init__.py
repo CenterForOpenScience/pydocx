@@ -18,8 +18,11 @@ except ImportError:
     BytesIO = StringIO
 
 from pydocx.managers.styles import StylesManager
-from pydocx.models.styles import Styles
-from pydocx.wordml import MainDocumentPart, WordprocessingDocument
+from pydocx.wordml import (
+    MainDocumentPart,
+    StyleDefinitionsPart,
+    WordprocessingDocument,
+)
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.util.xml import parse_xml_from_string
 from pydocx.util.zip import ZipFile
@@ -214,10 +217,9 @@ class XMLDocx2Html(Docx2Html):
     def __init__(self, *args, **kwargs):
         # Pass in nothing for the path
         self.document_xml = kwargs.pop('document_xml')
-        self.relationships = kwargs.pop('relationships')
+        self.relationships = kwargs.pop('relationships') or []
         self.numbering_dict = kwargs.pop('numbering_dict', None) or {}
-        self.styles = Styles()
-        self.styles_manager = StylesManager()
+        self.styles_xml = kwargs.pop('styles_xml', '')
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
@@ -227,28 +229,36 @@ class XMLDocx2Html(Docx2Html):
             uri='/word/document.xml',
         )
 
-        if self.relationships:
-            for relationship in self.relationships:
-                target_mode = 'Internal'
-                if relationship['external']:
-                    target_mode = 'External'
-                target_uri = relationship['target_path']
-                if 'data' in relationship:
-                    full_target_uri = posixpath.join(
-                        package.uri,
-                        'word',
-                        target_uri,
-                    )
-                    package.streams[full_target_uri] = BytesIO(
-                        relationship['data'],
-                    )
-                    package.create_part(uri=full_target_uri)
-                document_part.create_relationship(
-                    target_uri=target_uri,
-                    target_mode=target_mode,
-                    relationship_type=relationship['relationship_type'],
-                    relationship_id=relationship['relationship_id'],
+        if self.styles_xml:
+            self.relationships.append({
+                'external': False,
+                'target_path': 'styles.xml',
+                'data': self.styles_xml,
+                'relationship_id': 'styles',
+                'relationship_type': StyleDefinitionsPart.relationship_type,
+            })
+
+        for relationship in self.relationships:
+            target_mode = 'Internal'
+            if relationship['external']:
+                target_mode = 'External'
+            target_uri = relationship['target_path']
+            if 'data' in relationship:
+                full_target_uri = posixpath.join(
+                    package.uri,
+                    'word',
+                    target_uri,
                 )
+                package.streams[full_target_uri] = BytesIO(
+                    relationship['data'],
+                )
+                package.create_part(uri=full_target_uri)
+            document_part.create_relationship(
+                target_uri=target_uri,
+                target_mode=target_mode,
+                relationship_type=relationship['relationship_type'],
+                relationship_id=relationship['relationship_id'],
+            )
 
         package.streams[document_part.uri] = BytesIO(self.document_xml)
         package.create_relationship(
@@ -266,6 +276,11 @@ class XMLDocx2Html(Docx2Html):
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.
         self.page_width = 612
+
+        self.styles_manager = StylesManager(
+            self.document.main_document_part.style_definitions_part,
+        )
+        self.styles = self.styles_manager.styles
 
         self.parse_begin(self.document.main_document_part.root_element)
 
@@ -296,6 +311,7 @@ class _TranslationTestCase(TestCase):
     parser = XMLDocx2Html
     use_base_html = True
     convert_root_level_upper_roman = False
+    styles_xml = None
 
     def get_xml(self):
         raise NotImplementedError()
@@ -323,6 +339,7 @@ class _TranslationTestCase(TestCase):
             document_xml=tree,
             relationships=self.relationships,
             numbering_dict=self.numbering_dict,
+            styles_xml=self.styles_xml,
         ).parsed
 
         if self.use_base_html:

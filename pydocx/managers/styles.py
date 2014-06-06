@@ -19,7 +19,6 @@ class StylesManager(object):
         else:
             self.styles = Styles()
         self.properties_for_elements = {}
-        self.properties_cache = {}
         self.tag_to_style_type_map = {
             'p': 'paragraph',
             'r': 'character',

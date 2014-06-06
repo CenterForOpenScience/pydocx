@@ -138,17 +138,18 @@ class DocumentGeneratorTestCase(TestCase):
     Each test case needs to call `assert_xml_body_matches_expected_html`
     '''
 
+    def wrap_xml(self, xml):
+        return '<?xml version="1.0" encoding="UTF-8"?>%s' % xml
+
     def wrap_body_xml(self, body_xml):
-        xml = '''<?xml version="1.0" encoding="UTF-8"?>
-        <document><body>%s</body></document>
-        ''' % body_xml
-        return xml
+        return self.wrap_xml(
+            '<document><body>%s</body></document>' % body_xml,
+        )
 
     def wrap_style_xml(self, style_xml):
-        xml = '''<?xml version="1.0" encoding="UTF-8"?>
-        <styles>%s</styles>
-        ''' % style_xml
-        return xml
+        return self.wrap_xml(
+            '<styles>%s</styles>' % style_xml,
+        )
 
     @contextmanager
     def build_and_convert_document_to_html(self, body=None, style=None):

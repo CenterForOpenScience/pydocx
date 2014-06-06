@@ -74,7 +74,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         style = ''.join(
             style_template % (i, i)
-            for i in range(1, 7)
+            for i in range(1, 11)
         )
 
         paragraph_template = '''
@@ -95,6 +95,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             ('heading4', 'ddd'),
             ('heading5', 'eee'),
             ('heading6', 'fff'),
+            ('heading7', 'ggg'),
+            ('heading8', 'hhh'),
+            ('heading9', 'iii'),
+            ('heading10', 'jjj'),
         ]
 
         xml_body = ''.join(
@@ -109,6 +113,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <h4>ddd</h4>
             <h5>eee</h5>
             <h6>fff</h6>
+            <h6>ggg</h6>
+            <h6>hhh</h6>
+            <h6>iii</h6>
+            <h6>jjj</h6>
         '''
         self.assert_xml_body_matches_expected_html(
             xml_body,

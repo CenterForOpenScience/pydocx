@@ -44,6 +44,8 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # GGG is expected to be "upperRoman". This is showing that only top
         # level upperRomans are converted.
         'list_to_header',
+        'external_image',
+        'has_missing_image',
         'lists_with_styles',
         'missing_numbering',
         'missing_style',

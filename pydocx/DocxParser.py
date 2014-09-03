@@ -28,6 +28,7 @@ from pydocx.models.styles import (
 )
 from pydocx.util.memoize import MulitMemoizeMixin
 from pydocx.util.preprocessor import PydocxPreProcessor
+from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
     find_all,
     find_ancestor_with_tag,
@@ -585,7 +586,10 @@ class DocxParser(MulitMemoizeMixin):
         if blip is not None:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
-            return blip.get('embed')
+            r_id = blip.get('embed')
+            if r_id is None:
+                r_id = blip.get('link')
+            return r_id
         # Picts
         imagedata = find_first(el, 'imagedata')
         if imagedata is not None:
@@ -633,7 +637,11 @@ class DocxParser(MulitMemoizeMixin):
             image_part = self.document.main_document_part.get_part_by_id(
                 relationship_id=relationship_id,
             )
-            data = image_part.stream.read()
+            is_uri_external = uri_is_external(image_part.uri)
+            if is_uri_external:
+                data = image_part.uri
+            else:
+                data = image_part.stream.read()
         except KeyError:
             return ''
         _, filename = posixpath.split(image_part.uri)
@@ -642,6 +650,7 @@ class DocxParser(MulitMemoizeMixin):
             filename,
             x,
             y,
+            uri_is_external=is_uri_external,
         )
 
     def parse_t(self, el, parsed, stack):
@@ -744,12 +753,12 @@ class DocxParser(MulitMemoizeMixin):
         return text
 
     @abstractmethod
-    def image_handler(self, image_data, path):
+    def image_handler(self, image_data, path, uri_is_external):
         return path
 
     @abstractmethod
-    def image(self, data, filename, x, y):
-        return self.image_handler(data, filename)
+    def image(self, data, filename, x, y, uri_is_external):
+        return self.image_handler(data, filename, uri_is_external)
 
     @abstractmethod
     def deletion(self, text, author, date):

@@ -28,6 +28,7 @@ from pydocx.models.styles import (
 )
 from pydocx.util.memoize import MulitMemoizeMixin
 from pydocx.util.preprocessor import PydocxPreProcessor
+from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
     find_all,
     find_ancestor_with_tag,
@@ -636,8 +637,8 @@ class DocxParser(MulitMemoizeMixin):
             image_part = self.document.main_document_part.get_part_by_id(
                 relationship_id=relationship_id,
             )
-            uri_is_external = image_part.uri_is_external()
-            if uri_is_external:
+            is_uri_external = uri_is_external(image_part.uri)
+            if is_uri_external:
                 data = image_part.uri
             else:
                 data = image_part.stream.read()
@@ -649,7 +650,7 @@ class DocxParser(MulitMemoizeMixin):
             filename,
             x,
             y,
-            uri_is_external=uri_is_external,
+            uri_is_external=is_uri_external,
         )
 
     def parse_t(self, el, parsed, stack):

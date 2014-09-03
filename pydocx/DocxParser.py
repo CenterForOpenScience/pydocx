@@ -10,37 +10,146 @@ import posixpath
 
 from abc import abstractmethod, ABCMeta
 
-from pydocx import types
-from pydocx.utils import (
-    MulitMemoizeMixin,
-    PydocxPreProcessor,
+from pydocx.constants import (
+    EMUS_PER_PIXEL,
+    INDENTATION_FIRST_LINE,
+    INDENTATION_LEFT,
+    INDENTATION_RIGHT,
+    JUSTIFY_CENTER,
+    JUSTIFY_LEFT,
+    JUSTIFY_RIGHT,
+    TWIPS_PER_POINT,
+)
+from pydocx.exceptions import MalformedDocxException
+from pydocx.managers.styles import StylesManager
+from pydocx.models.styles import (
+    ParagraphProperties,
+    RunProperties,
+)
+from pydocx.util.memoize import MulitMemoizeMixin
+from pydocx.util.preprocessor import PydocxPreProcessor
+from pydocx.util.xml import (
     find_all,
     find_ancestor_with_tag,
     find_first,
     get_list_style,
     has_descendant_with_tag,
 )
-from pydocx.exceptions import MalformedDocxException
 from pydocx.wordml import WordprocessingDocument
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 
-# http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
-EMUS_PER_PIXEL = 9525
-USE_ALIGNMENTS = True
+class IterativeXmlParser(object):
+    '''
+    The IterativeXmlParser is an abstract class for parsing/processing each
+    level of an XML data source.
 
-# https://en.wikipedia.org/wiki/Twip
-TWIPS_PER_POINT = 20
+    `visited` may optionally be passed in as an external object for keeping
+    track of elements that have been processed. If not passed in, this class
+    maintains its own list of visited elements.
 
-JUSTIFY_CENTER = 'center'
-JUSTIFY_LEFT = 'left'
-JUSTIFY_RIGHT = 'right'
+    To be useful, this class must be subclassed to override the
+    `process_tag_completion` method.
+    '''
 
-INDENTATION_RIGHT = 'right'
-INDENTATION_LEFT = 'left'
-INDENTATION_FIRST_LINE = 'firstLine'
+    def __init__(self, visited=None):
+        self.visited = visited
+        if self.visited is None:
+            self.visited = set()
+
+    def process_tag_completion(self, result_stack, element, stack):
+        '''
+        This handler is called when a level is completed, which means that all
+        nested levels have also been completed.
+
+        `result_stack` is a list of nested level results
+        `element` is the level that is being completed
+        `stack` is the stack elements above this element which are still being
+        processed.
+        '''
+        return result_stack
+
+    def parse(self, el):
+        # A stack to preserve a child iterator, the node and the node's output
+        stack = []
+
+        # A stack to preserve the output generated at the current node level.
+        # This stack gets joined together and pushed onto the parent node's
+        # stack when a level is finished
+        result_stack = []
+
+        # An iterator over the node's children
+        current_iter = iter([el])
+        while True:
+            next_item = None
+            try:
+                next_item = next(current_iter)
+            except StopIteration:
+                # If this happens it means that there are no more children in
+                # this node
+                pass
+
+            if next_item is None:
+                # There are no more children in this node, so we need to jump
+                # back to the parent node and render it
+                if stack:
+                    parent = stack.pop()
+                    current_iter = parent['iterator']
+                    result = self.process_tag_completion(
+                        result_stack,
+                        parent['element'],
+                        stack,
+                    )
+                    if result:
+                        parent['result'].append(result)
+                    result_stack = parent['result']
+                else:
+                    # There are no more parent nodes, we're done
+                    break
+            elif next_item not in self.visited:
+                self.visited.add(next_item)
+                stack.append({
+                    'element': next_item,
+                    'iterator': current_iter,
+                    'result': result_stack,
+                })
+                result_stack = []
+                current_iter = iter(next_item)
+        return result_stack
+
+
+class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
+    '''
+    An IterativeXmlParser that uses a tag-evaluating mechanism for evaluating
+    results at each tag level.
+    `tag_evaluator_mapping` is a dictionary consisting of the tag name as the
+    key, and the handler as the value.
+
+    When a tag is encountered, the handler is called. The handler must accept
+    three parameters: the element itself, the current result, and the parent
+    stack of elements.
+    '''
+
+    def __init__(self, tag_evaluator_mapping, visited=None):
+        super(TagEvaluatorStringJoinedIterativeXmlParser, self).__init__(
+            visited=visited,
+        )
+        self.tag_evaluator_mapping = tag_evaluator_mapping
+
+    def parse(self, el):
+        result = super(TagEvaluatorStringJoinedIterativeXmlParser, self).parse(
+            el,
+        )
+        return ''.join(result)
+
+    def process_tag_completion(self, result_stack, element, stack):
+        result = ''.join(result_stack)
+        func = self.tag_evaluator_mapping.get(element.tag)
+        if callable(func):
+            result = func(element, result, stack)
+        return result
 
 
 class DocxParser(MulitMemoizeMixin):
@@ -61,70 +170,56 @@ class DocxParser(MulitMemoizeMixin):
         self.visited = set()
         self.list_depth = 0
 
+        self.parse_tag_evaluator_mapping = {
+            'br': self.parse_break_tag,
+            'delText': self.parse_deletion,
+            'drawing': self.parse_image,
+            'hyperlink': self.parse_hyperlink,
+            'ins': self.parse_insertion,
+            'noBreakHyphen': self.parse_hyphen,
+            'pict': self.parse_image,
+            'pPr': self.parse_paragraph_properties,
+            'p': self.parse_p,
+            'r': self.parse_r,
+            'rPr': self.parse_run_properties,
+            'tab': self.parse_tab,
+            'tbl': self.parse_table,
+            'tc': self.parse_table_cell,
+            'tr': self.parse_table_row,
+            't': self.parse_t,
+        }
+        self.parser = TagEvaluatorStringJoinedIterativeXmlParser(
+            tag_evaluator_mapping=self.parse_tag_evaluator_mapping,
+            visited=self.visited,
+        )
+
+    def parse_run_properties(self, el, parsed, stack):
+        properties = RunProperties.load(el)
+        parent = stack[-1]['element']
+        self.styles_manager.save_properties_for_element(parent, properties)
+
+    def parse_paragraph_properties(self, el, parsed, stack):
+        properties = ParagraphProperties.load(el)
+        parent = stack[-1]['element']
+        self.styles_manager.save_properties_for_element(parent, properties)
+
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
         main_document_part = self.document.main_document_part
         if main_document_part is None:
             raise MalformedDocxException
 
-        self.root_element = main_document_part.root_element
         self.numbering_root = None
         numbering_part = main_document_part.numbering_definitions_part
         if numbering_part:
             self.numbering_root = numbering_part.root_element
 
-        pgSzEl = find_first(self.root_element, 'pgSz')
-        if pgSzEl is not None:
-            # pgSz is defined in twips, convert to points
-            pgSz = int(pgSzEl.attrib['w'])
-            self.page_width = pgSz / TWIPS_PER_POINT
-
-        self.styles_dict = self._parse_styles()
-        self.parse_begin(self.root_element)
-
-    def _parse_run_properties(self, rPr):
-        """
-        Takes an `rPr` and returns a dictionary contain the tag name mapped to
-        the child's value property.
-
-        If you have an rPr that looks like this:
-        <w:rPr>
-            <w:b/>
-            <w:u val="false"/>
-            <w:sz val="16"/>
-        </w:rPr>
-
-        That will result in a dictionary that looks like this:
-        {
-            'b': '',
-            'u': 'false',
-            'sz': '16',
-        }
-        """
-        run_properties = {}
-        if rPr is None:
-            return {}
-        for run_property in rPr:
-            val = run_property.get('val', '').lower()
-            run_properties[run_property.tag] = val
-        return run_properties
-
-    def _parse_styles(self):
-        styles_part = self.document.main_document_part.style_definitions_part
-        if not styles_part:
-            return {}
-        styles_root = styles_part.root_element
-        styles_dict = {}
-        for style in find_all(styles_root, 'style'):
-            style_val = find_first(style, 'name').attrib['val']
-            run_properties = find_first(style, 'rPr')
-            styles_dict[style.attrib['styleId']] = {
-                'style_name': style_val,
-                'default_run_properties': self._parse_run_properties(
-                    run_properties,
-                ),
-            }
-        return styles_dict
+        self.page_width = self._get_page_width(main_document_part.root_element)
+        self.styles_manager = StylesManager(
+            main_document_part.style_definitions_part,
+        )
+        self.styles = self.styles_manager.styles
+        self.parse_begin(main_document_part.root_element)
 
     def parse_begin(self, el):
         self.populate_memoization({
@@ -136,62 +231,33 @@ class DocxParser(MulitMemoizeMixin):
 
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles_dict=self.styles_dict,
+            styles=self.styles,
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(el)
-        self._parsed += self.parse(el)
+        self._parsed = self.parse(el)
 
     def parse(self, el):
-        if el in self.visited:
-            return ''
-        self.visited.add(el)
-        parsed = ''
-        for child in el:
-            # recursive. So you can get all the way to the bottom
-            parsed += self.parse(child)
-        if el.tag == 'br' and el.attrib.get('type') == 'page':
-            return self.parse_page_break(el, parsed)
-        elif el.tag == 'tbl':
-            return self.parse_table(el, parsed)
-        elif el.tag == 'tr':
-            return self.parse_table_row(el, parsed)
-        elif el.tag == 'tc':
-            return self.parse_table_cell(el, parsed)
-        elif el.tag == 'r':
-            return self.parse_r(el, parsed)
-        elif el.tag == 't':
-            return self.parse_t(el, parsed)
-        elif el.tag == 'tab':
-            return self.parse_tab(el, parsed)
-        elif el.tag == 'noBreakHyphen':
-            return self.parse_hyphen(el, parsed)
-        elif el.tag == 'br':
-            return self.parse_break_tag(el, parsed)
-        elif el.tag == 'delText':
-            return self.parse_deletion(el, parsed)
-        elif el.tag == 'p':
-            return self.parse_p(el, parsed)
-        elif el.tag == 'ins':
-            return self.parse_insertion(el, parsed)
-        elif el.tag == 'hyperlink':
-            return self.parse_hyperlink(el, parsed)
-        elif el.tag in ('pict', 'drawing'):
-            return self.parse_image(el)
-        else:
-            return parsed
+        return self.parser.parse(el)
 
-    def parse_page_break(self, el, text):
+    def _get_page_width(self, root_element):
+        pgSzEl = find_first(root_element, 'pgSz')
+        if pgSzEl is not None:
+            # pgSz is defined in twips, convert to points
+            pgSz = int(pgSzEl.attrib['w'])
+            return pgSz / TWIPS_PER_POINT
+
+    def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
         return self.page_break()
 
-    def parse_table(self, el, text):
+    def parse_table(self, el, text, stack):
         return self.table(text)
 
-    def parse_table_row(self, el, text):
+    def parse_table_row(self, el, text, stack):
         return self.table_row(text)
 
-    def parse_table_cell(self, el, text):
+    def parse_table_cell(self, el, text, stack):
         v_merge = find_first(el, 'vMerge')
         if v_merge is not None and (
                 'restart' != v_merge.get('val', '')):
@@ -204,7 +270,7 @@ class DocxParser(MulitMemoizeMixin):
             rowspan = ''
         return self.table_cell(text, colspan, rowspan)
 
-    def parse_list(self, el, text):
+    def parse_list(self, el, text, stack):
         """
         All the meat of building the list is done in _parse_list, however we
         call this method for two reasons: It is the naming convention we are
@@ -213,10 +279,10 @@ class DocxParser(MulitMemoizeMixin):
         this in _parse_list, however it seemed cleaner to do it here.
         """
         self.list_depth += 1
-        parsed = self._parse_list(el, text)
+        parsed = self._parse_list(el, text, stack)
         self.list_depth -= 1
         if self.pre_processor.is_in_table(el):
-            return self.parse_table_cell_contents(el, parsed)
+            return self.parse_table_cell_contents(el, parsed, stack)
         return parsed
 
     def get_list_style(self, num_id, ilvl):
@@ -239,8 +305,8 @@ class DocxParser(MulitMemoizeMixin):
                 list_style,
             )
 
-    def _parse_list(self, el, text):
-        parsed = self.parse_list_item(el, text)
+    def _parse_list(self, el, text, stack):
+        parsed = self.parse_list_item(el, text, stack)
         num_id = self.pre_processor.num_id(el)
         ilvl = self.pre_processor.ilvl(el)
         # Everything after this point assumes the first element is not also the
@@ -341,7 +407,7 @@ class DocxParser(MulitMemoizeMixin):
             return self.indent(text, alignment, firstLine, left, right)
         return text
 
-    def parse_p(self, el, text):
+    def parse_p(self, el, text, stack):
         if text == '':
             return ''
         # TODO This is still not correct, however it fixes the bug. We need to
@@ -349,13 +415,13 @@ class DocxParser(MulitMemoizeMixin):
         # but that is for another ticket.
         text = self.justification(el, text)
         if self.pre_processor.is_first_list_item(el):
-            return self.parse_list(el, text)
+            return self.parse_list(el, text, stack)
         if self.pre_processor.heading_level(el):
-            return self.parse_heading(el, text)
+            return self.parse_heading(el, text, stack)
         if self.pre_processor.is_list_item(el):
-            return self.parse_list_item(el, text)
+            return self.parse_list_item(el, text, stack)
         if self.pre_processor.is_in_table(el):
-            return self.parse_table_cell_contents(el, text)
+            return self.parse_table_cell_contents(el, text, stack)
         parsed = text
         # No p tags in li tags
         if self.list_depth == 0:
@@ -391,16 +457,16 @@ class DocxParser(MulitMemoizeMixin):
             return False
         return True
 
-    def parse_heading(self, el, parsed):
+    def parse_heading(self, el, parsed, stack):
         return self.heading(parsed, self.pre_processor.heading_level(el))
 
-    def parse_list_item(self, el, text):
+    def parse_list_item(self, el, text, stack):
         # If for whatever reason we are not currently in a list, then start
         # a list here. This will only happen if the num_id/ilvl combinations
         # between lists is not well formed.
         parsed = text
         if self.list_depth == 0:
-            return self.parse_list(el, parsed)
+            return self.parse_list(el, parsed, stack)
 
         def _should_parse_next_as_content(el):
             """
@@ -491,7 +557,7 @@ class DocxParser(MulitMemoizeMixin):
             return ''
         return grid_span.attrib['val']
 
-    def parse_table_cell_contents(self, el, text):
+    def parse_table_cell_contents(self, el, text, stack):
         parsed = text
 
         next_el = self.pre_processor.next(el)
@@ -500,7 +566,7 @@ class DocxParser(MulitMemoizeMixin):
                 parsed += self.break_tag()
         return parsed
 
-    def parse_hyperlink(self, el, text):
+    def parse_hyperlink(self, el, text, stack):
         relationship_id = el.get('id')
         package_part = self.document.main_document_part.package_part
         try:
@@ -560,7 +626,7 @@ class DocxParser(MulitMemoizeMixin):
             return x, y
         return 0, 0
 
-    def parse_image(self, el):
+    def parse_image(self, el, parsed, stack):
         x, y = self._get_image_size(el)
         relationship_id = self._get_image_id(el)
         try:
@@ -578,97 +644,68 @@ class DocxParser(MulitMemoizeMixin):
             y,
         )
 
-    def parse_t(self, el, parsed):
+    def parse_t(self, el, parsed, stack):
         if el.text is None:
             return ''
         return self.escape(el.text)
 
-    def parse_tab(self, el, parsed):
+    def parse_tab(self, el, parsed, stack):
         return self.tab()
 
-    def parse_hyphen(self, el, parsed):
+    def parse_hyphen(self, el, parsed, stack):
         return '-'
 
-    def parse_break_tag(self, el, parsed):
+    def parse_break_tag(self, el, parsed, stack):
+        if el.attrib.get('type') == 'page':
+            return self.parse_page_break(el, parsed, stack)
         return self.break_tag()
 
-    def parse_deletion(self, el, parsed):
+    def parse_deletion(self, el, parsed, stack):
         if el.text is None:
             return ''
         return self.deletion(el.text, '', '')
 
-    def parse_insertion(self, el, parsed):
+    def parse_insertion(self, el, parsed, stack):
         return self.insertion(parsed, '', '')
 
-    def parse_r(self, el, parsed):
+    def parse_r(self, el, text, stack):
         """
         Parse the running text.
         """
-        text = parsed
         if not text:
             return ''
 
-        run_properties = {}
+        properties = self.styles_manager.get_resolved_properties_for_element(
+            el,
+            stack,
+        )
 
-        # Get the rPr for the current style, they are the defaults.
-        p = find_ancestor_with_tag(self.pre_processor, el, 'p')
-        paragraph_style = self.memod_tree_op('find_first', p, 'pStyle')
-        if paragraph_style is not None:
-            style = paragraph_style.get('val')
-            style_defaults = self.styles_dict.get(style, {})
-            run_properties.update(
-                style_defaults.get('default_run_properties', {}),
-            )
-
-        # Get the rPr for the current r tag, they are overrides.
-        run_properties_element = el.find('rPr')
-        if run_properties_element:
-            local_run_properties = self._parse_run_properties(
-                run_properties_element,
-            )
-            run_properties.update(local_run_properties)
-
-        inline_tag_types = {
-            'b': types.OnOff,
-            'i': types.OnOff,
-            'u': types.Underline,
-            'caps': types.OnOff,
-            'smallCaps': types.OnOff,
-            'strike': types.OnOff,
-            'dstrike': types.OnOff,
-            'vanish': types.OnOff,
-            'webHidden': types.OnOff,
-        }
-
-        inline_tag_handlers = {
-            'b': self.bold,
-            'i': self.italics,
-            'u': self.underline,
-            'caps': self.caps,
-            'smallCaps': self.small_caps,
-            'strike': self.strike,
-            'dstrike': self.strike,
-            'vanish': self.hide,
-            'webHidden': self.hide,
-        }
         styles_needing_application = []
-        for property_name, property_value in run_properties.items():
-            # These tags are a little different, handle them separately
-            # from the rest.
-            # This could be a superscript or a subscript
-            if property_name == 'vertAlign':
-                if property_value == 'superscript':
-                    styles_needing_application.append(self.superscript)
-                elif property_value == 'subscript':
-                    styles_needing_application.append(self.subscript)
-            else:
-                if (
-                    property_name in inline_tag_handlers and
-                    inline_tag_types.get(property_name)(property_value)
-                ):
-                    styles_needing_application.append(
-                        inline_tag_handlers[property_name],
-                    )
+
+        property_rules = [
+            (properties.bold, True, self.bold),
+            (properties.italic, True, self.italics),
+            (properties.underline, True, self.underline),
+            (properties.caps, True, self.caps),
+            (properties.small_caps, True, self.small_caps),
+            (properties.strike, True, self.strike),
+            (properties.dstrike, True, self.strike),
+            (properties.vanish, True, self.hide),
+            (properties.hidden, True, self.hide),
+            (properties.vertical_align, 'superscript', self.superscript),
+            (properties.vertical_align, 'subscript', self.subscript),
+        ]
+        for actual_value, enabled_value, handler in property_rules:
+            if enabled_value is True and actual_value or (
+                    actual_value == enabled_value):
+                styles_needing_application.append(handler)
+
+        if self.underline in styles_needing_application:
+            for item in stack:
+                # If we're handling a hyperlink, disable underline styling
+                if item['element'].tag == 'hyperlink':
+                    styles_needing_application.remove(self.underline)
+                    break
 
         # Apply all the handlers.
         for func in styles_needing_application:

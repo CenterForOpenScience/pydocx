@@ -8,7 +8,7 @@ import posixpath
 from collections import defaultdict
 
 from pydocx.packaging import ZipPackage
-from pydocx.utils import parse_xml_from_string
+from pydocx.util.xml import parse_xml_from_string
 
 
 class OpenXmlPartContainer(object):
@@ -56,6 +56,8 @@ class OpenXmlPartContainer(object):
                     base,
                     relationship.target_uri,
                 )
+                if not open_xml_package.package.part_exists(part_uri):
+                    continue
                 part = child_part_type(
                     open_xml_package=open_xml_package,
                     uri=part_uri,

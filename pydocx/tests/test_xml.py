@@ -16,86 +16,8 @@ from pydocx.tests import (
     XMLDocx2Html,
     _TranslationTestCase,
 )
-from pydocx.utils import parse_xml_from_string, find_all
+from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
-
-
-class StyleIsOnTestCase(_TranslationTestCase):
-    expected_output = """
-        <p><strong>AAA</strong></p>
-        <p>BBB</p>
-        <p>CCC</p>
-        <p>DDD</p>
-        <p>EEE</p>
-        <p>FFF</p>
-        <p>GGG</p>
-    """
-
-    def get_xml(self):
-        tags = [
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('AAA')],
-                        rpr=DXB.rpr_tag({'b': None}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('BBB')],
-                        rpr=DXB.rpr_tag({'b': 'false'}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('CCC')],
-                        rpr=DXB.rpr_tag({'b': '0'}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('DDD')],
-                        rpr=DXB.rpr_tag({'u': 'none'}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('EEE')],
-                        rpr=DXB.rpr_tag({'u': ''}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('FFF')],
-                        rpr=DXB.rpr_tag({'u': None}),
-                    ),
-                ],
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('GGG')],
-                        rpr=DXB.rpr_tag({'b': 'off'}),
-                    ),
-                ],
-            ),
-        ]
-
-        body = b''
-        for tag in tags:
-            body += tag
-        xml = DXB.xml(body)
-        return xml
 
 
 class HyperlinkVanillaTestCase(_TranslationTestCase):
@@ -833,7 +755,7 @@ class LargeCellTestCase(_TranslationTestCase):
             # This finishes in under a second on python 2.7
             expected_time = 3
             if sys.version_info[0] == 3:
-                expected_time = 5  # Slower on python 3
+                expected_time = 6  # Slower on python 3
             error_message = 'Total time: %s; Expected time: %d' % (
                 total_time,
                 expected_time,
@@ -1091,104 +1013,6 @@ class SDTTestCase(_TranslationTestCase):
         return xml
 
 
-class HeadingTestCase(_TranslationTestCase):
-    expected_output = '''
-        <h1>AAA</h1>
-        <h2>BBB</h2>
-        <h3>CCC</h3>
-        <h4>DDD</h4>
-        <h5>EEE</h5>
-        <h6>GGG</h6>
-        <p>HHH</p>
-    '''
-
-    styles_dict = {
-        'style0': {
-            'style_name': 'heading 1',
-        },
-        'style1': {
-            'style_name': 'heading 2',
-        },
-        'style2': {
-            'style_name': 'heading 3',
-        },
-        'style3': {
-            'style_name': 'heading 4',
-        },
-        'style4': {
-            'style_name': 'heading 5',
-        },
-        'style5': {
-            'style_name': 'heading 6',
-        },
-    }
-
-    def get_xml(self):
-        p_tags = [
-            DXB.p_tag(text='AAA', style='style0'),
-            DXB.p_tag(text='BBB', style='style1'),
-            DXB.p_tag(text='CCC', style='style2'),
-            DXB.p_tag(text='DDD', style='style3'),
-            DXB.p_tag(text='EEE', style='style4'),
-            DXB.p_tag(text='GGG', style='style5'),
-            DXB.p_tag(text='HHH', style='garbage'),
-        ]
-        body = b''
-        for tag in p_tags:
-            body += tag
-
-        xml = DXB.xml(body)
-        return xml
-
-
-class StyledBoldingTestCase(_TranslationTestCase):
-    expected_output = '''
-        <p><strong>AAA</strong></p>
-        <p><strong>BBB</strong></p>
-        <p>CCC</p>
-    '''
-
-    styles_dict = {
-        'style0': {
-            'style_name': 'p1',
-            'default_run_properties': {
-                'b': '',
-            }
-        },
-    }
-
-    def get_xml(self):
-        p_tags = [
-            DXB.p_tag(text='AAA', style='style0'),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('BBB')],
-                        # Don't do duplicates
-                        rpr=DXB.rpr_tag({'b': None}),
-                    ),
-                ],
-                style='style0',
-            ),
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag('CCC')],
-                        # Overwrite the current style
-                        rpr=DXB.rpr_tag({'b': 'false'}),
-                    ),
-                ],
-                style='style0',
-            ),
-        ]
-        body = b''
-        for tag in p_tags:
-            body += tag
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class RomanNumeralToHeadingTestCase(_TranslationTestCase):
     convert_root_level_upper_roman = True
     numbering_dict = {
@@ -1240,25 +1064,6 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
         body = b''
         for text, ilvl, numId in li_text:
             body += DXB.li(text=text, ilvl=ilvl, numId=numId)
-
-        xml = DXB.xml(body)
-        return xml
-
-
-class MultipleTTagsInRTag(_TranslationTestCase):
-    expected_output = '''
-        <p>ABC</p>
-    '''
-
-    def get_xml(self):
-        r_tag = DXB.r_tag(
-            [DXB.t_tag(letter) for letter in 'ABC'],
-        )
-        p_tag = DXB.p_tag(
-            [r_tag],
-            jc='start',
-        )
-        body = p_tag
 
         xml = DXB.xml(body)
         return xml
@@ -1402,50 +1207,6 @@ class AvaliableInlineTags(_TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
-
-
-class UnicodeTestCase(_TranslationTestCase):
-    expected_output = """
-        <p>\U0010001f</p>
-    """
-
-    def get_xml(self):
-        tags = [
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag(r'&#x10001F;')],
-                    ),
-                ],
-            ),
-        ]
-
-        body = b''
-        for tag in tags:
-            body += tag
-        xml = DXB.xml(body)
-        return xml
-
-
-class NoTextInTTagTestCase(_TranslationTestCase):
-    expected_output = """
-    """
-
-    def get_xml(self):
-        tags = [
-            DXB.p_tag(
-                [
-                    DXB.r_tag(
-                        [DXB.t_tag(None)],
-                    ),
-                ],
-            ),
-        ]
-
-        body = b''
-        for tag in tags:
-            body += tag
-        return DXB.xml(body)
 
 
 class NestedListTestCase(_TranslationTestCase):

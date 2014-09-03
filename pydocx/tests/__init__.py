@@ -4,8 +4,10 @@ from __future__ import (
     unicode_literals,
 )
 
+import os
 import posixpath
 import re
+import tempfile
 from contextlib import contextmanager
 from xml.dom import minidom
 
@@ -15,11 +17,15 @@ except ImportError:
     from StringIO import StringIO
     BytesIO = StringIO
 
-from pydocx.wordml import MainDocumentPart, WordprocessingDocument
-from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.utils import (
-    parse_xml_from_string,
+from pydocx.managers.styles import StylesManager
+from pydocx.wordml import (
+    MainDocumentPart,
+    StyleDefinitionsPart,
+    WordprocessingDocument,
 )
+from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.util.xml import parse_xml_from_string
+from pydocx.util.zip import ZipFile
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from unittest import TestCase
 
@@ -49,6 +55,14 @@ BASE_HTML = '''
     <body>%%s</body>
 </html>
 ''' % STYLE
+
+
+BASE_HTML_NO_STYLE = '''
+<html>
+    <head></head>
+    <body>%s</body>
+</html>
+'''
 
 
 def prettify(xml_string):
@@ -110,6 +124,111 @@ def collapse_html(html):
     return html.strip()
 
 
+class Docx2HtmlNoStyle(Docx2Html):
+    def style(self):
+        return ''
+
+
+class DocumentGeneratorTestCase(TestCase):
+    '''
+    A test case class that can be inherited to compare xml fragments with their
+    resulting HTML output.  This is achieved by generating a document container
+    on the fly in a temporary location and then using the parser to convert
+    that document.
+    Each test case needs to call `assert_xml_body_matches_expected_html`
+    '''
+
+    def wrap_xml(self, xml):
+        return '<?xml version="1.0" encoding="UTF-8"?>%s' % xml
+
+    def wrap_body_xml(self, xml):
+        return self.wrap_xml(
+            '<document><body>%s</body></document>' % xml,
+        )
+
+    def wrap_style_xml(self, xml):
+        return self.wrap_xml(
+            '<styles>%s</styles>' % xml,
+        )
+
+    def wrap_numbering_xml(self, xml):
+        return self.wrap_xml(
+            '<numbering>%s</numbering>' % xml,
+        )
+
+    @contextmanager
+    def build_and_convert_document_to_html(
+        self,
+        body=None,
+        style=None,
+        numbering=None,
+    ):
+        fixture_path = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'fixtures',
+        )
+        docx_structure_fixture = os.path.join(fixture_path, 'docx_structure')
+        word_directory = os.path.join(docx_structure_fixture, 'word')
+        document_xml_path = os.path.join(word_directory, 'document.xml')
+        style_xml_path = os.path.join(word_directory, 'styles.xml')
+        numbering_xml_path = os.path.join(word_directory, 'numbering.xml')
+        files_to_generate = [
+            (body, document_xml_path, self.wrap_body_xml),
+            (style, style_xml_path, self.wrap_style_xml),
+            (numbering, numbering_xml_path, self.wrap_numbering_xml),
+        ]
+        files_to_cleanup = []
+        try:
+            for xml, xml_path, wrapper in files_to_generate:
+                if xml is None:
+                    continue
+                with open(xml_path, 'w') as f:
+                    f.write(wrapper(xml))
+                files_to_cleanup.append(xml_path)
+
+            list_of_files_to_archive = []
+            for root, dirs, files in os.walk(docx_structure_fixture):
+                for f in files:
+                    full_path = os.path.join(root, f)
+                    arcname = os.path.relpath(
+                        full_path,
+                        docx_structure_fixture,
+                    )
+                    list_of_files_to_archive.append((full_path, arcname))
+
+            zip_file = tempfile.NamedTemporaryFile()
+            with ZipFile(zip_file.name, 'w') as zf:
+                for full_path, arcname in list_of_files_to_archive:
+                    zf.write(full_path, arcname)
+            yield zip_file.name
+        finally:
+            for f in files_to_cleanup:
+                os.unlink(f)
+
+    def assert_xml_body_matches_expected_html(
+        self,
+        body,
+        expected,
+        style=None,
+    ):
+        '''
+        Given an XML body, generate a document container, then convert that
+        container to HTML and compare it with the given result.
+        '''
+        manager = self.build_and_convert_document_to_html(
+            body=body,
+            style=style,
+        )
+        with manager as docx_path:
+            actual = Docx2HtmlNoStyle(docx_path).parsed
+            expected = BASE_HTML_NO_STYLE % expected
+            if not html_is_equal(actual, expected):
+                actual = prettify(actual)
+                message = 'The expected HTML did not match the actual HTML:'
+                raise AssertionError(message + '\n' + actual)
+
+
 class XMLDocx2Html(Docx2Html):
     """
     Create the object without passing in a path to the document, set them
@@ -118,9 +237,9 @@ class XMLDocx2Html(Docx2Html):
     def __init__(self, *args, **kwargs):
         # Pass in nothing for the path
         self.document_xml = kwargs.pop('document_xml')
-        self.relationships = kwargs.pop('relationships')
+        self.relationships = kwargs.pop('relationships') or []
         self.numbering_dict = kwargs.pop('numbering_dict', None) or {}
-        self.styles_dict = kwargs.pop('styles_dict', None) or {}
+        self.styles_xml = kwargs.pop('styles_xml', '')
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
@@ -130,28 +249,36 @@ class XMLDocx2Html(Docx2Html):
             uri='/word/document.xml',
         )
 
-        if self.relationships:
-            for relationship in self.relationships:
-                target_mode = 'Internal'
-                if relationship['external']:
-                    target_mode = 'External'
-                target_uri = relationship['target_path']
-                if 'data' in relationship:
-                    full_target_uri = posixpath.join(
-                        package.uri,
-                        'word',
-                        target_uri,
-                    )
-                    package.streams[full_target_uri] = BytesIO(
-                        relationship['data'],
-                    )
-                    package.create_part(uri=full_target_uri)
-                document_part.create_relationship(
-                    target_uri=target_uri,
-                    target_mode=target_mode,
-                    relationship_type=relationship['relationship_type'],
-                    relationship_id=relationship['relationship_id'],
+        if self.styles_xml:
+            self.relationships.append({
+                'external': False,
+                'target_path': 'styles.xml',
+                'data': self.styles_xml,
+                'relationship_id': 'styles',
+                'relationship_type': StyleDefinitionsPart.relationship_type,
+            })
+
+        for relationship in self.relationships:
+            target_mode = 'Internal'
+            if relationship['external']:
+                target_mode = 'External'
+            target_uri = relationship['target_path']
+            if 'data' in relationship:
+                full_target_uri = posixpath.join(
+                    package.uri,
+                    'word',
+                    target_uri,
                 )
+                package.streams[full_target_uri] = BytesIO(
+                    relationship['data'],
+                )
+                package.create_part(uri=full_target_uri)
+            document_part.create_relationship(
+                target_uri=target_uri,
+                target_mode=target_mode,
+                relationship_type=relationship['relationship_type'],
+                relationship_id=relationship['relationship_id'],
+            )
 
         package.streams[document_part.uri] = BytesIO(self.document_xml)
         package.create_relationship(
@@ -169,6 +296,11 @@ class XMLDocx2Html(Docx2Html):
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.
         self.page_width = 612
+
+        self.styles_manager = StylesManager(
+            self.document.main_document_part.style_definitions_part,
+        )
+        self.styles = self.styles_manager.styles
 
         self.parse_begin(self.document.main_document_part.root_element)
 
@@ -194,12 +326,12 @@ DEFAULT_NUMBERING_DICT = {
 class _TranslationTestCase(TestCase):
     expected_output = None
     relationships = None
-    styles_dict = None
     numbering_dict = DEFAULT_NUMBERING_DICT
     run_expected_output = True
     parser = XMLDocx2Html
     use_base_html = True
     convert_root_level_upper_roman = False
+    styles_xml = None
 
     def get_xml(self):
         raise NotImplementedError()
@@ -227,7 +359,7 @@ class _TranslationTestCase(TestCase):
             document_xml=tree,
             relationships=self.relationships,
             numbering_dict=self.numbering_dict,
-            styles_dict=self.styles_dict,
+            styles_xml=self.styles_xml,
         ).parsed
 
         if self.use_base_html:

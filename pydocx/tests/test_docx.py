@@ -18,7 +18,7 @@ from pydocx.tests import (
     BASE_HTML,
 )
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.utils import ZipFile
+from pydocx.util.zip import ZipFile
 from pydocx.exceptions import MalformedDocxException
 
 
@@ -34,35 +34,35 @@ class ConvertDocxToHtmlTestCase(TestCase):
     )
 
     cases = (
-        'simple',
-        'nested_lists',
-        'simple_lists',
-        'inline_tags',
         'all_configured_styles',
-        'special_chars',
-        'table_col_row_span',
-        'nested_table_rowspan',
-        'nested_tables',
-        'list_in_table',
-        'tables_in_lists',
-        'track_changes_on',
-        'headers',
-        'split_header',
-        'lists_with_styles',
         'has_title',
-        'simple_table',
+        'inline_tags',
+        'has_missing_image',
         'justification',
-        'missing_style',
-        'missing_numbering',
-        'styled_bolding',
-        'no_break_hyphen',
-        'shift_enter',
+        'list_in_table',
         # In the expected HTML output for "list_to_header", the list element
         # GGG is expected to be "upperRoman". This is showing that only top
         # level upperRomans are converted.
         'list_to_header',
-        'has_missing_image',
         'external_image',
+        'has_missing_image',
+        'lists_with_styles',
+        'missing_numbering',
+        'missing_style',
+        'nested_lists',
+        'nested_table_rowspan',
+        'nested_tables',
+        'no_break_hyphen',
+        'shift_enter',
+        'simple',
+        'simple_lists',
+        'simple_table',
+        'special_chars',
+        'split_header',
+        'styled_bolding',
+        'table_col_row_span',
+        'tables_in_lists',
+        'track_changes_on',
     )
 
     @classmethod

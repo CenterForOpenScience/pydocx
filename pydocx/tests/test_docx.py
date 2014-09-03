@@ -62,6 +62,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # level upperRomans are converted.
         'list_to_header',
         'has_missing_image',
+        'external_image',
     )
 
     @classmethod

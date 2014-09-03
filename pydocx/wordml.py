@@ -25,6 +25,13 @@ class ImagePart(OpenXmlPart):
         'image',
     ])
 
+    def uri_is_external(self):
+        if self.uri.startswith('http://'):
+            return True
+        if self.uri.startswith('https://'):
+            return True
+        return False
+
 
 class StyleDefinitionsPart(OpenXmlPart):
     '''

@@ -116,7 +116,9 @@ class Docx2Html(DocxParser):
             },
         )
 
-    def image_handler(self, image_data, filename):
+    def image_handler(self, image_data, filename, uri_is_external):
+        if uri_is_external:
+            return image_data
         extension = filename.split('.')[-1].lower()
         b64_encoded_src = 'data:image/%s;base64,%s' % (
             extension,
@@ -125,8 +127,8 @@ class Docx2Html(DocxParser):
         b64_encoded_src = self.escape(b64_encoded_src)
         return b64_encoded_src
 
-    def image(self, image_data, filename, x, y):
-        src = self.image_handler(image_data, filename)
+    def image(self, image_data, filename, x, y, uri_is_external):
+        src = self.image_handler(image_data, filename, uri_is_external)
         if not src:
             return ''
         if all([x, y]):

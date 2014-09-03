@@ -51,13 +51,16 @@ class OpenXmlPartContainer(object):
             if not relationships:
                 continue
             for relationship in relationships:
-                base, _ = posixpath.split(relationship.source_uri)
-                part_uri = posixpath.join(
-                    base,
-                    relationship.target_uri,
-                )
-                if not open_xml_package.package.part_exists(part_uri):
-                    continue
+                if relationship.is_external():
+                    part_uri = relationship.target_uri
+                else:
+                    base, _ = posixpath.split(relationship.source_uri)
+                    part_uri = posixpath.join(
+                        base,
+                        relationship.target_uri,
+                    )
+                    if not open_xml_package.package.part_exists(part_uri):
+                        continue
                 part = child_part_type(
                     open_xml_package=open_xml_package,
                     uri=part_uri,

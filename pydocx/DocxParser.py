@@ -5,6 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
+import copy
 import logging
 import posixpath
 
@@ -688,16 +689,28 @@ class DocxParser(MulitMemoizeMixin):
             el,
             stack,
         )
-        # Only set paragraph_properties if properties has a size.
-        paragraph_properties = None
-        if properties.size:
-            paragraph = find_ancestor_with_tag(self.pre_processor, el, 'p')
-            # TODO this seems like a lot of work considering all we care about
-            # is the size property on paragraph_properties.
-            paragraph_properties = self.styles_manager.get_resolved_properties_for_element(  # noqa
-                paragraph,
+
+        def get_properties_with_no_font_size():
+            # Only set paragraph_properties if properties has a size.
+            if not properties.size:
+                return
+            copied_el = copy.deepcopy(el)
+            rpr = find_first(copied_el, 'rPr')
+            if rpr is None:
+                return
+
+            size_tag = find_first(rpr, 'sz')
+            if size_tag is None:
+                return
+
+            rpr.remove(size_tag)
+
+            return self.styles_manager.get_resolved_properties_for_element(
+                copied_el,
                 stack,
             )
+
+        paragraph_properties = get_properties_with_no_font_size()
 
         def is_local_size_smaller():
             # If paragraph_properties is None then the size was not set

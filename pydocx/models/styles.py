@@ -22,7 +22,20 @@ class RunProperties(XmlModel):
     hidden = ChildTag(type=OnOff, name='webHidden', attrname='val')
     vertical_align = ChildTag(name='vertAlign', attrname='val')
     parent_style = ChildTag(name='rStyle', attrname='val')
-    position = ChildTag(name='position', attrname='val')
+    pos = ChildTag(name='position', attrname='val')
+    sz = ChildTag(name='sz', attrname='val')
+
+    @property
+    def position(self):
+        if self.pos is None:
+            return 0
+        return int(self.pos)
+
+    @property
+    def size(self):
+        if self.sz is None:
+            return
+        return int(self.sz)
 
 
 class ParagraphProperties(XmlModel):

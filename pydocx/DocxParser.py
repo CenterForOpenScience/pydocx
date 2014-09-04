@@ -688,6 +688,24 @@ class DocxParser(MulitMemoizeMixin):
             el,
             stack,
         )
+        # Only set paragraph_properties if properties has a size.
+        paragraph_properties = None
+        if properties.size:
+            paragraph = find_ancestor_with_tag(self.pre_processor, el, 'p')
+            # TODO this seems like a lot of work considering all we care about
+            # is the size property on paragraph_properties.
+            paragraph_properties = self.styles_manager.get_resolved_properties_for_element(  # noqa
+                paragraph,
+                stack,
+            )
+
+        def is_local_size_smaller():
+            # If paragraph_properties is None then the size was not set
+            # (meaning it can't be bigger or smaller than the default for the
+            # paragraph, so early exit.
+            if paragraph_properties is None:
+                return False
+            return properties.size < paragraph_properties.size
 
         styles_needing_application = []
 
@@ -718,11 +736,16 @@ class DocxParser(MulitMemoizeMixin):
 
         # Lets try to deal with faked superscript/subscript tags by checking
         # the position.
-        if properties.position:
-            if int(properties.position) > 0:
+        def handle_faked_sup_and_sup_tags():
+            if not is_local_size_smaller():
+                return
+            if not properties.position:
+                return
+            if properties.position > 0:
                 styles_needing_application.append(self.superscript)
             else:
                 styles_needing_application.append(self.subscript)
+        handle_faked_sup_and_sup_tags()
 
         # Apply all the handlers once.
         for func in set(styles_needing_application):

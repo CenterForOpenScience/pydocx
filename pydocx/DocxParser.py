@@ -738,7 +738,7 @@ class DocxParser(MulitMemoizeMixin):
 
         # Lets try to deal with faked superscript/subscript tags by checking
         # the position.
-        def handle_faked_sup_and_sup_tags():
+        def handle_faked_sup_and_sub_tags():
             if not is_local_size_smaller():
                 return
             if not properties.position:
@@ -751,7 +751,7 @@ class DocxParser(MulitMemoizeMixin):
                 styles_needing_application.append(self.superscript)
             else:
                 styles_needing_application.append(self.subscript)
-        handle_faked_sup_and_sup_tags()
+        handle_faked_sup_and_sub_tags()
 
         # Apply all the handlers.
         for func in styles_needing_application:

@@ -705,6 +705,8 @@ class DocxParser(MulitMemoizeMixin):
             # paragraph, so early exit.
             if paragraph_properties is None:
                 return False
+            if paragraph_properties.size is None:
+                return False
             return properties.size < paragraph_properties.size
 
         styles_needing_application = []
@@ -741,14 +743,18 @@ class DocxParser(MulitMemoizeMixin):
                 return
             if not properties.position:
                 return
+            if self.subscript in styles_needing_application:
+                return
+            if self.superscript in styles_needing_application:
+                return
             if properties.position > 0:
                 styles_needing_application.append(self.superscript)
             else:
                 styles_needing_application.append(self.subscript)
         handle_faked_sup_and_sup_tags()
 
-        # Apply all the handlers once.
-        for func in set(styles_needing_application):
+        # Apply all the handlers.
+        for func in styles_needing_application:
             text = func(text)
 
         return text

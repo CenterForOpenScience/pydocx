@@ -716,8 +716,16 @@ class DocxParser(MulitMemoizeMixin):
                     styles_needing_application.remove(self.underline)
                     break
 
-        # Apply all the handlers.
-        for func in styles_needing_application:
+        # Lets try to deal with faked superscript/subscript tags by checking
+        # the position.
+        if properties.position:
+            if int(properties.position) > 0:
+                styles_needing_application.append(self.superscript)
+            else:
+                styles_needing_application.append(self.subscript)
+
+        # Apply all the handlers once.
+        for func in set(styles_needing_application):
             text = func(text)
 
         return text

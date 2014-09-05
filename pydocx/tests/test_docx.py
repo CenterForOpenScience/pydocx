@@ -43,9 +43,11 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # In the expected HTML output for "list_to_header", the list element
         # GGG is expected to be "upperRoman". This is showing that only top
         # level upperRomans are converted.
-        'list_to_header',
         'external_image',
+        'fake_subscript',
+        'fake_superscript',
         'has_missing_image',
+        'list_to_header',
         'lists_with_styles',
         'missing_numbering',
         'missing_style',

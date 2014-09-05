@@ -1,3 +1,9 @@
+**0.4.01**
+
+- Take into account run position and size to apply superscript and subscript
+  tags to runs that would look like they have superscript and subscript tags
+  but are being faked due to positioning and sizing.
+
 **0.4.00**
 
 - External images are now handled. This causes a backwards incompatible change

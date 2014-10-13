@@ -21,7 +21,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>ABC</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_empty_text_tag_does_not_create_paragraph(self):
         xml_body = '''
@@ -32,7 +35,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = ''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_unicode_character(self):
         xml_body = '''
@@ -43,7 +49,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>\U0010001f</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
 
 class HeadingTestCase(DocumentGeneratorTestCase):
@@ -73,8 +82,8 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <h1>aaa</h1>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -132,8 +141,8 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <h6>jjj</h6>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -154,7 +163,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa</p><p><hr />bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_between_paragraphs(self):
         xml_body = '''
@@ -175,7 +187,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa</p><p><hr /></p><p>bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_after_text_run(self):
         xml_body = '''
@@ -192,7 +207,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa<hr /></p><p>bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
 
 class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
@@ -208,7 +226,10 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p><strong>aaa</strong></p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_global_run_character_style(self):
         style = '''
@@ -231,8 +252,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -257,8 +278,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -291,8 +312,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em><strong>aaa</strong></em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -327,8 +348,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -353,8 +374,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -379,8 +400,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -407,8 +428,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -442,8 +463,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -488,8 +509,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -522,8 +543,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em>aaa</em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -556,8 +577,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em>aaa</em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -575,7 +596,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p><strong>foo</strong></p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_valid_enable_vals_create_strong(self):
         vals = [
@@ -605,7 +629,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p><strong>foo</strong></p>
             <p><strong>foo</strong></p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_valid_disabled_vals_do_not_create_strong(self):
         vals = [
@@ -635,7 +662,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p>foo</p>
             <p>foo</p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_invalid_vals_do_not_create_strong(self):
         vals = [

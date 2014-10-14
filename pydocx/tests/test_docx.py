@@ -153,22 +153,6 @@ def test_has_image():
     ''' % image_data)
 
 
-def test_local_dpi():
-    # The image in this file does not have a set height or width, show that the
-    # html will generate without it.
-    file_path = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        '..',
-        'fixtures',
-        'localDpi.docx',
-    )
-    actual_html = convert(file_path)
-    image_data = get_image_data(file_path, 'image1.jpeg')
-    assert_html_equal(actual_html, BASE_HTML % '''
-        <p><img src="data:image/jpeg;base64,%s" /></p>
-    ''' % image_data)
-
-
 @raises(MalformedDocxException)
 def test_malformed_docx_exception():
     with NamedTemporaryFile(suffix='.docx') as f:

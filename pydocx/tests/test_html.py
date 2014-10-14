@@ -814,3 +814,58 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             expected=expected_html,
             word_relationships=relationships,
         )
+
+    def test_anchor_with_no_size_ext(self):
+        # Ensure the image html is still rendered even if the size cannot be
+        # calculated
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar">
+                            <extLst>
+                              <ext/>
+                            </extLst>
+                          </blip>
+                        </blipFill>
+                        <spPr>
+                          <xfrm/>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        image_url = 'http://google.com/image1.gif'
+        relationships = '''
+            <Relationship Id="foobar" Type="{ImagePartType}"
+                Target="{image_url}" TargetMode="External" />
+        '''.format(
+            ImagePartType=ImagePart.relationship_type,
+            image_url=image_url,
+        )
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="http://google.com/image1.gif" />
+              Bar
+            </p>
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )

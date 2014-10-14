@@ -155,4 +155,8 @@ v2.0.0
    `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
    on master.
 #. Tag the version.
-#. Push to PyPI.
+#. Push to PyPI
+
+  .. code-block:: shell-session
+
+    python setup.py sdist upload

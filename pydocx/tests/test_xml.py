@@ -5,11 +5,8 @@ from __future__ import (
     unicode_literals,
 )
 
-import os
 import sys
 import time
-
-from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
@@ -257,52 +254,6 @@ class ImageNotInRelsDictTestCase(_TranslationTestCase):
     def get_xml(self):
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         body = drawing
-
-        xml = DXB.xml(body)
-        return xml
-
-
-class ImageNoSizeTestCase(_TranslationTestCase):
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type=ImagePart.relationship_type,
-            external=False,
-            target_path=os.path.join(
-                os.path.abspath(os.path.dirname(__file__)),
-                '..',
-                'fixtures',
-                'bullet_go_gray.png',
-            ),
-            data='content1',
-        )
-    ]
-    image_sizes = {
-        'rId0': (0, 0),
-    }
-    expected_output = '''
-        <html>
-            <p>
-                <img src="%s" />
-            </p>
-        </html>
-    ''' % relationships[0]['target_path']
-
-    @staticmethod
-    def image_handler(image_id, relationship_dict):
-        return relationship_dict.get(image_id)
-
-    def get_xml(self):
-        raise SkipTest(
-            'Since we are not using PIL, we do not need this test yet.',
-        )
-        drawing = DXB.drawing('rId0')
-        tags = [
-            drawing,
-        ]
-        body = b''
-        for el in tags:
-            body += el
 
         xml = DXB.xml(body)
         return xml

@@ -1,3 +1,7 @@
+**0.4.2**
+
+- Fixed a problem with calculating image sizes
+
 **0.4.01**
 
 - Take into account run position and size to apply superscript and subscript

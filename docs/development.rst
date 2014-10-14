@@ -147,7 +147,7 @@ Release process
 #. Update
    `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.rst>`_.
 #. Bump the version number in
-   `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__>`_
+   `__init__.py <https://github.com/CenterForOpenScience/pydocx/blob/master/pydocx/__init__.py>`_
    on master.
 #. Tag the version.
 #. Push to PyPI.

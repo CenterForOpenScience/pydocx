@@ -891,9 +891,138 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             </p>
         '''
 
-        expected_html = '''<p>FooBar</p>'''
+        expected_html = '<p>FooBar</p>'
 
         self.assert_xml_body_matches_expected_html(
             body=xml_body,
             expected=expected_html,
+        )
+
+
+class HyperlinkTestCase(DocumentGeneratorTestCase):
+    def test_single_run(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">link</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_multiple_runs(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>l</t>
+                  <t>i</t>
+                  <t>n</t>
+                  <t>k</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">link</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_no_link_text(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar" />
+            </p>
+        '''
+
+        expected_html = ''
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_undefined_relationship(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p>link.</p>'
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
+
+    def test_with_line_break(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>li</t>
+                  <br />
+                  <t>nk</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">li<br />nk</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
         )

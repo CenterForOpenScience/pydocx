@@ -5,11 +5,8 @@ from __future__ import (
     unicode_literals,
 )
 
-import os
 import sys
 import time
-
-from nose.plugins.skip import SkipTest
 
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.tests import (
@@ -18,112 +15,6 @@ from pydocx.tests import (
 )
 from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
-
-
-class HyperlinkVanillaTestCase(_TranslationTestCase):
-
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type='foo/hyperlink',
-            external=True,
-            target_path='www.google.com',
-        ),
-    ]
-
-    expected_output = '''
-        <p><a href="www.google.com">link</a>.</p>
-    '''
-
-    def get_xml(self):
-        run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
-        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
-        body = DXB.p_tag(run_tags)
-        xml = DXB.xml(body)
-        return xml
-
-
-class HyperlinkWithMultipleRunsTestCase(_TranslationTestCase):
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type='foo/hyperlink',
-            external=True,
-            target_path='www.google.com',
-        ),
-    ]
-
-    expected_output = '''
-        <p><a href="www.google.com">link</a>.</p>
-    '''
-
-    def get_xml(self):
-        run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'link']
-        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
-        body = DXB.p_tag(run_tags)
-        xml = DXB.xml(body)
-        return xml
-
-
-class HyperlinkNoTextTestCase(_TranslationTestCase):
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type='foo/hyperlink',
-            external=True,
-            target_path='www.google.com',
-        ),
-    ]
-
-    expected_output = ''
-
-    def get_xml(self):
-        run_tags = []
-        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        body = DXB.p_tag(run_tags)
-        xml = DXB.xml(body)
-        return xml
-
-
-class HyperlinkWithoutDefinedRelationshipDictTestCase(_TranslationTestCase):
-    relationships = [
-    ]
-
-    expected_output = '<p>link.</p>'
-
-    def get_xml(self):
-        run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
-        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        run_tags.append(DXB.r_tag([DXB.t_tag('.')]))
-        body = DXB.p_tag(run_tags)
-        xml = DXB.xml(body)
-        return xml
-
-
-class HyperlinkWithBreakTestCase(_TranslationTestCase):
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type='foo/hyperlink',
-            external=True,
-            target_path='www.google.com',
-        ),
-    ]
-
-    expected_output = '<p><a href="www.google.com">link<br /></a></p>'
-
-    def get_xml(self):
-        run_tags = []
-        run_tags.append(DXB.r_tag([DXB.t_tag('link')]))
-        run_tags.append(DXB.r_tag([DXB.linebreak()]))
-        run_tags = [DXB.hyperlink_tag(r_id='rId0', run_tags=run_tags)]
-        body = DXB.p_tag(run_tags)
-        xml = DXB.xml(body)
-        return xml
 
 
 class ImageLocal(_TranslationTestCase):
@@ -247,65 +138,6 @@ class ImageTestCase(_TranslationTestCase):
             set(image_ids),
             set(expected),
         )
-
-
-class ImageNotInRelsDictTestCase(_TranslationTestCase):
-    relationships = [
-    ]
-    expected_output = ''
-
-    def get_xml(self):
-        drawing = DXB.drawing(height=20, width=40, r_id='rId0')
-        body = drawing
-
-        xml = DXB.xml(body)
-        return xml
-
-
-class ImageNoSizeTestCase(_TranslationTestCase):
-    relationships = [
-        dict(
-            relationship_id='rId0',
-            relationship_type=ImagePart.relationship_type,
-            external=False,
-            target_path=os.path.join(
-                os.path.abspath(os.path.dirname(__file__)),
-                '..',
-                'fixtures',
-                'bullet_go_gray.png',
-            ),
-            data='content1',
-        )
-    ]
-    image_sizes = {
-        'rId0': (0, 0),
-    }
-    expected_output = '''
-        <html>
-            <p>
-                <img src="%s" />
-            </p>
-        </html>
-    ''' % relationships[0]['target_path']
-
-    @staticmethod
-    def image_handler(image_id, relationship_dict):
-        return relationship_dict.get(image_id)
-
-    def get_xml(self):
-        raise SkipTest(
-            'Since we are not using PIL, we do not need this test yet.',
-        )
-        drawing = DXB.drawing('rId0')
-        tags = [
-            drawing,
-        ]
-        body = b''
-        for el in tags:
-            body += el
-
-        xml = DXB.xml(body)
-        return xml
 
 
 class TableTag(_TranslationTestCase):

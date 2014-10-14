@@ -12,14 +12,27 @@ PyDocX
 * `Github Page <https://github.com/CenterForOpenScience/pydocx>`_
 * `Issue Tracking <https://github.com/CenterForOpenScience/pydocx/issues>`_
 
-PyDocX is a parser that breaks down the elements of a docxfile and converts them
+PyDocX is a parser
+that breaks down
+the elements
+of an Office Open XML
+(.docx)
+and converts them
 into different markup languages.
 Currently,
 only HTML is supported.
-Markdown and LaTex are planned for the future.
-You can extend any of the available parsers to customize it to your needs.
-You can also create your own class that inherits ``DocxParser``
-to create your own methods for a markup language not yet supported.
+Markdown and LaTex
+are planned for the future.
+You can extend
+any of the available parsers
+to customize it to your needs.
+You can also create
+your own class
+that inherits ``DocxParser``
+to create
+your own methods
+for a markup language
+not yet supported.
 
 To get started using PyDocX,
 see the `Usage <https://pydocx.readthedocs.org/en/latest/usage.html>`_

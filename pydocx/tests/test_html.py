@@ -5,6 +5,7 @@ from __future__ import (
 )
 
 from pydocx.tests import DocumentGeneratorTestCase
+from pydocx.wordml import ImagePart
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):
@@ -21,7 +22,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>ABC</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_empty_text_tag_does_not_create_paragraph(self):
         xml_body = '''
@@ -32,7 +36,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = ''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_unicode_character(self):
         xml_body = '''
@@ -43,7 +50,10 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>\U0010001f</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
 
 class HeadingTestCase(DocumentGeneratorTestCase):
@@ -73,8 +83,8 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <h1>aaa</h1>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -132,8 +142,8 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <h6>jjj</h6>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -154,7 +164,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa</p><p><hr />bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_between_paragraphs(self):
         xml_body = '''
@@ -175,7 +188,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa</p><p><hr /></p><p>bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_after_text_run(self):
         xml_body = '''
@@ -192,7 +208,10 @@ class PageBreakTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p>aaa<hr /></p><p>bbb</p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
 
 class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
@@ -208,7 +227,10 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p><strong>aaa</strong></p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_global_run_character_style(self):
         style = '''
@@ -231,8 +253,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -257,8 +279,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -291,8 +313,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em><strong>aaa</strong></em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -327,8 +349,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -353,8 +375,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -379,8 +401,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -407,8 +429,8 @@ class PropertyHierarchyTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p>aaa</p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -442,8 +464,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><strong>aaa</strong></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -488,8 +510,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -522,8 +544,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em>aaa</em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -556,8 +578,8 @@ class StyleBasedOnTestCase(DocumentGeneratorTestCase):
         '''
         expected_html = '<p><em>aaa</em></p>'
         self.assert_xml_body_matches_expected_html(
-            xml_body,
-            expected_html,
+            body=xml_body,
+            expected=expected_html,
             style=style,
         )
 
@@ -575,7 +597,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         expected_html = '<p><strong>foo</strong></p>'
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_valid_enable_vals_create_strong(self):
         vals = [
@@ -605,7 +630,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p><strong>foo</strong></p>
             <p><strong>foo</strong></p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_valid_disabled_vals_do_not_create_strong(self):
         vals = [
@@ -635,7 +663,10 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p>foo</p>
             <p>foo</p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
 
     def test_invalid_vals_do_not_create_strong(self):
         vals = [
@@ -661,4 +692,337 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p>foo</p>
             <p>foo</p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
+
+
+class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
+    def test_inline_image_with_multiple_ext_definitions(self):
+        # Ensure that the image size can be calculated correctly even if the
+        # image size ext isn't the first ext in the drawing node
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <inline>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar">
+                            <extLst>
+                              <ext/>
+                            </extLst>
+                          </blip>
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="1600200" cy="2324100"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </inline>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        image_url = 'http://google.com/image1.gif'
+        relationships = '''
+            <Relationship Id="foobar" Type="{ImagePartType}"
+                Target="{image_url}" TargetMode="External" />
+        '''.format(
+            ImagePartType=ImagePart.relationship_type,
+            image_url=image_url,
+        )
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="http://google.com/image1.gif"
+                height="244px" width="168px" />
+              Bar
+            </p>
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_anchor_with_multiple_ext_definitions(self):
+        # Ensure that the image size can be calculated correctly even if the
+        # image size ext isn't the first ext in the drawing node
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar">
+                            <extLst>
+                              <ext/>
+                            </extLst>
+                          </blip>
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="1600200" cy="2324100"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        image_url = 'http://google.com/image1.gif'
+        relationships = '''
+            <Relationship Id="foobar" Type="{ImagePartType}"
+                Target="{image_url}" TargetMode="External" />
+        '''.format(
+            ImagePartType=ImagePart.relationship_type,
+            image_url=image_url,
+        )
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="http://google.com/image1.gif"
+                height="244px" width="168px" />
+              Bar
+            </p>
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_anchor_with_no_size_ext(self):
+        # Ensure the image html is still rendered even if the size cannot be
+        # calculated
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar"/>
+                        </blipFill>
+                        <spPr>
+                          <xfrm/>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        image_url = 'http://google.com/image1.gif'
+        relationships = '''
+            <Relationship Id="foobar" Type="{ImagePartType}"
+                Target="{image_url}" TargetMode="External" />
+        '''.format(
+            ImagePartType=ImagePart.relationship_type,
+            image_url=image_url,
+        )
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="http://google.com/image1.gif" />
+              Bar
+            </p>
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_blip_embed_refers_to_undefined_image_relationship(self):
+        # Ensure that if a blip embed refers to an undefined image
+        # relationshipp, the image rendering is skipped
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        expected_html = '<p>FooBar</p>'
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
+
+
+class HyperlinkTestCase(DocumentGeneratorTestCase):
+    def test_single_run(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">link</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_multiple_runs(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>l</t>
+                  <t>i</t>
+                  <t>n</t>
+                  <t>k</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">link</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_no_link_text(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar" />
+            </p>
+        '''
+
+        expected_html = ''
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )
+
+    def test_undefined_relationship(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p>link.</p>'
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
+
+    def test_with_line_break(self):
+        xml_body = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <t>li</t>
+                  <br />
+                  <t>nk</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        expected_html = '<p><a href="http://google.com">li<br />nk</a>.</p>'
+
+        relationships = '''
+            <Relationship Id="foobar" Type="foo/hyperlink"
+                Target="http://google.com" TargetMode="External" />
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )

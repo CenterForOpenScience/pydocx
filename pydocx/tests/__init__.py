@@ -4,12 +4,12 @@ from __future__ import (
     unicode_literals,
 )
 
-import os
 import posixpath
 import re
 import tempfile
 from contextlib import contextmanager
 from xml.dom import minidom
+from unittest import TestCase
 
 try:
     from io import BytesIO
@@ -18,16 +18,17 @@ except ImportError:
     BytesIO = StringIO
 
 from pydocx.managers.styles import StylesManager
+from pydocx.packaging import PackageRelationship
+from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.tests.document_builder import DocxBuilder as DXB
+from pydocx.util.xml import parse_xml_from_string
+from pydocx.util.zip import ZipFile
 from pydocx.wordml import (
     MainDocumentPart,
+    NumberingDefinitionsPart,
     StyleDefinitionsPart,
     WordprocessingDocument,
 )
-from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.util.xml import parse_xml_from_string
-from pydocx.util.zip import ZipFile
-from pydocx.tests.document_builder import DocxBuilder as DXB
-from unittest import TestCase
 
 STYLE = (
     '<style>'
@@ -138,23 +139,50 @@ class DocumentGeneratorTestCase(TestCase):
     Each test case needs to call `assert_xml_body_matches_expected_html`
     '''
 
+    base_relationships = '''
+        <Relationships xmlns="{PackageRelationshipNamespace}">
+          <Relationship Id="rId1" Type="{MainDocumentPartNamespace}"
+            Target="word/document.xml"/>
+        </Relationships>
+    '''.format(
+        PackageRelationshipNamespace=PackageRelationship.namespace,
+        MainDocumentPartNamespace=MainDocumentPart.relationship_type,
+    )
+
+    content_types = '''
+        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+          <Override PartName="/_rels/.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+          <Override PartName="/word/_rels/document.xml.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+          <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+          <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+        </Types>
+    '''  # noqa
+
     def wrap_xml(self, xml):
         return '<?xml version="1.0" encoding="UTF-8"?>%s' % xml
 
     def wrap_body_xml(self, xml):
-        return self.wrap_xml(
-            '<document><body>%s</body></document>' % xml,
-        )
+        xml = '<document><body>%s</body></document>' % xml
+        return self.wrap_xml(xml)
 
     def wrap_style_xml(self, xml):
-        return self.wrap_xml(
-            '<styles>%s</styles>' % xml,
-        )
+        xml = '<styles>%s</styles>' % xml
+        return self.wrap_xml(xml)
 
     def wrap_numbering_xml(self, xml):
-        return self.wrap_xml(
-            '<numbering>%s</numbering>' % xml,
+        xml = '<numbering>%s</numbering>' % xml,
+        return self.wrap_xml(xml)
+
+    def wrap_relationship_xml(self, xml):
+        xml = '''
+            <Relationships xmlns="{namespace}">
+            {xml}
+            </Relationships>
+        '''.format(
+            namespace=PackageRelationship.namespace,
+            xml=xml,
         )
+        return self.wrap_xml(xml)
 
     @contextmanager
     def build_and_convert_document_to_html(
@@ -162,66 +190,60 @@ class DocumentGeneratorTestCase(TestCase):
         body=None,
         style=None,
         numbering=None,
+        word_relationships=None,
     ):
-        fixture_path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            '..',
-            'fixtures',
+        default_word_relationships = '''
+          <Relationship Id="rId1" Type="{styles_rel_type}"
+            Target="styles.xml"/>
+          <Relationship Id="rId2" Type="{numbering_rel_type}"
+            Target="numbering.xml"/>
+        '''.format(
+            styles_rel_type=StyleDefinitionsPart.relationship_type,
+            numbering_rel_type=NumberingDefinitionsPart.relationship_type,
         )
-        docx_structure_fixture = os.path.join(fixture_path, 'docx_structure')
-        word_directory = os.path.join(docx_structure_fixture, 'word')
-        document_xml_path = os.path.join(word_directory, 'document.xml')
-        style_xml_path = os.path.join(word_directory, 'styles.xml')
-        numbering_xml_path = os.path.join(word_directory, 'numbering.xml')
-        files_to_generate = [
-            (body, document_xml_path, self.wrap_body_xml),
-            (style, style_xml_path, self.wrap_style_xml),
-            (numbering, numbering_xml_path, self.wrap_numbering_xml),
-        ]
-        files_to_cleanup = []
-        try:
-            for xml, xml_path, wrapper in files_to_generate:
-                if xml is None:
+
+        if word_relationships is None:
+            word_relationships = default_word_relationships
+
+        if word_relationships:
+            word_relationships = self.wrap_relationship_xml(word_relationships)
+
+        if body:
+            body = self.wrap_body_xml(body)
+
+        if style:
+            style = self.wrap_style_xml(style)
+
+        if numbering:
+            numbering = self.wrap_numbering_xml(numbering)
+
+        document = {
+            '_rels/.rels': self.base_relationships,
+            'word/_rels/document.xml.rels': word_relationships,
+            'word/document.xml': body,
+            'word/styles.xml': style,
+            'word/numbering.xml': numbering,
+            '[Content_Types].xml': self.content_types,
+        }
+
+        zip_file = tempfile.NamedTemporaryFile()
+        with ZipFile(zip_file.name, 'w') as zf:
+            for arcname, data in document.items():
+                if data is None:
                     continue
-                with open(xml_path, 'w') as f:
-                    f.write(wrapper(xml))
-                files_to_cleanup.append(xml_path)
+                zf.writestr(arcname, data)
 
-            list_of_files_to_archive = []
-            for root, dirs, files in os.walk(docx_structure_fixture):
-                for f in files:
-                    full_path = os.path.join(root, f)
-                    arcname = os.path.relpath(
-                        full_path,
-                        docx_structure_fixture,
-                    )
-                    list_of_files_to_archive.append((full_path, arcname))
+        yield zip_file.name
 
-            zip_file = tempfile.NamedTemporaryFile()
-            with ZipFile(zip_file.name, 'w') as zf:
-                for full_path, arcname in list_of_files_to_archive:
-                    zf.write(full_path, arcname)
-            yield zip_file.name
-        finally:
-            for f in files_to_cleanup:
-                os.unlink(f)
-
-    def assert_xml_body_matches_expected_html(
-        self,
-        body,
-        expected,
-        style=None,
-    ):
+    def assert_xml_body_matches_expected_html(self, expected, **kwargs):
         '''
         Given an XML body, generate a document container, then convert that
         container to HTML and compare it with the given result.
         '''
-        manager = self.build_and_convert_document_to_html(
-            body=body,
-            style=style,
-        )
+        manager = self.build_and_convert_document_to_html(**kwargs)
         with manager as docx_path:
-            actual = Docx2HtmlNoStyle(docx_path).parsed
+            parser = Docx2HtmlNoStyle(docx_path)
+            actual = parser.parsed
             expected = BASE_HTML_NO_STYLE % expected
             if not html_is_equal(actual, expected):
                 actual = prettify(actual)

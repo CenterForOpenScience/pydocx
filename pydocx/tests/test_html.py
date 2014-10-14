@@ -828,11 +828,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
                     <graphicData>
                       <pic>
                         <blipFill>
-                          <blip embed="foobar">
-                            <extLst>
-                              <ext/>
-                            </extLst>
-                          </blip>
+                          <blip embed="foobar"/>
                         </blipFill>
                         <spPr>
                           <xfrm/>

@@ -144,6 +144,11 @@ Unicode Data
 Release process
 ###############
 
+PyDocX adheres to
+`Semantic versioning
+v2.0.0
+<http://semver.org/spec/v2.0.0.html>`_.
+
 #. Update
    `CHANGELOG <https://github.com/CenterForOpenScience/pydocx/blob/master/CHANGELOG.rst>`_.
 #. Bump the version number in

@@ -5,6 +5,7 @@ from __future__ import (
 )
 
 from pydocx.tests import DocumentGeneratorTestCase
+from pydocx.wordml import ImagePart
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):
@@ -691,4 +692,67 @@ class DirectFormattingBoldPropertyTestCase(DocumentGeneratorTestCase):
             <p>foo</p>
             <p>foo</p>
         '''
-        self.assert_xml_body_matches_expected_html(xml_body, expected_html)
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )
+
+
+class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
+    def test_image_with_multiple_ext_definitions(self):
+        # Ensure that the image size can be calculated correctly even if the
+        # image size ext isn't the first ext in the drawing node
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <inline>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar">
+                            <extLst>
+                              <ext/>
+                            </extLst>
+                          </blip>
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="1600200" cy="2324100"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </inline>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        image_url = 'http://google.com/image1.gif'
+        relationships = '''
+            <Relationship Id="foobar" Type="{ImagePartType}"
+                Target="{image_url}" TargetMode="External" />
+        '''.format(
+            ImagePartType=ImagePart.relationship_type,
+            image_url=image_url,
+        )
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="http://google.com/image1.gif"
+                height="244px" width="168px" />
+              Bar
+            </p>
+        '''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+            word_relationships=relationships,
+        )

@@ -865,3 +865,35 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             expected=expected_html,
             word_relationships=relationships,
         )
+
+    def test_blip_embed_refers_to_undefined_image_relationship(self):
+        # Ensure that if a blip embed refers to an undefined image
+        # relationshipp, the image rendering is skipped
+        xml_body = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''
+
+        expected_html = '''<p>FooBar</p>'''
+
+        self.assert_xml_body_matches_expected_html(
+            body=xml_body,
+            expected=expected_html,
+        )

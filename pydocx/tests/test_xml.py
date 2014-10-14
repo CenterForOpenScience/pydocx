@@ -246,19 +246,6 @@ class ImageTestCase(_TranslationTestCase):
         )
 
 
-class ImageNotInRelsDictTestCase(_TranslationTestCase):
-    relationships = [
-    ]
-    expected_output = ''
-
-    def get_xml(self):
-        drawing = DXB.drawing(height=20, width=40, r_id='rId0')
-        body = drawing
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class TableTag(_TranslationTestCase):
     expected_output = '''
         <table border="1">

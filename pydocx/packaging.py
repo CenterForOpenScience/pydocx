@@ -7,6 +7,7 @@ from __future__ import (
 import posixpath
 import zipfile
 from collections import defaultdict
+from cStringIO import StringIO
 from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
@@ -190,7 +191,7 @@ class ZipPackage(PackageRelationshipManager):
         try:
             uris = f.namelist()
             for uri in uris:
-                self.streams[self.uri + uri] = f.open(uri, 'r')
+                self.streams[self.uri + uri] = StringIO(f.read(uri))
         finally:
             f.close()
         for uri in self.streams:

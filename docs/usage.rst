@@ -13,6 +13,42 @@ with the input and output files:
 
    $ pydocx --html input.docx output.html
 
+Converting files using the library directly
+###########################################
+
+Choose the conversing class,
+and then pass in
+either the full path
+to an existing MS Word document
+on the filesystem
+or
+pass in
+a file-like object.
+The parsed content can then be accessed
+using the `parsed` attribute.
+
+Examples:
+
+.. code-block:: python
+
+   from pydocx.parsers import Docx2Html
+
+   # Pass in a path to an existing file
+   parser = Docx2Html(path='file.docx')
+   print parser.parsed
+
+   # Pass in a file pointer
+   parser = Docx2Html(open('file.docx'))
+   print parser.parsed
+
+   # Pass in a file-like object
+   from cStringIO import StringIO
+   buf = StringIO()
+   with open('file.docx') as f:
+      buf.write(f.read())
+   parser = Docx2Html(buf)
+   print parser.parsed
+
 Currently Supported HTML elements
 #################################
 

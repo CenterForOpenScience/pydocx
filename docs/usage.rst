@@ -16,7 +16,7 @@ with the input and output files:
 Converting files using the library directly
 ###########################################
 
-Choose the conversing class,
+Choose the conversion class,
 and then pass in
 either the full path
 to an existing MS Word document
@@ -38,7 +38,7 @@ Examples:
    print parser.parsed
 
    # Pass in a file pointer
-   parser = Docx2Html(open('file.docx'))
+   parser = Docx2Html(open('file.docx', 'rb'))
    print parser.parsed
 
    # Pass in a file-like object

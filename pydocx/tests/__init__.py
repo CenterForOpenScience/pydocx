@@ -11,10 +11,10 @@ from xml.dom import minidom
 from unittest import TestCase
 
 try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO
+    from cString import StringIO
     BytesIO = StringIO
+except ImportError:
+    from io import BytesIO
 
 from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship

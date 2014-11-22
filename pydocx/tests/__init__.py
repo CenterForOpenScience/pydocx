@@ -6,16 +6,15 @@ from __future__ import (
 
 import posixpath
 import re
-import tempfile
 from contextlib import contextmanager
 from xml.dom import minidom
 from unittest import TestCase
 
 try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO
+    from cString import StringIO
     BytesIO = StringIO
+except ImportError:
+    from io import BytesIO
 
 from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship
@@ -226,14 +225,14 @@ class DocumentGeneratorTestCase(TestCase):
             '[Content_Types].xml': self.content_types,
         }
 
-        zip_file = tempfile.NamedTemporaryFile()
-        with ZipFile(zip_file.name, 'w') as zf:
+        buf = BytesIO()
+        with ZipFile(buf, 'w') as zf:
             for arcname, data in document.items():
                 if data is None:
                     continue
-                zf.writestr(arcname, data)
+                zf.writestr(arcname, data.encode('utf-8'))
 
-        yield zip_file.name
+        yield buf
 
     def assert_xml_body_matches_expected_html(self, expected, **kwargs):
         '''

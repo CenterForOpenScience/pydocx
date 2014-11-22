@@ -116,6 +116,13 @@ class ConvertDocxToHtmlTestCase(TestCase):
         assert actual_html is not None
         assert '\u0391\u03b1' in actual_html
 
+    def test_result_from_file_pointer_matches_result_from_path(self):
+        path = self.get_path_to_fixture('simple.docx')
+        path_html = self.convert_docx_to_html(path)
+        file_html = self.convert_docx_to_html(open(path, 'rb'))
+        assert file_html
+        self.assertEqual(path_html, file_html)
+
 ConvertDocxToHtmlTestCase.generate()
 
 

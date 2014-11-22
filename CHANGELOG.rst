@@ -1,3 +1,7 @@
+**dev**
+
+- Allow a file-like object to be passed into the DocXParser constructor.
+
 **0.4.2**
 
 - Fixed a problem with calculating image sizes

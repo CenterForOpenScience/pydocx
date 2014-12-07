@@ -21,7 +21,7 @@ from pydocx.packaging import PackageRelationship
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.util.xml import parse_xml_from_string
-from pydocx.util.zip import ZipFile
+from pydocx.util.zip import create_zip_archive
 from pydocx.wordml import (
     MainDocumentPart,
     NumberingDefinitionsPart,
@@ -225,14 +225,7 @@ class DocumentGeneratorTestCase(TestCase):
             '[Content_Types].xml': self.content_types,
         }
 
-        buf = BytesIO()
-        with ZipFile(buf, 'w') as zf:
-            for arcname, data in document.items():
-                if data is None:
-                    continue
-                zf.writestr(arcname, data.encode('utf-8'))
-
-        yield buf
+        yield create_zip_archive(document)
 
     def assert_xml_body_matches_expected_html(self, expected, **kwargs):
         '''

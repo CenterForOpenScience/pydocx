@@ -156,7 +156,7 @@ class ZipPackagePart(PackageRelationshipManager):
     @staticmethod
     def get_relationship_part_uri(part_uri):
         container, filename = posixpath.split(part_uri)
-        filename_rels = '%s.rels' % filename
+        filename_rels = '{file}.rels'.format(file=filename)
         return posixpath.join(container, '_rels', filename_rels)
 
     def get_part_container(self):
@@ -219,8 +219,8 @@ class ZipPackage(PackageRelationshipManager):
         self._ensure_parts_are_loaded()
         if self.part_exists(uri):
             raise RuntimeError(
-                'A part with the specified URI "%s" already exists' % (
-                    uri,
+                'A part with the specified URI "{uri}" already exists'.format(
+                    uri=uri,
                 )
             )
         part = ZipPackagePart(package=self, uri=uri)

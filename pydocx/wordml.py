@@ -137,9 +137,7 @@ class MainDocumentPart(OpenXmlPart):
 
     @property
     def footnotes_part(self):
-        return self.get_parts_of_type(
-            relationship_type=FootnotesPart.relationship_type,
-        )
+        return self.get_part_of_class_type(part_class=FootnotesPart)
 
 
 class WordprocessingDocument(OpenXmlPackage):

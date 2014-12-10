@@ -83,7 +83,64 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
     def test_footnote_with_hyperlink(self):
-        pass
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+              </r>
+              <r>
+                <rPr>
+                  <vertAlign val="superscript"/>
+                </rPr>
+                <footnoteReference id="abc"/>
+              </r>
+            </p>
+            <p>
+              <r>
+                <t>Footnotes should appear below this</t>
+              </r>
+            </p>
+        '''
+
+        footnotes_xml = '''
+            <footnote id="abc">
+              <p>
+                <r>
+                  <footnoteRef/>
+                </r>
+                <hyperlink id="foobar">
+                  <r>
+                    <t>Bar</t>
+                  </r>
+                </hyperlink>
+              </p>
+            </footnote>
+        '''
+
+        document = WordprocessingDocumentFactory()
+
+        footnotes_rels = document.relationship_format.format(
+            id='foobar',
+            type='foo/hyperlink',
+            target='http://google.com',
+            target_mode='External',
+        )
+
+        document.add(FootnotesPart, footnotes_xml, footnotes_rels)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>Foo<sup><a href="#footnote-abc">1</a></sup></p>
+            <p>Footnotes should appear below this</p>
+            <hr/>
+            <ol>
+                <li>
+                    <a name="footnote-abc"></a>
+                    <p><a href="http://google.com">Bar</a></p>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):

@@ -9,10 +9,70 @@ from pydocx.tests import (
     WordprocessingDocumentFactory,
 )
 from pydocx.wordml import (
+    FootnotesPart,
     ImagePart,
     MainDocumentPart,
     StyleDefinitionsPart,
 )
+
+
+class FootnoteTestCase(DocumentGeneratorTestCase):
+    def test_footnote_without_definition_is_ignored(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+              </r>
+              <r>
+                <footnoteReference id="abc"/>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>Foo</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_basic_footnote(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+              </r>
+              <r>
+                <rPr>
+                  <vertAlign val="superscript"/>
+                </rPr>
+                <footnoteReference id="abc"/>
+              </r>
+            </p>
+        '''
+
+        footnotes_xml = '''
+            <footnote id="abc">
+              <p>
+                <r>
+                  <t>Bar</t>
+                </r>
+              </p>
+            </footnote>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(FootnotesPart, footnotes_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>Foo<sup><a href="#footnote-1">1</a></sup></p>
+            <ol>
+                <li><a name="footnote-1">Bar</a></li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_footnote_with_hyperlink(self):
+        pass
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):

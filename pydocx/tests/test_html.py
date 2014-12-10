@@ -34,7 +34,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>Foo</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_basic_footnote(self):
+    def test_basic_footnote_with_styling(self):
         document_xml = '''
             <p>
               <r>
@@ -47,12 +47,21 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
                 <footnoteReference id="abc"/>
               </r>
             </p>
+            <p>
+              <r>
+                <t>Footnotes should appear below this</t>
+              </r>
+            </p>
         '''
 
         footnotes_xml = '''
             <footnote id="abc">
               <p>
                 <r>
+                  <rPr>
+                    <b val="on"/>
+                  </rPr>
+                  <footnoteRef/>
                   <t>Bar</t>
                 </r>
               </p>
@@ -64,9 +73,11 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <p>Foo<sup><a href="#footnote-1">1</a></sup></p>
+            <p>Foo<sup><a href="#footnote-abc">1</a></sup></p>
+            <p>Footnotes should appear below this</p>
+            <hr/>
             <ol>
-                <li><a name="footnote-1">Bar</a></li>
+                <li><a name="footnote-abc"></a><p><strong>Bar</strong></p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)

@@ -391,7 +391,7 @@ class XMLDocx2Html(Docx2Html):
         )
         self.styles = self.styles_manager.styles
 
-        self.parse_begin(self.document.main_document_part.root_element)
+        self.parse_begin(self.document.main_document_part)
 
     def get_list_style(self, num_id, ilvl):
         try:

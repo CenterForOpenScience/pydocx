@@ -25,9 +25,10 @@ class Docx2Html(DocxParser):
     @property
     def parsed(self):
         content = super(Docx2Html, self).parsed
-        content = '<html>{header}<body>{body}</body></html>'.format(
+        content = '<html>{header}<body>{body}{footer}</body></html>'.format(
             header=self.head(),
             body=content,
+            footer=self.footer(),
         )
         return content
 
@@ -47,6 +48,30 @@ class Docx2Html(DocxParser):
         return self.make_element(
             tag='head',
             contents=self.style(),
+        )
+
+    def footer(self):
+        return self.footnotes()
+
+    def footnotes(self):
+        footnotes = [
+            self.footnote(
+                footnote_id,
+                self.footnote_id_to_content[footnote_id],
+            )
+            for footnote_id in self.footnote_ordering
+        ]
+        if footnotes:
+            return '<hr/><ol>{footnotes}</ol>'.format(
+                footnotes=''.join(footnotes),
+            )
+        else:
+            return ''
+
+    def footnote(self, footnote_id, content):
+        return '<li><a name="footnote-{id}"></a>{content}</li>'.format(
+            id=footnote_id,
+            content=content,
         )
 
     def style(self):
@@ -76,6 +101,12 @@ class Docx2Html(DocxParser):
         return self.make_element(
             tag='style',
             contents=''.join(result),
+        )
+
+    def footnote_reference(self, footnote_id, index):
+        return '<a href="#footnote-{id}">{index}</a>'.format(
+            id=footnote_id,
+            index=index,
         )
 
     def escape(self, text):

@@ -173,6 +173,7 @@ class DocxParser(MulitMemoizeMixin):
         self.list_depth = 0
         self.footnote_index = 1
         self.footnote_ordering = []
+        self.current_part = None
 
         self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
@@ -234,6 +235,7 @@ class DocxParser(MulitMemoizeMixin):
             return footnotes
         if not main_document_part.footnotes_part.root_element:
             return footnotes
+        self.current_part = main_document_part.footnotes_part
         for element in main_document_part.footnotes_part.root_element:
             if element.tag == 'footnote':
                 footnote_id = element.get('id')
@@ -256,6 +258,8 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa
 
         self.footnote_id_to_content = self.load_footnotes(main_document_part)
+
+        self.current_part = main_document_part
         self._parsed = self.parse(main_document_part.root_element)
 
     def parse(self, el):
@@ -598,7 +602,7 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_hyperlink(self, el, text, stack):
         relationship_id = el.get('id')
-        package_part = self.document.main_document_part.package_part
+        package_part = self.current_part.package_part
         try:
             relationship = package_part.get_relationship(
                 relationship_id=relationship_id,
@@ -663,7 +667,7 @@ class DocxParser(MulitMemoizeMixin):
         x, y = self._get_image_size(el)
         relationship_id = self._get_image_id(el)
         try:
-            image_part = self.document.main_document_part.get_part_by_id(
+            image_part = self.current_part.get_part_by_id(
                 relationship_id=relationship_id,
             )
             is_uri_external = uri_is_external(image_part.uri)

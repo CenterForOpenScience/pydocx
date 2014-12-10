@@ -142,6 +142,91 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_multiple_footnotes_defined_in_a_order_different_from_usage(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+              </r>
+              <r>
+                <rPr>
+                  <vertAlign val="superscript"/>
+                </rPr>
+                <footnoteReference id="one"/>
+              </r>
+              <r>
+                <t>Bar</t>
+              </r>
+              <r>
+                <rPr>
+                  <vertAlign val="superscript"/>
+                </rPr>
+                <footnoteReference id="two"/>
+              </r>
+              <r>
+                <t>Baz</t>
+              </r>
+              <r>
+                <rPr>
+                  <vertAlign val="superscript"/>
+                </rPr>
+                <footnoteReference id="three"/>
+              </r>
+            </p>
+            <p>
+              <r>
+                <t>Footnotes should appear below this</t>
+              </r>
+            </p>
+        '''
+
+        footnotes_xml = '''
+            <footnote id="two">
+              <p>
+                <r>
+                  <footnoteRef/>
+                  <t>Beta</t>
+                </r>
+              </p>
+            </footnote>
+            <footnote id="three">
+              <p>
+                <r>
+                  <footnoteRef/>
+                  <t>Gamma</t>
+                </r>
+              </p>
+            </footnote>
+            <footnote id="one">
+              <p>
+                <r>
+                  <footnoteRef/>
+                  <t>Alpha</t>
+                </r>
+              </p>
+            </footnote>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(FootnotesPart, footnotes_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>
+                Foo<sup><a href="#footnote-one">1</a></sup>
+                Bar<sup><a href="#footnote-two">2</a></sup>
+                Baz<sup><a href="#footnote-three">3</a></sup>
+            </p>
+            <p>Footnotes should appear below this</p>
+            <hr/>
+            <ol>
+                <li><a name="footnote-one"></a><p>Alpha</p></li>
+                <li><a name="footnote-two"></a><p>Beta</p></li>
+                <li><a name="footnote-three"></a><p>Gamma</p></li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
 
 class ParagraphTestCase(DocumentGeneratorTestCase):
     def test_multiple_text_tags_in_a_single_run_tag_create_single_paragraph(

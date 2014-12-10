@@ -24,6 +24,7 @@ from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.util.xml import parse_xml_from_string
 from pydocx.util.zip import create_zip_archive
 from pydocx.wordml import (
+    FootnotesPart,
     MainDocumentPart,
     NumberingDefinitionsPart,
     StyleDefinitionsPart,
@@ -132,12 +133,14 @@ class Docx2HtmlNoStyle(Docx2Html):
 
 class WordprocessingDocumentFactory(object):
     PARTS_TO_PATHS = {
+        FootnotesPart: 'word/footnotes.xml',
         MainDocumentPart: 'word/document.xml',
         StyleDefinitionsPart: 'word/styles.xml',
         NumberingDefinitionsPart: 'word/numbering.xml',
     }
 
     PARTS_TO_PREPARE_CONTENT_FUNCS = {
+        FootnotesPart: 'prepare_footnotes_content',
         MainDocumentPart: 'prepare_main_document_content',
         StyleDefinitionsPart: 'prepare_style_content',
     }
@@ -285,6 +288,10 @@ class WordprocessingDocumentFactory(object):
 
     def prepare_style_content(self, xml):
         xml = '<styles>{xml}</styles>'.format(xml=xml)
+        return self.prepare_xml_content(xml=xml)
+
+    def prepare_footnotes_content(self, xml):
+        xml = '<footnotes>{xml}</footnotes>'.format(xml=xml)
         return self.prepare_xml_content(xml=xml)
 
     def get_content_types(self):

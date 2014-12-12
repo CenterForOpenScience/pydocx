@@ -6,7 +6,7 @@ from __future__ import (
 )
 
 import copy
-import logging
+#import logging
 import posixpath
 
 from abc import abstractmethod, ABCMeta
@@ -39,8 +39,8 @@ from pydocx.util.xml import (
 )
 from pydocx.wordml import WordprocessingDocument
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("NewParser")
+#logging.basicConfig(level=logging.DEBUG)
+#logger = logging.getLogger("NewParser")
 
 
 class IterativeXmlParser(object):

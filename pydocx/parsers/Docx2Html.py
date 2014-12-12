@@ -31,6 +31,14 @@ class Docx2Html(DocxParser):
         }
         return content
 
+    @property
+    def parsed_without_head(self):
+        content = super(Docx2Html, self).parsed
+        content = "<html><body>%(content)s</body></html>" % {
+            'content': content,
+        }
+        return content
+
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
             attrs = convert_dictionary_to_html_attributes(attrs)

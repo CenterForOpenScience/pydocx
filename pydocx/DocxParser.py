@@ -222,6 +222,10 @@ class DocxParser(MulitMemoizeMixin):
         )
         self.styles = self.styles_manager.styles
         self.parse_begin(main_document_part.root_element)
+        # release open files
+        document_streams = self.document.package.streams
+        for ref in document_streams.keys():
+            document_streams[ref].close()
 
     def parse_begin(self, el):
         self.populate_memoization({

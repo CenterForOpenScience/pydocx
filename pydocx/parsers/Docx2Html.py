@@ -35,14 +35,14 @@ class Docx2Html(DocxParser):
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
             attrs = convert_dictionary_to_html_attributes(attrs)
-            template = '<%(tag)s %(attrs)s>%(contents)s</%(tag)s>'
+            template = '<{tag} {attrs}>{contents}</{tag}>'
         else:
-            template = '<%(tag)s>%(contents)s</%(tag)s>'
-        return template % {
-            'tag': tag,
-            'attrs': attrs,
-            'contents': contents,
-        }
+            template = '<{tag}>{contents}</{tag}>'
+        return template.format(
+            tag=tag,
+            attrs=attrs,
+            contents=contents,
+        )
 
     def head(self):
         return self.make_element(

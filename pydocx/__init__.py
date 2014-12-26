@@ -34,8 +34,12 @@ def main():
     else:
         print('Only valid parsers are --html and --markdown')
         sys.exit()
-    with open(path_to_html, 'w') as f:
-        f.write(html.encode('utf-8'))
+    if sys.version_info < (3, 0):
+        with open(path_to_html, 'w') as f:
+            f.write(html.encode('utf-8'))
+    else:
+        with open(path_to_html, 'wb') as f:
+            f.write(html.encode('utf-8'))
 
 if __name__ == '__main__':
     main()

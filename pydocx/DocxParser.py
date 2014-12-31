@@ -180,6 +180,7 @@ class DocxParser(MulitMemoizeMixin):
             'delText': self.parse_deletion,
             'drawing': self.parse_image,
             'footnoteReference': self.parse_footnote_reference,
+            'footnoteRef': self.parse_footnote_ref,
             'hyperlink': self.parse_hyperlink,
             'ins': self.parse_insertion,
             'noBreakHyphen': self.parse_hyphen,
@@ -271,6 +272,14 @@ class DocxParser(MulitMemoizeMixin):
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
             return pgSz / TWIPS_PER_POINT
+
+    def parse_footnote_ref(self, el, text, stack):
+        footnote_id = None
+        for item in reversed(stack):
+            if item['element'].tag == 'footnote':
+                footnote_id = item['element'].get('id')
+                break
+        return self.footnote_ref(footnote_id)
 
     def parse_footnote_reference(self, el, text, stack):
         footnote_id = el.get('id')

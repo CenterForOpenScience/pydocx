@@ -73,11 +73,19 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <p>Foo<sup><a href="#footnote-abc">1</a></sup></p>
+            <p>
+                Foo
+                <sup>
+                    <a href="#footnote-abc" name="footnote-ref-abc">1</a>
+                </sup>
+            </p>
             <p>Footnotes should appear below this</p>
             <hr/>
             <ol>
-                <li><a name="footnote-abc"></a><p><strong>Bar</strong></p></li>
+                <li><p><strong>
+                    <a href="#footnote-ref-abc" name="footnote-abc">^</a>
+                    Bar
+                </strong></p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -130,13 +138,20 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <p>Foo<sup><a href="#footnote-abc">1</a></sup></p>
+            <p>
+                Foo
+                <sup>
+                    <a href="#footnote-abc" name="footnote-ref-abc">1</a>
+                </sup>
+            </p>
             <p>Footnotes should appear below this</p>
             <hr/>
             <ol>
                 <li>
-                    <a name="footnote-abc"></a>
-                    <p><a href="http://google.com">Bar</a></p>
+                    <p>
+                        <a href="#footnote-ref-abc" name="footnote-abc">^</a>
+                        <a href="http://google.com">Bar</a>
+                    </p>
                 </li>
             </ol>
         '''
@@ -213,16 +228,34 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <p>
-                Foo<sup><a href="#footnote-one">1</a></sup>
-                Bar<sup><a href="#footnote-two">2</a></sup>
-                Baz<sup><a href="#footnote-three">3</a></sup>
+                Foo
+                <sup>
+                    <a href="#footnote-one" name="footnote-ref-one">1</a>
+                </sup>
+                Bar
+                <sup>
+                    <a href="#footnote-two" name="footnote-ref-two">2</a>
+                </sup>
+                Baz
+                <sup>
+                    <a href="#footnote-three" name="footnote-ref-three">3</a>
+                </sup>
             </p>
             <p>Footnotes should appear below this</p>
             <hr/>
             <ol>
-                <li><a name="footnote-one"></a><p>Alpha</p></li>
-                <li><a name="footnote-two"></a><p>Beta</p></li>
-                <li><a name="footnote-three"></a><p>Gamma</p></li>
+                <li><p>
+                    <a href="#footnote-ref-one" name="footnote-one">^</a>
+                    Alpha
+                </p></li>
+                <li><p>
+                    <a href="#footnote-ref-two" name="footnote-two">^</a>
+                    Beta
+                </p></li>
+                <li><p>
+                    <a href="#footnote-ref-three" name="footnote-three">^</a>
+                    Gamma
+                </p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)

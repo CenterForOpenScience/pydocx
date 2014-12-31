@@ -55,10 +55,7 @@ class Docx2Html(DocxParser):
 
     def footnotes(self):
         footnotes = [
-            self.footnote(
-                footnote_id,
-                self.footnote_id_to_content[footnote_id],
-            )
+            self.footnote(self.footnote_id_to_content[footnote_id])
             for footnote_id in self.footnote_ordering
         ]
         if footnotes:
@@ -68,10 +65,20 @@ class Docx2Html(DocxParser):
         else:
             return ''
 
-    def footnote(self, footnote_id, content):
-        return '<li><a name="footnote-{id}"></a>{content}</li>'.format(
-            id=footnote_id,
-            content=content,
+    def footnote_ref(self, footnote_id):
+        return self.make_element(
+            tag='a',
+            attrs=dict(
+                href='#footnote-ref-{id}',
+                name='footnote-{id}'
+            ),
+            contents='^',
+        ).format(id=footnote_id)
+
+    def footnote(self, content):
+        return self.make_element(
+            tag='li',
+            contents=content,
         )
 
     def style(self):
@@ -104,7 +111,15 @@ class Docx2Html(DocxParser):
         )
 
     def footnote_reference(self, footnote_id, index):
-        return '<a href="#footnote-{id}">{index}</a>'.format(
+        anchor = self.make_element(
+            tag='a',
+            attrs=dict(
+                href='#footnote-{id}',
+                name='footnote-ref-{id}'
+            ),
+            contents='{index}',
+        )
+        return anchor.format(
             id=footnote_id,
             index=index,
         )

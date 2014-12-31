@@ -59,7 +59,7 @@ class Docx2Html(DocxParser):
             for footnote_id in self.footnote_ordering
         ]
         if footnotes:
-            return '<hr/><ol>{footnotes}</ol>'.format(
+            return '<hr/><ol type="1">{footnotes}</ol>'.format(
                 footnotes=''.join(footnotes),
             )
         else:

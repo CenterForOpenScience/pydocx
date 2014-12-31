@@ -81,7 +81,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr/>
-            <ol>
+            <ol type="1">
                 <li><p><strong>
                     <a href="#footnote-ref-abc" name="footnote-abc">^</a>
                     Bar
@@ -146,7 +146,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr/>
-            <ol>
+            <ol type="1">
                 <li>
                     <p>
                         <a href="#footnote-ref-abc" name="footnote-abc">^</a>
@@ -243,7 +243,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr/>
-            <ol>
+            <ol type="1">
                 <li><p>
                     <a href="#footnote-ref-one" name="footnote-one">^</a>
                     Alpha

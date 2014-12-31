@@ -8,8 +8,7 @@ import zipfile
 from contextlib import contextmanager
 
 try:
-    from cString import StringIO
-    BytesIO = StringIO
+    from cString import StringIO as BytesIO
 except ImportError:
     from io import BytesIO
 

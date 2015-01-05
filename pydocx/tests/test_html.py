@@ -80,7 +80,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
                 </sup>
             </p>
             <p>Footnotes should appear below this</p>
-            <hr/>
+            <hr />
             <ol list-style-type="decimal">
                 <li><p><strong>
                     <a href="#footnote-ref-abc" name="footnote-abc">^</a>
@@ -145,7 +145,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
                 </sup>
             </p>
             <p>Footnotes should appear below this</p>
-            <hr/>
+            <hr />
             <ol list-style-type="decimal">
                 <li>
                     <p>
@@ -242,7 +242,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
                 </sup>
             </p>
             <p>Footnotes should appear below this</p>
-            <hr/>
+            <hr />
             <ol list-style-type="decimal">
                 <li><p>
                     <a href="#footnote-ref-one" name="footnote-one">^</a>

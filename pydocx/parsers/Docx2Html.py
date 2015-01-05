@@ -59,7 +59,8 @@ class Docx2Html(DocxParser):
             for footnote_id in self.footnote_ordering
         ]
         if footnotes:
-            return '<hr/>{footnotes}'.format(
+            return '{page_break}{footnotes}'.format(
+                page_break=self.page_break(),
                 footnotes=self.ordered_list(
                     text=''.join(footnotes),
                     list_style='decimal',

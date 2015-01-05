@@ -1,6 +1,7 @@
 **dev**
 
 - Allow a file-like object to be passed into the DocXParser constructor.
+- Added basic support for footnotes.
 
 **0.4.2**
 

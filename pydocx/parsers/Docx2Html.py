@@ -25,28 +25,64 @@ class Docx2Html(DocxParser):
     @property
     def parsed(self):
         content = super(Docx2Html, self).parsed
-        content = "<html>%(head)s<body>%(content)s</body></html>" % {
-            'head': self.head(),
-            'content': content,
-        }
+        content = '<html>{header}<body>{body}{footer}</body></html>'.format(
+            header=self.head(),
+            body=content,
+            footer=self.footer(),
+        )
         return content
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
             attrs = convert_dictionary_to_html_attributes(attrs)
-            template = '<%(tag)s %(attrs)s>%(contents)s</%(tag)s>'
+            template = '<{tag} {attrs}>{contents}</{tag}>'
         else:
-            template = '<%(tag)s>%(contents)s</%(tag)s>'
-        return template % {
-            'tag': tag,
-            'attrs': attrs,
-            'contents': contents,
-        }
+            template = '<{tag}>{contents}</{tag}>'
+        return template.format(
+            tag=tag,
+            attrs=attrs,
+            contents=contents,
+        )
 
     def head(self):
         return self.make_element(
             tag='head',
             contents=self.style(),
+        )
+
+    def footer(self):
+        return self.footnotes()
+
+    def footnotes(self):
+        footnotes = [
+            self.footnote(self.footnote_id_to_content[footnote_id])
+            for footnote_id in self.footnote_ordering
+        ]
+        if footnotes:
+            return '{page_break}{footnotes}'.format(
+                page_break=self.page_break(),
+                footnotes=self.ordered_list(
+                    text=''.join(footnotes),
+                    list_style='decimal',
+                )
+            )
+        else:
+            return ''
+
+    def footnote_ref(self, footnote_id):
+        return self.make_element(
+            tag='a',
+            attrs=dict(
+                href='#footnote-ref-{id}',
+                name='footnote-{id}'
+            ),
+            contents='^',
+        ).format(id=footnote_id)
+
+    def footnote(self, content):
+        return self.make_element(
+            tag='li',
+            contents=content,
         )
 
     def style(self):
@@ -76,6 +112,20 @@ class Docx2Html(DocxParser):
         return self.make_element(
             tag='style',
             contents=''.join(result),
+        )
+
+    def footnote_reference(self, footnote_id, index):
+        anchor = self.make_element(
+            tag='a',
+            attrs=dict(
+                href='#footnote-{id}',
+                name='footnote-ref-{id}'
+            ),
+            contents='{index}',
+        )
+        return anchor.format(
+            id=footnote_id,
+            index=index,
         )
 
     def escape(self, text):

@@ -171,11 +171,16 @@ class DocxParser(MulitMemoizeMixin):
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
+        self.footnote_index = 1
+        self.footnote_ordering = []
+        self.current_part = None
 
         self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
             'delText': self.parse_deletion,
             'drawing': self.parse_image,
+            'footnoteReference': self.parse_footnote_reference,
+            'footnoteRef': self.parse_footnote_ref,
             'hyperlink': self.parse_hyperlink,
             'ins': self.parse_insertion,
             'noBreakHyphen': self.parse_hyphen,
@@ -221,9 +226,24 @@ class DocxParser(MulitMemoizeMixin):
             main_document_part.style_definitions_part,
         )
         self.styles = self.styles_manager.styles
-        self.parse_begin(main_document_part.root_element)
+        self.parse_begin(main_document_part)
 
-    def parse_begin(self, el):
+    def load_footnotes(self, main_document_part):
+        footnotes = {}
+        if not main_document_part:
+            return footnotes
+        if not main_document_part.footnotes_part:
+            return footnotes
+        if not main_document_part.footnotes_part.root_element:
+            return footnotes
+        self.current_part = main_document_part.footnotes_part
+        for element in main_document_part.footnotes_part.root_element:
+            if element.tag == 'footnote':
+                footnote_id = element.get('id')
+                footnotes[footnote_id] = self.parse(element)
+        return footnotes
+
+    def parse_begin(self, main_document_part):
         self.populate_memoization({
             'find_all': find_all,
             'find_first': find_first,
@@ -236,8 +256,12 @@ class DocxParser(MulitMemoizeMixin):
             styles=self.styles,
             numbering_root=self.numbering_root,
         )
-        self.pre_processor.perform_pre_processing(el)
-        self._parsed = self.parse(el)
+        self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa
+
+        self.footnote_id_to_content = self.load_footnotes(main_document_part)
+
+        self.current_part = main_document_part
+        self._parsed = self.parse(main_document_part.root_element)
 
     def parse(self, el):
         return self.parser.parse(el)
@@ -248,6 +272,23 @@ class DocxParser(MulitMemoizeMixin):
             # pgSz is defined in twips, convert to points
             pgSz = int(pgSzEl.attrib['w'])
             return pgSz / TWIPS_PER_POINT
+
+    def parse_footnote_ref(self, el, text, stack):
+        footnote_id = None
+        for item in reversed(stack):
+            if item['element'].tag == 'footnote':
+                footnote_id = item['element'].get('id')
+                break
+        return self.footnote_ref(footnote_id)
+
+    def parse_footnote_reference(self, el, text, stack):
+        footnote_id = el.get('id')
+        if footnote_id not in self.footnote_id_to_content:
+            return ''
+        self.footnote_ordering.append(footnote_id)
+        index = self.footnote_index
+        self.footnote_index += 1
+        return self.footnote_reference(footnote_id, index)
 
     def parse_page_break(self, el, text, stack):
         # TODO figure out what parsed is getting overwritten
@@ -570,7 +611,7 @@ class DocxParser(MulitMemoizeMixin):
 
     def parse_hyperlink(self, el, text, stack):
         relationship_id = el.get('id')
-        package_part = self.document.main_document_part.package_part
+        package_part = self.current_part.package_part
         try:
             relationship = package_part.get_relationship(
                 relationship_id=relationship_id,
@@ -635,7 +676,7 @@ class DocxParser(MulitMemoizeMixin):
         x, y = self._get_image_size(el)
         relationship_id = self._get_image_id(el)
         try:
-            image_part = self.document.main_document_part.get_part_by_id(
+            image_part = self.current_part.get_part_by_id(
                 relationship_id=relationship_id,
             )
             is_uri_external = uri_is_external(image_part.uri)

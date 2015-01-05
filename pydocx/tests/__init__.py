@@ -6,6 +6,7 @@ from __future__ import (
 
 import posixpath
 import re
+import os.path
 from contextlib import contextmanager
 from xml.dom import minidom
 from unittest import TestCase
@@ -17,12 +18,13 @@ except ImportError:
     from io import BytesIO
 
 from pydocx.managers.styles import StylesManager
-from pydocx.packaging import PackageRelationship
+from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.parsers.Docx2Html import Docx2Html
 from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.util.xml import parse_xml_from_string
-from pydocx.util.zip import ZipFile
+from pydocx.util.zip import create_zip_archive
 from pydocx.wordml import (
+    FootnotesPart,
     MainDocumentPart,
     NumberingDefinitionsPart,
     StyleDefinitionsPart,
@@ -129,125 +131,191 @@ class Docx2HtmlNoStyle(Docx2Html):
         return ''
 
 
-class DocumentGeneratorTestCase(TestCase):
-    '''
-    A test case class that can be inherited to compare xml fragments with their
-    resulting HTML output.  This is achieved by generating a document container
-    on the fly in a temporary location and then using the parser to convert
-    that document.
-    Each test case needs to call `assert_xml_body_matches_expected_html`
-    '''
+class WordprocessingDocumentFactory(object):
+    PARTS_TO_PATHS = {
+        FootnotesPart: 'word/footnotes.xml',
+        MainDocumentPart: 'word/document.xml',
+        StyleDefinitionsPart: 'word/styles.xml',
+        NumberingDefinitionsPart: 'word/numbering.xml',
+    }
 
-    base_relationships = '''
-        <Relationships xmlns="{PackageRelationshipNamespace}">
-          <Relationship Id="rId1" Type="{MainDocumentPartNamespace}"
-            Target="word/document.xml"/>
-        </Relationships>
-    '''.format(
-        PackageRelationshipNamespace=PackageRelationship.namespace,
-        MainDocumentPartNamespace=MainDocumentPart.relationship_type,
-    )
+    PARTS_TO_PREPARE_CONTENT_FUNCS = {
+        FootnotesPart: 'prepare_footnotes_content',
+        MainDocumentPart: 'prepare_main_document_content',
+        StyleDefinitionsPart: 'prepare_style_content',
+    }
+
+    xml_header = '<?xml version="1.0" encoding="UTF-8"?>'
+
+    relationship_format = '''
+        <Relationship Id="{id}" Type="{type}" Target="{target}" TargetMode="{target_mode}"/>
+    '''  # noqa
 
     content_types = '''
         <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
           <Override PartName="/_rels/.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
           <Override PartName="/word/_rels/document.xml.rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-          <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
           <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
         </Types>
     '''  # noqa
 
-    def wrap_xml(self, xml):
-        return '<?xml version="1.0" encoding="UTF-8"?>%s' % xml
+    def __init__(self, items=None):
+        self.items = items
+        if not self.items:
+            self.items = {}
 
-    def wrap_body_xml(self, xml):
-        xml = '<document><body>%s</body></document>' % xml
-        return self.wrap_xml(xml)
-
-    def wrap_style_xml(self, xml):
-        xml = '<styles>%s</styles>' % xml
-        return self.wrap_xml(xml)
-
-    def wrap_numbering_xml(self, xml):
-        xml = '<numbering>%s</numbering>' % xml,
-        return self.wrap_xml(xml)
-
-    def wrap_relationship_xml(self, xml):
-        xml = '''
-            <Relationships xmlns="{namespace}">
-            {xml}
-            </Relationships>
-        '''.format(
-            namespace=PackageRelationship.namespace,
-            xml=xml,
-        )
-        return self.wrap_xml(xml)
-
-    @contextmanager
-    def build_and_convert_document_to_html(
-        self,
-        body=None,
-        style=None,
-        numbering=None,
-        word_relationships=None,
-    ):
-        default_word_relationships = '''
-          <Relationship Id="rId1" Type="{styles_rel_type}"
-            Target="styles.xml"/>
-          <Relationship Id="rId2" Type="{numbering_rel_type}"
-            Target="numbering.xml"/>
-        '''.format(
-            styles_rel_type=StyleDefinitionsPart.relationship_type,
-            numbering_rel_type=NumberingDefinitionsPart.relationship_type,
-        )
-
-        if word_relationships is None:
-            word_relationships = default_word_relationships
-
-        if word_relationships:
-            word_relationships = self.wrap_relationship_xml(word_relationships)
-
-        if body:
-            body = self.wrap_body_xml(body)
-
-        if style:
-            style = self.wrap_style_xml(style)
-
-        if numbering:
-            numbering = self.wrap_numbering_xml(numbering)
-
-        document = {
-            '_rels/.rels': self.base_relationships,
-            'word/_rels/document.xml.rels': word_relationships,
-            'word/document.xml': body,
-            'word/styles.xml': style,
-            'word/numbering.xml': numbering,
-            '[Content_Types].xml': self.content_types,
-        }
-
-        buf = BytesIO()
-        with ZipFile(buf, 'w') as zf:
-            for arcname, data in document.items():
-                if data is None:
-                    continue
-                zf.writestr(arcname, data.encode('utf-8'))
-
-        yield buf
-
-    def assert_xml_body_matches_expected_html(self, expected, **kwargs):
+    def to_zip_dict(self):
         '''
-        Given an XML body, generate a document container, then convert that
-        container to HTML and compare it with the given result.
+        Return a dictionary that can be passed to ``create_zip_archive``
+        The keys specify paths within the zip archive, and the values specify
+        the data at that path.
         '''
-        manager = self.build_and_convert_document_to_html(**kwargs)
-        with manager as docx_path:
-            parser = Docx2HtmlNoStyle(docx_path)
-            actual = parser.parsed
-            expected = BASE_HTML_NO_STYLE % expected
-            if not html_is_equal(actual, expected):
-                actual = prettify(actual)
-                message = 'The expected HTML did not match the actual HTML:'
-                raise AssertionError(message + '\n' + actual)
+
+        zip_dict = {}
+        part_class_to_uri = {}
+
+        for item_class, (content, rels) in self.items.items():
+            uri = self.PARTS_TO_PATHS[item_class]
+            part_class_to_uri[item_class] = uri
+            zip_dict[uri] = content
+            if rels:
+                rels_uri = ZipPackagePart.get_relationship_part_uri(uri)
+                zip_dict[rels_uri] = rels
+
+        base_uri, base_content = self.get_base_relationships(part_class_to_uri)
+        zip_dict[base_uri] = base_content
+
+        content_types_uri, content_types = self.get_content_types()
+        zip_dict[content_types_uri] = content_types
+
+        return zip_dict
+
+    def add(self, item_part_class, content, relationships=None):
+        '''
+        Add an item of type `item_part_class` to the document with content
+        `content`. Optionally, you can specify the `relationships` this item
+        has.
+
+        For example:
+
+            document = WordprocessingDocumentFactory()
+            document.add(MainDocumentPart, '<p>Foo</p>')
+
+        Internal relationships are managed automatically by adding the items
+        which are children before adding the parent:
+
+            document = WordprocessingDocumentFactory()
+            document.add(StyleDefinitionsPart, '<style>...</style>')
+            document.add(MainDocumentPart, '<p>Foo</p>')
+
+        In the above example, the MainDocumentPart item will automatically
+        acquire the StyleDefinitionsPart as a child item.
+
+        For external relationships, you can pass them in directly:
+
+            document = WordprocessingDocumentFactory()
+            document_rels = document.relationship_format.format(
+                id='foobar',
+                type=ImagePart.relationship_type,
+                target='http://google.com/logo.gif',
+                target_mode='External',
+            )
+            document.add(MainDocumentPart, '<p>Foo</p>', document_rels)
+
+        The external relationships will be combined with any automatic
+        relationships that existed.
+        '''
+        func_name = self.PARTS_TO_PREPARE_CONTENT_FUNCS.get(item_part_class)
+        func = getattr(self, func_name)
+        if callable(func):
+            content = func(content)
+        relationships = self.prepare_relationship_data(
+            content=relationships,
+            item_part_class=item_part_class,
+        )
+        self.items[item_part_class] = (content, relationships)
+
+    def prepare_xml_content(self, xml):
+        return '{header}{xml}'.format(header=self.xml_header, xml=xml)
+
+    def prepare_relationship_data(self, content, item_part_class=None):
+        if item_part_class:
+            # Automatically build relationships based on the defined child
+            # types and previously added parts to this factory
+            relevant_part_classes = (
+                set(item_part_class.child_part_types) & set(self.items.keys())
+            )
+            automatic_rels = ''.join(self.build_relationship_content(dict(
+                (
+                    part_class,
+                    self.get_part_name(item_part_class, part_class),
+                )
+                for part_class in relevant_part_classes
+            )))
+            if content:
+                content = content + automatic_rels
+            else:
+                content = automatic_rels
+        xml = '<Relationships xmlns="{ns}">{rels}</Relationships>'.format(
+            ns=PackageRelationship.namespace,
+            rels=content,
+        )
+        return self.prepare_xml_content(xml=xml)
+
+    def get_part_name(self, parent_part_class, part_class):
+        parent_uri = self.PARTS_TO_PATHS[parent_part_class]
+        uri = self.PARTS_TO_PATHS[part_class]
+        return os.path.relpath(uri, os.path.dirname(parent_uri))
+
+    def get_base_relationships(self, part_class_to_uri):
+        uri = ZipPackagePart.get_relationship_part_uri('')
+        content = ''.join(self.build_relationship_content(part_class_to_uri))
+        content = self.prepare_relationship_data(content=content)
+        return uri, content
+
+    def build_relationship_content(self, part_class_to_uri):
+        for rid, (part_class, uri) in enumerate(part_class_to_uri.items()):
+            yield self.relationship_format.format(
+                id='rId{rid}'.format(rid=rid),
+                type=part_class.relationship_type,
+                target=uri,
+                target_mode='Internal',
+            )
+
+    def prepare_main_document_content(self, xml):
+        xml = '<document><body>{xml}</body></document>'.format(xml=xml)
+        return self.prepare_xml_content(xml=xml)
+
+    def prepare_style_content(self, xml):
+        xml = '<styles>{xml}</styles>'.format(xml=xml)
+        return self.prepare_xml_content(xml=xml)
+
+    def prepare_footnotes_content(self, xml):
+        xml = '<footnotes>{xml}</footnotes>'.format(xml=xml)
+        return self.prepare_xml_content(xml=xml)
+
+    def get_content_types(self):
+        content_types = self.prepare_xml_content(xml=self.content_types)
+        return '[Content_Types].xml', content_types
+
+
+class DocumentGeneratorTestCase(TestCase):
+    '''
+    A test case class that can be inherited to compare xml fragments with their
+    resulting HTML output.
+
+    Each test case needs to call `assert_document_generates_html`
+    '''
+
+    def assert_document_generates_html(self, document, expected_html):
+        zip_buf = create_zip_archive(document.to_zip_dict())
+        parser = Docx2HtmlNoStyle(zip_buf)
+        actual = parser.parsed
+        expected = BASE_HTML_NO_STYLE % expected_html
+        if not html_is_equal(actual, expected):
+            actual = prettify(actual)
+            message = 'The expected HTML did not match the actual HTML:'
+            raise AssertionError(message + '\n' + actual)
 
 
 class XMLDocx2Html(Docx2Html):
@@ -323,7 +391,7 @@ class XMLDocx2Html(Docx2Html):
         )
         self.styles = self.styles_manager.styles
 
-        self.parse_begin(self.document.main_document_part.root_element)
+        self.parse_begin(self.document.main_document_part)
 
     def get_list_style(self, num_id, ilvl):
         try:

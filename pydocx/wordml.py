@@ -10,6 +10,22 @@ from pydocx.openxml import (
 )
 
 
+class FootnotesPart(OpenXmlPart):
+    '''
+    Represents a Footnotes part within a Word document container.
+
+    See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.footnotespart%28v=office.14%29.aspx  # noqa
+    '''
+
+    relationship_type = '/'.join([
+        'http://schemas.openxmlformats.org',
+        'officeDocument',
+        '2006',
+        'relationships',
+        'footnotes',
+    ])
+
+
 class ImagePart(OpenXmlPart):
     '''
     Represents an image part relationship within a Word document container.
@@ -91,6 +107,7 @@ class MainDocumentPart(OpenXmlPart):
 
     child_part_types = [
         FontTablePart,
+        FootnotesPart,
         ImagePart,
         NumberingDefinitionsPart,
         StyleDefinitionsPart,
@@ -117,6 +134,10 @@ class MainDocumentPart(OpenXmlPart):
         return self.get_parts_of_type(
             relationship_type=ImagePart.relationship_type,
         )
+
+    @property
+    def footnotes_part(self):
+        return self.get_part_of_class_type(part_class=FootnotesPart)
 
 
 class WordprocessingDocument(OpenXmlPackage):

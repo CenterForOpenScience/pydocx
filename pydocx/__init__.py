@@ -8,7 +8,7 @@ import sys
 
 from pydocx.parsers import Docx2Html, Docx2Markdown
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 
 def docx2html(path):

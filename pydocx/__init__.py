@@ -8,7 +8,7 @@ import sys
 
 from pydocx.parsers import Docx2Html, Docx2Markdown
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 
 def docx2html(path):
@@ -34,7 +34,7 @@ def main():
     else:
         print('Only valid parsers are --html and --markdown')
         sys.exit()
-    with open(path_to_html, 'w') as f:
+    with open(path_to_html, 'wb') as f:
         f.write(html.encode('utf-8'))
 
 if __name__ == '__main__':

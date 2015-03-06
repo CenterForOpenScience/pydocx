@@ -19,7 +19,7 @@ class OpenXmlPartContainer(object):
     See also: http://msdn.microsoft.com/en-us/library/documentformat.openxml.packaging.openxmlpartcontainer%28v=office.14%29.aspx  # noqa
     '''
 
-    child_part_types = NotImplemented
+    child_part_types = []
 
     def __init__(self):
         self.external_relationships = {}

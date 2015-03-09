@@ -19,23 +19,28 @@ def docx2markdown(path):
     return Docx2Markdown(path).parsed
 
 
-def main():
-    try:
-        parser_to_use = sys.argv[1]
-        path_to_docx = sys.argv[2]
-        path_to_html = sys.argv[3]
-    except IndexError:
-        print('Must specify which parser as well as the file to convert and the name of the resulting file.')  # noqa
-        sys.exit()
-    if parser_to_use == '--html':
-        html = Docx2Html(path_to_docx).parsed
-    elif parser_to_use == '--markdown':
-        html = Docx2Markdown(path_to_docx).parsed
+def convert(parser_type, docx_path, output_path):
+    if parser_type == '--html':
+        output = Docx2Html(docx_path).parsed
+    elif parser_type == '--markdown':
+        output = Docx2Markdown(docx_path).parsed
     else:
         print('Only valid parsers are --html and --markdown')
         sys.exit()
-    with open(path_to_html, 'wb') as f:
-        f.write(html.encode('utf-8'))
+    with open(output_path, 'wb') as f:
+        f.write(output.encode('utf-8'))
+
+
+def main():
+    try:
+        parser_type = sys.argv[1]
+        docx_path = sys.argv[2]
+        output_path = sys.argv[3]
+    except IndexError:
+        print('Usage: pydocx [--html|--markdown] input.docx output')
+        sys.exit()
+
+    convert(parser_type, docx_path, output_path)
 
 if __name__ == '__main__':
     main()

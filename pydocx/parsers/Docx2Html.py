@@ -45,9 +45,13 @@ class Docx2Html(DocxParser):
         )
 
     def head(self):
+        head = [
+            '<meta charset="utf-8" />',
+            self.style(),
+        ]
         return self.make_element(
             tag='head',
-            contents=self.style(),
+            contents=''.join(head),
         )
 
     def footer(self):

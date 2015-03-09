@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from __future__ import (
     absolute_import,
     print_function,
@@ -294,7 +296,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = ''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_unicode_character(self):
+    def test_unicode_character_from_xml_entity(self):
         document_xml = '''
             <p>
               <r>
@@ -306,6 +308,21 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>\U0010001f</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_non_entity_unicode_character(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>capacités</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>capacités</p>'
         self.assert_document_generates_html(document, expected_html)
 
 

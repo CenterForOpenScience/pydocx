@@ -52,6 +52,7 @@ STYLE = (
 BASE_HTML = '''
 <html>
     <head>
+    <meta charset="utf-8" />
     %s
     </head>
     <body>%%s</body>
@@ -61,7 +62,7 @@ BASE_HTML = '''
 
 BASE_HTML_NO_STYLE = '''
 <html>
-    <head></head>
+    <head><meta charset="utf-8" /></head>
     <body>%s</body>
 </html>
 '''

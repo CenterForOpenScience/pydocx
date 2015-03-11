@@ -1,3 +1,7 @@
+**dev**
+
+- Specify charset in rendered HTML
+
 **0.4.3**
 
 - Allow a file-like object to be passed into the DocXParser constructor.

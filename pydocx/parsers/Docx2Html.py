@@ -34,11 +34,7 @@ class Docx2Html(DocxParser):
 
     @property
     def parsed_content(self):
-        content = super(Docx2Html, self).parsed
-        content = "<div>{body}</div>".format(
-            body=content,
-        )
-        return content
+        return super(Docx2Html, self).parsed
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:

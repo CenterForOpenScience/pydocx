@@ -118,8 +118,10 @@ def get_list_style(numbering_root, num_id, ilvl):
                         return i.find('numFmt').attrib['val']
 
 
-def parse_xml_from_string(xml):
-    return cElementTree.fromstring(remove_namespaces(xml))
+def parse_xml_from_string(xml, remove_namespaces=False):
+    if remove_namespaces:
+        xml = remove_namespaces(xml)
+    return cElementTree.fromstring(xml)
 
 
 def convert_dictionary_to_style_fragment(style):

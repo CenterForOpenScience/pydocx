@@ -116,7 +116,11 @@ class OpenXmlPart(OpenXmlPartContainer):
     @property
     def root_element(self):
         if self._root_element is None:
-            self._root_element = parse_xml_from_string(self.stream.read())
+            data = self.stream.read()
+            self._root_element = parse_xml_from_string(
+                xml=data,
+                remove_namespaces=True,
+            )
         return self._root_element
 
     @property

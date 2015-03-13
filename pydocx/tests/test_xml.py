@@ -102,7 +102,7 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             relationships=self.relationships,
         )
-        tree = parse_xml_from_string(self.get_xml())
+        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
         els = []
         els.extend(find_all(tree, 'drawing'))
         els.extend(find_all(tree, 'pict'))
@@ -123,7 +123,7 @@ class ImageTestCase(_TranslationTestCase):
             document_xml=self.get_xml(),
             relationships=self.relationships,
         )
-        tree = parse_xml_from_string(self.get_xml())
+        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
         els = []
         els.extend(find_all(tree, 'drawing'))
         els.extend(find_all(tree, 'pict'))

@@ -379,8 +379,10 @@ class XMLDocx2Html(Docx2Html):
 
         self.numbering_root = None
         if self.numbering_dict is not None:
+            data = DXB.numbering(self.numbering_dict)
             self.numbering_root = parse_xml_from_string(
-                DXB.numbering(self.numbering_dict),
+                xml=data,
+                remove_namespaces=True,
             )
 
         # This is the standard page width for a word document (in points), Also

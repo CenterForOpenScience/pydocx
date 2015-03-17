@@ -146,8 +146,6 @@ class WordprocessingDocumentFactory(object):
         StyleDefinitionsPart: 'prepare_style_content',
     }
 
-    xml_header = '<?xml version="1.0" encoding="UTF-8"?>'
-
     relationship_format = '''
         <Relationship Id="{id}" Type="{type}" Target="{target}" TargetMode="{target_mode}"/>
     '''  # noqa
@@ -160,10 +158,14 @@ class WordprocessingDocumentFactory(object):
         </Types>
     '''  # noqa
 
-    def __init__(self, items=None):
+    def __init__(self, items=None, xml_header=None):
         self.items = items
         if not self.items:
             self.items = {}
+
+        if xml_header is None:
+            xml_header = '<?xml version="1.0" encoding="UTF-8"?>'
+        self.xml_header = xml_header
 
     def to_zip_dict(self):
         '''

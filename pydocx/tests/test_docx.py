@@ -123,6 +123,13 @@ class ConvertDocxToHtmlTestCase(TestCase):
         assert file_html
         self.assertEqual(path_html, file_html)
 
+    def test_googledocx_parsing(self):
+        try:
+            Docx2Html(path=self.get_path_to_fixture('export_from_googledocs.docx')).parsed
+        except ValueError:
+            self.fail("Can't parse google docs exported docx")
+
+
 ConvertDocxToHtmlTestCase.generate()
 
 

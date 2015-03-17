@@ -1,6 +1,16 @@
 language: python
 install: pip install tox
 script: tox -v -- --verbose
+env:
+  - TOX_ENV=docs
+  - TOX_ENV=py27pep8
+  - TOX_ENV=py33pep8
+  - TOX_ENV=py26-defusedxml
+  - TOX_ENV=py27-defusedxml
+  - TOX_ENV=py33-defusedxml
+  - TOX_ENV=py26
+  - TOX_ENV=py27
+  - TOX_ENV=py33
 notifications:
   email:
     - jason.louard.ward@gmail.com

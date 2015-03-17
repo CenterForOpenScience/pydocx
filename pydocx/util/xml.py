@@ -73,13 +73,13 @@ def has_descendant_with_tag(el, tag):
     return True if find_first(el, tag) is not None else False
 
 
-def remove_namespaces(xml_bytes):
+def xml_remove_namespaces(xml_bytes):
     """
     Given a stream of xml bytes, strip all namespaces from tag and attribute
     names.
     """
     try:
-        root = cElementTree.fromstring(xml_bytes)
+        root = parse_xml_from_string(xml_bytes, remove_namespaces=False)
     except SyntaxError:
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
@@ -120,7 +120,7 @@ def get_list_style(numbering_root, num_id, ilvl):
 
 def parse_xml_from_string(xml, remove_namespaces=False):
     if remove_namespaces:
-        xml = remove_namespaces(xml)
+        xml = xml_remove_namespaces(xml)
     return cElementTree.fromstring(xml)
 
 

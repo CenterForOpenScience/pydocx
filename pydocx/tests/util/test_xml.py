@@ -5,14 +5,14 @@ from __future__ import (
 )
 
 from unittest import TestCase
-from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
 from pydocx.util.xml import (
     el_iter,
     find_all,
     find_first,
-    remove_namespaces,
+    parse_xml_from_string,
+    xml_remove_namespaces,
     xml_tag_split,
     XmlNamespaceManager,
 )
@@ -25,7 +25,7 @@ def elements_to_tags(elements):
 
 def make_xml(s):
     xml = b'<?xml version="1.0"?>' + s
-    return cElementTree.fromstring(xml)
+    return parse_xml_from_string(xml)
 
 
 def remove_whitespace(s):
@@ -79,7 +79,7 @@ class UtilsTestCase(TestCase):
             </w:one>
         '''
         expected = '<one><two><three/><three/></two></one>'
-        result = remove_namespaces(xml)
+        result = xml_remove_namespaces(xml)
         assert isinstance(result, bytes)
         result = remove_whitespace(result.decode('utf-8'))
         self.assertEqual(result, expected)
@@ -87,7 +87,7 @@ class UtilsTestCase(TestCase):
     def test_remove_namespaces_on_namespaceless_xml(self):
         xml = b'<?xml version="1.0"?><one><two><three/><three/></two></one>'
         expected = '<one><two><three/><three/></two></one>'
-        result = remove_namespaces(xml)
+        result = xml_remove_namespaces(xml)
         assert isinstance(result, bytes)
         result = remove_whitespace(result.decode('utf-8'))
         self.assertEqual(result, expected)
@@ -95,7 +95,7 @@ class UtilsTestCase(TestCase):
     def test_remove_namespaces_junk_xml_causes_malformed_exception(self):
         self.assertRaises(
             MalformedDocxException,
-            lambda: remove_namespaces('foo')
+            lambda: xml_remove_namespaces('foo')
         )
 
     def test_xml_tag_split(self):
@@ -113,7 +113,7 @@ class XmlNamespaceManagerTestCase(TestCase):
                 <a:mouse><a:bat /></a:mouse>
             </a:foo>
         '''
-        root = cElementTree.fromstring(xml)
+        root = parse_xml_from_string(xml)
         manager = XmlNamespaceManager()
         manager.add_namespace('http://example/test')
         tags = []

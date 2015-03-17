@@ -12,10 +12,13 @@ try:
     BytesIO = StringIO
 except ImportError:
     from io import BytesIO
-from xml.etree import cElementTree
 
 from pydocx.exceptions import MalformedDocxException
-from pydocx.util.xml import xml_tag_split, XmlNamespaceManager
+from pydocx.util.xml import (
+    parse_xml_from_string,
+    xml_tag_split,
+    XmlNamespaceManager,
+)
 
 
 class PackageRelationship(object):
@@ -121,7 +124,7 @@ class PackageRelationshipManager(object):
         manager = XmlNamespaceManager()
         manager.add_namespace(PackageRelationship.namespace)
         stream = part_container.get_part(self.relationship_uri).stream
-        root = cElementTree.fromstring(stream.read())
+        root = parse_xml_from_string(stream.read())
         for node in manager.iterate_children(root):
             _, tag = xml_tag_split(node.tag)
             if tag != PackageRelationship.XML_TAG_NAME:

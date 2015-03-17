@@ -44,6 +44,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # GGG is expected to be "upperRoman". This is showing that only top
         # level upperRomans are converted.
         'external_image',
+        'export_from_googledocs',
         'fake_subscript',
         'fake_superscript',
         'has_missing_image',
@@ -122,12 +123,6 @@ class ConvertDocxToHtmlTestCase(TestCase):
         file_html = self.convert_docx_to_html(open(path, 'rb'))
         assert file_html
         self.assertEqual(path_html, file_html)
-
-    def test_googledocx_parsing(self):
-        try:
-            Docx2Html(path=self.get_path_to_fixture('export_from_googledocs.docx')).parsed
-        except ValueError:
-            self.fail("Can't parse google docs exported docx")
 
 
 ConvertDocxToHtmlTestCase.generate()

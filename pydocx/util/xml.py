@@ -7,6 +7,12 @@ from __future__ import (
 import re
 from xml.etree import cElementTree
 
+try:
+    from defusedxml.cElementTree import fromstring
+    cElementTree.fromstring = fromstring
+except ImportError:
+    pass
+
 from pydocx.exceptions import MalformedDocxException
 
 

@@ -1,6 +1,6 @@
 language: python
 install: pip install tox
-script: tox -v -- --verbose
+script: tox -v -e $TOX_ENV -- --verbose
 env:
   - TOX_ENV=docs
   - TOX_ENV=py27pep8

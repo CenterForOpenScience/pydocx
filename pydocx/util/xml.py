@@ -6,6 +6,7 @@ from __future__ import (
 
 import re
 from xml.etree import cElementTree
+from xml.parsers.expat import ExpatError
 
 try:
     from defusedxml.cElementTree import fromstring
@@ -86,7 +87,7 @@ def xml_remove_namespaces(xml_bytes):
     """
     try:
         root = parse_xml_from_string(xml_bytes, remove_namespaces=False)
-    except SyntaxError:
+    except (SyntaxError, ExpatError):
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
         child.tag = child.tag.split("}")[-1]

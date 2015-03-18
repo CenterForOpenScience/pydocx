@@ -1,4 +1,4 @@
-**dev**
+**0.4.4**
 
 - Specify charset in rendered HTML
 - Added support for using defusedxml to mitigate XML vulnerabilities.

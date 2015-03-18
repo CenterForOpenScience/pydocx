@@ -6,6 +6,13 @@ from __future__ import (
 
 import re
 from xml.etree import cElementTree
+from xml.parsers.expat import ExpatError
+
+try:
+    from defusedxml.cElementTree import fromstring
+    cElementTree.fromstring = fromstring
+except ImportError:
+    pass
 
 from pydocx.exceptions import MalformedDocxException
 
@@ -73,14 +80,14 @@ def has_descendant_with_tag(el, tag):
     return True if find_first(el, tag) is not None else False
 
 
-def remove_namespaces(xml_bytes):
+def xml_remove_namespaces(xml_bytes):
     """
     Given a stream of xml bytes, strip all namespaces from tag and attribute
     names.
     """
     try:
-        root = cElementTree.fromstring(xml_bytes)
-    except SyntaxError:
+        root = parse_xml_from_string(xml_bytes, remove_namespaces=False)
+    except (SyntaxError, ExpatError):
         raise MalformedDocxException('This document cannot be converted.')
     for child in el_iter(root):
         child.tag = child.tag.split("}")[-1]
@@ -118,8 +125,10 @@ def get_list_style(numbering_root, num_id, ilvl):
                         return i.find('numFmt').attrib['val']
 
 
-def parse_xml_from_string(xml):
-    return cElementTree.fromstring(remove_namespaces(xml))
+def parse_xml_from_string(xml, remove_namespaces=False):
+    if remove_namespaces:
+        xml = xml_remove_namespaces(xml)
+    return cElementTree.fromstring(xml)
 
 
 def convert_dictionary_to_style_fragment(style):

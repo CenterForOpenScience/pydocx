@@ -5,18 +5,18 @@ from __future__ import (
 )
 
 from unittest import TestCase
-from xml.etree import cElementTree
 
 from pydocx.models.styles import (
     Styles,
     Style,
     RunProperties,
 )
+from pydocx.util.xml import parse_xml_from_string
 
 
 class RunPropertiesTestCase(TestCase):
     def _load_styles_from_xml(self, xml):
-        root = cElementTree.fromstring(xml)
+        root = parse_xml_from_string(xml)
         return RunProperties.load(root)
 
     def test_bold_on(self):
@@ -58,7 +58,7 @@ class RunPropertiesTestCase(TestCase):
 
 class StyleTestCase(TestCase):
     def _load_styles_from_xml(self, xml):
-        root = cElementTree.fromstring(xml)
+        root = parse_xml_from_string(xml)
         return Style.load(root)
 
     def test_style_information_is_loaded(self):
@@ -104,7 +104,7 @@ class StyleTestCase(TestCase):
 
 class StylesTestCase(TestCase):
     def _load_styles_from_xml(self, xml):
-        root = cElementTree.fromstring(xml)
+        root = parse_xml_from_string(xml)
         return Styles.load(root)
 
     def test_style_information_is_loaded(self):

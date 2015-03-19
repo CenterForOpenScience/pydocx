@@ -16,9 +16,10 @@ def convert(parser_type, docx_path, output_path):
         output = Docx2Markdown(docx_path).parsed
     else:
         print('Only valid parsers are --html and --markdown')
-        sys.exit()
+        return 2
     with open(output_path, 'wb') as f:
         f.write(output.encode('utf-8'))
+    return 0
 
 
 def main(args=None):
@@ -31,9 +32,9 @@ def main(args=None):
         output_path = args[3]
     except IndexError:
         print('Usage: pydocx [--html|--markdown] input.docx output')
-        sys.exit()
+        return 1
 
-    convert(parser_type, docx_path, output_path)
+    return convert(parser_type, docx_path, output_path)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

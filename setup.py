@@ -69,7 +69,7 @@ def main():
         long_description=read('README.rst'),
         entry_points={
             'console_scripts': [
-                'pydocx = pydocx.__init__:main',
+                'pydocx = pydocx.__main__:main',
             ],
         },
     )

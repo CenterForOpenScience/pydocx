@@ -3,5 +3,9 @@ include CHANGELOG.rst
 include LICENSE
 include MANIFEST.in
 include README.rst
-include pydocx/fixtures/*
-include pydocx/tests/templates/*
+
+recursive-include tests *
+recursive-include docs *
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

@@ -8,13 +8,14 @@ from __future__ import (
 import sys
 import time
 
-from pydocx.tests.document_builder import DocxBuilder as DXB
-from pydocx.tests import (
+from pydocx.util.xml import find_all, parse_xml_from_string
+from pydocx.wordml import ImagePart
+
+from .document_builder import DocxBuilder as DXB
+from .utils import (
     XMLDocx2Html,
     _TranslationTestCase,
 )
-from pydocx.util.xml import find_all, parse_xml_from_string
-from pydocx.wordml import ImagePart
 
 
 class ImageLocal(_TranslationTestCase):

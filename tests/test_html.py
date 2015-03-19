@@ -6,17 +6,17 @@ from __future__ import (
     unicode_literals,
 )
 
-from nose import SkipTest
-
-from pydocx.tests import (
-    DocumentGeneratorTestCase,
-    WordprocessingDocumentFactory,
-)
 from pydocx.wordml import (
     FootnotesPart,
     ImagePart,
     MainDocumentPart,
     StyleDefinitionsPart,
+)
+
+from nose import SkipTest
+from .utils import (
+    DocumentGeneratorTestCase,
+    WordprocessingDocumentFactory,
 )
 
 

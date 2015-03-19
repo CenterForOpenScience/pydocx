@@ -20,7 +20,6 @@ except ImportError:
 from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.tests.document_builder import DocxBuilder as DXB
 from pydocx.util.xml import parse_xml_from_string
 from pydocx.util.zip import create_zip_archive
 from pydocx.wordml import (
@@ -30,6 +29,8 @@ from pydocx.wordml import (
     StyleDefinitionsPart,
     WordprocessingDocument,
 )
+
+from .document_builder import DocxBuilder as DXB
 
 STYLE = (
     '<style>'
@@ -85,7 +86,7 @@ def assert_html_equal(actual_html, expected_html, filename=None):
     if not html_is_equal(actual_html, expected_html):
         html = prettify(actual_html)
         if filename:
-            with open('pydocx/tests/failures/%s.html' % filename, 'w') as f:
+            with open('tests/failures/%s.html' % filename, 'w') as f:
                 f.write(html)
         raise AssertionError(html)
 

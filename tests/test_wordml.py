@@ -14,7 +14,7 @@ from pydocx.wordml import MainDocumentPart, WordprocessingDocument
 class ZipPackageTestCase(unittest.TestCase):
     def setUp(self):
         self.package = ZipPackage(
-            path='pydocx/fixtures/no_break_hyphen.docx',
+            path='tests/fixtures/no_break_hyphen.docx',
         )
 
     def test_relationship_uri(self):
@@ -39,7 +39,7 @@ class ZipPackageTestCase(unittest.TestCase):
 class WordprocessingDocumentTestCase(unittest.TestCase):
     def setUp(self):
         self.document = WordprocessingDocument(
-            path='pydocx/fixtures/no_break_hyphen.docx',
+            path='tests/fixtures/no_break_hyphen.docx',
         )
 
     def test_document_is_the_open_xml_package(self):
@@ -99,7 +99,7 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
 
     def test_image_parts(self):
         image_document = WordprocessingDocument(
-            path='pydocx/fixtures/has_image.docx',
+            path='tests/fixtures/has_image.docx',
         )
         parts = image_document.main_document_part.image_parts
         self.assertEqual(len(parts), 1)

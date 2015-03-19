@@ -32,6 +32,10 @@ class Docx2Html(DocxParser):
         )
         return content
 
+    @property
+    def parsed_content(self):
+        return super(Docx2Html, self).parsed
+
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
             attrs = convert_dictionary_to_html_attributes(attrs)

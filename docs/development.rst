@@ -53,12 +53,18 @@ Running tests
 
       $ pip install -r requirements/testing.txt
 
-#. Run ``./run_tests`` in the project root.
-   This will run ``nosetests`` with coverage and also display any ``flake8`` errors.
+#. Run ``make test lint``
+   in the project root.
+   This will
+   run ``nosetests``
+   with coverage
+   and also
+   display any
+   ``flake8`` errors.
 
    .. code-block:: shell-session
 
-      $ ./run_tests.sh
+      $ make test lint
 
 To run all tests against all supported versions of python,
 use ``tox``.

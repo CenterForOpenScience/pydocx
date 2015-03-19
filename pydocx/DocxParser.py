@@ -39,7 +39,6 @@ from pydocx.util.xml import (
 )
 from pydocx.wordml import WordprocessingDocument
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("NewParser")
 
 

@@ -5,6 +5,7 @@ from __future__ import (
 )
 
 import sys
+import logging
 
 from pydocx.parsers import Docx2Html, Docx2Markdown
 
@@ -32,6 +33,7 @@ def convert(parser_type, docx_path, output_path):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
     try:
         parser_type = sys.argv[1]
         docx_path = sys.argv[2]

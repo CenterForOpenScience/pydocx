@@ -544,7 +544,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
         with self.toggle_run_expected_output():
             start_time = time.time()
             try:
-                self.test_expected_output()
+                self.assert_expected_output()
             except AssertionError:
                 pass
             end_time = time.time()
@@ -578,7 +578,7 @@ class LargeCellTestCase(_TranslationTestCase):
         with self.toggle_run_expected_output():
             start_time = time.time()
             try:
-                self.test_expected_output()
+                self.assert_expected_output()
             except AssertionError:
                 pass
             end_time = time.time()

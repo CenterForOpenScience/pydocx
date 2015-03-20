@@ -97,7 +97,7 @@ class _TranslationTestCase(TestCase):
         yield
         self.run_expected_output = not self.run_expected_output
 
-    def test_expected_output(self):
+    def assert_expected_output(self):
         if self.expected_output is None:
             raise NotImplementedError('expected_output is not defined')
         if not self.run_expected_output:

@@ -4,8 +4,10 @@ from __future__ import (
     unicode_literals,
 )
 
+from os import unlink
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
+from shutil import copyfile
 
 from nose import SkipTest
 
@@ -64,3 +66,13 @@ class MainTestCase(TestCase):
 
     def test_convert_to_markdown_result(self):
         raise SkipTest('Fixture files for markdown do not exist yet')
+
+    def test_file_handles_to_docx_are_released(self):
+        # Copy the docx to another location so we can open it, and delete it
+        with NamedTemporaryFile(delete=False) as input_docx:
+            copyfile('tests/fixtures/inline_tags.docx', input_docx.name)
+            with NamedTemporaryFile() as output:
+                result = main(['--html', input_docx.name, output.name])
+            self.assertEqual(result, 0)
+            unlink(input_docx.name)
+            input_docx.close()

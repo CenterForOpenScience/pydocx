@@ -11,12 +11,12 @@ import time
 from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
 
-from pydocx.test import _TranslationTestCase
+from pydocx.test import TranslationTestCase
 from pydocx.test.document_builder import DocxBuilder as DXB
 from pydocx.test.utils import XMLDocx2Html
 
 
-class ImageLocal(_TranslationTestCase):
+class ImageLocal(TranslationTestCase):
     relationships = [
         dict(
             relationship_id='rId0',
@@ -53,7 +53,7 @@ class ImageLocal(_TranslationTestCase):
         return DXB.xml(body)
 
 
-class ImageTestCase(_TranslationTestCase):
+class ImageTestCase(TranslationTestCase):
     relationships = [
         dict(
             relationship_id='rId0',
@@ -139,7 +139,7 @@ class ImageTestCase(_TranslationTestCase):
         )
 
 
-class TableTag(_TranslationTestCase):
+class TableTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
@@ -165,7 +165,7 @@ class TableTag(_TranslationTestCase):
         return xml
 
 
-class RowSpanTestCase(_TranslationTestCase):
+class RowSpanTestCase(TranslationTestCase):
 
     expected_output = '''
            <table border="1">
@@ -193,7 +193,7 @@ class RowSpanTestCase(_TranslationTestCase):
         return xml
 
 
-class NestedTableTag(_TranslationTestCase):
+class NestedTableTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
@@ -236,7 +236,7 @@ class NestedTableTag(_TranslationTestCase):
         return xml
 
 
-class TableWithInvalidTag(_TranslationTestCase):
+class TableWithInvalidTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
@@ -262,7 +262,7 @@ class TableWithInvalidTag(_TranslationTestCase):
         return xml
 
 
-class TableWithListAndParagraph(_TranslationTestCase):
+class TableWithListAndParagraph(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
@@ -302,7 +302,7 @@ class TableWithListAndParagraph(_TranslationTestCase):
         return xml
 
 
-class SimpleListTestCase(_TranslationTestCase):
+class SimpleListTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
@@ -332,7 +332,7 @@ class SimpleListTestCase(_TranslationTestCase):
         return xml
 
 
-class SingleListItemTestCase(_TranslationTestCase):
+class SingleListItemTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
@@ -358,7 +358,7 @@ class SingleListItemTestCase(_TranslationTestCase):
         return xml
 
 
-class ListWithContinuationTestCase(_TranslationTestCase):
+class ListWithContinuationTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA<br />BBB</li>
@@ -400,7 +400,7 @@ class ListWithContinuationTestCase(_TranslationTestCase):
         return xml
 
 
-class ListWithMultipleContinuationTestCase(_TranslationTestCase):
+class ListWithMultipleContinuationTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA
@@ -440,7 +440,7 @@ class ListWithMultipleContinuationTestCase(_TranslationTestCase):
         return xml
 
 
-class MangledIlvlTestCase(_TranslationTestCase):
+class MangledIlvlTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
@@ -467,7 +467,7 @@ class MangledIlvlTestCase(_TranslationTestCase):
         return xml
 
 
-class SeperateListsTestCase(_TranslationTestCase):
+class SeperateListsTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
@@ -497,7 +497,7 @@ class SeperateListsTestCase(_TranslationTestCase):
         return xml
 
 
-class InvalidIlvlOrderTestCase(_TranslationTestCase):
+class InvalidIlvlOrderTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA
@@ -525,7 +525,7 @@ class InvalidIlvlOrderTestCase(_TranslationTestCase):
         return xml
 
 
-class DeeplyNestedTableTestCase(_TranslationTestCase):
+class DeeplyNestedTableTestCase(TranslationTestCase):
     expected_output = ''
     run_expected_output = False
 
@@ -560,7 +560,7 @@ class DeeplyNestedTableTestCase(_TranslationTestCase):
             assert total_time < expected_time, error_message
 
 
-class LargeCellTestCase(_TranslationTestCase):
+class LargeCellTestCase(TranslationTestCase):
     expected_output = ''
     run_expected_output = False
 
@@ -594,7 +594,7 @@ class LargeCellTestCase(_TranslationTestCase):
             assert total_time < expected_time, error_message
 
 
-class NonStandardTextTagsTestCase(_TranslationTestCase):
+class NonStandardTextTagsTestCase(TranslationTestCase):
     expected_output = '''
         <p><span class="pydocx-insert">insert </span>
         smarttag</p>
@@ -612,7 +612,7 @@ class NonStandardTextTagsTestCase(_TranslationTestCase):
         return xml
 
 
-class RTagWithNoText(_TranslationTestCase):
+class RTagWithNoText(TranslationTestCase):
     expected_output = ''
 
     def get_xml(self):
@@ -626,7 +626,7 @@ class RTagWithNoText(_TranslationTestCase):
         return xml
 
 
-class DeleteTagInList(_TranslationTestCase):
+class DeleteTagInList(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA
@@ -648,7 +648,7 @@ class DeleteTagInList(_TranslationTestCase):
         return xml
 
 
-class InsertTagInList(_TranslationTestCase):
+class InsertTagInList(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA<span class="pydocx-insert">BBB</span>
@@ -670,7 +670,7 @@ class InsertTagInList(_TranslationTestCase):
         return xml
 
 
-class SmartTagInList(_TranslationTestCase):
+class SmartTagInList(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAABBB
@@ -692,7 +692,7 @@ class SmartTagInList(_TranslationTestCase):
         return xml
 
 
-class SingleListItem(_TranslationTestCase):
+class SingleListItem(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA</li>
@@ -718,7 +718,7 @@ class SingleListItem(_TranslationTestCase):
         return xml
 
 
-class SimpleTableTest(_TranslationTestCase):
+class SimpleTableTest(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
@@ -757,7 +757,7 @@ class SimpleTableTest(_TranslationTestCase):
         return xml
 
 
-class MissingIlvl(_TranslationTestCase):
+class MissingIlvl(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAA<br />
@@ -781,7 +781,7 @@ class MissingIlvl(_TranslationTestCase):
         return xml
 
 
-class SameNumIdInTable(_TranslationTestCase):
+class SameNumIdInTable(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="lowerLetter">
             <li>AAA
@@ -825,7 +825,7 @@ class SameNumIdInTable(_TranslationTestCase):
         return xml
 
 
-class SDTTestCase(_TranslationTestCase):
+class SDTTestCase(TranslationTestCase):
     expected_output = '''
         <ol list-style-type="decimal">
             <li>AAABBB
@@ -844,7 +844,7 @@ class SDTTestCase(_TranslationTestCase):
         return xml
 
 
-class RomanNumeralToHeadingTestCase(_TranslationTestCase):
+class RomanNumeralToHeadingTestCase(TranslationTestCase):
     convert_root_level_upper_roman = True
     numbering_dict = {
         '1': {
@@ -900,7 +900,7 @@ class RomanNumeralToHeadingTestCase(_TranslationTestCase):
         return xml
 
 
-class SuperAndSubScripts(_TranslationTestCase):
+class SuperAndSubScripts(TranslationTestCase):
     expected_output = '''
         <p>AAA<sup>BBB</sup></p>
         <p><sub>CCC</sub>DDD</p>
@@ -935,7 +935,7 @@ class SuperAndSubScripts(_TranslationTestCase):
         return xml
 
 
-class AvaliableInlineTags(_TranslationTestCase):
+class AvaliableInlineTags(TranslationTestCase):
     expected_output = '''
         <p><strong>aaa</strong></p>
         <p><span class="pydocx-underline">bbb</span></p>
@@ -1040,7 +1040,7 @@ class AvaliableInlineTags(_TranslationTestCase):
         return xml
 
 
-class NestedListTestCase(_TranslationTestCase):
+class NestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol list-style-type="decimal">
         <li>AAA
@@ -1076,7 +1076,7 @@ class NestedListTestCase(_TranslationTestCase):
         return xml
 
 
-class MultipleNestedListTestCase(_TranslationTestCase):
+class MultipleNestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol list-style-type="decimal">
             <li>

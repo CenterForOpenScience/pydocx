@@ -1,9 +1,9 @@
 from pydocx.test.testcases import (
     DocumentGeneratorTestCase,
-    _TranslationTestCase,
+    TranslationTestCase,
 )
 
 __all__ = [
     'DocumentGeneratorTestCase',
-    '_TranslationTestCase',
+    'TranslationTestCase',
 ]

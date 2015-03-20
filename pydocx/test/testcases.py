@@ -78,7 +78,7 @@ class DocumentGeneratorTestCase(TestCase):
             raise AssertionError(message + '\n' + actual)
 
 
-class _TranslationTestCase(TestCase):
+class TranslationTestCase(TestCase):
     expected_output = None
     relationships = None
     numbering_dict = DEFAULT_NUMBERING_DICT

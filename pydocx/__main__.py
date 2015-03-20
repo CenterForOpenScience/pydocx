@@ -7,7 +7,8 @@ from __future__ import (
 import sys
 import logging
 
-from pydocx.parsers import Docx2Html, Docx2Markdown
+from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.parsers.Docx2Markdown import Docx2Markdown
 
 
 def convert(parser_type, docx_path, output_path):

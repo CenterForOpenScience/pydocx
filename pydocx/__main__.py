@@ -23,21 +23,25 @@ def convert(parser_type, docx_path, output_path):
     return 0
 
 
+def usage():
+    print('Usage: pydocx [--html|--markdown] input.docx output')
+    return 1
+
+
 def main(args=None):
     logging.basicConfig(level=logging.DEBUG)
 
     if args is None:
-        args = sys.argv[1:]
+        return usage()
 
     try:
         parser_type = args[1]
         docx_path = args[2]
         output_path = args[3]
     except IndexError:
-        print('Usage: pydocx [--html|--markdown] input.docx output')
-        return 1
+        return usage()
 
     return convert(parser_type, docx_path, output_path)
 
 if __name__ == "__main__":
-    sys.exit(main() or 0)
+    sys.exit(main(args=sys.argv[1:]) or 0)

@@ -11,8 +11,8 @@ import time
 from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
 
-from .document_builder import DocxBuilder as DXB
-from .utils import (
+from pydocx.test.document_builder import DocxBuilder as DXB
+from pydocx.test.utils import (
     XMLDocx2Html,
     _TranslationTestCase,
 )

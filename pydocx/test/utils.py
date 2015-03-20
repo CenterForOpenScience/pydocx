@@ -30,7 +30,7 @@ from pydocx.wordml import (
     WordprocessingDocument,
 )
 
-from .document_builder import DocxBuilder as DXB
+from pydocx.test.document_builder import DocxBuilder as DXB
 
 STYLE = (
     '<style>'

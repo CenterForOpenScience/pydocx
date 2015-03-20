@@ -14,7 +14,8 @@ from pydocx.wordml import (
 )
 
 from nose import SkipTest
-from .utils import (
+
+from pydocx.test.utils import (
     DocumentGeneratorTestCase,
     WordprocessingDocumentFactory,
 )

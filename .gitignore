@@ -44,4 +44,4 @@ testxml.html
 main.py
 
 docs/_build
-pydocx/tests/failures/*.html
+tests/failures/*.html

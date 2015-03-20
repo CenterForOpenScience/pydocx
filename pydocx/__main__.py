@@ -25,7 +25,7 @@ def convert(parser_type, docx_path, output_path):
 
 
 def usage():
-    print('Usage: pydocx [--html|--markdown] input.docx output')
+    print('Usage: pydocx --html|--markdown input.docx output')
     return 1
 
 

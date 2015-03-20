@@ -35,9 +35,9 @@ def main(args=None):
         return usage()
 
     try:
-        parser_type = args[1]
-        docx_path = args[2]
-        output_path = args[3]
+        parser_type = args[0]
+        docx_path = args[1]
+        output_path = args[2]
     except IndexError:
         return usage()
 

@@ -15,11 +15,11 @@ from pydocx.util.zip import ZipFile
 
 from nose.tools import raises
 
+from pydocx.test.testcases import BASE_HTML
 from pydocx.test.utils import (
     assert_html_equal,
     html_is_equal,
     prettify,
-    BASE_HTML,
 )
 
 

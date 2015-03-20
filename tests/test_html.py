@@ -15,10 +15,8 @@ from pydocx.wordml import (
 
 from nose import SkipTest
 
-from pydocx.test.utils import (
-    DocumentGeneratorTestCase,
-    WordprocessingDocumentFactory,
-)
+from pydocx.test import DocumentGeneratorTestCase
+from pydocx.test.utils import WordprocessingDocumentFactory
 
 
 class XMLVulnerabilitiesTestCase(DocumentGeneratorTestCase):

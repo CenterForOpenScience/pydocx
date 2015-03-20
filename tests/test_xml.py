@@ -11,11 +11,9 @@ import time
 from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.wordml import ImagePart
 
+from pydocx.test import _TranslationTestCase
 from pydocx.test.document_builder import DocxBuilder as DXB
-from pydocx.test.utils import (
-    XMLDocx2Html,
-    _TranslationTestCase,
-)
+from pydocx.test.utils import XMLDocx2Html
 
 
 class ImageLocal(_TranslationTestCase):

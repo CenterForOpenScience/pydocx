@@ -33,7 +33,7 @@ templates = {
 
 env = Environment(
     loader=PackageLoader(
-        'pydocx.tests',
+        'tests',
         'templates',
     ),
 )

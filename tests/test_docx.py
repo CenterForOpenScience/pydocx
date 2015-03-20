@@ -9,17 +9,18 @@ import os
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
+from pydocx.exceptions import MalformedDocxException
+from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.util.zip import ZipFile
+
 from nose.tools import raises
 
-from pydocx.tests import (
+from pydocx.test.testcases import BASE_HTML
+from pydocx.test.utils import (
     assert_html_equal,
     html_is_equal,
     prettify,
-    BASE_HTML,
 )
-from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.util.zip import ZipFile
-from pydocx.exceptions import MalformedDocxException
 
 
 def convert(path, *args, **kwargs):
@@ -29,7 +30,6 @@ def convert(path, *args, **kwargs):
 class ConvertDocxToHtmlTestCase(TestCase):
     cases_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
-        '..',
         'fixtures',
     )
 
@@ -44,6 +44,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # GGG is expected to be "upperRoman". This is showing that only top
         # level upperRomans are converted.
         'external_image',
+        'export_from_googledocs',
         'fake_subscript',
         'fake_superscript',
         'has_missing_image',
@@ -123,6 +124,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
         assert file_html
         self.assertEqual(path_html, file_html)
 
+
 ConvertDocxToHtmlTestCase.generate()
 
 
@@ -145,7 +147,6 @@ def get_image_data(docx_file_path, image_name):
 def test_has_image():
     file_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
-        '..',
         'fixtures',
         'has_image.docx',
     )

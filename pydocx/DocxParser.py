@@ -269,7 +269,7 @@ class DocxParser(MulitMemoizeMixin):
         pgSzEl = find_first(root_element, 'pgSz')
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
-            pgSz = int(pgSzEl.attrib['w'])
+            pgSz = int(float(pgSzEl.attrib['w']))
             return pgSz / TWIPS_PER_POINT
 
     def parse_footnote_ref(self, el, text, stack):

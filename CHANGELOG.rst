@@ -1,3 +1,8 @@
+**0.5.0**
+
+- Moved CLI to __main__
+- Moved tests to root-level module
+
 **0.4.4**
 
 - Specify charset in rendered HTML

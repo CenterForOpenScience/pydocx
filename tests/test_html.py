@@ -522,6 +522,35 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>H2O</p>'
         self.assert_document_generates_html(document, expected_html)
 
+    def test_no_sub_detected_for_size_set_in_rPrChange(self):
+        # Test for issue #116
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="-8"/>
+                  <rPrChange id="1" author="john" date="2015-02-10T14:33:00Z">
+                    <sz val="19"/>
+                  </rPrChange>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>H2O</p>'
+        self.assert_document_generates_html(document, expected_html)
+
 
 class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
     style_xml = '''
@@ -623,6 +652,35 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
               <r>
                 <rPr>
                   <sz val="19"/>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>nth</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_detected_for_size_set_in_rPrChange(self):
+        # Test for issue #116
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="8"/>
+                  <rPrChange id="1" author="john" date="2015-02-10T14:33:00Z">
+                    <sz val="19"/>
+                  </rPrChange>
                 </rPr>
                 <t>th</t>
               </r>

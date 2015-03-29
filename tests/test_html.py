@@ -465,7 +465,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>H2O</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_no_sup_because_position_is_zero(self):
+    def test_no_sub_because_position_is_zero(self):
         document_xml = '''
             <p>
               <pPr>
@@ -494,7 +494,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>H2O</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_no_sup_because_position_is_not_set(self):
+    def test_no_sub_because_position_is_not_set(self):
         document_xml = '''
             <p>
               <pPr>

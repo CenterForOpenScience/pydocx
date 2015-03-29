@@ -397,6 +397,147 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
+class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
+    def test_sup_detected_pStyle_has_larger_size_and_positive_position(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="8"/>
+                  <sz val="19"/>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        style_xml = '''
+            <style styleId="foo" type="paragraph">
+              <name val="Normal"/>
+              <rPr>
+                <sz val="24"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>n<sup>th</sup></p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_detected_because_pStyle_size_is_smaller(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="8"/>
+                  <sz val="19"/>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        style_xml = '''
+            <style styleId="foo" type="paragraph">
+              <name val="Normal"/>
+              <rPr>
+                <sz val="10"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>nth</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_because_position_is_zero(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="0"/>
+                  <sz val="19"/>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        style_xml = '''
+            <style styleId="foo" type="paragraph">
+              <name val="Normal"/>
+              <rPr>
+                <sz val="24"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>nth</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_because_position_is_not_set(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>n</t>
+              </r>
+              <r>
+                <rPr>
+                  <sz val="19"/>
+                </rPr>
+                <t>th</t>
+              </r>
+            </p>
+        '''
+
+        style_xml = '''
+            <style styleId="foo" type="paragraph">
+              <name val="Normal"/>
+              <rPr>
+                <sz val="24"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>nth</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+
 class HeadingTestCase(DocumentGeneratorTestCase):
     def test_character_stylings_are_ignored(self):
         # Even though the heading1 style has bold enabled, it's being ignored

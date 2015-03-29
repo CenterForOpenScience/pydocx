@@ -397,6 +397,132 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
+class FakedSubScriptTestCase(DocumentGeneratorTestCase):
+    style_xml = '''
+        <style styleId="foo" type="paragraph">
+          <name val="Normal"/>
+          <rPr>
+            <sz val="24"/>
+          </rPr>
+        </style>
+    '''
+
+    def test_sub_detected_pStyle_has_smaller_size_and_negative_position(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>H</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="-8"/>
+                  <sz val="19"/>
+                </rPr>
+                <t>2</t>
+              </r>
+              <r>
+                <t>O</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>H<sub>2</sub>O</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sub_detected_because_local_size_larger_than_pStyle_size(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>H</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="-8"/>
+                  <sz val="30"/>
+                </rPr>
+                <t>2</t>
+              </r>
+              <r>
+                <t>O</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>H2O</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_because_position_is_zero(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>H</t>
+              </r>
+              <r>
+                <rPr>
+                  <position val="0"/>
+                  <sz val="19"/>
+                </rPr>
+                <t>2</t>
+              </r>
+              <r>
+                <t>O</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>H2O</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_no_sup_because_position_is_not_set(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="foo"/>
+              </pPr>
+              <r>
+                <t>H</t>
+              </r>
+              <r>
+                <rPr>
+                  <sz val="19"/>
+                </rPr>
+                <t>2</t>
+              </r>
+              <r>
+                <t>O</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, self.style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>H2O</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+
 class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
     style_xml = '''
         <style styleId="foo" type="paragraph">

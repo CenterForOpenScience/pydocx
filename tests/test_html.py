@@ -530,7 +530,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
                 <pStyle val="foo"/>
               </pPr>
               <r>
-                <t>n</t>
+                <t>H</t>
               </r>
               <r>
                 <rPr>
@@ -539,7 +539,10 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
                     <sz val="19"/>
                   </rPrChange>
                 </rPr>
-                <t>th</t>
+                <t>2</t>
+              </r>
+              <r>
+                <t>O</t>
               </r>
             </p>
         '''

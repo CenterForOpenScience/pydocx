@@ -398,6 +398,15 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
 
 class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
+    style_xml = '''
+        <style styleId="foo" type="paragraph">
+          <name val="Normal"/>
+          <rPr>
+            <sz val="24"/>
+          </rPr>
+        </style>
+    '''
+
     def test_sup_detected_pStyle_has_larger_size_and_positive_position(self):
         document_xml = '''
             <p>
@@ -417,23 +426,14 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
             </p>
         '''
 
-        style_xml = '''
-            <style styleId="foo" type="paragraph">
-              <name val="Normal"/>
-              <rPr>
-                <sz val="24"/>
-              </rPr>
-            </style>
-        '''
-
         document = WordprocessingDocumentFactory()
-        document.add(StyleDefinitionsPart, style_xml)
+        document.add(StyleDefinitionsPart, self.style_xml)
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>n<sup>th</sup></p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_no_sup_detected_because_pStyle_size_is_smaller(self):
+    def test_no_sup_detected_because_local_size_larger_than_pStyle_size(self):
         document_xml = '''
             <p>
               <pPr>
@@ -445,24 +445,15 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
               <r>
                 <rPr>
                   <position val="8"/>
-                  <sz val="19"/>
+                  <sz val="30"/>
                 </rPr>
                 <t>th</t>
               </r>
             </p>
         '''
 
-        style_xml = '''
-            <style styleId="foo" type="paragraph">
-              <name val="Normal"/>
-              <rPr>
-                <sz val="10"/>
-              </rPr>
-            </style>
-        '''
-
         document = WordprocessingDocumentFactory()
-        document.add(StyleDefinitionsPart, style_xml)
+        document.add(StyleDefinitionsPart, self.style_xml)
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>nth</p>'
@@ -487,17 +478,8 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
             </p>
         '''
 
-        style_xml = '''
-            <style styleId="foo" type="paragraph">
-              <name val="Normal"/>
-              <rPr>
-                <sz val="24"/>
-              </rPr>
-            </style>
-        '''
-
         document = WordprocessingDocumentFactory()
-        document.add(StyleDefinitionsPart, style_xml)
+        document.add(StyleDefinitionsPart, self.style_xml)
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>nth</p>'
@@ -521,17 +503,8 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
             </p>
         '''
 
-        style_xml = '''
-            <style styleId="foo" type="paragraph">
-              <name val="Normal"/>
-              <rPr>
-                <sz val="24"/>
-              </rPr>
-            </style>
-        '''
-
         document = WordprocessingDocumentFactory()
-        document.add(StyleDefinitionsPart, style_xml)
+        document.add(StyleDefinitionsPart, self.style_xml)
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>nth</p>'

@@ -45,6 +45,8 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # level upperRomans are converted.
         'external_image',
         'export_from_googledocs',
+        'fake_subscript',
+        'fake_superscript',
         'has_missing_image',
         'list_to_header',
         'lists_with_styles',

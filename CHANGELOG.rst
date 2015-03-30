@@ -1,4 +1,4 @@
-**dev**
+**0.5.1**
 
 - Fixed issue #116 - Don't assume the first sz of an rPr actually is a direct
   child of that rPr.

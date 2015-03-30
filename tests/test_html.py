@@ -399,7 +399,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
 class FakedSubScriptTestCase(DocumentGeneratorTestCase):
     style_xml = '''
-        <style styleId="foo" type="paragraph">
+        <style styleId="faked_subscript" type="paragraph">
           <name val="Normal"/>
           <rPr>
             <sz val="24"/>
@@ -411,7 +411,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_subscript"/>
               </pPr>
               <r>
                 <t>H</t>
@@ -440,7 +440,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_subscript"/>
               </pPr>
               <r>
                 <t>H</t>
@@ -469,7 +469,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_subscript"/>
               </pPr>
               <r>
                 <t>H</t>
@@ -498,7 +498,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_subscript"/>
               </pPr>
               <r>
                 <t>H</t>
@@ -527,7 +527,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_subscript"/>
               </pPr>
               <r>
                 <t>H</t>
@@ -557,7 +557,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
 
 class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
     style_xml = '''
-        <style styleId="foo" type="paragraph">
+        <style styleId="faked_superscript" type="paragraph">
           <name val="Normal"/>
           <rPr>
             <sz val="24"/>
@@ -569,7 +569,7 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_superscript"/>
               </pPr>
               <r>
                 <t>n</t>
@@ -595,7 +595,7 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_superscript"/>
               </pPr>
               <r>
                 <t>n</t>
@@ -621,7 +621,7 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_superscript"/>
               </pPr>
               <r>
                 <t>n</t>
@@ -647,7 +647,7 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_superscript"/>
               </pPr>
               <r>
                 <t>n</t>
@@ -673,7 +673,7 @@ class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             <p>
               <pPr>
-                <pStyle val="foo"/>
+                <pStyle val="faked_superscript"/>
               </pPr>
               <r>
                 <t>n</t>

@@ -735,11 +735,11 @@ class DocxParser(MulitMemoizeMixin):
             if not properties.size:
                 return
             copied_el = copy.deepcopy(el)
-            rpr = find_first(copied_el, 'rPr')
+            rpr = copied_el.find('./rPr')
             if rpr is None:
                 return
 
-            size_tag = find_first(rpr, 'sz')
+            size_tag = rpr.find('./sz')
             if size_tag is None:
                 return
 

@@ -1,3 +1,8 @@
+**dev**
+
+- Fixed issue #116 - Don't assume the first sz of an rPr actually is a direct
+  child of that rPr.
+
 **0.5.0**
 
 - Moved CLI to __main__

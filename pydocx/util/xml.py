@@ -40,6 +40,8 @@ def el_iter(el):
 def find_first(el, tag):
     """
     Find the first occurrence of a tag beneath the current element.
+
+    This method should not be used to navigate an OOXML schema
     """
     search_path = './/' + tag
     # Due to a bug in python 2.6's ElementPath implementation, we have to

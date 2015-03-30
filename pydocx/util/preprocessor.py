@@ -14,7 +14,6 @@ from pydocx.constants import (
 from pydocx.util.memoize import MulitMemoizeMixin
 from pydocx.util.xml import (
     filter_children,
-    find_first,
     find_all,
     find_ancestor_with_tag,
     get_list_style,
@@ -70,9 +69,6 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         self.numbering_root = numbering_root
 
     def perform_pre_processing(self, root, *args, **kwargs):
-        self.populate_memoization({
-            'find_first': find_first,
-        })
         self._add_parent(root)
         # If we don't have a numbering root there cannot be any lists.
         if self.numbering_root is not None:
@@ -80,7 +76,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         self._set_table_attributes(root)
         self._set_is_in_table(root)
 
-        body = find_first(root, 'body')
+        body = root.find('./body')
         self._set_next(body)
         p_elements = [
             child for child in find_all(body, 'p')
@@ -157,7 +153,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
             # Deleted text in a list will have a numId but no ilvl.
             if parent is None:
                 continue
-            parent_ilvl = self.memod_tree_op('find_first', parent, 'ilvl')
+            parent_ilvl = parent.find('./pPr/numPr/ilvl')
             if parent_ilvl is None:
                 continue
             self.meta_data[parent]['is_list_item'] = True
@@ -172,7 +168,8 @@ class PydocxPreProcessor(MulitMemoizeMixin):
         it is in to ensure it is considered a new list. Otherwise all sorts of
         terrible html gets generated.
         '''
-        num_id = find_first(el, 'numId').attrib['val']
+        el_num_id = el.find('./pPr/numPr/numId')
+        num_id = el_num_id.attrib['val']
 
         # First, go up the parent until we get None and count the number of
         # tables there are.
@@ -251,7 +248,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
                 for j, child in enumerate(tcs):
                     self.meta_data[child]['row_index'] = i
                     self.meta_data[child]['column_index'] = j
-                    v_merge = find_first(child, 'vMerge')
+                    v_merge = child.find('./tcPr/vMerge')
                     if (
                             v_merge is not None and
                             ('continue' == v_merge.get('val', '') or
@@ -288,7 +285,7 @@ class PydocxPreProcessor(MulitMemoizeMixin):
 
         for element in elements:
             # This element is using the default style which is not a heading.
-            p_style = find_first(element, 'pStyle')
+            p_style = element.find('./pPr/pStyle')
             if p_style is None:
                 continue
             style = p_style.attrib.get('val', '')

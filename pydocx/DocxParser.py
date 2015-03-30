@@ -33,7 +33,6 @@ from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
     find_all,
     find_ancestor_with_tag,
-    find_first,
     get_list_style,
     has_descendant_with_tag,
 )
@@ -245,7 +244,6 @@ class DocxParser(MulitMemoizeMixin):
     def parse_begin(self, main_document_part):
         self.populate_memoization({
             'find_all': find_all,
-            'find_first': find_first,
             'has_descendant_with_tag': has_descendant_with_tag,
             '_get_tcs_in_column': self._get_tcs_in_column,
         })
@@ -266,7 +264,7 @@ class DocxParser(MulitMemoizeMixin):
         return self.parser.parse(el)
 
     def _get_page_width(self, root_element):
-        pgSzEl = find_first(root_element, 'pgSz')
+        pgSzEl = root_element.find('./body/sectPr/pgSz')
         if pgSzEl is not None:
             # pgSz is defined in twips, convert to points
             pgSz = int(float(pgSzEl.attrib['w']))
@@ -300,7 +298,7 @@ class DocxParser(MulitMemoizeMixin):
         return self.table_row(text)
 
     def parse_table_cell(self, el, text, stack):
-        v_merge = find_first(el, 'vMerge')
+        v_merge = el.find('./tcPr/vMerge')
         if v_merge is not None and (
                 'restart' != v_merge.get('val', '')):
             return ''
@@ -594,7 +592,7 @@ class DocxParser(MulitMemoizeMixin):
         return result
 
     def get_colspan(self, el):
-        grid_span = find_first(el, 'gridSpan')
+        grid_span = el.find('./tcPr/gridSpan')
         if grid_span is None:
             return ''
         return grid_span.attrib['val']
@@ -623,7 +621,7 @@ class DocxParser(MulitMemoizeMixin):
 
     def _get_image_id(self, el):
         # Drawings
-        blip = find_first(el, 'blip')
+        blip = el.find('./*/graphic/graphicData/pic/blipFill/blip')
         if blip is not None:
             # On drawing tags the id is actually whatever is returned from the
             # embed attribute on the blip tag. Thanks a lot Microsoft.
@@ -632,7 +630,7 @@ class DocxParser(MulitMemoizeMixin):
                 r_id = blip.get('link')
             return r_id
         # Picts
-        imagedata = find_first(el, 'imagedata')
+        imagedata = el.find('./shape/imagedata')
         if imagedata is not None:
             return imagedata.get('id')
 
@@ -655,7 +653,7 @@ class DocxParser(MulitMemoizeMixin):
                 '%dpx' % x,
                 '%dpx' % y,
             )
-        shape = find_first(el, 'shape')
+        shape = el.find('./shape')
         if shape is not None and shape.get('style') is not None:
             # If either of these are not set, rely on the method `image` to not
             # use either of them.

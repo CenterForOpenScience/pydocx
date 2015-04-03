@@ -129,3 +129,8 @@ class TranslationTestCase(TestCase):
                 self.expected_output,
                 filename=self.__class__.__name__,
             )
+
+    def test_expected_output(self):
+        if self.expected_output is None:
+            return
+        self.assert_expected_output()

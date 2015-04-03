@@ -30,6 +30,7 @@ def convert(path, *args, **kwargs):
 class ConvertDocxToHtmlTestCase(TestCase):
     cases_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
+        '..',
         'fixtures',
     )
 
@@ -147,6 +148,7 @@ def get_image_data(docx_file_path, image_name):
 def test_has_image():
     file_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
+        '..',
         'fixtures',
         'has_image.docx',
     )

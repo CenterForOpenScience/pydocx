@@ -152,7 +152,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         return result
 
 
-class DocxParser(MulitMemoizeMixin):
+class PyDocXExporter(MulitMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
 

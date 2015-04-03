@@ -338,7 +338,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def _convert_measurement(self, value):
         '''
-        >>> parser = Docx2Html('foo')
+        >>> parser = PyDocXHTMLExporter('foo')
         >>> parser._convert_measurement(30)
         0.125
         '''

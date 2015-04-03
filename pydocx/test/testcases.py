@@ -8,11 +8,11 @@ from contextlib import contextmanager
 from unittest import TestCase
 
 from pydocx.test.utils import (
-    Docx2HtmlNoStyle,
-    html_is_equal,
-    prettify,
+    PyDocXHTMLExporterNoStyle,
     XMLDocx2Html,
     assert_html_equal,
+    html_is_equal,
+    prettify,
 )
 from pydocx.util.zip import create_zip_archive
 
@@ -73,9 +73,11 @@ class DocumentGeneratorTestCase(TestCase):
     Each test case needs to call `assert_document_generates_html`
     '''
 
+    parser = PyDocXHTMLExporterNoStyle
+
     def assert_document_generates_html(self, document, expected_html):
         zip_buf = create_zip_archive(document.to_zip_dict())
-        parser = Docx2HtmlNoStyle(zip_buf)
+        parser = self.parser(zip_buf)
         actual = parser.parsed
         expected = BASE_HTML_NO_STYLE % expected_html
         if not html_is_equal(actual, expected):

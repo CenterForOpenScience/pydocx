@@ -76,14 +76,20 @@ class DocumentGeneratorTestCase(TestCase):
     parser = PyDocXHTMLExporterNoStyle
 
     def assert_document_generates_html(self, document, expected_html):
-        zip_buf = create_zip_archive(document.to_zip_dict())
-        parser = self.parser(zip_buf)
-        actual = parser.parsed
-        expected = BASE_HTML_NO_STYLE % expected_html
+        actual = self.convert_to_html(document)
+        expected = self.format_expected_html(expected_html)
         if not html_is_equal(actual, expected):
             actual = prettify(actual)
             message = 'The expected HTML did not match the actual HTML:'
             raise AssertionError(message + '\n' + actual)
+
+    def convert_to_html(self, document):
+        zip_buf = create_zip_archive(document.to_zip_dict())
+        parser = self.parser(zip_buf)
+        return parser.parsed
+
+    def format_expected_html(self, html):
+        return BASE_HTML_NO_STYLE % html
 
 
 class TranslationTestCase(TestCase):

@@ -7,7 +7,7 @@ from __future__ import (
 from collections import Hashable
 
 
-class MulitMemoize(object):
+class MultiMemoize(object):
     '''
     Adapted from: https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
     func_names = {
@@ -32,13 +32,13 @@ class MulitMemoize(object):
             return value
 
 
-class MulitMemoizeMixin(object):
+class MultiMemoizeMixin(object):
     def __init__(self, *args, **kwargs):
-        super(MulitMemoizeMixin, self).__init__(*args, **kwargs)
+        super(MultiMemoizeMixin, self).__init__(*args, **kwargs)
         self._memoization = None
 
     def memod_tree_op(self, func_name, *args):
         return self._memoization(func_name, *args)
 
     def populate_memoization(self, func_names):
-        self._memoization = MulitMemoize(func_names)
+        self._memoization = MultiMemoize(func_names)

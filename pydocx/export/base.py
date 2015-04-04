@@ -27,7 +27,7 @@ from pydocx.models.styles import (
     ParagraphProperties,
     RunProperties,
 )
-from pydocx.util.memoize import MulitMemoizeMixin
+from pydocx.util.memoize import MultiMemoizeMixin
 from pydocx.util.preprocessor import PydocxPreProcessor
 from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
@@ -152,7 +152,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         return result
 
 
-class PyDocXExporter(MulitMemoizeMixin):
+class PyDocXExporter(MultiMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
 

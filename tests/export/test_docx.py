@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 from unittest import TestCase
 
 from pydocx.exceptions import MalformedDocxException
-from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.util.zip import ZipFile
 
 from nose.tools import raises
@@ -24,12 +24,13 @@ from pydocx.test.utils import (
 
 
 def convert(path, *args, **kwargs):
-    return Docx2Html(path, *args, **kwargs).parsed
+    return PyDocXHTMLExporter(path, *args, **kwargs).parsed
 
 
 class ConvertDocxToHtmlTestCase(TestCase):
     cases_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
+        '..',
         'fixtures',
     )
 
@@ -95,7 +96,7 @@ class ConvertDocxToHtmlTestCase(TestCase):
             setattr(cls, name, test_method)
 
     def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
-        return Docx2Html(path_to_docx, *args, **kwargs).parsed
+        return convert(path_to_docx, *args, **kwargs)
 
     def assertHtmlEqual(self, actual, expected):
         if not html_is_equal(actual, expected):
@@ -147,6 +148,7 @@ def get_image_data(docx_file_path, image_name):
 def test_has_image():
     file_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
+        '..',
         'fixtures',
         'has_image.docx',
     )

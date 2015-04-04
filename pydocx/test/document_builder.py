@@ -6,7 +6,7 @@ from __future__ import (
 
 
 from jinja2 import Environment, PackageLoader
-from pydocx.DocxParser import EMUS_PER_PIXEL
+from pydocx.constants import EMUS_PER_PIXEL
 
 templates = {
     'delete': 'text_delete.xml',

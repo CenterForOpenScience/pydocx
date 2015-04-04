@@ -4,10 +4,10 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.DocxParser import DocxParser
+from pydocx.export.base import PyDocXExporter
 
 
-class Docx2Markdown(DocxParser):
+class PyDocXMarkdownExporter(PyDocXExporter):
     def escape(self, text):
         return text
 

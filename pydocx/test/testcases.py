@@ -1,12 +1,18 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
 from contextlib import contextmanager
 from unittest import TestCase
 
 from pydocx.test.utils import (
-    Docx2HtmlNoStyle,
-    html_is_equal,
-    prettify,
+    PyDocXHTMLExporterNoStyle,
     XMLDocx2Html,
     assert_html_equal,
+    html_is_equal,
+    prettify,
 )
 from pydocx.util.zip import create_zip_archive
 
@@ -67,15 +73,23 @@ class DocumentGeneratorTestCase(TestCase):
     Each test case needs to call `assert_document_generates_html`
     '''
 
+    parser = PyDocXHTMLExporterNoStyle
+
     def assert_document_generates_html(self, document, expected_html):
-        zip_buf = create_zip_archive(document.to_zip_dict())
-        parser = Docx2HtmlNoStyle(zip_buf)
-        actual = parser.parsed
-        expected = BASE_HTML_NO_STYLE % expected_html
+        actual = self.convert_to_html(document)
+        expected = self.format_expected_html(expected_html)
         if not html_is_equal(actual, expected):
             actual = prettify(actual)
             message = 'The expected HTML did not match the actual HTML:'
             raise AssertionError(message + '\n' + actual)
+
+    def convert_to_html(self, document):
+        zip_buf = create_zip_archive(document.to_zip_dict())
+        parser = self.parser(zip_buf)
+        return parser.parsed
+
+    def format_expected_html(self, html):
+        return BASE_HTML_NO_STYLE % html
 
 
 class TranslationTestCase(TestCase):

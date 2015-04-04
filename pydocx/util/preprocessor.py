@@ -11,7 +11,7 @@ from pydocx.constants import (
     TAGS_HOLDING_CONTENT_TAGS,
     TAGS_CONTAINING_CONTENT,
 )
-from pydocx.util.memoize import MulitMemoizeMixin
+from pydocx.util.memoize import MultiMemoizeMixin
 from pydocx.util.xml import (
     filter_children,
     find_all,
@@ -56,7 +56,7 @@ class NamespacedNumId(object):
         return id(str(self))
 
 
-class PydocxPreProcessor(MulitMemoizeMixin):
+class PydocxPreProcessor(MultiMemoizeMixin):
     def __init__(
             self,
             convert_root_level_upper_roman=False,

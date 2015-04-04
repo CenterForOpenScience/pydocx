@@ -7,15 +7,14 @@ from __future__ import (
 import sys
 import logging
 
-from pydocx.parsers.Docx2Html import Docx2Html
-from pydocx.parsers.Docx2Markdown import Docx2Markdown
+from pydocx.pydocx import PyDocX
 
 
 def convert(parser_type, docx_path, output_path):
     if parser_type == '--html':
-        output = Docx2Html(docx_path).parsed
+        output = PyDocX.to_html(docx_path)
     elif parser_type == '--markdown':
-        output = Docx2Markdown(docx_path).parsed
+        output = PyDocX.to_markdown(docx_path)
     else:
         print('Only valid parsers are --html and --markdown')
         return 2

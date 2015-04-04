@@ -13,18 +13,18 @@ from pydocx.constants import (
     PYDOCX_STYLES,
     TWIPS_PER_POINT,
 )
-from pydocx.DocxParser import DocxParser
+from pydocx.export.base import PyDocXExporter
 from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
 )
 
 
-class Docx2Html(DocxParser):
+class PyDocXHTMLExporter(PyDocXExporter):
 
     @property
     def parsed(self):
-        content = super(Docx2Html, self).parsed
+        content = super(PyDocXHTMLExporter, self).parsed
         content = '<html>{header}<body>{body}{footer}</body></html>'.format(
             header=self.head(),
             body=content,
@@ -34,7 +34,7 @@ class Docx2Html(DocxParser):
 
     @property
     def parsed_content(self):
-        return super(Docx2Html, self).parsed
+        return super(PyDocXHTMLExporter, self).parsed
 
     def make_element(self, tag, contents='', attrs=None):
         if attrs:
@@ -338,7 +338,7 @@ class Docx2Html(DocxParser):
 
     def _convert_measurement(self, value):
         '''
-        >>> parser = Docx2Html('foo')
+        >>> parser = PyDocXHTMLExporter('foo')
         >>> parser._convert_measurement(30)
         0.125
         '''

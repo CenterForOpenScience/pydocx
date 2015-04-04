@@ -17,7 +17,7 @@ except ImportError:
 
 from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship, ZipPackagePart
-from pydocx.parsers.Docx2Html import Docx2Html
+from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.util.xml import parse_xml_from_string
 from pydocx.wordml import (
     FootnotesPart,
@@ -89,7 +89,7 @@ def collapse_html(html):
     return html.strip()
 
 
-class Docx2HtmlNoStyle(Docx2Html):
+class PyDocXHTMLExporterNoStyle(PyDocXHTMLExporter):
     def style(self):
         return ''
 
@@ -264,7 +264,7 @@ class WordprocessingDocumentFactory(object):
         return '[Content_Types].xml', content_types
 
 
-class XMLDocx2Html(Docx2Html):
+class XMLDocx2Html(PyDocXHTMLExporter):
     """
     Create the object without passing in a path to the document, set them
     manually.

@@ -1611,7 +1611,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
 
         document.add(MainDocumentPart, document_xml, document_rels)
 
-        image_data = b'fake data'
+        image_data = 'fake data'
 
         expected_html = '''
             <p>
@@ -1623,7 +1623,8 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         '''.format(
             width=width_px,
             height=height_px,
-            data=base64.b64encode(image_data),
+            # This is kind of weird, needed otherwise python 3.3 breaks
+            data=base64.b64encode(image_data.encode('utf-8')).decode('utf-8'),
         )
 
         self.assert_document_generates_html(

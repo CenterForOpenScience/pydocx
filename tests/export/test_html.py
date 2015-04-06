@@ -6,6 +6,8 @@ from __future__ import (
     unicode_literals,
 )
 
+import base64
+
 from pydocx.wordml import (
     FootnotesPart,
     ImagePart,
@@ -1564,6 +1566,128 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>FooBar</p>'
 
         self.assert_document_generates_html(document, expected_html)
+
+    def test_internal_image_is_included_with_base64_content(self):
+        width_px = 5
+        height_px = 10
+
+        document_xml = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="{cx}" cy="{cy}"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type=ImagePart.relationship_type,
+            target='media/image1.jpeg',
+            target_mode='Internal',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        image_data = b'fake data'
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="data:image/jpeg;base64,{data}"
+                height="{height}px" width="{width}px" />
+              Bar
+            </p>
+        '''.format(
+            width=width_px,
+            height=height_px,
+            data=base64.b64encode(image_data),
+        )
+
+        self.assert_document_generates_html(
+            document,
+            expected_html,
+            additional_parts={
+                'word/media/image1.jpeg': image_data,
+            },
+        )
+
+    def test_internal_image_is_not_included_if_part_is_missing(self):
+        width_px = 5
+        height_px = 10
+
+        document_xml = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="{cx}" cy="{cy}"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type=ImagePart.relationship_type,
+            target='media/image1.jpeg',
+            target_mode='Internal',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        expected_html = '<p>FooBar</p>'
+
+        self.assert_document_generates_html(
+            document,
+            expected_html,
+            additional_parts={
+                # Purposefully commented out
+                # 'word/media/image1.jpeg': '',
+            },
+        )
 
 
 class HyperlinkTestCase(DocumentGeneratorTestCase):

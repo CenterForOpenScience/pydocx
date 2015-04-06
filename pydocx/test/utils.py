@@ -106,6 +106,7 @@ class WordprocessingDocumentFactory(object):
         FootnotesPart: 'prepare_footnotes_content',
         MainDocumentPart: 'prepare_main_document_content',
         StyleDefinitionsPart: 'prepare_style_content',
+        NumberingDefinitionsPart: 'prepare_numbering_content',
     }
 
     relationship_format = '''
@@ -257,6 +258,10 @@ class WordprocessingDocumentFactory(object):
 
     def prepare_footnotes_content(self, xml):
         xml = '<footnotes>{xml}</footnotes>'.format(xml=xml)
+        return self.prepare_xml_content(xml=xml)
+
+    def prepare_numbering_content(self, xml):
+        xml = '<numbering>{xml}</numbering>'.format(xml=xml)
         return self.prepare_xml_content(xml=xml)
 
     def get_content_types(self):

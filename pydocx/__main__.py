@@ -16,7 +16,7 @@ def convert(output_type, docx_path, output_path):
     elif output_type == '--markdown':
         output = PyDocX.to_markdown(docx_path)
     else:
-        print('Only valid parsers are --html and --markdown')
+        print('Only valid output formats are --html and --markdown')
         return 2
     with open(output_path, 'wb') as f:
         f.write(output.encode('utf-8'))

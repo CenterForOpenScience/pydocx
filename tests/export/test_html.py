@@ -16,6 +16,7 @@ from pydocx.wordml import (
 
 from nose import SkipTest
 
+from pydocx.constants import EMUS_PER_PIXEL
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
@@ -1362,6 +1363,9 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
     def test_inline_image_with_multiple_ext_definitions(self):
         # Ensure that the image size can be calculated correctly even if the
         # image size ext isn't the first ext in the drawing node
+        width_px = 5
+        height_px = 10
+
         document_xml = '''
             <p>
             <r>
@@ -1380,7 +1384,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
                         </blipFill>
                         <spPr>
                           <xfrm>
-                            <ext cx="1600200" cy="2324100"/>
+                            <ext cx="{cx}" cy="{cy}"/>
                           </xfrm>
                         </spPr>
                       </pic>
@@ -1391,7 +1395,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
               <t>Bar</t>
             </r>
             </p>
-        '''
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
 
         document = WordprocessingDocumentFactory()
         image_url = 'http://google.com/image1.gif'
@@ -1408,14 +1415,17 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             <p>
               Foo
               <img src="http://google.com/image1.gif"
-                height="244px" width="168px" />
+                height="{height}px" width="{width}px" />
               Bar
             </p>
-        '''
+        '''.format(width=width_px, height=height_px)
 
         self.assert_document_generates_html(document, expected_html)
 
     def test_anchor_with_multiple_ext_definitions(self):
+        width_px = 5
+        height_px = 10
+
         # Ensure that the image size can be calculated correctly even if the
         # image size ext isn't the first ext in the drawing node
         document_xml = '''
@@ -1436,7 +1446,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
                         </blipFill>
                         <spPr>
                           <xfrm>
-                            <ext cx="1600200" cy="2324100"/>
+                            <ext cx="{cx}" cy="{cy}"/>
                           </xfrm>
                         </spPr>
                       </pic>
@@ -1447,7 +1457,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
               <t>Bar</t>
             </r>
             </p>
-        '''
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
 
         document = WordprocessingDocumentFactory()
         image_url = 'http://google.com/image1.gif'
@@ -1464,10 +1477,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             <p>
               Foo
               <img src="http://google.com/image1.gif"
-                height="244px" width="168px" />
+                height="{height}px" width="{width}px" />
               Bar
             </p>
-        '''
+        '''.format(width=width_px, height=height_px)
 
         self.assert_document_generates_html(document, expected_html)
 

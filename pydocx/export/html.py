@@ -338,8 +338,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def _convert_measurement(self, value):
         '''
-        >>> parser = PyDocXHTMLExporter('foo')
-        >>> parser._convert_measurement(30)
+        >>> exporter = PyDocXHTMLExporter('foo')
+        >>> exporter._convert_measurement(30)
         0.125
         '''
         return value / TWIPS_PER_POINT / POINTS_PER_EM

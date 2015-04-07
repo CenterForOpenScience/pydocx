@@ -86,7 +86,7 @@ class DocumentGeneratorTestCase(TestCase):
     data.
     '''
 
-    parser = PyDocXHTMLExporterNoStyle
+    exporter = PyDocXHTMLExporterNoStyle
 
     def assert_document_generates_html(
         self,
@@ -106,8 +106,8 @@ class DocumentGeneratorTestCase(TestCase):
         if additional_parts:
             doc_zip.update(additional_parts)
         zip_buf = create_zip_archive(doc_zip)
-        parser = self.parser(zip_buf)
-        return parser.parsed
+        exporter = self.exporter(zip_buf)
+        return exporter.parsed
 
     def format_expected_html(self, html):
         return BASE_HTML_NO_STYLE % html

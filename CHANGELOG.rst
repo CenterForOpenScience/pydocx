@@ -1,3 +1,12 @@
+**0.6.0**
+
+- Moved parsers to export module
+- Renamed DocxParser to PyDocXExporter
+- Renamed Docx2Html to PyDocXHTMLExporter
+- Eliminated all improper usages of the find_first utility function
+- Added support for NumberingDefinitionsPart to the
+  WordprocessingDocumentFactory
+
 **0.5.1**
 
 - Fixed issue #116 - Don't assume the first sz of an rPr actually is a direct

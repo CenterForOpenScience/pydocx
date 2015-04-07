@@ -6,15 +6,19 @@ from __future__ import (
     unicode_literals,
 )
 
+import base64
+
 from pydocx.wordml import (
     FootnotesPart,
     ImagePart,
     MainDocumentPart,
+    NumberingDefinitionsPart,
     StyleDefinitionsPart,
 )
 
 from nose import SkipTest
 
+from pydocx.constants import EMUS_PER_PIXEL
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
@@ -1361,6 +1365,9 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
     def test_inline_image_with_multiple_ext_definitions(self):
         # Ensure that the image size can be calculated correctly even if the
         # image size ext isn't the first ext in the drawing node
+        width_px = 5
+        height_px = 10
+
         document_xml = '''
             <p>
             <r>
@@ -1379,7 +1386,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
                         </blipFill>
                         <spPr>
                           <xfrm>
-                            <ext cx="1600200" cy="2324100"/>
+                            <ext cx="{cx}" cy="{cy}"/>
                           </xfrm>
                         </spPr>
                       </pic>
@@ -1390,7 +1397,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
               <t>Bar</t>
             </r>
             </p>
-        '''
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
 
         document = WordprocessingDocumentFactory()
         image_url = 'http://google.com/image1.gif'
@@ -1407,14 +1417,17 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             <p>
               Foo
               <img src="http://google.com/image1.gif"
-                height="244px" width="168px" />
+                height="{height}px" width="{width}px" />
               Bar
             </p>
-        '''
+        '''.format(width=width_px, height=height_px)
 
         self.assert_document_generates_html(document, expected_html)
 
     def test_anchor_with_multiple_ext_definitions(self):
+        width_px = 5
+        height_px = 10
+
         # Ensure that the image size can be calculated correctly even if the
         # image size ext isn't the first ext in the drawing node
         document_xml = '''
@@ -1435,7 +1448,7 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
                         </blipFill>
                         <spPr>
                           <xfrm>
-                            <ext cx="1600200" cy="2324100"/>
+                            <ext cx="{cx}" cy="{cy}"/>
                           </xfrm>
                         </spPr>
                       </pic>
@@ -1446,7 +1459,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
               <t>Bar</t>
             </r>
             </p>
-        '''
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
 
         document = WordprocessingDocumentFactory()
         image_url = 'http://google.com/image1.gif'
@@ -1463,10 +1479,10 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
             <p>
               Foo
               <img src="http://google.com/image1.gif"
-                height="244px" width="168px" />
+                height="{height}px" width="{width}px" />
               Bar
             </p>
-        '''
+        '''.format(width=width_px, height=height_px)
 
         self.assert_document_generates_html(document, expected_html)
 
@@ -1550,6 +1566,129 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>FooBar</p>'
 
         self.assert_document_generates_html(document, expected_html)
+
+    def test_internal_image_is_included_with_base64_content(self):
+        width_px = 5
+        height_px = 10
+
+        document_xml = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="{cx}" cy="{cy}"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type=ImagePart.relationship_type,
+            target='media/image1.jpeg',
+            target_mode='Internal',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        image_data = 'fake data'
+
+        expected_html = '''
+            <p>
+              Foo
+              <img src="data:image/jpeg;base64,{data}"
+                height="{height}px" width="{width}px" />
+              Bar
+            </p>
+        '''.format(
+            width=width_px,
+            height=height_px,
+            # This is kind of weird, needed otherwise python 3.3 breaks
+            data=base64.b64encode(image_data.encode('utf-8')).decode('utf-8'),
+        )
+
+        self.assert_document_generates_html(
+            document,
+            expected_html,
+            additional_parts={
+                'word/media/image1.jpeg': image_data,
+            },
+        )
+
+    def test_internal_image_is_not_included_if_part_is_missing(self):
+        width_px = 5
+        height_px = 10
+
+        document_xml = '''
+            <p>
+            <r>
+              <t>Foo</t>
+              <drawing>
+                <anchor>
+                  <graphic>
+                    <graphicData>
+                      <pic>
+                        <blipFill>
+                          <blip embed="foobar" />
+                        </blipFill>
+                        <spPr>
+                          <xfrm>
+                            <ext cx="{cx}" cy="{cy}"/>
+                          </xfrm>
+                        </spPr>
+                      </pic>
+                    </graphicData>
+                  </graphic>
+                </anchor>
+              </drawing>
+              <t>Bar</t>
+            </r>
+            </p>
+        '''.format(
+            cx=width_px * EMUS_PER_PIXEL,
+            cy=height_px * EMUS_PER_PIXEL,
+        )
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type=ImagePart.relationship_type,
+            target='media/image1.jpeg',
+            target_mode='Internal',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        expected_html = '<p>FooBar</p>'
+
+        self.assert_document_generates_html(
+            document,
+            expected_html,
+            additional_parts={
+                # Purposefully commented out
+                # 'word/media/image1.jpeg': '',
+            },
+        )
 
 
 class HyperlinkTestCase(DocumentGeneratorTestCase):
@@ -1677,4 +1816,42 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml, document_rels)
 
         expected_html = '<p><a href="http://google.com">li<br />nk</a>.</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+
+class NumberingTestCase(DocumentGeneratorTestCase):
+    def test_lowerLetter_numbering_format_is_handled(self):
+        num_id = '2'
+        numbering_xml = '''
+            <num numId="{num_id}">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="lowerLetter"/>
+                </lvl>
+            </abstractNum>
+        '''.format(num_id=num_id)
+
+        document_xml = '''
+            <p>
+                <pPr>
+                    <numPr>
+                        <ilvl val="0" />
+                        <numId val="{num_id}" />
+                    </numPr>
+                </pPr>
+                <r><t>AAA</t></r>
+            </p>
+        '''.format(num_id=num_id)
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol list-style-type="lowerLetter">
+                <li>AAA</li>
+            </ol>
+        '''
         self.assert_document_generates_html(document, expected_html)

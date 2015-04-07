@@ -71,20 +71,41 @@ class DocumentGeneratorTestCase(TestCase):
     resulting HTML output.
 
     Each test case needs to call `assert_document_generates_html`
+
+    `additional_parts` may be used to explicitly define additional parts to be
+    included in the zip container. This is defined as a dictionary where the
+    key is a path within the container, and the value is the data at that path.
+
+    For example:
+
+    additional_parts = {
+        'word/media/foo.avi': 'data',
+    }
+
+    could be used as a way to include a non-standard video part with arbitrary
+    data.
     '''
 
     exporter = PyDocXHTMLExporterNoStyle
 
-    def assert_document_generates_html(self, document, expected_html):
-        actual = self.convert_to_html(document)
+    def assert_document_generates_html(
+        self,
+        document,
+        expected_html,
+        additional_parts=None,
+    ):
+        actual = self.convert_to_html(document, additional_parts)
         expected = self.format_expected_html(expected_html)
         if not html_is_equal(actual, expected):
             actual = prettify(actual)
             message = 'The expected HTML did not match the actual HTML:'
             raise AssertionError(message + '\n' + actual)
 
-    def convert_to_html(self, document):
-        zip_buf = create_zip_archive(document.to_zip_dict())
+    def convert_to_html(self, document, additional_parts=None):
+        doc_zip = document.to_zip_dict()
+        if additional_parts:
+            doc_zip.update(additional_parts)
+        zip_buf = create_zip_archive(doc_zip)
         exporter = self.exporter(zip_buf)
         return exporter.parsed
 

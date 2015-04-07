@@ -36,7 +36,7 @@ docs:
 	$(MAKE) -C docs html
 
 release: clean
-	python setup.py sdist bdist_wheel upload
+	python setup.py sdist upload
 
 sdist: clean
 	python setup.py sdist

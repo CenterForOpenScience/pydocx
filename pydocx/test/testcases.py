@@ -73,7 +73,7 @@ class DocumentGeneratorTestCase(TestCase):
     Each test case needs to call `assert_document_generates_html`
     '''
 
-    parser = PyDocXHTMLExporterNoStyle
+    exporter = PyDocXHTMLExporterNoStyle
 
     def assert_document_generates_html(self, document, expected_html):
         actual = self.convert_to_html(document)
@@ -85,8 +85,8 @@ class DocumentGeneratorTestCase(TestCase):
 
     def convert_to_html(self, document):
         zip_buf = create_zip_archive(document.to_zip_dict())
-        parser = self.parser(zip_buf)
-        return parser.parsed
+        exporter = self.exporter(zip_buf)
+        return exporter.parsed
 
     def format_expected_html(self, html):
         return BASE_HTML_NO_STYLE % html

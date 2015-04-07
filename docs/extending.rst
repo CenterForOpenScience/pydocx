@@ -2,15 +2,19 @@
 Extending PyDocX
 ################
 
-Customizing The Parser
+Customizing The Export
 ######################
 
-``DocxParser`` includes abstracts methods that each parser overwrites to satisfy its own needs.
+``pydocx.export.PyDocXExporter``
+includes abstracts methods
+that each exporter implements
+to satisfy its own needs.
+
 The abstract methods are as follows:
 
 .. code-block:: python
 
-    class DocxParser:
+    class PyDocXExporter:
 
         @property
         def parsed(self):
@@ -107,11 +111,16 @@ The abstract methods are as follows:
         def indent(self, text, left='', right='', firstLine=''):
             return text
 
-``Docx2Html`` inherits ``DocxParser`` and implements basic HTML handling.
+Basic HTML exporting
+is implemented in
+``pydocx.export.PyDocXHTMLExporter``.
+To override any specific default behavior,
+simply extend the class
+and implement the desired methods:
 
 .. code-block:: python
 
-    class Docx2Html(DocxParser):
+    class MyPyDocXHTMLExporter(PyDocXExporter):
 
         #  Escape '&', '<', and '>' so we render the HTML correctly
         def escape(self, text):
@@ -123,62 +132,64 @@ The abstract methods are as follows:
 
         # add paragraph tags
         def paragraph(self, text, pre=None):
-            return '<p>' + text + '</p>'
+            return '<p class="foo">' + text + '</p>'
 
 
-However,
-let's say you want to add a specific style to your HTML document.
-In order to do this, you want to make each paragraph a class of type ``my_implementation``.
-Simply extend ``Docx2Html`` and add what you need.
-
-.. code-block:: python
-
-     class My_Implementation_of_Docx2Html(Docx2Html):
-
-        def paragraph(self, text, pre = None):
-            return <p class="my_implementation"> + text + '</p>'
-
-OR,
-let's say FOO is your new favorite markup language.
-Simply customize your own new parser,
-overwritting the abstract methods of ``DocxParser``.
+If you want to implement an exporter
+for an unsupported markup language,
+you can do that easily
+by extending ``pydocx.export.PyDocXExporter``:
 
 .. code-block:: python
 
-    class Docx2Foo(DocxParser):
+    class CustomPyDocXExporter(PyDocXExporter):
 
-        # because linebreaks in are denoted by '!!!!!!!!!!!!' with the FOO markup langauge  :)
+        # because linebreaks in are denoted by '!!!!!!!!!!!!' with the FOO
+        # markup langauge  :)
         def linebreak(self):
             return '!!!!!!!!!!!!'
 
 Custom Pre-Processor
 ####################
 
-When creating your own Parser (as described above) you can now add in your own custom Pre Processor.
-To do so you will need to set the ``pre_processor`` field on the custom parser.
+When creating your own exporter
+(as described above)
+you can define
+your own custom Pre Processor
+by setting
+the ``pre_processor``
+field on the export subclass.
 
 .. code-block:: python
 
-    class Docx2Foo(DocxParser):
-        pre_processor_class = FooPreProcessor
+    class MyPyDocXExporter(PyDocXExporter):
+        pre_processor_class = MyPyDocXPreProcessor
 
-The ``FooPreProcessor`` will need a few things to get you going:
-
-.. code-block:: python
-
-    class FooPreProcessor(PydocxPreProcessor):
+    class MyPyDocXPreProcessor(PydocxPreProcessor):
         def perform_pre_processing(self, root, *args, **kwargs):
-            super(FooPreProcessor, self).perform_pre_processing(root, *args, **kwargs)
+            super(MyPyDocXPreProcessor, self).perform_pre_processing(root, *args, **kwargs)
             self._set_foo(root)
 
         def _set_foo(self, root):
             pass
 
-If you want ``_set_foo`` to be called you must add it to ``perform_pre_processing`` which is called in the base parser for pydocx.
+If you want ``_set_foo``
+to be called
+you must add it
+to ``perform_pre_processing``
+which is called from
+``pydocx.export.PyDocXExporter``.
 
-Everything done during pre-processing is executed prior to ``parse`` being called for the first time.
+Everything done during pre-processing
+is executed prior to ``parse``
+being called for the first time.
 
 Optional Arguments
 ##################
 
-You can pass in ``convert_root_level_upper_roman=True`` to the parser and it will convert all root level upper roman lists to headings instead.
+You can pass in
+``convert_root_level_upper_roman=True``
+to the exporter
+and it will convert
+all root level upper roman lists
+to headings.

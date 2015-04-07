@@ -11,43 +11,60 @@ with the input and output files:
 
 .. code-block:: shell-session
 
-   $ pydocx --html input.docx output.html
+    $ pydocx --html input.docx output.html
 
 Converting files using the library directly
 ###########################################
 
-Choose the conversion class,
-and then pass in
-either the full path
-to an existing MS Word document
-on the filesystem
-or
-pass in
-a file-like object.
-The parsed content can then be accessed
-using the `parsed` attribute.
-
-Examples:
+If you don't want to mess around
+having to create exporters,
+you can use the
+``PyDocX.to_html``
+helper method:
 
 .. code-block:: python
 
-   from pydocx.parsers import Docx2Html
+    from pydocx.pydocx import PyDocX
 
-   # Pass in a path to an existing file
-   parser = Docx2Html(path='file.docx')
-   print parser.parsed
+    # Pass in a path
+    html = PyDocX.to_html('file.docx')
 
-   # Pass in a file pointer
-   parser = Docx2Html(open('file.docx', 'rb'))
-   print parser.parsed
+    # Pass in a file object
+    html = PyDocX.to_html(open('file.docx', 'rb'))
 
-   # Pass in a file-like object
-   from cStringIO import StringIO
-   buf = StringIO()
-   with open('file.docx') as f:
-      buf.write(f.read())
-   parser = Docx2Html(buf)
-   print parser.parsed
+    # Pass in a file-like object
+    from cStringIO import StringIO
+    buf = StringIO()
+    with open('file.docx') as f:
+       buf.write(f.read())
+
+    html = PyDocX.to_html(buf)
+
+
+Of course,
+you can do the same using the exporter
+class:
+
+.. code-block:: python
+
+    from pydocx.export import PyDocXHTMLExporter
+
+    # Pass in a path
+    exporter = PyDocXHTMLExporter('file.docx')
+    html = exporter.parsed
+
+    # Pass in a file object
+    exporter = PyDocXHTMLExporter(open('file.docx', 'rb'))
+    html = exporter.parsed
+
+    # Pass in a file-like object
+    from cStringIO import StringIO
+    buf = StringIO()
+    with open('file.docx') as f:
+       buf.write(f.read())
+
+    exporter = PyDocXHTMLExporter(buf)
+    html = exporter.parsed
 
 Currently Supported HTML elements
 #################################
@@ -80,7 +97,12 @@ Currently Supported HTML elements
 HTML Styles
 ###########
 
-The base parser ``Docx2Html`` relies on certain css class being set for certain behaviour to occur.
+The export class
+``pydocx.export.PyDocXHTMLExporter``
+relies on certain
+CSS classes being defined
+for certain behavior to occur.
+
 Currently these include:
 
 * class ``pydocx-insert`` -> Turns the text green.
@@ -108,8 +130,16 @@ Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/st
 Missing val attribute in underline tag
 ======================================
 
-* In the event that the ``val`` attribute is missing from a ``u`` (``ST_Underline`` type),
-  we treat the underline as off, or none.
-  See also http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
+* In the event that the
+  ``val`` attribute
+  is missing
+  from a ``u`` (``ST_Underline`` type),
+  we treat the underline as off,
+  or none.
+  See also
+  http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
 
-   If the val attribute is not specified, Word defaults to the value defined in the style hierarchy and then to no underline.
+   If the val attribute is not specified,
+   Word defaults to the value defined
+   in the style hierarchy
+   and then to no underline.

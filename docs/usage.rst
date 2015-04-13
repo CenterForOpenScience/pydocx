@@ -118,6 +118,25 @@ Currently these include:
 * class ``pydocx-hidden`` -> Hide the text.
 * class ``pydocx-tab`` -> Represents a tab within the document.
 
+Additionally,
+several list styles are defined
+based off the attribute values
+listed at:
+http://officeopenxml.com/WPnumbering-numFmt.php
+
+* class ``pydocx-list-style-type-cardinalText`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-decimal`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-decimalEnclosedCircle`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-decimalEnclosedFullstop`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-decimalEnclosedParen`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-decimalZero`` -> (01, 02, 03, etc.)
+* class ``pydocx-list-style-type-lowerLetter`` -> (a, b, c, etc.)
+* class ``pydocx-list-style-type-lowerRoman`` -> (i, ii, iii, etc.)
+* class ``pydocx-list-style-type-none`` -> List style is removed
+* class ``pydocx-list-style-type-ordinalText`` -> (1, 2, 3, 4, etc.)
+* class ``pydocx-list-style-type-upperLetter`` -> (A, B, C, etc.)
+* class ``pydocx-list-style-type-upperRoman`` -> (I, II, III, etc.)
+
 Exceptions
 ##########
 

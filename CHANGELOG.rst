@@ -1,3 +1,7 @@
+**dev**
+
+- Added support for python 3.4
+
 **0.6.0**
 
 - Moved parsers to export module

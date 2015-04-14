@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
+
 class SimpleType(object):
     def __init__(self, value):
         self.value = value

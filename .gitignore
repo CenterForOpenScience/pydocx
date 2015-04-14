@@ -44,3 +44,4 @@ testxml.html
 main.py
 
 docs/_build
+tests/failures/*.html

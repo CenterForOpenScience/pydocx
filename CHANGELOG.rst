@@ -1,6 +1,7 @@
 **dev**
 
 - Added support for python 3.4
+- Added support for pypy
 
 **0.6.0**
 

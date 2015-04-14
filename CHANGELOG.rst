@@ -1,5 +1,6 @@
 **dev**
 
+- Added support for python 3.4
 - No longer adding list-style-type attribute to ordered list tags. We are now
   using a class to indicate these.
 

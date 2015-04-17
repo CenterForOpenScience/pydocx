@@ -8,14 +8,13 @@ import base64
 import os
 from tempfile import NamedTemporaryFile
 
-from pydocx.exceptions import MalformedDocxException
-from pydocx.export.html import PyDocXHTMLExporter
-from pydocx.util.zip import ZipFile
-
 from nose.tools import raises
 
+from pydocx.exceptions import MalformedDocxException
+from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.test.testcases import BASE_HTML, DocXFixtureTestCaseFactory
 from pydocx.test.utils import assert_html_equal
+from pydocx.util.zip import ZipFile
 
 
 def convert(path, *args, **kwargs):

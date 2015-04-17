@@ -158,7 +158,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr />
-            <ol list-style-type="decimal">
+            <ol class="pydocx-list-style-type-decimal">
                 <li><p><strong>
                     <a href="#footnote-ref-abc" name="footnote-abc">^</a>
                     Bar
@@ -223,7 +223,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr />
-            <ol list-style-type="decimal">
+            <ol class="pydocx-list-style-type-decimal">
                 <li>
                     <p>
                         <a href="#footnote-ref-abc" name="footnote-abc">^</a>
@@ -320,7 +320,7 @@ class FootnoteTestCase(DocumentGeneratorTestCase):
             </p>
             <p>Footnotes should appear below this</p>
             <hr />
-            <ol list-style-type="decimal">
+            <ol class="pydocx-list-style-type-decimal">
                 <li><p>
                     <a href="#footnote-ref-one" name="footnote-one">^</a>
                     Alpha
@@ -1850,7 +1850,7 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <ol list-style-type="lowerLetter">
+            <ol class="pydocx-list-style-type-lowerLetter">
                 <li>AAA</li>
             </ol>
         '''

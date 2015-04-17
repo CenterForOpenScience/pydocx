@@ -2,6 +2,8 @@
 
 - Added support for python 3.4
 - Added support for pypy
+- No longer adding list-style-type attribute to ordered list tags. We are now
+  using a class to indicate these.
 
 **0.6.0**
 

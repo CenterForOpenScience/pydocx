@@ -74,4 +74,41 @@ PYDOCX_STYLES = {
         'display': 'inline-block',
         'width': '4em',
     },
+    # List Style Types
+    'list-style-type-cardinalText': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-decimal': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-decimalEnclosedCircle': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-decimalEnclosedFullstop': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-decimalEnclosedParen': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-decimalZero': {
+        'list-style-type': 'decimal-leading-zero',
+    },
+    'list-style-type-lowerLetter': {
+        'list-style-type': 'lower-alpha',
+    },
+    'list-style-type-lowerRoman': {
+        'list-style-type': 'lower-roman',
+    },
+    'list-style-type-none': {
+        'list-style-type': 'none',
+    },
+    'list-style-type-ordinalText': {
+        'list-style-type': 'decimal',
+    },
+    'list-style-type-upperLetter': {
+        'list-style-type': 'upper-alpha',
+    },
+    'list-style-type-upperRoman': {
+        'list-style-type': 'upper-roman',
+    },
 }

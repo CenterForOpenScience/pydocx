@@ -214,11 +214,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
         )
 
     def ordered_list(self, text, list_style):
+        class_name = 'pydocx-list-style-type-{list_style}'.format(
+            list_style=list_style,
+        )
         return self.make_element(
             tag='ol',
             contents=text,
             attrs={
-                'list-style-type': list_style,
+                'class': class_name,
             }
         )
 

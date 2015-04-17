@@ -6,6 +6,7 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.export.mixins import FakedSuperscriptAndSubscriptExportMixin
 from pydocx.test import DocumentGeneratorTestCase, DocXFixtureTestCaseFactory
 from pydocx.test.utils import (
@@ -15,15 +16,22 @@ from pydocx.test.utils import (
 from pydocx.wordml import MainDocumentPart, StyleDefinitionsPart
 
 
-class FakedSuperscriptAndSubscriptHTMLExporter(
+class FakedSuperscriptAndSubscriptHTMLExporterNoStyle(
     FakedSuperscriptAndSubscriptExportMixin,
     PyDocXHTMLExporterNoStyle,
 ):
     pass
 
 
+class FakedSuperscriptAndSubscriptHTMLExporter(
+    FakedSuperscriptAndSubscriptExportMixin,
+    PyDocXHTMLExporter,
+):
+    pass
+
+
 class FakedSuperscriptAndSubscriptTestCase(DocumentGeneratorTestCase):
-    exporter = FakedSuperscriptAndSubscriptHTMLExporter
+    exporter = FakedSuperscriptAndSubscriptHTMLExporterNoStyle
 
 
 class FakedSubScriptTestCase(FakedSuperscriptAndSubscriptTestCase):

@@ -193,6 +193,7 @@ class DocXFixtureTestCaseFactory(TestCase):
         'tests',
         'fixtures',
     )
+    exporter = PyDocXHTMLExporter
 
     @classmethod
     def create(cls, name):
@@ -221,7 +222,7 @@ class DocXFixtureTestCaseFactory(TestCase):
             setattr(cls, name, test_method)
 
     def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
-        return PyDocXHTMLExporter(path_to_docx, *args, **kwargs).parsed
+        return self.exporter(path_to_docx, *args, **kwargs).parsed
 
     def assertHtmlEqual(self, actual, expected):
         if not html_is_equal(actual, expected):

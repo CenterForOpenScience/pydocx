@@ -7,7 +7,7 @@ from __future__ import (
 )
 
 from pydocx.export.mixins import FakedSuperscriptAndSubscriptExportMixin
-from pydocx.test import DocumentGeneratorTestCase
+from pydocx.test import DocumentGeneratorTestCase, DocXFixtureTestCaseFactory
 from pydocx.test.utils import (
     PyDocXHTMLExporterNoStyle,
     WordprocessingDocumentFactory,
@@ -325,3 +325,13 @@ class FakedSuperScriptTestCase(FakedSuperscriptAndSubscriptTestCase):
 
         expected_html = '<p>nth</p>'
         self.assert_document_generates_html(document, expected_html)
+
+
+class DocXFixtureTestCase(DocXFixtureTestCaseFactory):
+    exporter = FakedSuperscriptAndSubscriptHTMLExporter
+    cases = (
+        'fake_subscript',
+        'fake_superscript',
+    )
+
+DocXFixtureTestCase.generate()

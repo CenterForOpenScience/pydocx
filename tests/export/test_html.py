@@ -14,7 +14,6 @@ from pydocx.test.utils import WordprocessingDocumentFactory
 from pydocx.wordml import (
     ImagePart,
     MainDocumentPart,
-    NumberingDefinitionsPart,
     StyleDefinitionsPart,
 )
 
@@ -1341,42 +1340,4 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml, document_rels)
 
         expected_html = '<p><a href="http://google.com">li<br />nk</a>.</p>'
-        self.assert_document_generates_html(document, expected_html)
-
-
-class NumberingTestCase(DocumentGeneratorTestCase):
-    def test_lowerLetter_numbering_format_is_handled(self):
-        num_id = '2'
-        numbering_xml = '''
-            <num numId="{num_id}">
-                <abstractNumId val="1"/>
-            </num>
-            <abstractNum abstractNumId="1">
-                <lvl ilvl="0">
-                    <numFmt val="lowerLetter"/>
-                </lvl>
-            </abstractNum>
-        '''.format(num_id=num_id)
-
-        document_xml = '''
-            <p>
-                <pPr>
-                    <numPr>
-                        <ilvl val="0" />
-                        <numId val="{num_id}" />
-                    </numPr>
-                </pPr>
-                <r><t>AAA</t></r>
-            </p>
-        '''.format(num_id=num_id)
-
-        document = WordprocessingDocumentFactory()
-        document.add(NumberingDefinitionsPart, numbering_xml)
-        document.add(MainDocumentPart, document_xml)
-
-        expected_html = '''
-            <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-            </ol>
-        '''
         self.assert_document_generates_html(document, expected_html)

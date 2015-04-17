@@ -4,9 +4,11 @@ from __future__ import (
     unicode_literals,
 )
 
+import os
 from contextlib import contextmanager
 from unittest import TestCase
 
+from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.test.utils import (
     PyDocXHTMLExporterNoStyle,
     XMLDocx2Html,
@@ -181,3 +183,51 @@ class TranslationTestCase(TestCase):
         if self.expected_output is None:
             return
         self.assert_expected_output()
+
+
+class DocXFixtureTestCaseFactory(TestCase):
+    cases_path = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        '..',
+        '..',
+        'tests',
+        'fixtures',
+    )
+
+    @classmethod
+    def create(cls, name):
+        def run_test(self):
+            docx_path = self.get_path_to_fixture('%s.docx' % name)
+            expected_path = self.get_path_to_fixture('%s.html' % name)
+
+            expected = ''
+            with open(expected_path) as f:
+                expected = f.read()
+
+            expected = BASE_HTML % expected
+            result = self.convert_docx_to_html(
+                docx_path,
+                convert_root_level_upper_roman=True,
+            )
+            self.assertHtmlEqual(result, expected)
+        return run_test
+
+    @classmethod
+    def generate(cls):
+        for case in cls.cases:
+            test_method = cls.create(case)
+            name = str('test_%s' % case)
+            test_method.__name__ = name
+            setattr(cls, name, test_method)
+
+    def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
+        return PyDocXHTMLExporter(path_to_docx, *args, **kwargs).parsed
+
+    def assertHtmlEqual(self, actual, expected):
+        if not html_is_equal(actual, expected):
+            actual = prettify(actual)
+            message = 'The expected HTML did not match the actual HTML:'
+            raise AssertionError(message + '\n' + actual)
+
+    def get_path_to_fixture(self, fixture):
+        return os.path.join(self.cases_path, fixture)

@@ -716,13 +716,7 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_insertion(self, el, parsed, stack):
         return self.insertion(parsed, '', '')
 
-    def parse_r(self, el, text, stack):
-        """
-        Parse the running text.
-        """
-        if not text:
-            return ''
-
+    def parse_r_determine_applicable_styles(self, el, stack):
         properties = self.styles_manager.get_resolved_properties_for_element(
             el,
             stack,
@@ -804,8 +798,19 @@ class PyDocXExporter(MultiMemoizeMixin):
                 styles_needing_application.append(self.subscript)
         handle_faked_sup_and_sub_tags()
 
+        return styles_needing_application
+
+    def parse_r(self, el, text, stack):
+        """
+        Parse the running text.
+        """
+        if not text:
+            return ''
+
+        applicable_styles = self.parse_r_determine_applicable_styles(el, stack)
+
         # Apply all the handlers.
-        for func in styles_needing_application:
+        for func in applicable_styles:
             text = func(text)
 
         return text

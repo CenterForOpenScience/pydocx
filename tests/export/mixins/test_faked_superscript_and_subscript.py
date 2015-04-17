@@ -6,12 +6,27 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.export.mixins import FakedSuperscriptAndSubscriptExportMixin
 from pydocx.test import DocumentGeneratorTestCase
-from pydocx.test.utils import WordprocessingDocumentFactory
+from pydocx.test.utils import (
+    PyDocXHTMLExporterNoStyle,
+    WordprocessingDocumentFactory,
+)
 from pydocx.wordml import MainDocumentPart, StyleDefinitionsPart
 
 
-class FakedSubScriptTestCase(DocumentGeneratorTestCase):
+class FakedSuperscriptAndSubscriptHTMLExporter(
+    FakedSuperscriptAndSubscriptExportMixin,
+    PyDocXHTMLExporterNoStyle,
+):
+    pass
+
+
+class FakedSuperscriptAndSubscriptTestCase(DocumentGeneratorTestCase):
+    exporter = FakedSuperscriptAndSubscriptHTMLExporter
+
+
+class FakedSubScriptTestCase(FakedSuperscriptAndSubscriptTestCase):
     style_xml = '''
         <style styleId="faked_subscript" type="paragraph">
           <name val="Normal"/>
@@ -169,7 +184,7 @@ class FakedSubScriptTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
-class FakedSuperScriptTestCase(DocumentGeneratorTestCase):
+class FakedSuperScriptTestCase(FakedSuperscriptAndSubscriptTestCase):
     style_xml = '''
         <style styleId="faked_superscript" type="paragraph">
           <name val="Normal"/>

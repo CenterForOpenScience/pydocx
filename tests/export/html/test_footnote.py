@@ -6,10 +6,10 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.wordml import FootnotesPart, MainDocumentPart
 
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
+from pydocx.wordml import FootnotesPart, MainDocumentPart
 
 
 class FootnoteTestCase(DocumentGeneratorTestCase):

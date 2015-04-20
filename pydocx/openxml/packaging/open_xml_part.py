@@ -5,7 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.openxml.packaging.OpenXmlPartContainer import OpenXmlPartContainer
+from pydocx.openxml.packaging.open_xml_part_container import OpenXmlPartContainer  # noqa
 from pydocx.util.xml import parse_xml_from_string
 
 

@@ -5,7 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.openxml.packaging.OpenXmlPart import OpenXmlPart
+from pydocx.openxml.packaging.open_xml_part import OpenXmlPart
 
 
 class FootnotesPart(OpenXmlPart):

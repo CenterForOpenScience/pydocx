@@ -6,7 +6,7 @@ from __future__ import (
 )
 
 from pydocx.packaging import ZipPackage
-from pydocx.openxml.packaging.OpenXmlPartContainer import OpenXmlPartContainer
+from pydocx.openxml.packaging.open_xml_part_container import OpenXmlPartContainer  # noqa
 
 
 class OpenXmlPackage(OpenXmlPartContainer):

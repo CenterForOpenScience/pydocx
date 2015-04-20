@@ -35,7 +35,7 @@ class OpenXmlPartContainer(object):
         raise NotImplementedError
 
     def _load_parts(self):
-        from pydocx.openxml.packaging.OpenXmlPackage import OpenXmlPackage
+        from pydocx.openxml.packaging.open_xml_package import OpenXmlPackage
 
         relationship_lookup = self.get_relationship_lookup()
         # TODO I don't like this -Kyle

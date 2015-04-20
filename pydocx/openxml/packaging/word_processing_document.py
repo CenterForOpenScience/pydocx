@@ -6,7 +6,7 @@ from __future__ import (
 )
 
 from pydocx.openxml.packaging.main_document_part import MainDocumentPart
-from pydocx.openxml.packaging.OpenXmlPackage import OpenXmlPackage
+from pydocx.openxml.packaging.open_xml_package import OpenXmlPackage
 
 
 class WordprocessingDocument(OpenXmlPackage):

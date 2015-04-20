@@ -13,7 +13,7 @@ from pydocx.test.utils import (
     PyDocXHTMLExporterNoStyle,
     WordprocessingDocumentFactory,
 )
-from pydocx.wordml import MainDocumentPart, StyleDefinitionsPart
+from pydocx.openxml.packaging import MainDocumentPart, StyleDefinitionsPart
 
 
 class FakedSuperscriptAndSubscriptHTMLExporterNoStyle(

@@ -35,7 +35,7 @@ from pydocx.util.xml import (
     get_list_style,
     has_descendant_with_tag,
 )
-from pydocx.wordml import WordprocessingDocument
+from pydocx.openxml.packaging import WordprocessingDocument
 
 logger = logging.getLogger("NewParser")
 

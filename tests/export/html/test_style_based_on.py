@@ -8,7 +8,7 @@ from __future__ import (
 
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.wordml import MainDocumentPart, StyleDefinitionsPart
+from pydocx.openxml.packaging import MainDocumentPart, StyleDefinitionsPart
 
 
 class StyleBasedOnTestCase(DocumentGeneratorTestCase):

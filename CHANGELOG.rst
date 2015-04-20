@@ -8,6 +8,9 @@
   Instead,
   that handling is implemented in a new mixin class.
   See ``pydocx.export.mixins``
+- ``pydocx.wordml`` and ``pydocx.openxml``
+  have been merged into ``pydocx.openxml.packaging``
+  to better mirror the MS implementation structure.
 
 **0.6.0**
 

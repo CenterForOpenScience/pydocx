@@ -10,7 +10,7 @@ from nose import SkipTest
 
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.wordml import MainDocumentPart
+from pydocx.openxml.packaging import MainDocumentPart
 
 
 class XMLVulnerabilitiesTestCase(DocumentGeneratorTestCase):

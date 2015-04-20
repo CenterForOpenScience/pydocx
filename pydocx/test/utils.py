@@ -19,7 +19,7 @@ from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.util.xml import parse_xml_from_string
-from pydocx.wordml import (
+from pydocx.openxml.packaging import (
     FootnotesPart,
     MainDocumentPart,
     NumberingDefinitionsPart,

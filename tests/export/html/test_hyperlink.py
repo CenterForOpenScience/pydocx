@@ -6,9 +6,9 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.openxml.packaging import MainDocumentPart
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.wordml import MainDocumentPart
 
 
 class HyperlinkTestCase(DocumentGeneratorTestCase):

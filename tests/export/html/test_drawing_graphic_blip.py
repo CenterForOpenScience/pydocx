@@ -9,9 +9,9 @@ from __future__ import (
 import base64
 
 from pydocx.constants import EMUS_PER_PIXEL
+from pydocx.openxml.packaging import ImagePart, MainDocumentPart
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.wordml import ImagePart, MainDocumentPart
 
 
 class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):

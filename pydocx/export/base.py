@@ -5,7 +5,6 @@ from __future__ import (
     unicode_literals,
 )
 
-import copy
 import logging
 import posixpath
 
@@ -716,49 +715,11 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_insertion(self, el, parsed, stack):
         return self.insertion(parsed, '', '')
 
-    def parse_r(self, el, text, stack):
-        """
-        Parse the running text.
-        """
-        if not text:
-            return ''
-
+    def parse_r_determine_applicable_styles(self, el, stack):
         properties = self.styles_manager.get_resolved_properties_for_element(
             el,
             stack,
         )
-
-        def get_properties_with_no_font_size():
-            # Only set paragraph_properties if properties has a size.
-            if not properties.size:
-                return
-            copied_el = copy.deepcopy(el)
-            rpr = copied_el.find('./rPr')
-            if rpr is None:
-                return
-
-            size_tag = rpr.find('./sz')
-            if size_tag is None:
-                return
-
-            rpr.remove(size_tag)
-
-            return self.styles_manager.get_resolved_properties_for_element(
-                copied_el,
-                stack,
-            )
-
-        paragraph_properties = get_properties_with_no_font_size()
-
-        def is_local_size_smaller():
-            # If paragraph_properties is None then the size was not set
-            # (meaning it can't be bigger or smaller than the default for the
-            # paragraph, so early exit.
-            if paragraph_properties is None:
-                return False
-            if paragraph_properties.size is None:
-                return False
-            return properties.size < paragraph_properties.size
 
         styles_needing_application = []
 
@@ -787,25 +748,19 @@ class PyDocXExporter(MultiMemoizeMixin):
                     styles_needing_application.remove(self.underline)
                     break
 
-        # Lets try to deal with faked superscript/subscript tags by checking
-        # the position.
-        def handle_faked_sup_and_sub_tags():
-            if not is_local_size_smaller():
-                return
-            if not properties.position:
-                return
-            if self.subscript in styles_needing_application:
-                return
-            if self.superscript in styles_needing_application:
-                return
-            if properties.position > 0:
-                styles_needing_application.append(self.superscript)
-            else:
-                styles_needing_application.append(self.subscript)
-        handle_faked_sup_and_sub_tags()
+        return styles_needing_application
+
+    def parse_r(self, el, text, stack):
+        """
+        Parse the running text.
+        """
+        if not text:
+            return ''
+
+        applicable_styles = self.parse_r_determine_applicable_styles(el, stack)
 
         # Apply all the handlers.
-        for func in styles_needing_application:
+        for func in applicable_styles:
             text = func(text)
 
         return text

@@ -2,8 +2,12 @@
 
 - Added support for python 3.4
 - Added support for pypy
-- No longer adding list-style-type attribute to ordered list tags. We are now
-  using a class to indicate these.
+- No longer adding list-style-type attribute to ordered list tags.
+  We are now using a class to indicate these.
+- Faked sub/super handling is no longer handled by default.
+  Instead,
+  that handling is implemented in a new mixin class.
+  See ``pydocx.export.mixins``
 
 **0.6.0**
 

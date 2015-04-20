@@ -7,33 +7,21 @@ from __future__ import (
 import base64
 import os
 from tempfile import NamedTemporaryFile
-from unittest import TestCase
-
-from pydocx.exceptions import MalformedDocxException
-from pydocx.export.html import PyDocXHTMLExporter
-from pydocx.util.zip import ZipFile
 
 from nose.tools import raises
 
-from pydocx.test.testcases import BASE_HTML
-from pydocx.test.utils import (
-    assert_html_equal,
-    html_is_equal,
-    prettify,
-)
+from pydocx.exceptions import MalformedDocxException
+from pydocx.export.html import PyDocXHTMLExporter
+from pydocx.test.testcases import BASE_HTML, DocXFixtureTestCaseFactory
+from pydocx.test.utils import assert_html_equal
+from pydocx.util.zip import ZipFile
 
 
 def convert(path, *args, **kwargs):
     return PyDocXHTMLExporter(path, *args, **kwargs).parsed
 
 
-class ConvertDocxToHtmlTestCase(TestCase):
-    cases_path = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        '..',
-        'fixtures',
-    )
-
+class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
     cases = (
         'all_configured_styles',
         'has_title',
@@ -46,8 +34,6 @@ class ConvertDocxToHtmlTestCase(TestCase):
         # level upperRomans are converted.
         'external_image',
         'export_from_googledocs',
-        'fake_subscript',
-        'fake_superscript',
         'has_missing_image',
         'list_to_header',
         'lists_with_styles',
@@ -68,44 +54,6 @@ class ConvertDocxToHtmlTestCase(TestCase):
         'tables_in_lists',
         'track_changes_on',
     )
-
-    @classmethod
-    def create(cls, name):
-        def run_test(self):
-            docx_path = self.get_path_to_fixture('%s.docx' % name)
-            expected_path = self.get_path_to_fixture('%s.html' % name)
-
-            expected = ''
-            with open(expected_path) as f:
-                expected = f.read()
-
-            expected = BASE_HTML % expected
-            result = self.convert_docx_to_html(
-                docx_path,
-                convert_root_level_upper_roman=True,
-            )
-            self.assertHtmlEqual(result, expected)
-        return run_test
-
-    @classmethod
-    def generate(cls):
-        for case in cls.cases:
-            test_method = cls.create(case)
-            name = str('test_%s' % case)
-            test_method.__name__ = name
-            setattr(cls, name, test_method)
-
-    def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
-        return convert(path_to_docx, *args, **kwargs)
-
-    def assertHtmlEqual(self, actual, expected):
-        if not html_is_equal(actual, expected):
-            actual = prettify(actual)
-            message = 'The expected HTML did not match the actual HTML:'
-            raise AssertionError(message + '\n' + actual)
-
-    def get_path_to_fixture(self, fixture):
-        return os.path.join(self.cases_path, fixture)
 
     @raises(MalformedDocxException)
     def test_raises_malformed_when_relationships_are_missing(self):

@@ -4,10 +4,8 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.openxml import (
-    OpenXmlPart,
-    OpenXmlPackage,
-)
+from pydocx.openxml.packaging.OpenXmlPart import OpenXmlPart
+from pydocx.openxml.packaging.OpenXmlPackage import OpenXmlPackage
 
 
 class FootnotesPart(OpenXmlPart):

@@ -7,8 +7,6 @@ from __future__ import (
 import posixpath
 from collections import defaultdict
 
-from pydocx.openxml.packaging.OpenXmlPackage import OpenXmlPackage
-
 
 class OpenXmlPartContainer(object):
     '''
@@ -37,6 +35,8 @@ class OpenXmlPartContainer(object):
         raise NotImplementedError
 
     def _load_parts(self):
+        from pydocx.openxml.packaging.OpenXmlPackage import OpenXmlPackage
+
         relationship_lookup = self.get_relationship_lookup()
         # TODO I don't like this -Kyle
         if isinstance(self, OpenXmlPackage):

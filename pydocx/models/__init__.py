@@ -4,6 +4,8 @@ from __future__ import (
     unicode_literals,
 )
 
+from collections import defaultdict
+
 
 class XmlField(object):
     '''
@@ -41,6 +43,36 @@ class ChildTag(XmlField):
             type=type,
         )
         self.attrname = attrname
+
+
+class XmlCollection(XmlField):
+    '''
+    Represents a collection of elements. To define a field of this type,
+    a mapping dictionary must be passed in specifying the name of the child
+    elements and a callable handler for each.
+
+    Example:
+
+    class ParkingLot(XmlModel):
+        cars = Collection({
+            'car': Car,
+            'truck': Truck,
+        })
+
+    In the above example, 'car' and 'truck' are element names. 'Car' and
+    'Truck' are (callable) handlers for those elements. The handler may
+    optionally be a XmlModel.
+    An instance of ParkingLot will have an attribute 'cars' that is a list.
+    '''
+
+    def __init__(self, name_to_type_map, default=None):
+        if default is None:
+            default = []
+        super(XmlCollection, self).__init__(self, default=default)
+        self.name_to_type_map = name_to_type_map
+
+    def get_handler_for_tag(self, tag):
+        return self.name_to_type_map.get(tag)
 
 
 class XmlModel(object):
@@ -86,6 +118,7 @@ class XmlModel(object):
     def load(cls, element):
         attribute_fields = {}
         tag_fields = {}
+        collections = {}
         # Enumerate the defined fields and separate them into attributes and
         # tags
         for field_name, field in cls.__dict__.items():
@@ -93,9 +126,15 @@ class XmlModel(object):
                 attribute_fields[field_name] = field
             if isinstance(field, ChildTag):
                 tag_fields[field_name] = field
+            if isinstance(field, XmlCollection):
+                collections[field_name] = field
+
+        kwargs = {}
+
+        for field_name in collections.keys():
+            kwargs[field_name] = []
 
         # Evaluate each of the attribute fields against the given element
-        kwargs = {}
         for field_name, field in attribute_fields.items():
             attr_name = field_name
             if field.name is not None:
@@ -142,14 +181,42 @@ class XmlModel(object):
             # Save the handler
             child_handlers[tag_name] = create_child_handler(field)
 
-        # Process each child
-        for child in element:
-            # Does this child have a corresponding field?
-            field_name = tag_name_to_field_name.get(child.tag, None)
-            if field_name:
-                # Execute the handler
-                handler = child_handlers.get(child.tag, None)
-                if callable(handler):
-                    kwargs[field_name] = handler(child)
+        # Build a mapping of tag names to collections
+        collection_member_to_collections = defaultdict(list)
+        for field_name, field in collections.items():
+            for tag_name in field.name_to_type_map.keys():
+                collection_member_to_collections[tag_name].append(field_name)
+
+        if element:
+            # Process each child
+            for child in element:
+                tag = child.tag
+                # Does this child have a corresponding field?
+                field_name = tag_name_to_field_name.get(tag, None)
+                if field_name:
+                    # Execute the handler
+                    handler = child_handlers.get(tag, None)
+                    if callable(handler):
+                        kwargs[field_name] = handler(child)
+
+                # Does a this child belong to a collection?
+                parent_collections = collection_member_to_collections.get(
+                    tag,
+                    [],
+                )
+                for field_name in parent_collections:
+                    collection = collections.get(field_name)
+                    if collection:
+                        # different collection definitions may define different
+                        # handlers for the same child
+                        handler = collection.get_handler_for_tag(tag)
+                        # If the handler is a XmlModel we want to use the load
+                        # method, not the constructor
+                        if issubclass(handler, XmlModel):
+                            handler = handler.load
+                        if callable(handler):
+                            item = handler(child)
+                            kwargs[field_name].append(item)
+
         # Create a new instance using the values we've calculated
         return cls(**kwargs)

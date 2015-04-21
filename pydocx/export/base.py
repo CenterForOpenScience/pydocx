@@ -22,7 +22,7 @@ from pydocx.constants import (
 )
 from pydocx.exceptions import MalformedDocxException
 from pydocx.managers.styles import StylesManager
-from pydocx.models.styles import (
+from pydocx.openxml.wordprocessing import (
     ParagraphProperties,
     RunProperties,
 )

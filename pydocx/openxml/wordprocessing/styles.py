@@ -23,10 +23,11 @@ class Styles(object):
     @staticmethod
     def load(root):
         styles = []
-        for element in root:
-            if element.tag == 'style':
-                style = Style.load(element)
-                styles.append(style)
+        if root:
+            for element in root:
+                if element.tag == 'style':
+                    style = Style.load(element)
+                    styles.append(style)
         return Styles(styles)
 
     def get_styles_by_type(self, style_type):

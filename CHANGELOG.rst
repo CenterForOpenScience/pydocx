@@ -17,6 +17,10 @@
 - ``pydocx.managers.styles``
   has been merged into
   ``pydocx.openxml.wordprocessing.style_definition_part``
+- Added
+  ``XmlCollection``
+  field type,
+  now used by ``openxml.wordprocessing.styles.Style``
 
 **0.6.0**
 

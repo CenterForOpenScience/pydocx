@@ -12,7 +12,7 @@ class FakedSuperscriptAndSubscriptExportMixin(object):
         next_in_line = super(FakedSuperscriptAndSubscriptExportMixin, self)
         styles = next_in_line.parse_r_determine_applicable_styles(el, stack)
 
-        properties = self.styles_manager.get_resolved_properties_for_element(
+        properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
             el,
             stack,
         )
@@ -32,7 +32,7 @@ class FakedSuperscriptAndSubscriptExportMixin(object):
 
             rpr.remove(size_tag)
 
-            return self.styles_manager.get_resolved_properties_for_element(
+            return self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
                 copied_el,
                 stack,
             )

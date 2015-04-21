@@ -15,7 +15,6 @@ try:
 except ImportError:
     from io import BytesIO
 
-from pydocx.managers.styles import StylesManager
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.util.xml import parse_xml_from_string
@@ -338,11 +337,6 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.
         self.page_width = 612
-
-        self.styles_manager = StylesManager(
-            self.document.main_document_part.style_definitions_part,
-        )
-        self.styles = self.styles_manager.styles
 
         self.parse_begin(self.document.main_document_part)
 

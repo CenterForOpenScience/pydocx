@@ -60,6 +60,7 @@ class OpenXmlPartContainer(object):
                     )
                     if not open_xml_package.package.part_exists(part_uri):
                         continue
+
                 part = child_part_type(
                     open_xml_package=open_xml_package,
                     uri=part_uri,

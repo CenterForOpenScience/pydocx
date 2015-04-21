@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import (
     absolute_import,
     print_function,
@@ -6,7 +7,7 @@ from __future__ import (
 
 from collections import defaultdict
 
-from pydocx.models import XmlModel, ChildTag, Attribute
+from pydocx.openxml import XmlModel, ChildTag, Attribute
 from pydocx.types import OnOff, Underline
 
 

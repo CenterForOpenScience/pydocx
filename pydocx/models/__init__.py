@@ -17,14 +17,14 @@ class XmlField(object):
         self.type = type
 
 
-class Attribute(XmlField):
+class XmlAttribute(XmlField):
     '''
     Represents that the field to be processed is an attribute
     '''
     pass
 
 
-class ChildTag(XmlField):
+class XmlChild(XmlField):
     '''
     Represents that the field to be processed is a child
     '''
@@ -37,7 +37,7 @@ class ChildTag(XmlField):
         If specified, `attrname` indicates that the value is stored in an
         attribute on the child.
         '''
-        super(ChildTag, self).__init__(
+        super(XmlChild, self).__init__(
             name=name,
             default=default,
             type=type,
@@ -122,9 +122,9 @@ class XmlModel(object):
         # Enumerate the defined fields and separate them into attributes and
         # tags
         for field_name, field in cls.__dict__.items():
-            if isinstance(field, Attribute):
+            if isinstance(field, XmlAttribute):
                 attribute_fields[field_name] = field
-            if isinstance(field, ChildTag):
+            if isinstance(field, XmlChild):
                 tag_fields[field_name] = field
             if isinstance(field, XmlCollection):
                 collections[field_name] = field

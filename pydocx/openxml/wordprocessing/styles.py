@@ -14,7 +14,7 @@ class Styles(object):
     def __init__(self, styles=None):
         if styles is None:
             styles = []
-        self.styles = styles
+        self.styles = list(styles)
         styles_by_type = defaultdict(dict)
         for style in self.styles:
             styles_by_type[style.style_type][style.style_id] = style

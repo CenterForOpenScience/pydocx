@@ -44,7 +44,14 @@ class MainDocumentPart(OpenXmlPart):
 
     @property
     def style_definitions_part(self):
-        return self.get_part_of_class_type(part_class=StyleDefinitionsPart)
+        part = self.get_part_of_class_type(part_class=StyleDefinitionsPart)
+        if part is None:
+            part = StyleDefinitionsPart(
+                uri=None,
+                open_xml_package=self.open_xml_package,
+            )
+            self.add_part(part)
+        return part
 
     @property
     def numbering_definitions_part(self):

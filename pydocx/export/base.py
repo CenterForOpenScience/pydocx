@@ -21,8 +21,7 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.exceptions import MalformedDocxException
-from pydocx.managers.styles import StylesManager
-from pydocx.models.styles import (
+from pydocx.openxml.wordprocessing import (
     ParagraphProperties,
     RunProperties,
 )
@@ -200,12 +199,12 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_run_properties(self, el, parsed, stack):
         properties = RunProperties.load(el)
         parent = stack[-1]['element']
-        self.styles_manager.save_properties_for_element(parent, properties)
+        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     def parse_paragraph_properties(self, el, parsed, stack):
         properties = ParagraphProperties.load(el)
         parent = stack[-1]['element']
-        self.styles_manager.save_properties_for_element(parent, properties)
+        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)
@@ -219,10 +218,6 @@ class PyDocXExporter(MultiMemoizeMixin):
             self.numbering_root = numbering_part.root_element
 
         self.page_width = self._get_page_width(main_document_part.root_element)
-        self.styles_manager = StylesManager(
-            main_document_part.style_definitions_part,
-        )
-        self.styles = self.styles_manager.styles
         self.parse_begin(main_document_part)
 
     def load_footnotes(self, main_document_part):
@@ -249,7 +244,7 @@ class PyDocXExporter(MultiMemoizeMixin):
 
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles=self.styles,
+            styles=self.document.main_document_part.style_definitions_part.styles,  # noqa
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa
@@ -716,7 +711,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return self.insertion(parsed, '', '')
 
     def parse_r_determine_applicable_styles(self, el, stack):
-        properties = self.styles_manager.get_resolved_properties_for_element(
+        properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
             el,
             stack,
         )

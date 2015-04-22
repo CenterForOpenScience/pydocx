@@ -11,6 +11,12 @@
 - ``pydocx.wordml`` and ``pydocx.openxml``
   have been merged into ``pydocx.openxml.packaging``
   to better mirror the MS implementation structure.
+- ``pydocx.models.styles``
+  has been moved to
+  ``pydocx.openxml.wordprocessing.*``
+- ``pydocx.managers.styles``
+  has been merged into
+  ``pydocx.openxml.wordprocessing.style_definition_part``
 
 **0.6.0**
 

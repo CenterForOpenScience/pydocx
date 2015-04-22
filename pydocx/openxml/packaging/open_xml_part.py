@@ -30,6 +30,8 @@ class OpenXmlPart(OpenXmlPartContainer):
     @property
     def root_element(self):
         if self._root_element is None:
+            if self.stream is None:
+                return
             data = self.stream.read()
             self._root_element = parse_xml_from_string(
                 xml=data,
@@ -43,4 +45,6 @@ class OpenXmlPart(OpenXmlPartContainer):
 
     @property
     def stream(self):
-        return self.package_part.stream
+        part = self.package_part
+        if part:
+            return part.stream

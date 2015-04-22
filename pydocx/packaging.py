@@ -236,5 +236,5 @@ class ZipPackage(PackageRelationshipManager):
     def get_parts(self):
         return self.parts.values()
 
-    def get_part(self, uri):
-        return self.parts[uri]
+    def get_part(self, uri, default=None):
+        return self.parts.get(uri, default)

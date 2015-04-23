@@ -9,5 +9,5 @@ from pydocx.models import XmlModel, XmlChild, XmlAttribute
 
 
 class LevelOverride(XmlModel):
-    level = XmlAttribute(name='ilvl')
+    level_id = XmlAttribute(name='ilvl')
     start_override = XmlChild(name='startOverride', attrname='val')

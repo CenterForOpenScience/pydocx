@@ -11,7 +11,7 @@ from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperti
 
 
 class Level(XmlModel):
-    level = XmlAttribute(name='ilvl')
+    level_id = XmlAttribute(name='ilvl')
     start = XmlChild(attrname='val')
     num_format = XmlChild(name='numFmt', attrname='val')
     restart = XmlChild(name='lvlRestart', attrname='val')

@@ -78,7 +78,7 @@ class XmlChildTestCase(BaseTestCase):
         '''
         bucket = self._get_model_instance_from_xml(xml)
         root = parse_xml_from_string(xml)
-        assert isinstance(bucket.agua, root.__class__)
+        self.assertEqual(type(bucket.agua), type(root))
 
     def test_child_with_attrname_is_the_string_value_of_that_attr(self):
         xml = '''

@@ -5,8 +5,8 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, ChildTag
+from pydocx.models import XmlModel, XmlChild
 
 
 class ParagraphProperties(XmlModel):
-    parent_style = ChildTag(name='pStyle', attrname='val')
+    parent_style = XmlChild(name='pStyle', attrname='val')

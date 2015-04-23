@@ -5,24 +5,24 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, ChildTag
+from pydocx.models import XmlModel, XmlChild
 from pydocx.types import OnOff, Underline
 
 
 class RunProperties(XmlModel):
-    bold = ChildTag(type=OnOff, name='b', attrname='val')
-    italic = ChildTag(type=OnOff, name='i', attrname='val')
-    underline = ChildTag(type=Underline, name='u', attrname='val')
-    caps = ChildTag(type=OnOff, attrname='val')
-    small_caps = ChildTag(type=OnOff, name='smallCaps', attrname='val')
-    strike = ChildTag(type=OnOff, attrname='val')
-    dstrike = ChildTag(type=OnOff, attrname='val')
-    vanish = ChildTag(type=OnOff, attrname='val')
-    hidden = ChildTag(type=OnOff, name='webHidden', attrname='val')
-    vertical_align = ChildTag(name='vertAlign', attrname='val')
-    parent_style = ChildTag(name='rStyle', attrname='val')
-    pos = ChildTag(name='position', attrname='val')
-    sz = ChildTag(name='sz', attrname='val')
+    bold = XmlChild(type=OnOff, name='b', attrname='val')
+    italic = XmlChild(type=OnOff, name='i', attrname='val')
+    underline = XmlChild(type=Underline, name='u', attrname='val')
+    caps = XmlChild(type=OnOff, attrname='val')
+    small_caps = XmlChild(type=OnOff, name='smallCaps', attrname='val')
+    strike = XmlChild(type=OnOff, attrname='val')
+    dstrike = XmlChild(type=OnOff, attrname='val')
+    vanish = XmlChild(type=OnOff, attrname='val')
+    hidden = XmlChild(type=OnOff, name='webHidden', attrname='val')
+    vertical_align = XmlChild(name='vertAlign', attrname='val')
+    parent_style = XmlChild(name='rStyle', attrname='val')
+    pos = XmlChild(name='position', attrname='val')
+    sz = XmlChild(name='sz', attrname='val')
 
     @property
     def position(self):

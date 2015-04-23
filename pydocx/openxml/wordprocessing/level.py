@@ -1,0 +1,20 @@
+# coding: utf-8
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
+from pydocx.models import XmlModel, XmlChild, XmlAttribute
+from pydocx.openxml.wordprocessing.run_properties import RunProperties
+from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
+
+
+class Level(XmlModel):
+    level = XmlAttribute(name='ilvl')
+    start = XmlChild(attrname='val')
+    num_format = XmlChild(name='numFmt', attrname='val')
+    restart = XmlChild(name='lvlRestart', attrname='val')
+    paragraph_style = XmlChild(name='pStyle', attrname='val')
+    run_properties = XmlChild(type=RunProperties, name='rPr')
+    paragraph_properties = XmlChild(type=ParagraphProperties, name='pPr')

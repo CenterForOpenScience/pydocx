@@ -21,6 +21,8 @@
   ``XmlCollection``
   field type,
   now used by ``openxml.wordprocessing.styles.Style``
+- Implemented several model classes for Numbering.
+- Added numbering property to the numbering definitions part.
 
 **0.6.0**
 

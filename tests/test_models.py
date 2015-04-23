@@ -57,3 +57,39 @@ class XmlCollectionTestCase(BaseTestCase):
         '''
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.items.items, [])
+
+    def test_non_captured_items_are_ignored_by_collection(self):
+        # The items collection does not capture bananas, so it's ignored
+        xml = '''
+            <bucket>
+                <items>
+                    <banana />
+                </items>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.items.items, [])
+
+    def test_apples_and_oranges_included_in_collection_ordered(self):
+        xml = '''
+            <bucket>
+                <items>
+                    <apple />
+                    <orange />
+                    <apple />
+                    <orange />
+                </items>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        classes = [
+            item.__class__
+            for item in bucket.items.items
+        ]
+        expected_classes = [
+            AppleModel,
+            OrangeModel,
+            AppleModel,
+            OrangeModel,
+        ]
+        self.assertEqual(classes, expected_classes)

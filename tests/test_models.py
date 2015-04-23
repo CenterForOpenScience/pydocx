@@ -29,6 +29,9 @@ class ItemsModel(XmlModel):
 class BucketModel(XmlModel):
     items = XmlChild(type=ItemsModel)
 
+    agua = XmlChild(name='water')
+    attr_child = XmlChild(attrname='foo')
+
 
 class BaseTestCase(TestCase):
     def _get_model_instance_from_xml(self, xml):
@@ -39,10 +42,43 @@ class BaseTestCase(TestCase):
 class XmlChildTestCase(BaseTestCase):
     model = BucketModel
 
-    def test_items_None_if_not_present(self):
+    def test_None_if_not_present(self):
         xml = '<bucket />'
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.items, None)
+
+    def test_using_a_name_different_than_the_field_name(self):
+        xml = '''
+            <bucket>
+                <water />
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.agua.tag, 'water')
+
+    def test_child_without_type_is_an_element(self):
+        xml = '''
+            <bucket>
+                <water />
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        root = parse_xml_from_string(xml)
+        assert isinstance(bucket.agua, root.__class__)
+
+    def test_child_with_attrname_is_the_string_value_of_that_attr(self):
+        xml = '''
+            <bucket>
+                <attr_child foo="bar" />
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.attr_child, 'bar')
+
+    def test_child_with_attrname_when_missing_is_None(self):
+        xml = '<bucket />'
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.attr_child, None)
 
 
 class XmlCollectionTestCase(BaseTestCase):
@@ -93,3 +129,27 @@ class XmlCollectionTestCase(BaseTestCase):
             OrangeModel,
         ]
         self.assertEqual(classes, expected_classes)
+
+    def test_apples_and_oranges_models_accessed_through_collection(self):
+        xml = '''
+            <bucket>
+                <items>
+                    <apple type='one' />
+                    <orange type='two' />
+                    <apple type='three' />
+                    <orange type='four' />
+                </items>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        types = [
+            item.type
+            for item in bucket.items.items
+        ]
+        expected_types = [
+            'one',
+            'two',
+            'three',
+            'four',
+        ]
+        self.assertEqual(types, expected_types)

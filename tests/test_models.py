@@ -21,8 +21,8 @@ class OrangeModel(XmlModel):
 
 class ItemsModel(XmlModel):
     items = XmlCollection({
-        'apples': AppleModel,
-        'oranges': OrangeModel,
+        'apple': AppleModel,
+        'orange': OrangeModel,
     })
 
 

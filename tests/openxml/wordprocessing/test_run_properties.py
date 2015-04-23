@@ -51,3 +51,23 @@ class RunPropertiesTestCase(TestCase):
         )
         assert not bool(result['bold'])
         assert bool(result['italic'])
+
+    def test_size_property_returns_None_when_sz_is_None(self):
+        xml = '<rPr />'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.size, None)
+
+    def test_size_property_returns_int_of_sz(self):
+        xml = '<rPr><sz val="10"/></rPr>'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.size, int(properties.sz))
+
+    def test_position_property_returns_0_when_pos_is_None(self):
+        xml = '<rPr />'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.position, 0)
+
+    def test_position_property_returns_int_of_position(self):
+        xml = '<rPr><position val="10"/></rPr>'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.position, int(properties.pos))

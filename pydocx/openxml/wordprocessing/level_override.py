@@ -6,8 +6,10 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlChild, XmlAttribute
+from pydocx.openxml.wordprocessing.level import Level
 
 
 class LevelOverride(XmlModel):
     level_id = XmlAttribute(name='ilvl')
     start_override = XmlChild(name='startOverride', attrname='val')
+    level = XmlChild(type=Level, name='lvl')

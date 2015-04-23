@@ -30,15 +30,23 @@ class BucketModel(XmlModel):
     items = XmlChild(type=ItemsModel)
 
 
-class XmlModelTestCase(TestCase):
-    def _get_bucket_instance_from_xml(self, xml):
+class BaseTestCase(TestCase):
+    def _get_model_instance_from_xml(self, xml):
         root = parse_xml_from_string(xml)
-        return BucketModel.load(root)
+        return self.model.load(root)
+
+
+class XmlChildTestCase(BaseTestCase):
+    model = BucketModel
 
     def test_items_None_if_not_present(self):
         xml = '<bucket />'
-        bucket = self._get_bucket_instance_from_xml(xml)
+        bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.items, None)
+
+
+class XmlCollectionTestCase(BaseTestCase):
+    model = BucketModel
 
     def test_items_items_empty_if_no_items_present(self):
         xml = '''
@@ -47,5 +55,5 @@ class XmlModelTestCase(TestCase):
                 </items>
             </bucket>
         '''
-        bucket = self._get_bucket_instance_from_xml(xml)
+        bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.items.items, [])

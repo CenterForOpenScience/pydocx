@@ -39,6 +39,20 @@ class BaseTestCase(TestCase):
         return self.model.load(root)
 
 
+class XmlAttributeTestCase(BaseTestCase):
+    model = AppleModel
+
+    def test_default_attribute(self):
+        xml = '<apple />'
+        apple = self._get_model_instance_from_xml(xml)
+        self.assertEqual(apple.type, 'Honey Crisp')
+
+    def test_attribute_when_set(self):
+        xml = '<apple type="Gala" />'
+        apple = self._get_model_instance_from_xml(xml)
+        self.assertEqual(apple.type, 'Gala')
+
+
 class XmlChildTestCase(BaseTestCase):
     model = BucketModel
 

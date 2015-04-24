@@ -9,6 +9,43 @@ To the greatest degree possible,
 PyDocX intends to conform with this
 and subsequent standards.
 
+17.9 Numbering
+##############
+
+======= ============================================= ===========
+Section Description                                   Implemented
+======= ============================================= ===========
+17.9.1  abstractNum                                   true
+17.9.2  abstractNumId                                 true
+17.9.3  ilvl                                          true
+17.9.4  isLgl                                         false
+17.9.5  lvl (override)                                false
+17.9.6  lvl                                           true
+17.9.7  lvlJc                                         false
+17.9.8  lvlOverride                                   false
+17.9.9  lvlPictPulletId                               false
+17.9.10 lvlRestart                                    false
+17.9.11 lvlText                                       false
+17.9.12 multiLevelType                                false
+17.9.13 name                                          false
+17.9.14 nsid                                          false
+17.9.15 num                                           true
+17.9.16 numbering                                     true
+17.9.17 numFmt                                        true
+17.9.18 numId                                         true
+17.9.19 numIdMacAtCleanup                             false
+17.9.20 numPicBullet                                  false
+17.9.21 numStyleLink                                  false
+17.9.22 pPr                                           false
+17.9.23 pStyle                                        false
+17.9.24 rPr                                           false
+17.9.25 start                                         false
+17.9.26 startOverride                                 false
+17.9.27 styleLink                                     false
+17.9.28 suff                                          false
+17.9.29 tmpl                                          false
+======= ============================================= ===========
+
 Deviations
 ##########
 

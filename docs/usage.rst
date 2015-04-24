@@ -142,23 +142,3 @@ Exceptions
 
 There is only one custom exception (``MalformedDocxException``).
 It is raised if either the ``xml`` or ``zipfile`` libraries raise an exception.
-
-Deviations from the `ECMA-376 <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_ Specification
-#####################################################################################################################
-
-Missing val attribute in underline tag
-======================================
-
-* In the event that the
-  ``val`` attribute
-  is missing
-  from a ``u`` (``ST_Underline`` type),
-  we treat the underline as off,
-  or none.
-  See also
-  http://msdn.microsoft.com/en-us/library/ff532016%28v=office.12%29.aspx
-
-   If the val attribute is not specified,
-   Word defaults to the value defined
-   in the style hierarchy
-   and then to no underline.

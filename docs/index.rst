@@ -6,6 +6,7 @@ PyDocX
 
    installation
    usage
+   conformance
    extending
    development
    release_notes

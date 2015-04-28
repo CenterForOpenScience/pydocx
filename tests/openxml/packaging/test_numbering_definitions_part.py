@@ -18,7 +18,7 @@ from pydocx.util.zip import create_zip_archive
 
 
 class NumberingDefinitionsPartTestCase(unittest.TestCase):
-    def test_document_is_the_open_xml_package(self):
+    def test_numbering_property_is_a_Numbering_instance(self):
         factory = WordprocessingDocumentFactory()
         document_xml = b'<document />'
         numbering_xml = b'<numbering />'

@@ -71,7 +71,7 @@ class LevelTestCase(TestCase):
             </lvl>
         '''
         level = self._load_from_xml(xml)
-        self.assertEqual(level.run_properties.__class__, RunProperties)
+        assert isinstance(level.run_properties, RunProperties), level.run_properties  # noqa
 
     def test_paragraph_properties_child(self):
         xml = b'''
@@ -80,4 +80,4 @@ class LevelTestCase(TestCase):
             </lvl>
         '''
         level = self._load_from_xml(xml)
-        self.assertEqual(level.paragraph_properties.__class__, ParagraphProperties)  # noqa
+        assert isinstance(level.paragraph_properties, ParagraphProperties), level.paragraph_properties  # noqa

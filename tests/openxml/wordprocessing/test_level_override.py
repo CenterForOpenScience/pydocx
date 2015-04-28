@@ -41,4 +41,4 @@ class LevelOverrideTestCase(TestCase):
             </lvlOverride>
         '''
         override = self._load_from_xml(xml)
-        self.assertEqual(override.level.__class__, Level)
+        assert isinstance(override.level, Level), override.level

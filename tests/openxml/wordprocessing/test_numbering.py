@@ -36,8 +36,5 @@ class NumberingTestCase(TestCase):
             AbstractNum,
             NumberingInstance,
         ]
-        classes = [
-            element.__class__
-            for element in numbering.elements
-        ]
-        self.assertEqual(classes, expected_classes)
+        for obj, expected_class in zip(numbering.elements, expected_classes):
+            assert isinstance(obj, expected_class), obj

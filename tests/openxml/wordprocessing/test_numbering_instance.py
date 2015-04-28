@@ -48,8 +48,9 @@ class NumberingInstanceTestCase(TestCase):
             (LevelOverride, "2"),
             (LevelOverride, "3"),
         ]
-        classes = [
-            (element.__class__, element.level_id)
-            for element in num.level_overrides
-        ]
-        self.assertEqual(classes, expected_classes)
+        for obj, (expected_class, level_id) in zip(
+            num.level_overrides,
+            expected_classes,
+        ):
+            assert isinstance(obj, expected_class), obj
+            self.assertEqual(obj.level_id, level_id)

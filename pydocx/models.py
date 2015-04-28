@@ -106,9 +106,9 @@ class XmlModel(object):
     def __repr__(self):
         return '{klass}({kwargs})'.format(
             klass=self.__class__.__name__,
-            kwargs=','.join('{field}={value}'.format(
+            kwargs=', '.join('{field}={value}'.format(
                 field=field,
-                value=value,
+                value=repr(value),
             ) for field, value in self.items()),
         )
 

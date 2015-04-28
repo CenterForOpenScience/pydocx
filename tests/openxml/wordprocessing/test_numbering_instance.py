@@ -35,12 +35,12 @@ class NumberingInstanceTestCase(TestCase):
 
     def test_lvlOverride_collection_mapped_to_level_overrides(self):
         xml = b'''
-            <lvlOverride ilvl="100">
+            <num numId="100">
                 <startOverride val="200" />
                 <lvlOverride ilvl="1" />
                 <lvlOverride ilvl="2" />
                 <lvlOverride ilvl="3" />
-            </lvlOverride>
+            </num>
         '''
         num = self._load_from_xml(xml)
         expected_classes = [

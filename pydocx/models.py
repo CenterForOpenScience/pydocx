@@ -8,6 +8,14 @@ from __future__ import (
 from collections import defaultdict
 
 
+class XmlException(Exception):
+    pass
+
+
+class XmlRootElementMismatchException(XmlException):
+    pass
+
+
 class XmlField(object):
     '''
     Represents a generic XML field which can be an attribute or tag.
@@ -126,6 +134,16 @@ class XmlModel(object):
 
     @classmethod
     def load(cls, element):
+        xml_tag_decl = getattr(cls, 'XML_TAG', None)
+        if element is not None and xml_tag_decl:
+            if xml_tag_decl != element.tag:
+                raise XmlRootElementMismatchException(
+                    'Expected root element {tag} but got {other} instead'.format(  # noqa
+                        tag=xml_tag_decl,
+                        other=element.tag,
+                    ),
+                )
+
         attribute_fields = {}
         tag_fields = {}
         collections = {}

@@ -124,9 +124,13 @@ class XmlChildTestCase(BaseTestCase):
                 <prop>
                     <color val="blue" />
                 </prop>
+                <properties>
+                    <color val="black" />
+                </properties>
             </bucket>
         '''
         bucket = self._get_model_instance_from_xml(xml)
+        # the properties tag is ignored because the PropertiesModel uses prop
         self.assertEqual(bucket.properties.color, 'blue')
 
     def test_failure_if_root_tag_mismatch(self):

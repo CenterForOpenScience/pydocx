@@ -109,10 +109,10 @@ class XmlModel(object):
             kwargs=', '.join('{field}={value}'.format(
                 field=field,
                 value=repr(value),
-            ) for field, value in self.items()),
+            ) for field, value in self),
         )
 
-    def items(self):
+    def __iter__(self):
         '''
         A generator that loops through each of the defined fields for the
         model, and yields back only those fields which have been set to a value

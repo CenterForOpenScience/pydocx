@@ -7,7 +7,14 @@ from __future__ import (
 
 from unittest import TestCase
 
-from pydocx.models import XmlModel, XmlCollection, XmlChild, XmlAttribute
+from pydocx.models import (
+    XmlModel,
+    XmlCollection,
+    XmlChild,
+    XmlAttribute,
+    XmlRootElementMismatchException,
+)
+
 from pydocx.util.xml import parse_xml_from_string
 
 
@@ -121,6 +128,14 @@ class XmlChildTestCase(BaseTestCase):
         '''
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.properties.color, 'blue')
+
+    def test_failure_if_root_tag_mismatch(self):
+        xml = '<notabucket />'
+        try:
+            self._get_model_instance_from_xml(xml)
+            raise AssertionError('Expected XmlRootElementMismatchException')
+        except XmlRootElementMismatchException:
+            pass
 
 
 class XmlCollectionTestCase(BaseTestCase):

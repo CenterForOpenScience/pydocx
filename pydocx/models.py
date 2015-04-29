@@ -180,11 +180,19 @@ class XmlModel(object):
 
         # Evaluate the child tags
         for field_name, field in tag_fields.items():
-            # By default, the name is whatever the field name is, unless the
-            # tag definition specifies an override name
+            # The attribute name is whatever the field name is, unless:
+            # field.name is set, or
+            # field.type.XML_TAG is set
             tag_name = field_name
+
             if field.name is not None:
                 tag_name = field.name
+            elif field.type:
+                field_type_tag = getattr(field.type, 'XML_TAG', None)
+                if field_type_tag:
+                    tag_name = field_type_tag
+
+            assert tag_name
 
             # Based on the tag name, we need to know what the field name is
             tag_name_to_field_name[tag_name] = field_name

@@ -7,7 +7,7 @@ from __future__ import (
 import sys
 import logging
 
-from pydocx.pydocx import PyDocX
+from pydocx import PyDocX
 
 
 def convert(output_type, docx_path, output_path):

@@ -26,11 +26,20 @@ class ItemsModel(XmlModel):
     })
 
 
+class PropertiesModel(XmlModel):
+    XML_TAG = 'prop'
+
+    color = XmlChild(attrname='val')
+
+
 class BucketModel(XmlModel):
     items = XmlChild(type=ItemsModel)
 
     agua = XmlChild(name='water')
     attr_child = XmlChild(attrname='foo')
+
+    # tag name is set by the Model itself via the XML_TAG attribute
+    properties = XmlChild(type=PropertiesModel)
 
 
 class BaseTestCase(TestCase):
@@ -93,6 +102,17 @@ class XmlChildTestCase(BaseTestCase):
         xml = '<bucket />'
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.attr_child, None)
+
+    def test_child_determines_tag_name(self):
+        xml = '''
+            <bucket>
+                <prop>
+                    <color val="blue" />
+                </prop>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.properties.color, 'blue')
 
 
 class XmlCollectionTestCase(BaseTestCase):

@@ -12,14 +12,20 @@ from pydocx.util.xml import parse_xml_from_string
 
 
 class AppleModel(XmlModel):
+    XML_TAG = 'apple'
+
     type = XmlAttribute(default='Honey Crisp')
 
 
 class OrangeModel(XmlModel):
+    XML_TAG = 'orange'
+
     type = XmlAttribute(default='Organic')
 
 
 class ItemsModel(XmlModel):
+    XML_TAG = 'items'
+
     items = XmlCollection({
         'apple': AppleModel,
         'orange': OrangeModel,
@@ -33,6 +39,8 @@ class PropertiesModel(XmlModel):
 
 
 class BucketModel(XmlModel):
+    XML_TAG = 'bucket'
+
     items = XmlChild(type=ItemsModel)
 
     agua = XmlChild(name='water')

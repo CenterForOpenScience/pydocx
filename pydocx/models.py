@@ -89,9 +89,8 @@ class XmlCollection(XmlField):
     An instance of ParkingLot will have an attribute 'cars' that is a list.
     '''
 
-    def __init__(self, *types, default=None):
-        if default is None:
-            default = []
+    def __init__(self, *types, **kwargs):
+        default = kwargs.pop('default', [])
         super(XmlCollection, self).__init__(self, default=default)
         name_to_type_map = {}
         for type_spec in types:

@@ -33,10 +33,10 @@ class OrangeModel(XmlModel):
 class ItemsModel(XmlModel):
     XML_TAG = 'items'
 
-    items = XmlCollection({
-        'apple': AppleModel,
-        'orange': OrangeModel,
-    })
+    items = XmlCollection(
+        ('apple', AppleModel),
+        OrangeModel,
+    )
 
 
 class PropertiesModel(XmlModel):

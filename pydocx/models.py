@@ -74,10 +74,18 @@ class XmlCollection(XmlField):
     An instance of ParkingLot will have an attribute 'cars' that is a list.
     '''
 
-    def __init__(self, name_to_type_map, default=None):
+    def __init__(self, *types, default=None):
         if default is None:
             default = []
         super(XmlCollection, self).__init__(self, default=default)
+        name_to_type_map = {}
+        for type_spec in types:
+            if isinstance(type_spec, tuple):
+                tag_name, model = type_spec
+            else:
+                model = type_spec
+                tag_name = getattr(model, 'XML_TAG')
+            name_to_type_map[tag_name] = model
         self.name_to_type_map = name_to_type_map
 
     def get_handler_for_tag(self, tag):

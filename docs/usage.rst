@@ -24,7 +24,7 @@ helper method:
 
 .. code-block:: python
 
-    from pydocx.pydocx import PyDocX
+    from pydocx import PyDocX
 
     # Pass in a path
     html = PyDocX.to_html('file.docx')

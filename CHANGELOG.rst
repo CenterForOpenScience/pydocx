@@ -24,6 +24,7 @@
 - Implemented several model classes for Numbering.
 - Added numbering property to the numbering definitions part.
 - XmlModels now define their own tags
+- Simplified importing PyDocX
 
 **0.6.0**
 

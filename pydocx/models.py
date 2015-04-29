@@ -56,21 +56,36 @@ class XmlChild(XmlField):
 
 class XmlCollection(XmlField):
     '''
-    Represents a collection of elements. To define a field of this type,
-    a mapping dictionary must be passed in specifying the name of the child
-    elements and a callable handler for each.
+    Represents an ordered collection of elements.
 
-    Example:
+    To define a field of this type, pass in a sequence of tuples that specify
+    the tag name of the XML child, and the callable handler:
 
     class ParkingLot(XmlModel):
-        cars = Collection({
-            'car': Car,
-            'truck': Truck,
-        })
+        cars = Collection(
+            ('car', Car),
+            ('truck', Truck),
+        )
 
-    In the above example, 'car' and 'truck' are element names. 'Car' and
+    Alternatively, the callable handlers define their own XML_TAG declaration.
+    In this case, simply pass in the sequence of handlers:
+
+    class Car(XmlModel):
+        XML_TAG = 'car'
+
+    class Truck(XmlModel):
+        XML_TAG = 'truck'
+
+    class ParkingLot(XmlModel):
+        cars = Collection(
+            Car,
+            Truck,
+        )
+
+    In the above examples, 'car' and 'truck' are element names. 'Car' and
     'Truck' are (callable) handlers for those elements. The handler may
     optionally be a XmlModel.
+
     An instance of ParkingLot will have an attribute 'cars' that is a list.
     '''
 

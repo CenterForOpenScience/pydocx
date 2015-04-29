@@ -8,6 +8,14 @@ from __future__ import (
 from collections import defaultdict
 
 
+class XmlException(Exception):
+    pass
+
+
+class XmlRootElementMismatchException(XmlException):
+    pass
+
+
 class XmlField(object):
     '''
     Represents a generic XML field which can be an attribute or tag.
@@ -48,28 +56,50 @@ class XmlChild(XmlField):
 
 class XmlCollection(XmlField):
     '''
-    Represents a collection of elements. To define a field of this type,
-    a mapping dictionary must be passed in specifying the name of the child
-    elements and a callable handler for each.
+    Represents an ordered collection of elements.
 
-    Example:
+    To define a field of this type, pass in a sequence of tuples that specify
+    the tag name of the XML child, and the callable handler:
 
     class ParkingLot(XmlModel):
-        cars = Collection({
-            'car': Car,
-            'truck': Truck,
-        })
+        cars = Collection(
+            ('car', Car),
+            ('truck', Truck),
+        )
 
-    In the above example, 'car' and 'truck' are element names. 'Car' and
+    Alternatively, the callable handlers define their own XML_TAG declaration.
+    In this case, simply pass in the sequence of handlers:
+
+    class Car(XmlModel):
+        XML_TAG = 'car'
+
+    class Truck(XmlModel):
+        XML_TAG = 'truck'
+
+    class ParkingLot(XmlModel):
+        cars = Collection(
+            Car,
+            Truck,
+        )
+
+    In the above examples, 'car' and 'truck' are element names. 'Car' and
     'Truck' are (callable) handlers for those elements. The handler may
     optionally be a XmlModel.
+
     An instance of ParkingLot will have an attribute 'cars' that is a list.
     '''
 
-    def __init__(self, name_to_type_map, default=None):
-        if default is None:
-            default = []
+    def __init__(self, *types, **kwargs):
+        default = kwargs.pop('default', [])
         super(XmlCollection, self).__init__(self, default=default)
+        name_to_type_map = {}
+        for type_spec in types:
+            if isinstance(type_spec, tuple):
+                tag_name, model = type_spec
+            else:
+                model = type_spec
+                tag_name = getattr(model, 'XML_TAG')
+            name_to_type_map[tag_name] = model
         self.name_to_type_map = name_to_type_map
 
     def get_handler_for_tag(self, tag):
@@ -109,10 +139,10 @@ class XmlModel(object):
             kwargs=', '.join('{field}={value}'.format(
                 field=field,
                 value=repr(value),
-            ) for field, value in self.items()),
+            ) for field, value in self),
         )
 
-    def items(self):
+    def __iter__(self):
         '''
         A generator that loops through each of the defined fields for the
         model, and yields back only those fields which have been set to a value
@@ -126,6 +156,16 @@ class XmlModel(object):
 
     @classmethod
     def load(cls, element):
+        xml_tag_decl = getattr(cls, 'XML_TAG', None)
+        if element is not None and xml_tag_decl:
+            if xml_tag_decl != element.tag:
+                raise XmlRootElementMismatchException(
+                    'Expected root element {tag} but got {other} instead'.format(  # noqa
+                        tag=xml_tag_decl,
+                        other=element.tag,
+                    ),
+                )
+
         attribute_fields = {}
         tag_fields = {}
         collections = {}
@@ -180,11 +220,19 @@ class XmlModel(object):
 
         # Evaluate the child tags
         for field_name, field in tag_fields.items():
-            # By default, the name is whatever the field name is, unless the
-            # tag definition specifies an override name
+            # The attribute name is whatever the field name is, unless:
+            # field.name is set, or
+            # field.type.XML_TAG is set
             tag_name = field_name
+
             if field.name is not None:
                 tag_name = field.name
+            elif field.type:
+                field_type_tag = getattr(field.type, 'XML_TAG', None)
+                if field_type_tag:
+                    tag_name = field_type_tag
+
+            assert tag_name
 
             # Based on the tag name, we need to know what the field name is
             tag_name_to_field_name[tag_name] = field_name

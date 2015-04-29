@@ -9,4 +9,6 @@ from pydocx.models import XmlModel, XmlChild
 
 
 class ParagraphProperties(XmlModel):
+    XML_TAG = 'pPr'
+
     parent_style = XmlChild(name='pStyle', attrname='val')

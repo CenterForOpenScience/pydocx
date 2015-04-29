@@ -7,30 +7,54 @@ from __future__ import (
 
 from unittest import TestCase
 
-from pydocx.models import XmlModel, XmlCollection, XmlChild, XmlAttribute
+from pydocx.models import (
+    XmlModel,
+    XmlCollection,
+    XmlChild,
+    XmlAttribute,
+    XmlRootElementMismatchException,
+)
+
 from pydocx.util.xml import parse_xml_from_string
 
 
 class AppleModel(XmlModel):
+    XML_TAG = 'apple'
+
     type = XmlAttribute(default='Honey Crisp')
 
 
 class OrangeModel(XmlModel):
+    XML_TAG = 'orange'
+
     type = XmlAttribute(default='Organic')
 
 
 class ItemsModel(XmlModel):
-    items = XmlCollection({
-        'apple': AppleModel,
-        'orange': OrangeModel,
-    })
+    XML_TAG = 'items'
+
+    items = XmlCollection(
+        ('apple', AppleModel),
+        OrangeModel,
+    )
+
+
+class PropertiesModel(XmlModel):
+    XML_TAG = 'prop'
+
+    color = XmlChild(attrname='val')
 
 
 class BucketModel(XmlModel):
+    XML_TAG = 'bucket'
+
     items = XmlChild(type=ItemsModel)
 
     agua = XmlChild(name='water')
     attr_child = XmlChild(attrname='foo')
+
+    # tag name is set by the Model itself via the XML_TAG attribute
+    properties = XmlChild(type=PropertiesModel)
 
 
 class BaseTestCase(TestCase):
@@ -93,6 +117,29 @@ class XmlChildTestCase(BaseTestCase):
         xml = '<bucket />'
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.attr_child, None)
+
+    def test_child_determines_tag_name(self):
+        xml = '''
+            <bucket>
+                <prop>
+                    <color val="blue" />
+                </prop>
+                <properties>
+                    <color val="black" />
+                </properties>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        # the properties tag is ignored because the PropertiesModel uses prop
+        self.assertEqual(bucket.properties.color, 'blue')
+
+    def test_failure_if_root_tag_mismatch(self):
+        xml = '<notabucket />'
+        try:
+            self._get_model_instance_from_xml(xml)
+            raise AssertionError('Expected XmlRootElementMismatchException')
+        except XmlRootElementMismatchException:
+            pass
 
 
 class XmlCollectionTestCase(BaseTestCase):

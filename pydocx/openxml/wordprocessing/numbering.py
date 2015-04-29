@@ -11,7 +11,6 @@ from pydocx.openxml.wordprocessing.numbering_instance import NumberingInstance
 
 
 class Numbering(XmlModel):
-    elements = XmlCollection({
-        'abstractNum': AbstractNum,
-        'num': NumberingInstance,
-    })
+    XML_TAG = 'numbering'
+
+    elements = XmlCollection(AbstractNum, NumberingInstance)

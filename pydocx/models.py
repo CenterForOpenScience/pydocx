@@ -103,6 +103,15 @@ class XmlModel(object):
                 value = kwargs.get(field_name, field.default)
                 setattr(self, field_name, value)
 
+    def __repr__(self):
+        return '{klass}({kwargs})'.format(
+            klass=self.__class__.__name__,
+            kwargs=', '.join('{field}={value}'.format(
+                field=field,
+                value=repr(value),
+            ) for field, value in self.items()),
+        )
+
     def items(self):
         '''
         A generator that loops through each of the defined fields for the

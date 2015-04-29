@@ -10,9 +10,9 @@ from pydocx.openxml.wordprocessing.level import Level
 
 
 class AbstractNum(XmlModel):
+    XML_TAG = 'abstractNum'
+
     abstract_num_id = XmlAttribute(name='abstractNumId')
     name = XmlChild(attrname='val')
 
-    levels = XmlCollection({
-        'lvl': Level,
-    })
+    levels = XmlCollection(Level)

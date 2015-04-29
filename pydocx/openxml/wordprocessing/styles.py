@@ -12,9 +12,9 @@ from pydocx.openxml.wordprocessing.style import Style
 
 
 class Styles(XmlModel):
-    styles = XmlCollection({
-        'style': Style,
-    })
+    XML_TAG = 'styles'
+
+    styles = XmlCollection(Style)
 
     def __init__(self, styles=None):
         super(Styles, self).__init__(styles=styles)

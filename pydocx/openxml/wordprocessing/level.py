@@ -11,10 +11,12 @@ from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperti
 
 
 class Level(XmlModel):
+    XML_TAG = 'lvl'
+
     level_id = XmlAttribute(name='ilvl')
     start = XmlChild(attrname='val')
     num_format = XmlChild(name='numFmt', attrname='val')
     restart = XmlChild(name='lvlRestart', attrname='val')
     paragraph_style = XmlChild(name='pStyle', attrname='val')
-    run_properties = XmlChild(type=RunProperties, name='rPr')
-    paragraph_properties = XmlChild(type=ParagraphProperties, name='pPr')
+    run_properties = XmlChild(type=RunProperties)
+    paragraph_properties = XmlChild(type=ParagraphProperties)

@@ -10,6 +10,8 @@ from pydocx.types import OnOff, Underline
 
 
 class RunProperties(XmlModel):
+    XML_TAG = 'rPr'
+
     bold = XmlChild(type=OnOff, name='b', attrname='val')
     italic = XmlChild(type=OnOff, name='i', attrname='val')
     underline = XmlChild(type=Underline, name='u', attrname='val')

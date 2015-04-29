@@ -10,8 +10,10 @@ from pydocx.openxml.wordprocessing.run_properties import RunProperties
 
 
 class Style(XmlModel):
+    XML_TAG = 'style'
+
     style_type = XmlAttribute(name='type', default='paragraph')
     style_id = XmlAttribute(name='styleId', default='')
     name = XmlChild(attrname='val', default='')
-    run_properties = XmlChild(type=RunProperties, name='rPr')
+    run_properties = XmlChild(type=RunProperties)
     parent_style = XmlChild(name='basedOn', attrname='val')

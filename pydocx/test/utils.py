@@ -282,8 +282,8 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
-        self.document = WordprocessingDocument(path=None)
-        package = self.document.package
+        document = WordprocessingDocument(path=None)
+        package = document.package
         document_part = package.create_part(
             uri='/word/document.xml',
         )
@@ -338,7 +338,8 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         # the page width that we are looking for in the test.
         self.page_width = 612
 
-        self.parse_begin(self.document.main_document_part)
+        self._document = document
+        self.parse_begin(document.main_document_part)
 
     def get_list_style(self, num_id, ilvl):
         try:

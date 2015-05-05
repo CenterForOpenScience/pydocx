@@ -201,12 +201,12 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_run_properties(self, el, parsed, stack):
         properties = RunProperties.load(el)
         parent = stack[-1]['element']
-        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+        self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     def parse_paragraph_properties(self, el, parsed, stack):
         properties = ParagraphProperties.load(el)
         parent = stack[-1]['element']
-        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+        self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     @property
     def document(self):
@@ -233,18 +233,15 @@ class PyDocXExporter(MultiMemoizeMixin):
             return self.main_document_part.numbering_definitions_part
 
     def _load(self):
-        self.document = WordprocessingDocument(path=self.path)
-        main_document_part = self.document.main_document_part
-        if main_document_part is None:
+        if self.main_document_part is None:
             raise MalformedDocxException
 
         self.numbering_root = None
-        numbering_part = main_document_part.numbering_definitions_part
-        if numbering_part:
-            self.numbering_root = numbering_part.root_element
+        if self.numbering_definitions_part:
+            self.numbering_root = self.numbering_definitions_part.root_element
 
-        self.page_width = self._get_page_width(main_document_part.root_element)
-        self.parse_begin(main_document_part)
+        self.page_width = self._get_page_width(self.main_document_part.root_element)  # noqa
+        self.parse_begin(self.main_document_part)
 
     def load_footnotes(self, main_document_part):
         footnotes = {}

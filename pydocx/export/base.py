@@ -171,6 +171,8 @@ class PyDocXExporter(MultiMemoizeMixin):
         self.footnote_ordering = []
         self.current_part = None
 
+        self._document = None
+
         self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
             'delText': self.parse_deletion,
@@ -205,6 +207,30 @@ class PyDocXExporter(MultiMemoizeMixin):
         properties = ParagraphProperties.load(el)
         parent = stack[-1]['element']
         self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+
+    @property
+    def document(self):
+        if self._document:
+            return self._document
+        return self.load_document()
+
+    def load_document(self):
+        self._document = WordprocessingDocument(path=self.path)
+        return self._document
+
+    @property
+    def main_document_part(self):
+        return self.document.main_document_part
+
+    @property
+    def style_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.style_definitions_part
+
+    @property
+    def numbering_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.numbering_definitions_part
 
     def _load(self):
         self.document = WordprocessingDocument(path=self.path)

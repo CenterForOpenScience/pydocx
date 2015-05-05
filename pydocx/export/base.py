@@ -211,12 +211,16 @@ class PyDocXExporter(MultiMemoizeMixin):
     @property
     def document(self):
         if not self._document:
-            self._document = self.load_document()
+            self.document = self.load_document()
         return self._document
 
+    @document.setter
+    def document(self, document):
+        self._document = document
+
     def load_document(self):
-        self._document = WordprocessingDocument(path=self.path)
-        return self._document
+        self.document = WordprocessingDocument(path=self.path)
+        return self.document
 
     @property
     def main_document_part(self):

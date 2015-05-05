@@ -466,9 +466,6 @@ class PyDocXExporter(MultiMemoizeMixin):
     def style_name_is_a_heading_level(self, style_name):
         return style_name and style_name.startswith('heading')
 
-    def get_heading_level_for_style_name(self, style_name):
-        return style_name
-
     def get_heading_style_name(self, el):
         properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
 

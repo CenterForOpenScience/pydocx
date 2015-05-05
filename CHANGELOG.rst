@@ -26,6 +26,11 @@
 - XmlModels now define their own tags
 - Simplified importing PyDocX
 - Header processing now occurs in the exporter rather than the pre-processor
+- PyDocXExporter.heading signature has changed from accepting
+  heading_level which was an HTML tag
+  to accepting
+  heading_style_name
+  which is the raw style name of the heading.
 
 **0.6.0**
 

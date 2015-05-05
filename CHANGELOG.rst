@@ -25,6 +25,7 @@
 - Added numbering property to the numbering definitions part.
 - XmlModels now define their own tags
 - Simplified importing PyDocX
+- Header processing now occurs in the exporter rather than the pre-processor
 
 **0.6.0**
 

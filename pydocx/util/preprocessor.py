@@ -91,7 +91,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
 
-        self._set_headers(p_elements)
         self._convert_upper_roman(body)
 
     def is_first_list_item(self, el):
@@ -261,45 +260,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         for p in paragraph_elements:
             if find_ancestor_with_tag(self, p, 'tc') is not None:
                 self.meta_data[p]['is_in_table'] = True
-
-    def _set_headers(self, elements):
-        # These are the styles for headers and what the html tag should be if
-        # we have one.
-        headers = {
-            'heading 1': 'h1',
-            'heading 2': 'h2',
-            'heading 3': 'h3',
-            'heading 4': 'h4',
-            'heading 5': 'h5',
-            'heading 6': 'h6',
-            'heading 7': 'h6',
-            'heading 8': 'h6',
-            'heading 9': 'h6',
-            'heading 10': 'h6',
-        }
-        # Remove the rPr from the styles dict since all the styling will be
-        # down with the heading.
-        for style in self.styles.styles:
-            if style.name.lower() in headers:
-                style.run_properties = None
-
-        for element in elements:
-            # This element is using the default style which is not a heading.
-            p_style = element.find('./pPr/pStyle')
-            if p_style is None:
-                continue
-            style = p_style.attrib.get('val', '')
-            style = self.styles.get_styles_by_type('paragraph').get(style)
-            if style:
-                style_name = style.name.lower()
-                # Check to see if this element is actually a header.
-                if style_name in headers:
-                    # Set all the list item variables to false.
-                    self.meta_data[element]['is_list_item'] = False
-                    self.meta_data[element]['is_first_list_item'] = False
-                    self.meta_data[element]['is_last_list_item_in_root'] = False  # noqa
-                    # Prime the heading_level
-                    self.meta_data[element]['heading_level'] = headers[style_name]  # noqa
 
     def _convert_upper_roman(self, body):
         if not self.convert_root_level_upper_roman:

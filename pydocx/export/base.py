@@ -464,17 +464,48 @@ class PyDocXExporter(MultiMemoizeMixin):
             return self.indent(text, alignment, firstLine, left, right)
         return text
 
+    def style_name_is_a_heading_level(self, style_name):
+        return style_name and style_name.startswith('heading')
+
+    def get_heading_level_for_style_name(self, style_name):
+        return style_name
+
+    def get_heading_style_name(self, el):
+        properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
+
+        parent_style = None
+        if properties:
+            parent_style = properties.parent_style
+
+        style = self.style_definitions_part.styles.get_styles_by_type('paragraph').get(parent_style)  # noqa
+        if style:
+            style_name = style.name.lower()
+            if self.style_name_is_a_heading_level(style_name):
+                return style_name
+
     def parse_p(self, el, text, stack):
         if text == '':
             return ''
+
         # TODO This is still not correct, however it fixes the bug. We need to
         # apply the classes/styles on p, td, li and h tags instead of inline,
         # but that is for another ticket.
         text = self.justification(el, text)
+
+        # TODO the pre-processor is still handling the upperRoman list to
+        # header conversion. This should be implemented in a mixin
+        heading_style_name = self.pre_processor.heading_level(el)
+        if not heading_style_name:
+            heading_style_name = self.get_heading_style_name(el)
+
+        if heading_style_name:
+            return self.heading(
+                text=text,
+                heading_style_name=heading_style_name,
+            )
+
         if self.pre_processor.is_first_list_item(el):
             return self.parse_list(el, text, stack)
-        if self.pre_processor.heading_level(el):
-            return self.parse_heading(el, text, stack)
         if self.pre_processor.is_list_item(el):
             return self.parse_list_item(el, text, stack)
         if self.pre_processor.is_in_table(el):
@@ -513,9 +544,6 @@ class PyDocXExporter(MultiMemoizeMixin):
         if next_el.tag not in paragraph_like_tags:
             return False
         return True
-
-    def parse_heading(self, el, parsed, stack):
-        return self.heading(parsed, self.pre_processor.heading_level(el))
 
     def parse_list_item(self, el, text, stack):
         # If for whatever reason we are not currently in a list, then start
@@ -802,7 +830,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return text
 
     @abstractmethod
-    def heading(self, text, heading_level):
+    def heading(self, text, heading_style_name):
         return text
 
     @abstractmethod

@@ -267,7 +267,6 @@ class PyDocXExporter(MultiMemoizeMixin):
 
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles=self.document.main_document_part.style_definitions_part.styles,  # noqa
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa

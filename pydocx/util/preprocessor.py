@@ -102,9 +102,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
             return None
         return self.meta_data[el].get('ilvl')
 
-    def heading_level(self, el):
-        return self.meta_data[el].get('heading_level')
-
     def is_in_table(self, el):
         return self.meta_data[el].get('is_in_table')
 

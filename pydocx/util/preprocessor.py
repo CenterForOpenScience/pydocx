@@ -16,7 +16,6 @@ from pydocx.util.xml import (
     filter_children,
     find_all,
     find_ancestor_with_tag,
-    get_list_style,
     has_descendant_with_tag,
 )
 

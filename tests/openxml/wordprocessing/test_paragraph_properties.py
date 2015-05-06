@@ -24,3 +24,12 @@ class ParagraphPropertiesTestCase(TestCase):
         '''
         properties = self._load_from_xml(xml)
         self.assertEqual(properties.parent_style, "foostyle")
+
+    def test_numPr_child_mapped_to_numbering_properties_attribute(self):
+        xml = '''
+            <pPr>
+                <numPr />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        assert isinstance(properties.numbering_properties, NumberingProperties)

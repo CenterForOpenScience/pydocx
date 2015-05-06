@@ -89,8 +89,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         self._set_first_list_item(num_ids, ilvls, list_elements)
         self._set_last_list_item(num_ids, list_elements)
 
-        self._convert_upper_roman(body)
-
     def is_first_list_item(self, el):
         return self.meta_data[el].get('is_first_list_item', False)
 
@@ -258,44 +256,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         for p in paragraph_elements:
             if find_ancestor_with_tag(self, p, 'tc') is not None:
                 self.meta_data[p]['is_in_table'] = True
-
-    def _convert_upper_roman(self, body):
-        if not self.convert_root_level_upper_roman:
-            return
-        first_root_list_items = [
-            # Only root level elements.
-            el for el in body.getchildren()
-            # And only first_list_items
-            if self.is_first_list_item(el)
-        ]
-        visited_num_ids = []
-        all_p_tags_in_body = find_all(body, 'p')
-        for root_list_item in first_root_list_items:
-            if self.num_id(root_list_item) in visited_num_ids:
-                continue
-            visited_num_ids.append(self.num_id(root_list_item))
-            lst_style = get_list_style(
-                self.numbering_root,
-                self.num_id(root_list_item).num_id,
-                self.ilvl(root_list_item),
-            )
-            if lst_style != 'upperRoman':
-                continue
-            ilvl = min(
-                self.ilvl(el) for el in all_p_tags_in_body
-                if self.num_id(el) == self.num_id(root_list_item)
-            )
-            root_upper_roman_list_items = [
-                el for el in all_p_tags_in_body
-                if self.num_id(el) == self.num_id(root_list_item) and
-                self.ilvl(el) == ilvl
-            ]
-            for list_item in root_upper_roman_list_items:
-                self.meta_data[list_item]['is_list_item'] = False
-                self.meta_data[list_item]['is_first_list_item'] = False
-                self.meta_data[list_item]['is_last_list_item_in_root'] = False  # noqa
-
-                self.meta_data[list_item]['heading_level'] = UPPER_ROMAN_TO_HEADING_VALUE  # noqa
 
     def _set_next(self, body):
         def _get_children_with_content(el):

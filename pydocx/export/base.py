@@ -493,11 +493,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         # but that is for another ticket.
         text = self.justification(el, text)
 
-        # TODO the pre-processor is still handling the upperRoman list to
-        # header conversion. This should be implemented in a mixin
-        heading_style_name = self.pre_processor.heading_level(el)
-        if not heading_style_name:
-            heading_style_name = self.get_heading_style_name(el)
+        heading_style_name = self.get_heading_style_name(el)
 
         if heading_style_name:
             return self.heading(

@@ -171,6 +171,8 @@ class PyDocXExporter(MultiMemoizeMixin):
         self.footnote_ordering = []
         self.current_part = None
 
+        self._document = None
+
         self.parse_tag_evaluator_mapping = {
             'br': self.parse_break_tag,
             'delText': self.parse_deletion,
@@ -199,26 +201,51 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_run_properties(self, el, parsed, stack):
         properties = RunProperties.load(el)
         parent = stack[-1]['element']
-        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+        self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     def parse_paragraph_properties(self, el, parsed, stack):
         properties = ParagraphProperties.load(el)
         parent = stack[-1]['element']
-        self.document.main_document_part.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+        self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
+
+    @property
+    def document(self):
+        if not self._document:
+            self.document = self.load_document()
+        return self._document
+
+    @document.setter
+    def document(self, document):
+        self._document = document
+
+    def load_document(self):
+        self.document = WordprocessingDocument(path=self.path)
+        return self.document
+
+    @property
+    def main_document_part(self):
+        return self.document.main_document_part
+
+    @property
+    def style_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.style_definitions_part
+
+    @property
+    def numbering_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.numbering_definitions_part
 
     def _load(self):
-        self.document = WordprocessingDocument(path=self.path)
-        main_document_part = self.document.main_document_part
-        if main_document_part is None:
+        if self.main_document_part is None:
             raise MalformedDocxException
 
         self.numbering_root = None
-        numbering_part = main_document_part.numbering_definitions_part
-        if numbering_part:
-            self.numbering_root = numbering_part.root_element
+        if self.numbering_definitions_part:
+            self.numbering_root = self.numbering_definitions_part.root_element
 
-        self.page_width = self._get_page_width(main_document_part.root_element)
-        self.parse_begin(main_document_part)
+        self.page_width = self._get_page_width(self.main_document_part.root_element)  # noqa
+        self.parse_begin(self.main_document_part)
 
     def load_footnotes(self, main_document_part):
         footnotes = {}
@@ -244,7 +271,6 @@ class PyDocXExporter(MultiMemoizeMixin):
 
         self.pre_processor = self.pre_processor_class(
             convert_root_level_upper_roman=self.convert_root_level_upper_roman,
-            styles=self.document.main_document_part.style_definitions_part.styles,  # noqa
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa
@@ -441,17 +467,45 @@ class PyDocXExporter(MultiMemoizeMixin):
             return self.indent(text, alignment, firstLine, left, right)
         return text
 
+    def style_name_is_a_heading_level(self, style_name):
+        return style_name and style_name.startswith('heading')
+
+    def get_heading_style_name(self, el):
+        properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
+
+        parent_style = None
+        if properties:
+            parent_style = properties.parent_style
+
+        style = self.style_definitions_part.styles.get_styles_by_type('paragraph').get(parent_style)  # noqa
+        if style:
+            style_name = style.name.lower()
+            if self.style_name_is_a_heading_level(style_name):
+                return style_name
+
     def parse_p(self, el, text, stack):
         if text == '':
             return ''
+
         # TODO This is still not correct, however it fixes the bug. We need to
         # apply the classes/styles on p, td, li and h tags instead of inline,
         # but that is for another ticket.
         text = self.justification(el, text)
+
+        # TODO the pre-processor is still handling the upperRoman list to
+        # header conversion. This should be implemented in a mixin
+        heading_style_name = self.pre_processor.heading_level(el)
+        if not heading_style_name:
+            heading_style_name = self.get_heading_style_name(el)
+
+        if heading_style_name:
+            return self.heading(
+                text=text,
+                heading_style_name=heading_style_name,
+            )
+
         if self.pre_processor.is_first_list_item(el):
             return self.parse_list(el, text, stack)
-        if self.pre_processor.heading_level(el):
-            return self.parse_heading(el, text, stack)
         if self.pre_processor.is_list_item(el):
             return self.parse_list_item(el, text, stack)
         if self.pre_processor.is_in_table(el):
@@ -490,9 +544,6 @@ class PyDocXExporter(MultiMemoizeMixin):
         if next_el.tag not in paragraph_like_tags:
             return False
         return True
-
-    def parse_heading(self, el, parsed, stack):
-        return self.heading(parsed, self.pre_processor.heading_level(el))
 
     def parse_list_item(self, el, text, stack):
         # If for whatever reason we are not currently in a list, then start
@@ -779,7 +830,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return text
 
     @abstractmethod
-    def heading(self, text, heading_level):
+    def heading(self, text, heading_style_name):
         return text
 
     @abstractmethod

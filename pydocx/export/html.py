@@ -22,6 +22,30 @@ from pydocx.util.xml import (
 
 class PyDocXHTMLExporter(PyDocXExporter):
 
+    def __init__(self, *args, **kwargs):
+        super(PyDocXHTMLExporter, self).__init__(*args, **kwargs)
+        self.heading_level_conversion_map = {
+            'heading 1': 'h1',
+            'heading 2': 'h2',
+            'heading 3': 'h3',
+            'heading 4': 'h4',
+            'heading 5': 'h5',
+            'heading 6': 'h6',
+        }
+        self.default_heading_level = 'h6'
+
+    def load_document(self):
+        document = super(PyDocXHTMLExporter, self).load_document()
+
+        # Disable character styling for headers
+        if self.style_definitions_part:
+            for style in self.style_definitions_part.styles.styles:
+                style_name = style.name.lower()
+                if self.style_name_is_a_heading_level(style_name):
+                    style.run_properties = None
+
+        return document
+
     @property
     def parsed(self):
         content = super(PyDocXHTMLExporter, self).parsed
@@ -148,7 +172,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
             contents=text,
         )
 
-    def heading(self, text, heading_value):
+    def heading(self, text, heading_style_name):
+        heading_value = self.heading_level_conversion_map.get(
+            heading_style_name,
+            self.default_heading_level,
+        )
         return self.make_element(
             tag=heading_value,
             contents=text,

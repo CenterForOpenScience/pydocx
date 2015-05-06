@@ -208,6 +208,7 @@ class DocXFixtureTestCaseFactory(TestCase):
             expected = BASE_HTML % expected
             result = self.convert_docx_to_html(
                 docx_path,
+                # This is set to True for list_to_header
                 convert_root_level_upper_roman=True,
             )
             self.assertHtmlEqual(result, expected)

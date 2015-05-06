@@ -282,6 +282,12 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
     def _load(self):
+        # TODO Ideally, we could just do package = self.document.package, but
+        # that would cause an empty container to be (forever) loaded, since we
+        # don't have a mechanism for re-validating parts after they have
+        # already been loaded.
+        # It's likely that we could replace this logic with a
+        # WordprocessingDocumentFactory
         self.document = WordprocessingDocument(path=None)
         package = self.document.package
         document_part = package.create_part(

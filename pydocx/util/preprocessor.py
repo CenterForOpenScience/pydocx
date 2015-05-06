@@ -57,13 +57,8 @@ class NamespacedNumId(object):
 
 
 class PydocxPreProcessor(MultiMemoizeMixin):
-    def __init__(
-            self,
-            convert_root_level_upper_roman=False,
-            numbering_root=None,
-            *args, **kwargs):
+    def __init__(self, numbering_root=None, *args, **kwargs):
         self.meta_data = defaultdict(dict)
-        self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self.numbering_root = numbering_root
 
     def perform_pre_processing(self, root, *args, **kwargs):

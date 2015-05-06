@@ -20,24 +20,14 @@ class ConvertRootUpperRomanListToHeadingExporterNoStyle(
     ConvertRootUpperRomanListToHeadingMixin,
     PyDocXHTMLExporterNoStyle,
 ):
-    def __init__(self, *args, **kwargs):
-        kwargs['convert_root_level_upper_roman'] = True
-        super(ConvertRootUpperRomanListToHeadingExporterNoStyle, self).__init__(  # noqa
-            *args,
-            **kwargs
-        )
+    pass
 
 
 class ConvertRootUpperRomanListToHeadingExporter(
     ConvertRootUpperRomanListToHeadingMixin,
     PyDocXHTMLExporter,
 ):
-    def __init__(self, *args, **kwargs):
-        kwargs['convert_root_level_upper_roman'] = True
-        super(ConvertRootUpperRomanListToHeadingExporter, self).__init__(
-            *args,
-            **kwargs
-        )
+    pass
 
 
 class ConvertRootUpperRomanListToHeadingTestCase(DocumentGeneratorTestCase):

@@ -7,7 +7,6 @@ from __future__ import (
 from collections import defaultdict
 
 from pydocx.constants import (
-    UPPER_ROMAN_TO_HEADING_VALUE,
     TAGS_HOLDING_CONTENT_TAGS,
     TAGS_CONTAINING_CONTENT,
 )

@@ -5,21 +5,41 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.openxml.packaging import NumberingDefinitionsPart
+
 
 class ConvertRootUpperRomanListToHeadingMixin(object):
+    HEADING_LEVEL = 'heading 2'
+
+    def _is_element_a_root_level_upper_roman_list_item(self, el):
+        properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
+        num_props = properties.numbering_properties
+        if not num_props:
+            return False
+
+        if not num_props.is_root_level():
+            return False
+
+        numbering = self.numbering_definitions_part.numbering
+
+        num_definition = numbering.get_numbering_definition(num_id=num_props.num_id)  # noqa
+        level = num_definition.get_level(level_id=num_props.level_id)
+
+        if not level:
+            return False
+
+        return level.num_format == NumberingDefinitionsPart.NUM_FORMAT_UPPER_ROMAN  # noqa
+
     def parse_p(self, el, text, stack):
         if text == '':
             return ''
 
-        # TODO This is being done in the base exporter already
-        justified_text = self.justification(el, text)
-
-        heading_style_name = self.pre_processor.heading_level(el)
-
-        if heading_style_name:
+        if self._is_element_a_root_level_upper_roman_list_item(el):
+            # TODO justification is being done in the base exporter
+            justified_text = self.justification(el, text)
             return self.heading(
                 text=justified_text,
-                heading_style_name=heading_style_name,
+                heading_style_name=self.HEADING_LEVEL,
             )
 
         return super(ConvertRootUpperRomanListToHeadingMixin, self).parse_p(

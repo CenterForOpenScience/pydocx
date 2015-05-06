@@ -31,6 +31,10 @@
   to accepting
   heading_style_name
   which is the raw style name of the heading.
+- The ``convert_root_level_upper_roman``
+  option has been replaced
+  with an optional mixin
+  ``pydocx.export.mixins.ConvertRootUpperRomanListToHeadingMixin``.
 
 **0.6.0**
 

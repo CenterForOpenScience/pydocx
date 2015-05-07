@@ -31,13 +31,9 @@ class NumberingDefinitionsPart(OpenXmlPart):
     @property
     def numbering(self):
         if not self._numbering:
-            self.numbering = self.load_numbering()
+            self._numbering = self.load_numbering()
         return self._numbering
 
-    @numbering.setter
-    def numbering(self, numbering):
-        self._numbering = numbering
-
     def load_numbering(self):
-        self.numbering = Numbering.load(self.root_element)
-        return self.numbering
+        self._numbering = Numbering.load(self.root_element)
+        return self._numbering

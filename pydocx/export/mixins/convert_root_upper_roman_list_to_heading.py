@@ -12,6 +12,8 @@ class ConvertRootUpperRomanListToHeadingMixin(object):
     HEADING_LEVEL = 'heading 2'
 
     def _is_element_a_root_level_upper_roman_list_item(self, el):
+        numbering = self.numbering_definitions_part.numbering
+
         properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
         num_props = properties.numbering_properties
         if not num_props:
@@ -20,11 +22,11 @@ class ConvertRootUpperRomanListToHeadingMixin(object):
         if not num_props.is_root_level():
             return False
 
-        numbering = self.numbering_definitions_part.numbering
-
         num_definition = numbering.get_numbering_definition(num_id=num_props.num_id)  # noqa
-        level = num_definition.get_level(level_id=num_props.level_id)
+        if not num_definition:
+            return False
 
+        level = num_definition.get_level(level_id=num_props.level_id)
         if not level:
             return False
 

@@ -68,9 +68,10 @@ class WordprocessingDocumentTestCase(unittest.TestCase):
             '/word/fontTable.xml',
         )
 
-    def test_nonexistent_part(self):
+    def test_nonexistent_numbering_definitions_part(self):
         part = self.document.main_document_part.numbering_definitions_part
-        self.assertEqual(part, None)
+        self.assertNotEqual(part, None)
+        self.assertEqual(part.root_element, None)
 
     def test_image_parts(self):
         image_document = WordprocessingDocument(

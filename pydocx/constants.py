@@ -4,7 +4,6 @@ from __future__ import (
     unicode_literals,
 )
 
-UPPER_ROMAN_TO_HEADING_VALUE = 'heading 2'
 TAGS_CONTAINING_CONTENT = (
     't',
     'pict',

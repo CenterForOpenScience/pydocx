@@ -22,13 +22,18 @@ class NumberingDefinitionsPart(OpenXmlPart):
         'numbering',
     ])
 
+    NUM_FORMAT_UPPER_ROMAN = 'upperRoman'
+
     def __init__(self, *args, **kwargs):
         super(NumberingDefinitionsPart, self).__init__(*args, **kwargs)
         self._numbering = None
 
     @property
     def numbering(self):
-        if self._numbering:
-            return self._numbering
+        if not self._numbering:
+            self._numbering = self.load_numbering()
+        return self._numbering
+
+    def load_numbering(self):
         self._numbering = Numbering.load(self.root_element)
         return self._numbering

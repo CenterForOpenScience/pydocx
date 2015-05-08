@@ -51,3 +51,28 @@ class AbstractNumTestCase(TestCase):
         for obj, (expected_class, level_id) in zip(num.levels, expected):
             assert isinstance(obj, expected_class), obj
             self.assertEqual(obj.level_id, level_id)
+
+    def test_get_level_for_level_that_does_not_exist_returns_None(self):
+        xml = b'''
+            <abstractNum abstractNumId="100">
+                <name val="foo" />
+                <lvl ilvl="1" />
+                <lvl ilvl="2" />
+                <lvl ilvl="3" />
+            </abstractNum>
+        '''
+        num = self._load_from_xml(xml)
+        self.assertEqual(num.get_level('4'), None)
+
+    def test_get_level_for_level_returns_the_level(self):
+        xml = b'''
+            <abstractNum abstractNumId="100">
+                <name val="foo" />
+                <lvl ilvl="1" />
+                <lvl ilvl="2" />
+                <lvl ilvl="3" />
+            </abstractNum>
+        '''
+        num = self._load_from_xml(xml)
+        level = num.get_level('3')
+        self.assertEqual(level.level_id, '3')

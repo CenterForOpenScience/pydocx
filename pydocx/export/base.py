@@ -1,3 +1,4 @@
+# coding: utf-8
 from __future__ import (
     absolute_import,
     division,
@@ -154,16 +155,11 @@ class PyDocXExporter(MultiMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
 
-    def __init__(
-        self,
-        path,
-        convert_root_level_upper_roman=False,
-    ):
+    def __init__(self, path):
         self.path = path
         self._parsed = ''
         self.block_text = ''
         self.page_width = 0
-        self.convert_root_level_upper_roman = convert_root_level_upper_roman
         self.pre_processor = None
         self.visited = set()
         self.list_depth = 0
@@ -270,7 +266,6 @@ class PyDocXExporter(MultiMemoizeMixin):
         })
 
         self.pre_processor = self.pre_processor_class(
-            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             numbering_root=self.numbering_root,
         )
         self.pre_processor.perform_pre_processing(main_document_part.root_element)  # noqa
@@ -492,11 +487,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         # but that is for another ticket.
         text = self.justification(el, text)
 
-        # TODO the pre-processor is still handling the upperRoman list to
-        # header conversion. This should be implemented in a mixin
-        heading_style_name = self.pre_processor.heading_level(el)
-        if not heading_style_name:
-            heading_style_name = self.get_heading_style_name(el)
+        heading_style_name = self.get_heading_style_name(el)
 
         if heading_style_name:
             return self.heading(

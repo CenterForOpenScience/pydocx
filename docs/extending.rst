@@ -183,13 +183,3 @@ which is called from
 Everything done during pre-processing
 is executed prior to ``parse``
 being called for the first time.
-
-Optional Arguments
-##################
-
-You can pass in
-``convert_root_level_upper_roman=True``
-to the exporter
-and it will convert
-all root level upper roman lists
-to headings.

@@ -29,13 +29,9 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'has_missing_image',
         'justification',
         'list_in_table',
-        # In the expected HTML output for "list_to_header", the list element
-        # GGG is expected to be "upperRoman". This is showing that only top
-        # level upperRomans are converted.
         'external_image',
         'export_from_googledocs',
         'has_missing_image',
-        'list_to_header',
         'lists_with_styles',
         'missing_numbering',
         'missing_style',

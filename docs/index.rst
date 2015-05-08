@@ -8,5 +8,6 @@ PyDocX
    usage
    conformance
    extending
+   export_mixins
    development
    release_notes

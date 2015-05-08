@@ -134,7 +134,6 @@ class TranslationTestCase(TestCase):
     run_expected_output = True
     parser = XMLDocx2Html
     use_base_html = True
-    convert_root_level_upper_roman = False
     styles_xml = None
 
     def get_xml(self):
@@ -159,7 +158,6 @@ class TranslationTestCase(TestCase):
         parser = self.parser
 
         html = parser(
-            convert_root_level_upper_roman=self.convert_root_level_upper_roman,
             document_xml=tree,
             relationships=self.relationships,
             numbering_dict=self.numbering_dict,
@@ -206,11 +204,7 @@ class DocXFixtureTestCaseFactory(TestCase):
                 expected = f.read()
 
             expected = BASE_HTML % expected
-            result = self.convert_docx_to_html(
-                docx_path,
-                # This is set to True for list_to_header
-                convert_root_level_upper_roman=True,
-            )
+            result = self.convert_docx_to_html(docx_path)
             self.assertHtmlEqual(result, expected)
         return run_test
 

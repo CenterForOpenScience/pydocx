@@ -844,62 +844,6 @@ class SDTTestCase(TranslationTestCase):
         return xml
 
 
-class RomanNumeralToHeadingTestCase(TranslationTestCase):
-    convert_root_level_upper_roman = True
-    numbering_dict = {
-        '1': {
-            '0': 'upperRoman',
-            '1': 'decimal',
-            '2': 'upperRoman',
-        },
-        '2': {
-            '0': 'upperRoman',
-            '1': 'decimal',
-            '2': 'upperRoman',
-        },
-        '3': {
-            '0': 'upperRoman',
-            '1': 'decimal',
-            '2': 'upperRoman',
-        },
-    }
-    expected_output = '''
-        <h2>AAA</h2>
-        <ol class="pydocx-list-style-type-decimal">
-            <li>BBB</li>
-        </ol>
-        <h2>CCC</h2>
-        <ol class="pydocx-list-style-type-decimal">
-            <li>DDD</li>
-        </ol>
-        <h2>EEE</h2>
-        <ol class="pydocx-list-style-type-decimal">
-            <li>FFF
-                <ol class="pydocx-list-style-type-upperRoman">
-                    <li>GGG</li>
-                </ol>
-            </li>
-        </ol>
-    '''
-
-    def get_xml(self):
-        li_text = [
-            ('AAA', 0, 1),
-            ('BBB', 1, 1),
-            ('CCC', 0, 2),
-            ('DDD', 1, 2),
-            ('EEE', 0, 3),
-            ('FFF', 1, 3),
-            ('GGG', 2, 3),
-        ]
-        body = b''
-        for text, ilvl, numId in li_text:
-            body += DXB.li(text=text, ilvl=ilvl, numId=numId)
-
-        xml = DXB.xml(body)
-        return xml
-
-
 class SuperAndSubScripts(TranslationTestCase):
     expected_output = '''
         <p>AAA<sup>BBB</sup></p>

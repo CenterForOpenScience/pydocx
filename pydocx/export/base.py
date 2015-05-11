@@ -8,6 +8,7 @@ from __future__ import (
 
 import logging
 import posixpath
+from collections import namedtuple
 
 from abc import abstractmethod, ABCMeta
 
@@ -38,6 +39,16 @@ from pydocx.util.xml import (
 from pydocx.openxml.packaging import WordprocessingDocument
 
 logger = logging.getLogger("NewParser")
+
+
+ParserStack = namedtuple(
+    'ParserStack',
+    [
+        'element',
+        'iterator',
+        'result',
+    ],
+)
 
 
 class IterativeXmlParser(object):
@@ -82,40 +93,40 @@ class IterativeXmlParser(object):
         # An iterator over the node's children
         current_iter = iter([el])
         while True:
-            next_item = None
+            current_item = None
             try:
-                next_item = next(current_iter)
+                current_item = next(current_iter)
             except StopIteration:
                 # If this happens it means that there are no more children in
                 # this node
                 pass
 
-            if next_item is None:
+            if current_item is None:
                 # There are no more children in this node, so we need to jump
                 # back to the parent node and render it
                 if stack:
                     parent = stack.pop()
-                    current_iter = parent['iterator']
+                    current_iter = parent.iterator
                     result = self.process_tag_completion(
                         result_stack,
-                        parent['element'],
+                        parent.element,
                         stack,
                     )
                     if result:
-                        parent['result'].append(result)
-                    result_stack = parent['result']
+                        parent.result.append(result)
+                    result_stack = parent.result
                 else:
                     # There are no more parent nodes, we're done
                     break
-            elif next_item not in self.visited:
-                self.visited.add(next_item)
-                stack.append({
-                    'element': next_item,
-                    'iterator': current_iter,
-                    'result': result_stack,
-                })
+            elif current_item not in self.visited:
+                self.visited.add(current_item)
+                stack.append(ParserStack(
+                    element=current_item,
+                    iterator=current_iter,
+                    result=result_stack,
+                ))
                 result_stack = []
-                current_iter = iter(next_item)
+                current_iter = iter(current_item)
         return result_stack
 
 
@@ -196,12 +207,12 @@ class PyDocXExporter(MultiMemoizeMixin):
 
     def parse_run_properties(self, el, parsed, stack):
         properties = RunProperties.load(el)
-        parent = stack[-1]['element']
+        parent = stack[-1].element
         self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     def parse_paragraph_properties(self, el, parsed, stack):
         properties = ParagraphProperties.load(el)
-        parent = stack[-1]['element']
+        parent = stack[-1].element
         self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     @property
@@ -279,7 +290,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return self.parser.parse(el)
 
     def _has_direct_parent(self, stack, tag_name):
-        return stack and stack[-1]['element'].tag == tag_name
+        return stack and stack[-1].element.tag == tag_name
 
     def _get_page_width(self, root_element):
         pgSzEl = root_element.find('./body/sectPr/pgSz')
@@ -291,8 +302,8 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse_footnote_ref(self, el, text, stack):
         footnote_id = None
         for item in reversed(stack):
-            if item['element'].tag == 'footnote':
-                footnote_id = item['element'].get('id')
+            if item.element.tag == 'footnote':
+                footnote_id = item.element.get('id')
                 break
         return self.footnote_ref(footnote_id)
 
@@ -784,7 +795,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         if self.underline in styles_needing_application:
             for item in stack:
                 # If we're handling a hyperlink, disable underline styling
-                if item['element'].tag == 'hyperlink':
+                if item.element.tag == 'hyperlink':
                     styles_needing_application.remove(self.underline)
                     break
 

@@ -278,6 +278,9 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse(self, el):
         return self.parser.parse(el)
 
+    def _has_direct_parent(self, stack, tag_name):
+        return stack and stack[-1]['element'].tag == tag_name
+
     def _get_page_width(self, root_element):
         pgSzEl = root_element.find('./body/sectPr/pgSz')
         if pgSzEl is not None:
@@ -336,7 +339,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         self.list_depth += 1
         parsed = self._parse_list(el, text, stack)
         self.list_depth -= 1
-        if self.pre_processor.is_in_table(el):
+        if self._has_direct_parent(stack, 'tc'):
             return self.parse_table_cell_contents(el, parsed, stack)
         return parsed
 
@@ -499,7 +502,7 @@ class PyDocXExporter(MultiMemoizeMixin):
             return self.parse_list(el, text, stack)
         if self.pre_processor.is_list_item(el):
             return self.parse_list_item(el, text, stack)
-        if self.pre_processor.is_in_table(el):
+        if self._has_direct_parent(stack, 'tc'):
             return self.parse_table_cell_contents(el, text, stack)
         parsed = text
         # No p tags in li tags

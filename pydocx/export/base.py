@@ -40,13 +40,21 @@ from pydocx.openxml.packaging import WordprocessingDocument
 
 logger = logging.getLogger("NewParser")
 
+ParserContext = namedtuple(
+    'ParserContext',
+    [
+        'element',
+        'parsed_result',
+        'stack',
+    ],
+)
 
 ParserStack = namedtuple(
     'ParserStack',
     [
         'element',
         'iterator',
-        'result',
+        'parsed_result',
     ],
 )
 
@@ -69,26 +77,23 @@ class IterativeXmlParser(object):
         if self.visited is None:
             self.visited = set()
 
-    def process_tag_completion(self, result_stack, element, stack):
+    def process_tag_completion(self, context):
         '''
         This handler is called when a level is completed, which means that all
         nested levels have also been completed.
 
-        `result_stack` is a list of nested level results
-        `element` is the level that is being completed
-        `stack` is the stack elements above this element which are still being
-        processed.
+        `context` is a ParserContext instance
         '''
-        return result_stack
+        return context.parsed_result
 
     def parse(self, el):
         # A stack to preserve a child iterator, the node and the node's output
         stack = []
 
-        # A stack to preserve the output generated at the current node level.
-        # This stack gets joined together and pushed onto the parent node's
-        # stack when a level is finished
-        result_stack = []
+        # A list to preserve the output generated at the current node level.
+        # This list gets joined together and pushed onto the parent node's
+        # parsed output list when a level is finished
+        parsed_result = []
 
         # An iterator over the node's children
         current_iter = iter([el])
@@ -107,14 +112,15 @@ class IterativeXmlParser(object):
                 if stack:
                     parent = stack.pop()
                     current_iter = parent.iterator
-                    result = self.process_tag_completion(
-                        result_stack,
-                        parent.element,
-                        stack,
+                    context = self.get_context(
+                        element=parent.element,
+                        parsed_result=parsed_result,
+                        stack=stack,
                     )
-                    if result:
-                        parent.result.append(result)
-                    result_stack = parent.result
+                    current_level_result = self.process_tag_completion(context)
+                    if current_level_result:
+                        parent.parsed_result.append(current_level_result)
+                    parsed_result = parent.parsed_result
                 else:
                     # There are no more parent nodes, we're done
                     break
@@ -123,11 +129,11 @@ class IterativeXmlParser(object):
                 stack.append(ParserStack(
                     element=current_item,
                     iterator=current_iter,
-                    result=result_stack,
+                    parsed_result=parsed_result,
                 ))
-                result_stack = []
+                parsed_result = []
                 current_iter = iter(current_item)
-        return result_stack
+        return parsed_result
 
 
 class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
@@ -154,12 +160,21 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         )
         return ''.join(result)
 
-    def process_tag_completion(self, result_stack, element, stack):
-        result = ''.join(result_stack)
-        func = self.tag_evaluator_mapping.get(element.tag)
+    def get_context(self, element, parsed_result, stack):
+        parsed_result = ''.join(parsed_result)
+        return ParserContext(
+            element=element,
+            parsed_result=parsed_result,
+            stack=stack,
+        )
+
+    def process_tag_completion(self, context):
+        func = self.tag_evaluator_mapping.get(context.element.tag)
+        next_in_line = super(TagEvaluatorStringJoinedIterativeXmlParser, self)
+        parsed_result = next_in_line.process_tag_completion(context)
         if callable(func):
-            result = func(element, result, stack)
-        return result
+            parsed_result = func(context.element, parsed_result, context.stack)
+        return parsed_result
 
 
 class PyDocXExporter(MultiMemoizeMixin):

@@ -9,20 +9,20 @@ import copy
 
 
 class FakedSuperscriptAndSubscriptExportMixin(object):
-    def parse_r_determine_applicable_styles(self, el, stack):
+    def parse_r_determine_applicable_styles(self, context):
         next_in_line = super(FakedSuperscriptAndSubscriptExportMixin, self)
-        styles = next_in_line.parse_r_determine_applicable_styles(el, stack)
+        styles = next_in_line.parse_r_determine_applicable_styles(context)
 
         properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-            el,
-            stack,
+            context.element,
+            context.stack,
         )
 
         def get_properties_with_no_font_size():
             # Only set paragraph_properties if properties has a size.
             if not properties.size:
                 return
-            copied_el = copy.deepcopy(el)
+            copied_el = copy.deepcopy(context.element)
             rpr = copied_el.find('./rPr')
             if rpr is None:
                 return
@@ -35,7 +35,7 @@ class FakedSuperscriptAndSubscriptExportMixin(object):
 
             return self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
                 copied_el,
-                stack,
+                context.stack,
             )
 
         paragraph_properties = get_properties_with_no_font_size()

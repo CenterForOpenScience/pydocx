@@ -37,6 +37,8 @@
   ``pydocx.export.mixins.ConvertRootUpperRomanListToHeadingMixin``.
 - Preprocessor no longer manages table membership.
   Instead, that is handled in the base iterative parser.
+- `ConvertRootUpperRomanListToHeadingMixin`
+  would fail for paragraphs that had no properties.
 
 **0.6.0**
 

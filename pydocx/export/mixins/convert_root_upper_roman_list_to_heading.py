@@ -15,6 +15,9 @@ class ConvertRootUpperRomanListToHeadingMixin(object):
         numbering = self.numbering_definitions_part.numbering
 
         properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
+        if not properties:
+            return False
+
         num_props = properties.numbering_properties
         if not num_props:
             return False

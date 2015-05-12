@@ -86,6 +86,13 @@ class IterativeXmlParser(object):
         '''
         return context.parsed_result
 
+    def get_context(self, element, parsed_result, stack):
+        return ParserContext(
+            element=element,
+            parsed_result=parsed_result,
+            stack=stack,
+        )
+
     def parse(self, el):
         # A stack to preserve a child iterator, the node and the node's output
         stack = []
@@ -162,7 +169,10 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
 
     def get_context(self, element, parsed_result, stack):
         parsed_result = ''.join(parsed_result)
-        return ParserContext(
+        return super(
+            TagEvaluatorStringJoinedIterativeXmlParser,
+            self,
+        ).get_context(
             element=element,
             parsed_result=parsed_result,
             stack=stack,

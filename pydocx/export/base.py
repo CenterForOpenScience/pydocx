@@ -469,7 +469,6 @@ class PyDocXExporter(MultiMemoizeMixin):
 
     def justification(self, context):
         paragraph_tag_property = context.element.find('pPr')
-        print(paragraph_tag_property)
         if paragraph_tag_property is None:
             return context.parsed_result
 
@@ -494,7 +493,6 @@ class PyDocXExporter(MultiMemoizeMixin):
             if INDENTATION_FIRST_LINE in indentation.attrib:
                 firstLine = int(indentation.attrib[INDENTATION_FIRST_LINE])
         if any([alignment, firstLine, left, right]):
-            print(alignment)
             return self.indent(
                 context.parsed_result,
                 alignment,
@@ -533,8 +531,6 @@ class PyDocXExporter(MultiMemoizeMixin):
             parsed_result=parsed_result,
             stack=context.stack,
         )
-
-        print(context.element, context.parsed_result)
 
         heading_style_name = self.get_heading_style_name(context)
 

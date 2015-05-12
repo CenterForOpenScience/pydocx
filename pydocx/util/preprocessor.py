@@ -66,7 +66,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         if self.numbering_root is not None:
             self._set_list_attributes(root)
         self._set_table_attributes(root)
-        self._set_is_in_table(root)
 
         body = root.find('./body')
         self._set_next(body)
@@ -101,9 +100,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
         if not self.is_list_item(el):
             return None
         return self.meta_data[el].get('ilvl')
-
-    def is_in_table(self, el):
-        return self.meta_data[el].get('is_in_table')
 
     def row_index(self, el):
         return self.meta_data[el].get('row_index')
@@ -241,12 +237,6 @@ class PydocxPreProcessor(MultiMemoizeMixin):
                              v_merge.attrib == {})
                     ):
                         self.meta_data[child]['vmerge_continue'] = True
-
-    def _set_is_in_table(self, el):
-        paragraph_elements = find_all(el, 'p')
-        for p in paragraph_elements:
-            if find_ancestor_with_tag(self, p, 'tc') is not None:
-                self.meta_data[p]['is_in_table'] = True
 
     def _set_next(self, body):
         def _get_children_with_content(el):

@@ -136,7 +136,7 @@ class StyleDefinitionsPart(OpenXmlPart):
         properties = {}
 
         for item in stack:
-            element = item['element']
+            element = item.element
             properties.update(self._resolve_properties_for_element(element))
 
         properties.update(self._resolve_properties_for_element(el))

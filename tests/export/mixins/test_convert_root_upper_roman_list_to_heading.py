@@ -219,6 +219,18 @@ class ConvertRootUpperRomanListToHeadingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_paragraph_without_properties_is_not_converted(self):
+        document_xml = '<p><r><t>Foo</t></r></p>'
+
+        numbering_xml = ''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>Foo</p>'
+        self.assert_document_generates_html(document, expected_html)
+
 
 class DocXFixtureTestCase(DocXFixtureTestCaseFactory):
     exporter = ConvertRootUpperRomanListToHeadingExporter

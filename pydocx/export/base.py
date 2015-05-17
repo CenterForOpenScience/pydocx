@@ -241,6 +241,25 @@ class PyDocXExporter(MultiMemoizeMixin):
             visited=self.visited,
         )
 
+    def _has_direct_parent(self, stack, tag_name):
+        return stack and stack[-1].element.tag == tag_name
+
+    def _get_page_width(self, root_element):
+        pgSzEl = root_element.find('./body/sectPr/pgSz')
+        if pgSzEl is not None:
+            # pgSz is defined in twips, convert to points
+            pgSz = int(float(pgSzEl.attrib['w']))
+            return pgSz / TWIPS_PER_POINT
+
+    def get_effective_properties(self, context):
+        return self.style_definitions_part.get_resolved_properties_for_element(
+            context.element,
+            context.stack,
+        )
+
+    def get_local_properties(self, context):
+        return self.style_definitions_part.properties_for_elements.get(context.element)  # noqa
+
     def parse_run_properties(self, context):
         properties = RunProperties.load(context.element)
         parent = context.stack[-1].element
@@ -324,16 +343,6 @@ class PyDocXExporter(MultiMemoizeMixin):
 
     def parse(self, el):
         return self.parser.parse(el)
-
-    def _has_direct_parent(self, stack, tag_name):
-        return stack and stack[-1].element.tag == tag_name
-
-    def _get_page_width(self, root_element):
-        pgSzEl = root_element.find('./body/sectPr/pgSz')
-        if pgSzEl is not None:
-            # pgSz is defined in twips, convert to points
-            pgSz = int(float(pgSzEl.attrib['w']))
-            return pgSz / TWIPS_PER_POINT
 
     def parse_footnote_ref(self, context):
         footnote_id = None
@@ -528,13 +537,15 @@ class PyDocXExporter(MultiMemoizeMixin):
         return style_name and style_name.startswith('heading')
 
     def get_heading_style_name(self, context):
-        properties = self.style_definitions_part.properties_for_elements.get(context.element)  # noqa
+        properties = self.get_local_properties(context)
 
         parent_style = None
         if properties:
             parent_style = properties.parent_style
 
-        style = self.style_definitions_part.styles.get_styles_by_type('paragraph').get(parent_style)  # noqa
+        styles = self.style_definitions_part.styles
+        paragraph_styles = styles.get_styles_by_type('paragraph')
+        style = paragraph_styles.get(parent_style)
         if style:
             style_name = style.name.lower()
             if self.style_name_is_a_heading_level(style_name):
@@ -821,10 +832,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return self.insertion(context.parsed_result, '', '')
 
     def parse_r_determine_applicable_styles(self, context):
-        properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-            context.element,
-            context.stack,
-        )
+        properties = self.get_effective_properties(context)
 
         styles_needing_application = []
 

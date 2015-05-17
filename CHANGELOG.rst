@@ -1,3 +1,11 @@
+**dev**
+
+- parser handlers have been updated
+  to accept a single ``context``
+  which is a namedtuple
+  consisting of
+  the previous arguments
+
 **0.7.0**
 
 - Added support for python 3.4

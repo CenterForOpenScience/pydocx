@@ -1,4 +1,4 @@
-**dev**
+**0.7.0**
 
 - Added support for python 3.4
 - Added support for pypy

@@ -46,6 +46,7 @@ ParserContext = namedtuple(
         'element',
         'parsed_result',
         'stack',
+        'next_element',
     ],
 )
 
@@ -55,6 +56,7 @@ ParserStack = namedtuple(
         'element',
         'iterator',
         'parsed_result',
+        'next_element',
     ],
 )
 
@@ -86,11 +88,12 @@ class IterativeXmlParser(object):
         '''
         return context.parsed_result
 
-    def get_context(self, element, parsed_result, stack):
+    def get_context(self, element, parsed_result, stack, next_element):
         return ParserContext(
             element=element,
             parsed_result=parsed_result,
             stack=stack,
+            next_element=next_element,
         )
 
     def parse(self, el):
@@ -104,14 +107,17 @@ class IterativeXmlParser(object):
 
         # An iterator over the node's children
         current_iter = iter([el])
+        next_item = None
         while True:
-            current_item = None
+            current_item = next_item
             try:
-                current_item = next(current_iter)
+                next_item = next(current_iter)
+                if next_item is not None and current_item is None:
+                    continue
             except StopIteration:
                 # If this happens it means that there are no more children in
                 # this node
-                pass
+                next_item = None
 
             if current_item is None:
                 # There are no more children in this node, so we need to jump
@@ -123,11 +129,13 @@ class IterativeXmlParser(object):
                         element=parent.element,
                         parsed_result=parsed_result,
                         stack=stack,
+                        next_element=next_item,
                     )
                     current_level_result = self.process_tag_completion(context)
                     if current_level_result:
                         parent.parsed_result.append(current_level_result)
                     parsed_result = parent.parsed_result
+                    next_item = parent.next_element
                 else:
                     # There are no more parent nodes, we're done
                     break
@@ -137,9 +145,11 @@ class IterativeXmlParser(object):
                     element=current_item,
                     iterator=current_iter,
                     parsed_result=parsed_result,
+                    next_element=next_item,
                 ))
                 parsed_result = []
                 current_iter = iter(current_item)
+                next_item = None
         return parsed_result
 
 
@@ -167,7 +177,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         )
         return ''.join(result)
 
-    def get_context(self, element, parsed_result, stack):
+    def get_context(self, element, parsed_result, stack, next_element):
         parsed_result = ''.join(parsed_result)
         return super(
             TagEvaluatorStringJoinedIterativeXmlParser,
@@ -176,6 +186,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
             element=element,
             parsed_result=parsed_result,
             stack=stack,
+            next_element=next_element,
         )
 
     def process_tag_completion(self, context):
@@ -380,6 +391,7 @@ class PyDocXExporter(MultiMemoizeMixin):
                 element=context.element,
                 parsed_result=parsed,
                 stack=context.stack,
+                next_element=context.next_element,
             )
             return self.parse_table_cell_contents(context)
         return parsed
@@ -540,6 +552,7 @@ class PyDocXExporter(MultiMemoizeMixin):
             element=context.element,
             parsed_result=parsed_result,
             stack=context.stack,
+            next_element=context.next_element,
         )
 
         heading_style_name = self.get_heading_style_name(context)

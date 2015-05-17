@@ -333,7 +333,6 @@ class PyDocXExporter(MultiMemoizeMixin):
             return ''
         colspan = self.get_colspan(el)
         rowspan = self._get_rowspan(el, v_merge)
-
         if rowspan > 1:
             rowspan = str(rowspan)
         else:
@@ -638,10 +637,10 @@ class PyDocXExporter(MultiMemoizeMixin):
                 rowspan += 1
             else:
                 break
-        
+
         if rowspan > 1:
             result = rowspan
-            
+
         return result
 
     def get_colspan(self, el):

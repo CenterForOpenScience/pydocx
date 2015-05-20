@@ -35,20 +35,16 @@ class ConvertRootUpperRomanListToHeadingMixin(object):
 
         return level.num_format == NumberingDefinitionsPart.NUM_FORMAT_UPPER_ROMAN  # noqa
 
-    def parse_p(self, el, text, stack):
-        if text == '':
+    def parse_p(self, context):
+        if context.parsed_result == '':
             return ''
 
-        if self._is_element_a_root_level_upper_roman_list_item(el):
+        if self._is_element_a_root_level_upper_roman_list_item(context.element):  # noqa
             # TODO justification is being done in the base exporter
-            justified_text = self.justification(el, text)
+            justified_text = self.justification(context)
             return self.heading(
                 text=justified_text,
                 heading_style_name=self.HEADING_LEVEL,
             )
 
-        return super(ConvertRootUpperRomanListToHeadingMixin, self).parse_p(
-            el,
-            text,
-            stack,
-        )
+        return super(ConvertRootUpperRomanListToHeadingMixin, self).parse_p(context)  # noqa

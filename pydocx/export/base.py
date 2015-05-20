@@ -40,13 +40,21 @@ from pydocx.openxml.packaging import WordprocessingDocument
 
 logger = logging.getLogger("NewParser")
 
+ParserContext = namedtuple(
+    'ParserContext',
+    [
+        'element',
+        'parsed_result',
+        'stack',
+    ],
+)
 
 ParserStack = namedtuple(
     'ParserStack',
     [
         'element',
         'iterator',
-        'result',
+        'parsed_result',
     ],
 )
 
@@ -69,26 +77,30 @@ class IterativeXmlParser(object):
         if self.visited is None:
             self.visited = set()
 
-    def process_tag_completion(self, result_stack, element, stack):
+    def process_tag_completion(self, context):
         '''
         This handler is called when a level is completed, which means that all
         nested levels have also been completed.
 
-        `result_stack` is a list of nested level results
-        `element` is the level that is being completed
-        `stack` is the stack elements above this element which are still being
-        processed.
+        `context` is a ParserContext instance
         '''
-        return result_stack
+        return context.parsed_result
+
+    def get_context(self, element, parsed_result, stack):
+        return ParserContext(
+            element=element,
+            parsed_result=parsed_result,
+            stack=stack,
+        )
 
     def parse(self, el):
         # A stack to preserve a child iterator, the node and the node's output
         stack = []
 
-        # A stack to preserve the output generated at the current node level.
-        # This stack gets joined together and pushed onto the parent node's
-        # stack when a level is finished
-        result_stack = []
+        # A list to preserve the output generated at the current node level.
+        # This list gets joined together and pushed onto the parent node's
+        # parsed output list when a level is finished
+        parsed_result = []
 
         # An iterator over the node's children
         current_iter = iter([el])
@@ -107,14 +119,15 @@ class IterativeXmlParser(object):
                 if stack:
                     parent = stack.pop()
                     current_iter = parent.iterator
-                    result = self.process_tag_completion(
-                        result_stack,
-                        parent.element,
-                        stack,
+                    context = self.get_context(
+                        element=parent.element,
+                        parsed_result=parsed_result,
+                        stack=stack,
                     )
-                    if result:
-                        parent.result.append(result)
-                    result_stack = parent.result
+                    current_level_result = self.process_tag_completion(context)
+                    if current_level_result:
+                        parent.parsed_result.append(current_level_result)
+                    parsed_result = parent.parsed_result
                 else:
                     # There are no more parent nodes, we're done
                     break
@@ -123,11 +136,11 @@ class IterativeXmlParser(object):
                 stack.append(ParserStack(
                     element=current_item,
                     iterator=current_iter,
-                    result=result_stack,
+                    parsed_result=parsed_result,
                 ))
-                result_stack = []
+                parsed_result = []
                 current_iter = iter(current_item)
-        return result_stack
+        return parsed_result
 
 
 class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
@@ -154,12 +167,24 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         )
         return ''.join(result)
 
-    def process_tag_completion(self, result_stack, element, stack):
-        result = ''.join(result_stack)
-        func = self.tag_evaluator_mapping.get(element.tag)
+    def get_context(self, element, parsed_result, stack):
+        parsed_result = ''.join(parsed_result)
+        return super(
+            TagEvaluatorStringJoinedIterativeXmlParser,
+            self,
+        ).get_context(
+            element=element,
+            parsed_result=parsed_result,
+            stack=stack,
+        )
+
+    def process_tag_completion(self, context):
+        func = self.tag_evaluator_mapping.get(context.element.tag)
+        next_in_line = super(TagEvaluatorStringJoinedIterativeXmlParser, self)
+        parsed_result = next_in_line.process_tag_completion(context)
         if callable(func):
-            result = func(element, result, stack)
-        return result
+            parsed_result = func(context)
+        return parsed_result
 
 
 class PyDocXExporter(MultiMemoizeMixin):
@@ -205,14 +230,14 @@ class PyDocXExporter(MultiMemoizeMixin):
             visited=self.visited,
         )
 
-    def parse_run_properties(self, el, parsed, stack):
-        properties = RunProperties.load(el)
-        parent = stack[-1].element
+    def parse_run_properties(self, context):
+        properties = RunProperties.load(context.element)
+        parent = context.stack[-1].element
         self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
-    def parse_paragraph_properties(self, el, parsed, stack):
-        properties = ParagraphProperties.load(el)
-        parent = stack[-1].element
+    def parse_paragraph_properties(self, context):
+        properties = ParagraphProperties.load(context.element)
+        parent = context.stack[-1].element
         self.style_definitions_part.save_properties_for_element(parent, properties)  # noqa
 
     @property
@@ -299,16 +324,16 @@ class PyDocXExporter(MultiMemoizeMixin):
             pgSz = int(float(pgSzEl.attrib['w']))
             return pgSz / TWIPS_PER_POINT
 
-    def parse_footnote_ref(self, el, text, stack):
+    def parse_footnote_ref(self, context):
         footnote_id = None
-        for item in reversed(stack):
+        for item in reversed(context.stack):
             if item.element.tag == 'footnote':
                 footnote_id = item.element.get('id')
                 break
         return self.footnote_ref(footnote_id)
 
-    def parse_footnote_reference(self, el, text, stack):
-        footnote_id = el.get('id')
+    def parse_footnote_reference(self, context):
+        footnote_id = context.element.get('id')
         if footnote_id not in self.footnote_id_to_content:
             return ''
         self.footnote_ordering.append(footnote_id)
@@ -316,30 +341,30 @@ class PyDocXExporter(MultiMemoizeMixin):
         self.footnote_index += 1
         return self.footnote_reference(footnote_id, index)
 
-    def parse_page_break(self, el, text, stack):
+    def parse_page_break(self, context):
         # TODO figure out what parsed is getting overwritten
         return self.page_break()
 
-    def parse_table(self, el, text, stack):
-        return self.table(text)
+    def parse_table(self, context):
+        return self.table(context.parsed_result)
 
-    def parse_table_row(self, el, text, stack):
-        return self.table_row(text)
+    def parse_table_row(self, context):
+        return self.table_row(context.parsed_result)
 
-    def parse_table_cell(self, el, text, stack):
-        v_merge = el.find('./tcPr/vMerge')
+    def parse_table_cell(self, context):
+        v_merge = context.element.find('./tcPr/vMerge')
         if v_merge is not None and (
                 'restart' != v_merge.get('val', '')):
             return ''
-        colspan = self.get_colspan(el)
-        rowspan = self._get_rowspan(el, v_merge)
+        colspan = self.get_colspan(context.element)
+        rowspan = self._get_rowspan(context.element, v_merge)
         if rowspan > 1:
             rowspan = str(rowspan)
         else:
             rowspan = ''
-        return self.table_cell(text, colspan, rowspan)
+        return self.table_cell(context.parsed_result, colspan, rowspan)
 
-    def parse_list(self, el, text, stack):
+    def parse_list(self, context):
         """
         All the meat of building the list is done in _parse_list, however we
         call this method for two reasons: It is the naming convention we are
@@ -348,10 +373,15 @@ class PyDocXExporter(MultiMemoizeMixin):
         this in _parse_list, however it seemed cleaner to do it here.
         """
         self.list_depth += 1
-        parsed = self._parse_list(el, text, stack)
+        parsed = self._parse_list(context)
         self.list_depth -= 1
-        if self._has_direct_parent(stack, 'tc'):
-            return self.parse_table_cell_contents(el, parsed, stack)
+        if self._has_direct_parent(context.stack, 'tc'):
+            context = ParserContext(
+                element=context.element,
+                parsed_result=parsed,
+                stack=context.stack,
+            )
+            return self.parse_table_cell_contents(context)
         return parsed
 
     def get_list_style(self, num_id, ilvl):
@@ -374,16 +404,16 @@ class PyDocXExporter(MultiMemoizeMixin):
                 list_style,
             )
 
-    def _parse_list(self, el, text, stack):
-        parsed = self.parse_list_item(el, text, stack)
-        num_id = self.pre_processor.num_id(el)
-        ilvl = self.pre_processor.ilvl(el)
+    def _parse_list(self, context):
+        parsed = self.parse_list_item(context)
+        num_id = self.pre_processor.num_id(context.element)
+        ilvl = self.pre_processor.ilvl(context.element)
         # Everything after this point assumes the first element is not also the
         # last. If the first element is also the last then early return by
         # building and returning the completed list.
-        if self.pre_processor.is_last_list_item_in_root(el):
-            return self._build_list(el, parsed)
-        next_el = self.pre_processor.next(el)
+        if self.pre_processor.is_last_list_item_in_root(context.element):
+            return self._build_list(context.element, parsed)
+        next_el = self.pre_processor.next(context.element)
 
         def is_same_list(next_el, num_id, ilvl):
             # Bail if next_el is not an element
@@ -437,7 +467,7 @@ class PyDocXExporter(MultiMemoizeMixin):
                 not self.pre_processor.is_first_list_item(last_el) and
                 self.pre_processor.is_last_list_item_in_root(last_el)
             )
-        if should_parse_last_el(next_el, el):
+        if should_parse_last_el(next_el, context.element):
             parsed += self.parse(next_el)
 
         # If the list has no content, then we don't need to worry about the
@@ -445,17 +475,17 @@ class PyDocXExporter(MultiMemoizeMixin):
         if parsed == '':
             return parsed
 
-        return self._build_list(el, parsed)
+        return self._build_list(context.element, parsed)
 
-    def justification(self, el, text):
-        paragraph_tag_property = el.find('pPr')
+    def justification(self, context):
+        paragraph_tag_property = context.element.find('pPr')
         if paragraph_tag_property is None:
-            return text
+            return context.parsed_result
 
         jc = paragraph_tag_property.find('jc')
         indentation = paragraph_tag_property.find('ind')
         if jc is None and indentation is None:
-            return text
+            return context.parsed_result
         alignment = None
         right = None
         left = None
@@ -473,14 +503,20 @@ class PyDocXExporter(MultiMemoizeMixin):
             if INDENTATION_FIRST_LINE in indentation.attrib:
                 firstLine = int(indentation.attrib[INDENTATION_FIRST_LINE])
         if any([alignment, firstLine, left, right]):
-            return self.indent(text, alignment, firstLine, left, right)
-        return text
+            return self.indent(
+                context.parsed_result,
+                alignment,
+                firstLine,
+                left,
+                right,
+            )
+        return context.parsed_result
 
     def style_name_is_a_heading_level(self, style_name):
         return style_name and style_name.startswith('heading')
 
-    def get_heading_style_name(self, el):
-        properties = self.style_definitions_part.properties_for_elements.get(el)  # noqa
+    def get_heading_style_name(self, context):
+        properties = self.style_definitions_part.properties_for_elements.get(context.element)  # noqa
 
         parent_style = None
         if properties:
@@ -492,34 +528,38 @@ class PyDocXExporter(MultiMemoizeMixin):
             if self.style_name_is_a_heading_level(style_name):
                 return style_name
 
-    def parse_p(self, el, text, stack):
-        if text == '':
+    def parse_p(self, context):
+        if context.parsed_result == '':
             return ''
 
         # TODO This is still not correct, however it fixes the bug. We need to
         # apply the classes/styles on p, td, li and h tags instead of inline,
         # but that is for another ticket.
-        text = self.justification(el, text)
+        parsed_result = self.justification(context)
+        context = ParserContext(
+            element=context.element,
+            parsed_result=parsed_result,
+            stack=context.stack,
+        )
 
-        heading_style_name = self.get_heading_style_name(el)
+        heading_style_name = self.get_heading_style_name(context)
 
         if heading_style_name:
             return self.heading(
-                text=text,
+                text=context.parsed_result,
                 heading_style_name=heading_style_name,
             )
 
-        if self.pre_processor.is_first_list_item(el):
-            return self.parse_list(el, text, stack)
-        if self.pre_processor.is_list_item(el):
-            return self.parse_list_item(el, text, stack)
-        if self._has_direct_parent(stack, 'tc'):
-            return self.parse_table_cell_contents(el, text, stack)
-        parsed = text
+        if self.pre_processor.is_first_list_item(context.element):
+            return self.parse_list(context)
+        if self.pre_processor.is_list_item(context.element):
+            return self.parse_list_item(context)
+        if self._has_direct_parent(context.stack, 'tc'):
+            return self.parse_table_cell_contents(context)
         # No p tags in li tags
         if self.list_depth == 0:
-            parsed = self.paragraph(parsed)
-        return parsed
+            return self.paragraph(context.parsed_result)
+        return context.parsed_result
 
     def _should_append_break_tag(self, next_el):
         paragraph_like_tags = [
@@ -550,13 +590,13 @@ class PyDocXExporter(MultiMemoizeMixin):
             return False
         return True
 
-    def parse_list_item(self, el, text, stack):
+    def parse_list_item(self, context):
         # If for whatever reason we are not currently in a list, then start
         # a list here. This will only happen if the num_id/ilvl combinations
         # between lists is not well formed.
-        parsed = text
+        parsed = context.parsed_result
         if self.list_depth == 0:
-            return self.parse_list(el, parsed, stack)
+            return self.parse_list(context)
 
         def _should_parse_next_as_content(el):
             """
@@ -583,6 +623,7 @@ class PyDocXExporter(MultiMemoizeMixin):
                     return True
             return False
 
+        el = context.element
         while el is not None:
             if _should_parse_next_as_content(el):
                 el = self.pre_processor.next(el)
@@ -649,17 +690,17 @@ class PyDocXExporter(MultiMemoizeMixin):
             return ''
         return grid_span.attrib['val']
 
-    def parse_table_cell_contents(self, el, text, stack):
-        parsed = text
+    def parse_table_cell_contents(self, context):
+        parsed = context.parsed_result
 
-        next_el = self.pre_processor.next(el)
+        next_el = self.pre_processor.next(context.element)
         if next_el is not None:
             if self._should_append_break_tag(next_el):
                 parsed += self.break_tag()
         return parsed
 
-    def parse_hyperlink(self, el, text, stack):
-        relationship_id = el.get('id')
+    def parse_hyperlink(self, context):
+        relationship_id = context.element.get('id')
         package_part = self.current_part.package_part
         try:
             relationship = package_part.get_relationship(
@@ -667,9 +708,9 @@ class PyDocXExporter(MultiMemoizeMixin):
             )
         except KeyError:
             # Preserve the text even if we are unable to resolve the hyperlink
-            return text
+            return context.parsed_result
         href = self.escape(relationship.target_uri)
-        return self.hyperlink(text, href)
+        return self.hyperlink(context.parsed_result, href)
 
     def _get_image_id(self, el):
         # Drawings
@@ -721,9 +762,9 @@ class PyDocXExporter(MultiMemoizeMixin):
             return x, y
         return 0, 0
 
-    def parse_image(self, el, parsed, stack):
-        x, y = self._get_image_size(el)
-        relationship_id = self._get_image_id(el)
+    def parse_image(self, context):
+        x, y = self._get_image_size(context.element)
+        relationship_id = self._get_image_id(context.element)
         try:
             image_part = self.current_part.get_part_by_id(
                 relationship_id=relationship_id,
@@ -744,34 +785,34 @@ class PyDocXExporter(MultiMemoizeMixin):
             uri_is_external=is_uri_external,
         )
 
-    def parse_t(self, el, parsed, stack):
-        if el.text is None:
+    def parse_t(self, context):
+        if context.element.text is None:
             return ''
-        return self.escape(el.text)
+        return self.escape(context.element.text)
 
-    def parse_tab(self, el, parsed, stack):
+    def parse_tab(self, context):
         return self.tab()
 
-    def parse_hyphen(self, el, parsed, stack):
+    def parse_hyphen(self, context):
         return '-'
 
-    def parse_break_tag(self, el, parsed, stack):
-        if el.attrib.get('type') == 'page':
-            return self.parse_page_break(el, parsed, stack)
+    def parse_break_tag(self, context):
+        if context.element.attrib.get('type') == 'page':
+            return self.parse_page_break(context)
         return self.break_tag()
 
-    def parse_deletion(self, el, parsed, stack):
-        if el.text is None:
+    def parse_deletion(self, context):
+        if context.element.text is None:
             return ''
-        return self.deletion(el.text, '', '')
+        return self.deletion(context.element.text, '', '')
 
-    def parse_insertion(self, el, parsed, stack):
-        return self.insertion(parsed, '', '')
+    def parse_insertion(self, context):
+        return self.insertion(context.parsed_result, '', '')
 
-    def parse_r_determine_applicable_styles(self, el, stack):
+    def parse_r_determine_applicable_styles(self, context):
         properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-            el,
-            stack,
+            context.element,
+            context.stack,
         )
 
         styles_needing_application = []
@@ -795,7 +836,7 @@ class PyDocXExporter(MultiMemoizeMixin):
                 styles_needing_application.append(handler)
 
         if self.underline in styles_needing_application:
-            for item in stack:
+            for item in context.stack:
                 # If we're handling a hyperlink, disable underline styling
                 if item.element.tag == 'hyperlink':
                     styles_needing_application.remove(self.underline)
@@ -803,20 +844,21 @@ class PyDocXExporter(MultiMemoizeMixin):
 
         return styles_needing_application
 
-    def parse_r(self, el, text, stack):
+    def parse_r(self, context):
         """
         Parse the running text.
         """
-        if not text:
+        if not context.parsed_result:
             return ''
 
-        applicable_styles = self.parse_r_determine_applicable_styles(el, stack)
+        applicable_styles = self.parse_r_determine_applicable_styles(context)
 
         # Apply all the handlers.
+        parsed_result = context.parsed_result
         for func in applicable_styles:
-            text = func(text)
+            parsed_result = func(parsed_result)
 
-        return text
+        return parsed_result
 
     @property
     def parsed(self):

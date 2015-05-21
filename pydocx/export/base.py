@@ -315,7 +315,7 @@ class PyDocXExporter(MultiMemoizeMixin):
             return footnotes
         if not main_document_part.footnotes_part:
             return footnotes
-        if not main_document_part.footnotes_part.root_element:
+        if main_document_part.footnotes_part.root_element is None:
             return footnotes
         self.current_part = main_document_part.footnotes_part
         for element in main_document_part.footnotes_part.root_element:

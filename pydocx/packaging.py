@@ -7,11 +7,7 @@ from __future__ import (
 import posixpath
 import zipfile
 from collections import defaultdict
-try:
-    from cString import StringIO
-    BytesIO = StringIO
-except ImportError:
-    from io import BytesIO
+from io import BytesIO
 
 from pydocx.exceptions import MalformedDocxException
 from pydocx.util.xml import (

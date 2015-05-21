@@ -6,11 +6,7 @@ from __future__ import (
 
 import zipfile
 from contextlib import contextmanager
-
-try:
-    from cString import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from io import BytesIO
 
 from pydocx.exceptions import MalformedDocxException
 

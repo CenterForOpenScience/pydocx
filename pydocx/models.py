@@ -54,6 +54,10 @@ class XmlChild(XmlField):
         self.attrname = attrname
 
 
+class XmlContent(XmlField):
+    pass
+
+
 class XmlCollection(XmlField):
     '''
     Represents an ordered collection of elements.
@@ -169,6 +173,9 @@ class XmlModel(object):
         attribute_fields = {}
         tag_fields = {}
         collections = {}
+
+        kwargs = {}
+
         # Enumerate the defined fields and separate them into attributes and
         # tags
         for field_name, field in cls.__dict__.items():
@@ -176,10 +183,10 @@ class XmlModel(object):
                 attribute_fields[field_name] = field
             if isinstance(field, XmlChild):
                 tag_fields[field_name] = field
+            if isinstance(field, XmlContent):
+                kwargs[field_name] = element.text
             if isinstance(field, XmlCollection):
                 collections[field_name] = field
-
-        kwargs = {}
 
         for field_name in collections.keys():
             kwargs[field_name] = []

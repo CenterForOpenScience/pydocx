@@ -689,7 +689,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         tcs = [
             tc for tc in self.memod_tree_op(
                 '_get_tcs_in_column', tbl, current_col,
-            ) if self.pre_processor.row_index(tc) >= current_row
+            ) if self.pre_processor.row_index(tc) > current_row
         ]
 
         def should_increment_rowspan(tc):
@@ -701,9 +701,11 @@ class PyDocXExporter(MultiMemoizeMixin):
             if should_increment_rowspan(tc):
                 rowspan += 1
             else:
-                rowspan = 1
-            if rowspan > 1:
-                result = rowspan
+                break
+
+        if rowspan > 1:
+            result = rowspan
+
         return result
 
     def get_colspan(self, el):

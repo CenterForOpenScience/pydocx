@@ -118,6 +118,8 @@ class XmlModel(object):
     Example:
 
     class Person(XmlModel):
+        XML_TAG = 'person'
+
         first_name = Attribute(name='first', default='')
         age = Attribute(default='')
         address = ChildTag(attrname='val')

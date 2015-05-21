@@ -245,7 +245,7 @@ class XmlModel(object):
             for tag_name in field.name_to_type_map.keys():
                 collection_member_to_collections[tag_name].append(field_name)
 
-        if element:
+        if element is not None:
             # Process each child
             for child in element:
                 tag = child.tag

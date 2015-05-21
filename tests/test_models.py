@@ -8,10 +8,11 @@ from __future__ import (
 from unittest import TestCase
 
 from pydocx.models import (
-    XmlModel,
-    XmlCollection,
-    XmlChild,
     XmlAttribute,
+    XmlChild,
+    XmlCollection,
+    XmlContent,
+    XmlModel,
     XmlRootElementMismatchException,
 )
 
@@ -45,6 +46,12 @@ class PropertiesModel(XmlModel):
     color = XmlChild(attrname='val')
 
 
+class DataModel(XmlModel):
+    XML_TAG = 'data'
+
+    content = XmlContent()
+
+
 class BucketModel(XmlModel):
     XML_TAG = 'bucket'
 
@@ -55,6 +62,8 @@ class BucketModel(XmlModel):
 
     # tag name is set by the Model itself via the XML_TAG attribute
     properties = XmlChild(type=PropertiesModel)
+
+    data = XmlChild(type=DataModel)
 
 
 class BaseTestCase(TestCase):
@@ -140,6 +149,15 @@ class XmlChildTestCase(BaseTestCase):
             raise AssertionError('Expected XmlRootElementMismatchException')
         except XmlRootElementMismatchException:
             pass
+
+    def test_content_maps_to_node_text_content(self):
+        xml = '''
+            <bucket>
+                <data>Foo</data>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.data.content, 'Foo')
 
 
 class XmlCollectionTestCase(BaseTestCase):

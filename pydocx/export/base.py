@@ -46,6 +46,7 @@ ParserContext = namedtuple(
         'element',
         'parsed_result',
         'stack',
+        'next_element',
     ],
 )
 
@@ -55,6 +56,7 @@ ParserStack = namedtuple(
         'element',
         'iterator',
         'parsed_result',
+        'next_element',
     ],
 )
 
@@ -86,11 +88,12 @@ class IterativeXmlParser(object):
         '''
         return context.parsed_result
 
-    def get_context(self, element, parsed_result, stack):
+    def get_context(self, element, parsed_result, stack, next_element):
         return ParserContext(
             element=element,
             parsed_result=parsed_result,
             stack=stack,
+            next_element=next_element,
         )
 
     def parse(self, el):
@@ -104,14 +107,17 @@ class IterativeXmlParser(object):
 
         # An iterator over the node's children
         current_iter = iter([el])
+        next_item = None
         while True:
-            current_item = None
+            current_item = next_item
             try:
-                current_item = next(current_iter)
+                next_item = next(current_iter)
+                if next_item is not None and current_item is None:
+                    continue
             except StopIteration:
                 # If this happens it means that there are no more children in
                 # this node
-                pass
+                next_item = None
 
             if current_item is None:
                 # There are no more children in this node, so we need to jump
@@ -123,11 +129,13 @@ class IterativeXmlParser(object):
                         element=parent.element,
                         parsed_result=parsed_result,
                         stack=stack,
+                        next_element=next_item,
                     )
                     current_level_result = self.process_tag_completion(context)
                     if current_level_result:
                         parent.parsed_result.append(current_level_result)
                     parsed_result = parent.parsed_result
+                    next_item = parent.next_element
                 else:
                     # There are no more parent nodes, we're done
                     break
@@ -137,9 +145,11 @@ class IterativeXmlParser(object):
                     element=current_item,
                     iterator=current_iter,
                     parsed_result=parsed_result,
+                    next_element=next_item,
                 ))
                 parsed_result = []
                 current_iter = iter(current_item)
+                next_item = None
         return parsed_result
 
 
@@ -167,7 +177,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         )
         return ''.join(result)
 
-    def get_context(self, element, parsed_result, stack):
+    def get_context(self, element, parsed_result, stack, next_element):
         parsed_result = ''.join(parsed_result)
         return super(
             TagEvaluatorStringJoinedIterativeXmlParser,
@@ -176,6 +186,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
             element=element,
             parsed_result=parsed_result,
             stack=stack,
+            next_element=next_element,
         )
 
     def process_tag_completion(self, context):
@@ -229,6 +240,25 @@ class PyDocXExporter(MultiMemoizeMixin):
             tag_evaluator_mapping=self.parse_tag_evaluator_mapping,
             visited=self.visited,
         )
+
+    def _has_direct_parent(self, stack, tag_name):
+        return stack and stack[-1].element.tag == tag_name
+
+    def _get_page_width(self, root_element):
+        pgSzEl = root_element.find('./body/sectPr/pgSz')
+        if pgSzEl is not None:
+            # pgSz is defined in twips, convert to points
+            pgSz = int(float(pgSzEl.attrib['w']))
+            return pgSz / TWIPS_PER_POINT
+
+    def get_effective_properties(self, context):
+        return self.style_definitions_part.get_resolved_properties_for_element(
+            context.element,
+            context.stack,
+        )
+
+    def get_local_properties(self, context):
+        return self.style_definitions_part.properties_for_elements.get(context.element)  # noqa
 
     def parse_run_properties(self, context):
         properties = RunProperties.load(context.element)
@@ -314,16 +344,6 @@ class PyDocXExporter(MultiMemoizeMixin):
     def parse(self, el):
         return self.parser.parse(el)
 
-    def _has_direct_parent(self, stack, tag_name):
-        return stack and stack[-1].element.tag == tag_name
-
-    def _get_page_width(self, root_element):
-        pgSzEl = root_element.find('./body/sectPr/pgSz')
-        if pgSzEl is not None:
-            # pgSz is defined in twips, convert to points
-            pgSz = int(float(pgSzEl.attrib['w']))
-            return pgSz / TWIPS_PER_POINT
-
     def parse_footnote_ref(self, context):
         footnote_id = None
         for item in reversed(context.stack):
@@ -380,6 +400,7 @@ class PyDocXExporter(MultiMemoizeMixin):
                 element=context.element,
                 parsed_result=parsed,
                 stack=context.stack,
+                next_element=context.next_element,
             )
             return self.parse_table_cell_contents(context)
         return parsed
@@ -516,13 +537,15 @@ class PyDocXExporter(MultiMemoizeMixin):
         return style_name and style_name.startswith('heading')
 
     def get_heading_style_name(self, context):
-        properties = self.style_definitions_part.properties_for_elements.get(context.element)  # noqa
+        properties = self.get_local_properties(context)
 
         parent_style = None
         if properties:
             parent_style = properties.parent_style
 
-        style = self.style_definitions_part.styles.get_styles_by_type('paragraph').get(parent_style)  # noqa
+        styles = self.style_definitions_part.styles
+        paragraph_styles = styles.get_styles_by_type('paragraph')
+        style = paragraph_styles.get(parent_style)
         if style:
             style_name = style.name.lower()
             if self.style_name_is_a_heading_level(style_name):
@@ -540,6 +563,7 @@ class PyDocXExporter(MultiMemoizeMixin):
             element=context.element,
             parsed_result=parsed_result,
             stack=context.stack,
+            next_element=context.next_element,
         )
 
         heading_style_name = self.get_heading_style_name(context)
@@ -810,10 +834,7 @@ class PyDocXExporter(MultiMemoizeMixin):
         return self.insertion(context.parsed_result, '', '')
 
     def parse_r_determine_applicable_styles(self, context):
-        properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-            context.element,
-            context.stack,
-        )
+        properties = self.get_effective_properties(context)
 
         styles_needing_application = []
 

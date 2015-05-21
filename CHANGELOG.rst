@@ -5,6 +5,7 @@
   which is a namedtuple
   consisting of
   the previous arguments
+- Added ``next_element`` to parser context
 
 **0.7.0**
 

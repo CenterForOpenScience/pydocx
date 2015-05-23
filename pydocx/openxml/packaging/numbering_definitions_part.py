@@ -6,7 +6,7 @@ from __future__ import (
 )
 
 from pydocx.openxml.packaging.open_xml_part import OpenXmlPart
-from pydocx.openxml.wordprocessing.numbering import Numbering
+from pydocx.openxml.wordprocessing import Numbering
 
 
 class NumberingDefinitionsPart(OpenXmlPart):

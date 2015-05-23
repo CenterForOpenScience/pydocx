@@ -11,6 +11,7 @@ from pydocx.openxml.packaging.image_part import ImagePart
 from pydocx.openxml.packaging.numbering_definitions_part import NumberingDefinitionsPart  # noqa
 from pydocx.openxml.packaging.open_xml_part import OpenXmlPart
 from pydocx.openxml.packaging.style_definitions_part import StyleDefinitionsPart  # noqa
+from pydocx.openxml.wordprocessing import Document
 
 
 class MainDocumentPart(OpenXmlPart):
@@ -37,6 +38,20 @@ class MainDocumentPart(OpenXmlPart):
         NumberingDefinitionsPart,
         StyleDefinitionsPart,
     ]
+
+    def __init__(self, *args, **kwargs):
+        super(MainDocumentPart, self).__init__(*args, **kwargs)
+        self._document = None
+
+    @property
+    def document(self):
+        if not self._document:
+            self._document = self.load_document()
+        return self._document
+
+    def load_document(self):
+        self._document = Document.load(self.root_element)
+        return self._document
 
     def get_relationship_lookup(self):
         package_lookup = self.open_xml_package.get_relationship_lookup()

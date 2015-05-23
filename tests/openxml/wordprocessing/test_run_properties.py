@@ -44,7 +44,7 @@ class RunPropertiesTestCase(TestCase):
             </rPr>
         '''
         properties = self._load_styles_from_xml(xml)
-        result = dict(properties)
+        result = dict(properties.fields)
         self.assertEqual(
             sorted(result.keys()),
             sorted(['bold', 'italic']),

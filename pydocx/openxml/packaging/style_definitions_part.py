@@ -95,7 +95,7 @@ class StyleDefinitionsPart(OpenXmlPart):
         run_properties = {}
         for style in reversed(style_stack):
             if style and style.run_properties:
-                run_properties.update(dict(style.run_properties))
+                run_properties.update(dict(style.run_properties.fields))
         return run_properties
 
     def _resolve_properties_for_element(self, element):
@@ -125,7 +125,7 @@ class StyleDefinitionsPart(OpenXmlPart):
                 )
                 properties_dict.update(run_properties_dict)
             if style_type == 'character':
-                properties_dict.update(dict(properties))
+                properties_dict.update(dict(properties.fields))
         return properties_dict
 
     def get_resolved_properties_for_element(self, el, stack):

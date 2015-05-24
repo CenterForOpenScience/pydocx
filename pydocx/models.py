@@ -133,11 +133,31 @@ class XmlModel(object):
     person = Person.load(xml)
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        parent=None,
+        **kwargs
+    ):
         for field_name, field in self.__class__.__dict__.items():
             if isinstance(field, XmlField):
                 value = kwargs.get(field_name, field.default)
+                if hasattr(value, 'parent'):
+                    value.parent = self
+                if isinstance(field, XmlCollection):
+                    for item in value:
+                        if hasattr(item, 'parent'):
+                            item.parent = self
                 setattr(self, field_name, value)
+
+        self._parent = parent
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        self._parent = parent
 
     def __repr__(self):
         return '{klass}({kwargs})'.format(

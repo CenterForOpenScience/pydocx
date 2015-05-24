@@ -120,9 +120,9 @@ class XmlModel(object):
     class Person(XmlModel):
         XML_TAG = 'person'
 
-        first_name = Attribute(name='first', default='')
-        age = Attribute(default='')
-        address = ChildTag(attrname='val')
+        first_name = XmlAttribute(name='first', default='')
+        age = XmlAttribute(default='')
+        address = XmlChild(attrname='val')
 
     xml = """<?xml version="1.0"?>
     <person first='Dave' age='25'>

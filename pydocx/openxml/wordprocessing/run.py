@@ -18,7 +18,3 @@ class Run(XmlModel):
     children = XmlCollection(
         Text,
     )
-
-    def __iter__(self):
-        for node in self.children:
-            yield node

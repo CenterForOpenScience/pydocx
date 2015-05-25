@@ -63,7 +63,7 @@ BASE_HTML = '''
 
 BASE_HTML_NO_STYLE = '''
 <html>
-    <head><meta charset="utf-8" /></head>
+    <head><meta charset="utf-8"/></head>
     <body>%s</body>
 </html>
 '''

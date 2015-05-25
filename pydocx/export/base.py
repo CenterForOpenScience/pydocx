@@ -23,6 +23,7 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.exceptions import MalformedDocxException
+from pydocx.openxml import wordprocessing
 from pydocx.openxml.wordprocessing import (
     ParagraphProperties,
     RunProperties,
@@ -39,6 +40,112 @@ from pydocx.util.xml import (
 from pydocx.openxml.packaging import WordprocessingDocument
 
 logger = logging.getLogger("NewParser")
+
+
+class PyDocXExporter(object):
+    def __init__(self, path):
+        self.path = path
+        self._document = None
+
+        self.node_type_to_export_func_map = {
+            wordprocessing.Document: self.export_document,
+            wordprocessing.Body: self.export_body,
+            wordprocessing.Paragraph: self.export_paragraph,
+            wordprocessing.Run: self.export_run,
+            wordprocessing.Text: self.export_text,
+        }
+
+    @property
+    def document(self):
+        if not self._document:
+            self.document = self.load_document()
+        return self._document
+
+    @document.setter
+    def document(self, document):
+        self._document = document
+
+    def load_document(self):
+        self.document = WordprocessingDocument(path=self.path)
+        return self.document
+
+    @property
+    def main_document_part(self):
+        return self.document.main_document_part
+
+    @property
+    def style_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.style_definitions_part
+
+    @property
+    def numbering_definitions_part(self):
+        if self.main_document_part:
+            return self.main_document_part.numbering_definitions_part
+
+    @property
+    def parsed(self):
+        if self.main_document_part is None:
+            raise MalformedDocxException
+        return self.export()
+
+    def export(self):
+        document = self.main_document_part.document
+        if document:
+            for result in self.export_node(document):
+                yield result
+
+    def export_node(self, node):
+        for node_type, caller in self.node_type_to_export_func_map.items():
+            if isinstance(node, node_type):
+                for result in caller(node):
+                    yield result
+                break
+
+    def export_document(self, document):
+        for result in self.export_body(document.body):
+            yield result
+
+    # TODO not a fan of this name
+    def yield_nested(self, iterable, func):
+        for item in iterable:
+            for result in func(item):
+                yield result
+
+    def export_body(self, body):
+        for result in self.yield_nested(body.children, self.export_node):
+            yield result
+
+    def export_paragraph(self, paragraph):
+        for result in self.yield_nested(paragraph.children, self.export_node):
+            yield result
+
+    def export_run(self, run):
+        results = self.yield_nested(run.children, self.export_node)
+        if run.properties:
+            results = self.export_run_apply_properties(run, results)
+        for result in results:
+            yield result
+
+    def get_run_styles_to_apply(self, run):
+        properties = run.properties
+        if properties.bold:
+            yield self.export_run_property_bold
+
+    def export_run_apply_properties(self, run, results):
+        styles_to_apply = self.get_run_styles_to_apply(run)
+        for func in styles_to_apply:
+            results = func(run, results)
+        for result in results:
+            yield result
+
+    def export_run_property_bold(self, run, results):
+        for result in results:
+            yield result
+
+    def export_text(self, text):
+        yield text.text
+
 
 ParserContext = namedtuple(
     'ParserContext',
@@ -198,7 +305,7 @@ class TagEvaluatorStringJoinedIterativeXmlParser(IterativeXmlParser):
         return parsed_result
 
 
-class PyDocXExporter(MultiMemoizeMixin):
+class OldPyDocXExporter(MultiMemoizeMixin):
     __metaclass__ = ABCMeta
     pre_processor_class = PydocxPreProcessor
 

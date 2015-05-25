@@ -18,7 +18,3 @@ class Paragraph(XmlModel):
     children = XmlCollection(
         Run,
     )
-
-    def __iter__(self):
-        for node in self.children:
-            yield node

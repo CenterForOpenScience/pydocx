@@ -82,8 +82,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def head(self):
         tag = HtmlTag('head')
-        for result in tag.apply(self.meta()):
-            yield result
+        results = chain(self.meta(), self.style())
+        return tag.apply(results)
 
     def meta(self):
         yield HtmlTag('meta', charset='utf-8', allow_self_closing=True)
@@ -98,9 +98,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_document(self, document):
         tag = HtmlTag('html')
         results = super(PyDocXHTMLExporter, self).export_document(document)
-        results = tag.apply(chain(self.head(), results))
-        for result in results:
-            yield result
+        return tag.apply(chain(self.head(), results))
 
     def export_body(self, body):
         numbering = self.numbering_definitions_part.numbering
@@ -170,10 +168,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             assert previous_num_def_paragraph
             numbering_tracking[previous_num_def_paragraph]['close'] = levels
 
-        tag = HtmlTag('body')
         results = super(PyDocXHTMLExporter, self).export_body(body)
-        for result in tag.apply(results):
-            yield result
+        tag = HtmlTag('body')
+        return tag.apply(results)
 
     def _is_ordered_list(self, numbering_level):
         return numbering_level.num_format != 'bullet'
@@ -258,10 +255,71 @@ class PyDocXHTMLExporter(PyDocXExporter):
             yield result
 
     def export_run_property_bold(self, run, results):
-        results = super(PyDocXHTMLExporter, self).export_run_property_bold(run, results)  # noqa
         tag = HtmlTag('strong')
-        for result in tag.apply(results):
-            yield result
+        return tag.apply(results)
+
+    def export_run_property_italic(self, run, results):
+        tag = HtmlTag('em')
+        return tag.apply(results)
+
+    def export_run_property_underline(self, run, results):
+        attrs = {
+            'class': 'pydocx-underline',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_caps(self, run, results):
+        attrs = {
+            'class': 'pydocx-caps',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_small_caps(self, run, results):
+        attrs = {
+            'class': 'pydocx-small-caps',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_dstrike(self, run, results):
+        attrs = {
+            'class': 'pydocx-dstrike',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_strike(self, run, results):
+        attrs = {
+            'class': 'pydocx-strike',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_vanish(self, run, results):
+        attrs = {
+            'class': 'pydocx-hidden',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_hidden(self, run, results):
+        attrs = {
+            'class': 'pydocx-hidden',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_run_property_vertical_align(self, run, results):
+        align = run.properties.vertical_align
+        if align == 'superscript':
+            tag = HtmlTag('sup')
+        elif align == 'subscript':
+            tag = HtmlTag('sub')
+        else:
+            return results
+        return tag.apply(results)
 
     def export_text(self, text):
         results = super(PyDocXHTMLExporter, self).export_text(text)

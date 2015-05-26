@@ -103,8 +103,7 @@ class PyDocXExporter(object):
                 break
 
     def export_document(self, document):
-        for result in self.export_body(document.body):
-            yield result
+        return self.export_node(document.body)
 
     # TODO not a fan of this name
     def yield_nested(self, iterable, func):
@@ -113,19 +112,20 @@ class PyDocXExporter(object):
                 yield result
 
     def export_body(self, body):
-        for result in self.yield_nested(body.children, self.export_node):
-            yield result
+        return self.yield_nested(body.children, self.export_node)
 
     def export_paragraph(self, paragraph):
-        for result in self.yield_nested(paragraph.children, self.export_node):
-            yield result
+        return self.yield_nested(paragraph.children, self.export_node)
+
+    def export_break(self, br):
+        raise StopIteration
 
     def export_run(self, run):
         results = self.yield_nested(run.children, self.export_node)
         if run.properties:
             results = self.export_run_apply_properties(run, results)
-        for result in results:
-            yield result
+        return results
+
 
     def get_run_styles_to_apply(self, run):
         properties = run.properties
@@ -136,12 +136,40 @@ class PyDocXExporter(object):
         styles_to_apply = self.get_run_styles_to_apply(run)
         for func in styles_to_apply:
             results = func(run, results)
-        for result in results:
-            yield result
+        return results
 
     def export_run_property_bold(self, run, results):
-        for result in results:
-            yield result
+        return results
+
+    def export_run_property_italic(self, run, results):
+        return results
+
+    def export_run_property_underline(self, run, results):
+        return results
+
+    def export_run_property_caps(self, run, results):
+        return results
+
+    def export_run_property_small_caps(self, run, results):
+        return results
+
+    def export_run_property_strike(self, run, results):
+        return results
+
+    def export_run_property_dstrike(self, run, results):
+        return results
+
+    def export_run_property_vanish(self, run, results):
+        return results
+
+    def export_run_property_hidden(self, run, results):
+        return results
+
+    def export_run_property_vertical_align(self, run, results):
+        return results
+
+    def export_hyperlink(self, hyperlink):
+        return self.yield_nested(hyperlink.children, self.export_node)
 
     def export_text(self, text):
         yield text.text

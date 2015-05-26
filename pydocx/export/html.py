@@ -56,7 +56,7 @@ class HtmlTag(object):
             attrs = self.get_html_attrs()
             end_bracket = '>'
             if self.allow_self_closing:
-                end_bracket = '/>'
+                end_bracket = ' />'
             if attrs:
                 return '<{tag} {attrs}{end}'.format(
                     tag=self.tag,

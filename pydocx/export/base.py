@@ -153,7 +153,7 @@ class PyDocXExporter(object):
 
     def export_run(self, run):
         results = self.yield_nested(run.children, self.export_node)
-        if run.properties:
+        if run.effective_properties:
             results = self.export_run_apply_properties(run, results)
         return results
 

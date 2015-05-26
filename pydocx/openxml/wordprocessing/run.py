@@ -79,13 +79,8 @@ class Run(XmlModel):
 
     @property
     def effective_properties(self):
-        # TODO memoization
-        properties = self.properties
-        if not properties:
-            return
-
         if not self.container.style_definitions_part:
-            return properties
+            return self.properties
 
         effective_properties = {}
         effective_properties.update(
@@ -94,5 +89,6 @@ class Run(XmlModel):
         effective_properties.update(
             self._get_inherited_properties(),
         )
-        effective_properties.update(dict(properties.fields))
+        if self.properties:
+            effective_properties.update(dict(self.properties.fields))
         return RunProperties(**effective_properties)

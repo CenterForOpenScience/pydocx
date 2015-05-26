@@ -151,6 +151,7 @@ class XmlModel(object):
                 setattr(self, field_name, value)
 
         self._parent = parent
+        self.container = kwargs.get('container')
 
     @property
     def parent(self):
@@ -183,7 +184,7 @@ class XmlModel(object):
                     yield field_name, value
 
     @classmethod
-    def load(cls, element):
+    def load(cls, element, **load_kwargs):
         xml_tag_decl = getattr(cls, 'XML_TAG', None)
         if element is not None and xml_tag_decl:
             if xml_tag_decl != element.tag:
@@ -194,11 +195,10 @@ class XmlModel(object):
                     ),
                 )
 
+        kwargs = dict(load_kwargs)
         attribute_fields = {}
         tag_fields = {}
         collections = {}
-
-        kwargs = {}
 
         # Enumerate the defined fields and separate them into attributes and
         # tags
@@ -243,7 +243,7 @@ class XmlModel(object):
                 if callable(field.type):
                     if inspect.isclass(field.type):
                         if issubclass(field.type, XmlModel):
-                            return field.type.load(value)
+                            return field.type.load(value, **load_kwargs)
                     return field.type(value)
                 return value
             return child_handler
@@ -303,7 +303,7 @@ class XmlModel(object):
                         if issubclass(handler, XmlModel):
                             handler = handler.load
                         if callable(handler):
-                            item = handler(child)
+                            item = handler(child, **load_kwargs)
                             kwargs[field_name].append(item)
 
         # Create a new instance using the values we've calculated

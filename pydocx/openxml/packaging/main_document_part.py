@@ -50,7 +50,7 @@ class MainDocumentPart(OpenXmlPart):
         return self._document
 
     def load_document(self):
-        self._document = Document.load(self.root_element)
+        self._document = Document.load(self.root_element, container=self)
         return self._document
 
     def get_relationship_lookup(self):

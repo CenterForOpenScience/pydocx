@@ -17,8 +17,8 @@ class Hyperlink(XmlModel):
         Run,
     )
 
-    def get_target_uri(self, part):
-        package_part = part.package_part
+    def get_target_uri(self):
+        package_part = self.container.package_part
         try:
             relationship = package_part.get_relationship(
                 relationship_id=self.hyperlink_id,

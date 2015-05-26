@@ -47,7 +47,6 @@ class PyDocXExporter(object):
         self.path = path
         self._document = None
         # TODO each XmlModel should be self-aware of its container
-        self.current_part = None
         self._page_width = None
 
         self.node_type_to_export_func_map = {
@@ -96,7 +95,6 @@ class PyDocXExporter(object):
         return self.export()
 
     def export(self):
-        self.current_part = self.main_document_part
         document = self.main_document_part.document
         if document:
             for result in self.export_node(document):

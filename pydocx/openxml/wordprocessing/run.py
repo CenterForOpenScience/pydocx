@@ -5,6 +5,8 @@ from __future__ import (
     unicode_literals,
 )
 
+from itertools import islice
+
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
 from pydocx.openxml.wordprocessing.br import Break
@@ -23,25 +25,74 @@ class Run(XmlModel):
         Text,
     )
 
-    @property
-    def effective_properties(self):
+    def _get_properties_inherited_from_parent_paragraph(self):
+        from pydocx.openxml.wordprocessing.paragraph import Paragraph
+
+        inherited_properties = {}
+
+        if not self.container.style_definitions_part:
+            return inherited_properties
+
+        styles_part = self.container.style_definitions_part
+
+        nearest_paragraphs = self.nearest_ancestors(Paragraph)
+        parent_paragraph = list(islice(nearest_paragraphs, 0, 1))
+        if parent_paragraph:
+            parent_paragraph = parent_paragraph[0]
+            if parent_paragraph.properties:
+                parent_style = parent_paragraph.properties.parent_style
+                style_stack = styles_part.get_style_chain_stack(
+                    'paragraph',
+                    parent_style,
+                )
+                for style in reversed(list(style_stack)):
+                    if style and style.run_properties:
+                        inherited_properties.update(
+                            dict(style.run_properties.fields),
+                        )
+        return inherited_properties
+
+    def _get_inherited_properties(self):
+        inherited_properties = {}
+
         properties = self.properties
+        if not properties:
+            return inherited_properties
+
         if not self.container.style_definitions_part:
             return properties
 
         styles_part = self.container.style_definitions_part
 
         parent_style = properties.parent_style
-        effective_properties = {}
-        # parent_paragraph = islice(run.nearest_ancestors(wordprocessing.Paragraph), 0, 1)  # noqa
-        # if parent_paragraph:
-        #    effective_properties.update(
-        #        dict(parent_paragraph[0].effective_properties.run_properties.fields),  # noqa
-        #    )
         if parent_style:
-            effective_properties = styles_part._get_merged_style_chain(
+            style_stack = styles_part.get_style_chain_stack(
                 'character',
                 parent_style,
             )
+            for style in reversed(list(style_stack)):
+                if style and style.run_properties:
+                    inherited_properties.update(
+                        dict(style.run_properties.fields),
+                    )
+        return inherited_properties
+
+    @property
+    def effective_properties(self):
+        # TODO memoization
+        properties = self.properties
+        if not properties:
+            return
+
+        if not self.container.style_definitions_part:
+            return properties
+
+        effective_properties = {}
+        effective_properties.update(
+            self._get_properties_inherited_from_parent_paragraph(),
+        )
+        effective_properties.update(
+            self._get_inherited_properties(),
+        )
         effective_properties.update(dict(properties.fields))
         return RunProperties(**effective_properties)

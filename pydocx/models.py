@@ -161,6 +161,13 @@ class XmlModel(object):
     def parent(self, parent):
         self._parent = parent
 
+    def nearest_ancestors(self, ancestor_type):
+        node = self.parent
+        while node:
+            if isinstance(node, ancestor_type):
+                yield node
+            node = node.parent
+
     def __repr__(self):
         return '{klass}({kwargs})'.format(
             klass=self.__class__.__name__,

@@ -85,6 +85,33 @@ class PyDocXHTMLExporter(PyDocXExporter):
         results = chain(self.meta(), self.style())
         return tag.apply(results)
 
+    def style(self):
+        styles = {
+            'body': {
+                'margin': '0px auto',
+            }
+        }
+
+        if self.page_width:
+            width = self.page_width / POINTS_PER_EM
+            styles['body']['width'] = '%.2fem' % width
+
+        result = []
+        for name, definition in sorted(PYDOCX_STYLES.items()):
+            result.append('.pydocx-%s {%s}' % (
+                name,
+                convert_dictionary_to_style_fragment(definition),
+            ))
+
+        for name, definition in sorted(styles.items()):
+            result.append('%s {%s}' % (
+                name,
+                convert_dictionary_to_style_fragment(definition),
+            ))
+
+        tag = HtmlTag('style')
+        return tag.apply(''.join(result))
+
     def meta(self):
         yield HtmlTag('meta', charset='utf-8', allow_self_closing=True)
 

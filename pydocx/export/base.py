@@ -146,7 +146,28 @@ class PyDocXExporter(object):
         return self.yield_nested(body.children, self.export_node)
 
     def export_paragraph(self, paragraph):
-        return self.yield_nested(paragraph.children, self.export_node)
+        results = self.yield_nested(paragraph.children, self.export_node)
+        if paragraph.effective_properties:
+            results = self.export_paragraph_apply_properties(paragraph, results)  # noqa
+        return results
+
+    def get_paragraph_styles_to_apply(self, paragraph):
+        properties = paragraph.effective_properties
+        property_rules = [
+            (properties.justification, self.export_paragraph_property_justification),  # noqa
+        ]
+        for actual_value, handler in property_rules:
+            if actual_value:
+                yield handler
+
+    def export_paragraph_property_justification(self, paragraph, results):
+        return results
+
+    def export_paragraph_apply_properties(self, paragraph, results):
+        styles_to_apply = self.get_paragraph_styles_to_apply(paragraph)
+        for func in styles_to_apply:
+            results = func(paragraph, results)
+        return results
 
     def export_break(self, br):
         raise StopIteration

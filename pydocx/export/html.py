@@ -12,6 +12,9 @@ from itertools import chain
 from collections import defaultdict
 
 from pydocx.constants import (
+    JUSTIFY_CENTER,
+    JUSTIFY_LEFT,
+    JUSTIFY_RIGHT,
     POINTS_PER_EM,
     PYDOCX_STYLES,
     TWIPS_PER_POINT,
@@ -279,6 +282,21 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         for result in self.export_numbering_level_end(paragraph):
             yield result
+
+    def export_paragraph_property_justification(self, paragraph, results):
+        # TODO these classes should be applied on the paragraph, and not as
+        # inline styles
+        alignment = paragraph.effective_properties.justification
+        if alignment in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
+            pydocx_class = 'pydocx-{alignment}'.format(
+                alignment=alignment,
+            )
+            attrs = {
+                'class': pydocx_class,
+            }
+            tag = HtmlTag('span', **attrs)
+            results = tag.apply(results, allow_empty=False)
+        return results
 
     def export_run_property_bold(self, run, results):
         tag = HtmlTag('strong')

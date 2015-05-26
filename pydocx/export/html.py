@@ -100,10 +100,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
         results = super(PyDocXHTMLExporter, self).export_document(document)
         return tag.apply(chain(self.head(), results))
 
-    def export_body(self, body):
+    def calculate_numbering_spans(self, paragraphs):
         numbering = self.numbering_definitions_part.numbering
-
-        numbering_tracking = self.numbering_tracking[body] = defaultdict(dict)
+        numbering_tracking = defaultdict(dict)
 
         previous_num_def = None
         previous_paragraph = None
@@ -118,16 +117,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # then open a new list, open a new list item
         # * If the def = prev, and level - prev,
         # then close the previous level
-        for item in body.children:
-
-            if not isinstance(item, wordprocessing.Paragraph):
-                # Only paragraphs can trigger numbering/level changes
-                continue
-
-            paragraph = item
-
+        for paragraph in paragraphs:
             num_def = paragraph.get_numbering_definition(numbering)
-
             if num_def is not None:
                 level = paragraph.get_numbering_level(numbering)
                 if num_def == previous_num_def:
@@ -137,26 +128,27 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     previous_level_id = int(previous_level.level_id)
                     if level_id == previous_level_id:
                         # The level hasn't changed
-                        numbering_tracking[paragraph]['level'] = True
+                        numbering_tracking[paragraph]['close-item'] = True
+                        numbering_tracking[paragraph]['open-item'] = True
                     elif level_id > previous_level_id:
                         # This level is greater than the previous level, so
                         # start a new level
-                        numbering_tracking[paragraph]['open'] = level
+                        numbering_tracking[paragraph]['open-level'] = level
                         levels.append(level)
                     elif level_id < previous_level_id:
                         # This level is less than the previous level, so close
                         # the previous level
-                        numbering_tracking[paragraph]['close'] = [levels.pop()]
+                        numbering_tracking[paragraph]['close-level'] = [levels.pop()]  # noqa
                 elif previous_num_def is None:
                     # There hasn't been a previous numbering definition
-                    numbering_tracking[paragraph]['open'] = level
+                    numbering_tracking[paragraph]['open-level'] = level
                     levels.append(level)
                 else:
                     # There was a previous numbering definition. Close all of
                     # the levels and open the new definition
                     assert previous_paragraph
-                    numbering_tracking[previous_paragraph]['close'] = levels
-                    numbering_tracking[paragraph]['open'] = level
+                    numbering_tracking[previous_paragraph]['close-level'] = levels  # noqa
+                    numbering_tracking[paragraph]['open-level'] = level
                     levels = [level]
 
                 previous_num_def = num_def
@@ -166,7 +158,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if previous_num_def is not None:
             # Finialize the previous numbering definition if it exists
             assert previous_num_def_paragraph
-            numbering_tracking[previous_num_def_paragraph]['close'] = levels
+            numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
+
+        return numbering_tracking
+
+    def export_body(self, body):
+        self.numbering_tracking[body] = self.calculate_numbering_spans(
+            item
+            for item in body.children
+            if isinstance(item, wordprocessing.Paragraph)
+        )
 
         results = super(PyDocXHTMLExporter, self).export_body(body)
         tag = HtmlTag('body')
@@ -196,24 +197,26 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tracking = self.get_numbering_tracking(paragraph)
 
         li = HtmlTag('li')
-        if tracking.get('level'):
+        if tracking.get('close-item'):
             yield li.close()
+
+        if tracking.get('open-item'):
             yield li
-        else:
-            level = tracking.get('open')
-            if level is not None:
-                pydocx_class = 'pydocx-list-style-type-{fmt}'.format(
-                    fmt=level.num_format,
-                )
-                attrs = {
-                    'class': pydocx_class,
-                }
-                if self._is_ordered_list(level):
-                    yield HtmlTag('ol', **attrs)
-                else:
-                    yield HtmlTag('ul', **attrs)
-                self.numbering_is_active = True
-                yield li
+
+        level = tracking.get('open-level')
+        if level is not None:
+            pydocx_class = 'pydocx-list-style-type-{fmt}'.format(
+                fmt=level.num_format,
+            )
+            attrs = {}
+            if self._is_ordered_list(level):
+                attrs['class'] = pydocx_class
+                yield HtmlTag('ol', **attrs)
+            else:
+                # unordered list implies bullet format, so don't pass the class
+                yield HtmlTag('ul', **attrs)
+            self.numbering_is_active = True
+            yield li
         raise StopIteration
 
     def export_numbering_level_end(self, paragraph):
@@ -225,9 +228,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         tracking = self.get_numbering_tracking(paragraph)
 
-        levels = tracking.get('close', [])
+        levels = tracking.get('close-level', [])
         for level in reversed(levels):
             yield HtmlTag('li', closed=True)
+            # TODO only end numbering on the final numbering paragraph
             self.numbering_is_active = False
             if self._is_ordered_list(level):
                 yield HtmlTag('ol', closed=True)

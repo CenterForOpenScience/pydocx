@@ -27,6 +27,14 @@ from pydocx.util.xml import (
 )
 
 
+def convert_measurement(self, value):
+    '''
+    >>> convert_measurement(30)
+    0.125
+    '''
+    return value / TWIPS_PER_POINT / POINTS_PER_EM
+
+
 class HtmlTag(object):
     closed_tag_format = '</{tag}>'
 
@@ -745,14 +753,6 @@ class OldPyDocXHTMLExporter(OldPyDocXExporter):
     def page_break(self):
         return '<hr />'
 
-    def _convert_measurement(self, value):
-        '''
-        >>> exporter = PyDocXHTMLExporter('foo')
-        >>> exporter._convert_measurement(30)
-        0.125
-        '''
-        return value / TWIPS_PER_POINT / POINTS_PER_EM
-
     def indent(
         self,
         text,
@@ -766,13 +766,13 @@ class OldPyDocXHTMLExporter(OldPyDocXExporter):
             attrs['class'] = 'pydocx-%s' % alignment
         style = {}
         if firstLine:
-            firstLine = self._convert_measurement(firstLine)
+            firstLine = convert_measurement(firstLine)
             style['text-indent'] = '%.2fem' % firstLine
         if left:
-            left = self._convert_measurement(left)
+            left = convert_measurement(left)
             style['margin-left'] = '%.2fem' % left
         if right:
-            right = self._convert_measurement(right)
+            right = convert_measurement(right)
             style['margin-right'] = '%.2fem' % right
         if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)

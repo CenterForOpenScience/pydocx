@@ -8,6 +8,7 @@ from __future__ import (
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
 from pydocx.openxml.wordprocessing.br import Break
+from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.text import Text
 
 
@@ -18,5 +19,6 @@ class Run(XmlModel):
 
     children = XmlCollection(
         Break,
+        NoBreakHyphen,
         Text,
     )

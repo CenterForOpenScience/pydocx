@@ -5,6 +5,7 @@ from pydocx.openxml.wordprocessing.br import Break
 from pydocx.openxml.wordprocessing.document import Document
 from pydocx.openxml.wordprocessing.level import Level
 from pydocx.openxml.wordprocessing.level_override import LevelOverride
+from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.numbering import Numbering
 from pydocx.openxml.wordprocessing.numbering_instance import NumberingInstance
 from pydocx.openxml.wordprocessing.numbering_properties import NumberingProperties  # noqa
@@ -23,6 +24,7 @@ __all__ = [
     'Document',
     'Level',
     'LevelOverride',
+    'NoBreakHyphen',
     'Numbering',
     'NumberingInstance',
     'NumberingProperties',

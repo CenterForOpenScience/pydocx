@@ -54,6 +54,7 @@ class PyDocXExporter(object):
             wordprocessing.Run: self.export_run,
             wordprocessing.Text: self.export_text,
             wordprocessing.Break: self.export_break,
+            wordprocessing.NoBreakHyphen: self.export_no_break_hyphen,
         }
 
     @property
@@ -202,6 +203,9 @@ class PyDocXExporter(object):
 
     def export_text(self, text):
         yield text.text
+
+    def export_no_break_hyphen(self, hyphen):
+        yield '-'
 
 
 ParserContext = namedtuple(

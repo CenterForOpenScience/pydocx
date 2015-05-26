@@ -157,24 +157,8 @@ class PyDocXExporter(object):
             results = self.export_run_apply_properties(run, results)
         return results
 
-    def get_effective_run_properties(self, run):
-        # TODO paragraph styles can have character styles, which also apply to
-        # runs. This isn't being done currently.
-        # But the run can't directly reference a non-character style, so the
-        # run properties of a paragraph style are applied at the paragraph
-        # level (the run's parent) and apply down to the run
-        parent_style = run.properties.parent_style
-        effective_properties = {}
-        if parent_style:
-            effective_properties = self.style_definitions_part._get_merged_style_chain(  # noqa
-                'character',
-                parent_style,
-            )
-        effective_properties.update(dict(run.properties.fields))
-        return RunProperties(**effective_properties)
-
     def get_run_styles_to_apply(self, run):
-        properties = self.get_effective_run_properties(run)
+        properties = run.effective_properties
         property_rules = [
             (properties.bold, self.export_run_property_bold),
             (properties.italic, self.export_run_property_italic),

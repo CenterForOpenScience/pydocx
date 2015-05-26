@@ -5,8 +5,9 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlCollection
+from pydocx.models import XmlModel, XmlChild, XmlCollection
 from pydocx.openxml.wordprocessing.paragraph import Paragraph
+from pydocx.openxml.wordprocessing.section_properties import SectionProperties
 
 
 class Body(XmlModel):
@@ -15,3 +16,5 @@ class Body(XmlModel):
     children = XmlCollection(
         Paragraph,
     )
+
+    final_section_properties = XmlChild(type=SectionProperties)

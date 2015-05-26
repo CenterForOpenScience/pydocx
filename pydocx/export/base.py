@@ -48,6 +48,7 @@ class PyDocXExporter(object):
         self._document = None
         # TODO each XmlModel should be self-aware of its container
         self.current_part = None
+        self._page_width = None
 
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
@@ -107,6 +108,32 @@ class PyDocXExporter(object):
                 for result in caller(node):
                     yield result
                 break
+
+    @property
+    def page_width(self):
+        if self._page_width is None:
+            page_width = self.calculate_page_width()
+            if page_width is None:
+                page_width = 0
+            self._page_width = page_width
+        return self._page_width
+
+    def calculate_page_width(self):
+        document = self.main_document_part.document
+        try:
+            page_size = document.body.final_section_properties.page_size
+        except AttributeError:
+            page_size = None
+        if page_size:
+            width = page_size.get('w')
+            if not width:
+                return
+            try:
+                width = int(float(width))
+            except ValueError:
+                return
+            # pgSz is defined in twips, convert to points
+            return width / TWIPS_PER_POINT
 
     def export_document(self, document):
         return self.export_node(document.body)

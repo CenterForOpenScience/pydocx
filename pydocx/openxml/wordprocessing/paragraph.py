@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
+from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
 
@@ -17,6 +18,7 @@ class Paragraph(XmlModel):
 
     children = XmlCollection(
         Run,
+        Hyperlink,
     )
 
     def __init__(self, **kwargs):

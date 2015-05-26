@@ -331,12 +331,24 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if result:
                 yield result
 
+    def export_hyperlink(self, hyperlink):
+        results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
+        target_uri = hyperlink.get_target_uri(self.current_part)
+        if target_uri:
+            href = self.escape(target_uri)
+            tag = HtmlTag('a', href=href)
+            results = tag.apply(results, allow_empty=False)
+        return results
+
     def export_break(self, br):
         if br.is_page_break():
             tag_name = 'hr'
         else:
             tag_name = 'br'
         yield HtmlTag(tag_name, allow_self_closing=True)
+
+    def escape(self, text):
+        return xml.sax.saxutils.quoteattr(text)[1:-1]
 
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):

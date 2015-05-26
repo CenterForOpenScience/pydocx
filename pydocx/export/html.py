@@ -331,6 +331,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if result:
                 yield result
 
+    def export_break(self, br):
+        if br.is_page_break():
+            tag_name = 'hr'
+        else:
+            tag_name = 'br'
+        yield HtmlTag(tag_name, allow_self_closing=True)
+
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):
 

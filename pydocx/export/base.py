@@ -53,6 +53,7 @@ class PyDocXExporter(object):
             wordprocessing.Paragraph: self.export_paragraph,
             wordprocessing.Run: self.export_run,
             wordprocessing.Text: self.export_text,
+            wordprocessing.Break: self.export_break,
         }
 
     @property

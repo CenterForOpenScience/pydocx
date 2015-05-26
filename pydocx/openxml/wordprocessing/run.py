@@ -7,6 +7,7 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
+from pydocx.openxml.wordprocessing.br import Break
 from pydocx.openxml.wordprocessing.text import Text
 
 
@@ -16,5 +17,6 @@ class Run(XmlModel):
     properties = XmlChild(type=RunProperties)
 
     children = XmlCollection(
+        Break,
         Text,
     )

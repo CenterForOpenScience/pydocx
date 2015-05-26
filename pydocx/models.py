@@ -5,6 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
+import inspect
 from collections import defaultdict
 
 
@@ -239,13 +240,12 @@ class XmlModel(object):
 
                 # The type may be an XmlModel, if so, construct a new instance
                 # using XmlModel.load
-                if field.type and issubclass(field.type, XmlModel):
-                    return field.type.load(value)
-                # Or it could just be something that we can call
-                elif callable(field.type):
+                if callable(field.type):
+                    if inspect.isclass(field.type):
+                        if issubclass(field.type, XmlModel):
+                            return field.type.load(value)
                     return field.type(value)
-                else:
-                    return value
+                return value
             return child_handler
 
         # Evaluate the child tags

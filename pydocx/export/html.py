@@ -365,7 +365,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
             href = self.escape(target_uri)
             tag = HtmlTag('a', href=href)
             results = tag.apply(results, allow_empty=False)
-        return results
+
+        # Prevent underline style from applying
+        old = self.export_run_property_underline
+        # TODO there's got to be a better way
+        self.export_run_property_underline = lambda run, results: results
+        for result in results:
+            yield result
+        self.export_run_property_underline = old
 
     def export_break(self, br):
         if br.is_page_break():

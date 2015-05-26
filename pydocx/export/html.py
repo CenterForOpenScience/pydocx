@@ -12,6 +12,9 @@ from itertools import chain
 from collections import defaultdict
 
 from pydocx.constants import (
+    INDENTATION_FIRST_LINE,
+    INDENTATION_LEFT,
+    INDENTATION_RIGHT,
     JUSTIFY_CENTER,
     JUSTIFY_LEFT,
     JUSTIFY_RIGHT,
@@ -27,7 +30,7 @@ from pydocx.util.xml import (
 )
 
 
-def convert_measurement(self, value):
+def convert_measurement(value):
     '''
     >>> convert_measurement(30)
     0.125
@@ -304,6 +307,48 @@ class PyDocXHTMLExporter(PyDocXExporter):
             }
             tag = HtmlTag('span', **attrs)
             results = tag.apply(results, allow_empty=False)
+        return results
+
+    def export_paragraph_property_indentation(self, paragraph, results):
+        # TODO these classes should be applied on the paragraph, and not as
+        # inline styles
+        indentation = paragraph.effective_properties.indentation
+        if indentation:
+            right = indentation.get(INDENTATION_RIGHT)
+            left = indentation.get(INDENTATION_LEFT)
+            first_line = indentation.get(INDENTATION_FIRST_LINE)
+            if right:
+                try:
+                    right = int(right)
+                except ValueError:
+                    right = None
+            if left:
+                try:
+                    left = int(left)
+                except ValueError:
+                    left = None
+            if first_line:
+                try:
+                    first_line = int(first_line)
+                except ValueError:
+                    first_line = None
+            style = {}
+            if right:
+                right = convert_measurement(right)
+                style['margin-right'] = '{0:.2f}em'.format(right)
+            if left:
+                left = convert_measurement(left)
+                style['margin-left'] = '{0:.2f}em'.format(left)
+            if first_line:
+                first_line = convert_measurement(first_line)
+                style['text-indent'] = '{0:.2f}em'.format(first_line)
+            if style:
+                attrs = {
+                    'style': convert_dictionary_to_style_fragment(style)
+                }
+                tag = HtmlTag('span', **attrs)
+            if tag:
+                results = tag.apply(results, allow_empty=False)
         return results
 
     def export_run_property_bold(self, run, results):

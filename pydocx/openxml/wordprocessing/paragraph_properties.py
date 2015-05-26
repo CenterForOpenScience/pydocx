@@ -15,3 +15,4 @@ class ParagraphProperties(XmlModel):
     parent_style = XmlChild(name='pStyle', attrname='val')
     numbering_properties = XmlChild(type=NumberingProperties)
     justification = XmlChild(name='jc', attrname='val')
+    indentation = XmlChild(name='ind', type=lambda el: dict(el.attrib))

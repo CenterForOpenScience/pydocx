@@ -126,11 +126,39 @@ class PyDocXExporter(object):
             results = self.export_run_apply_properties(run, results)
         return results
 
+    def get_effective_run_properties(self, run):
+        # TODO paragraph styles can have character styles, which also apply to
+        # runs. This isn't being done currently.
+        # But the run can't directly reference a non-character style, so the
+        # run properties of a paragraph style are applied at the paragraph
+        # level (the run's parent) and apply down to the run
+        parent_style = run.properties.parent_style
+        effective_properties = {}
+        if parent_style:
+            effective_properties = self.style_definitions_part._get_merged_style_chain(  # noqa
+                'character',
+                parent_style,
+            )
+        effective_properties.update(dict(run.properties.fields))
+        return RunProperties(**effective_properties)
 
     def get_run_styles_to_apply(self, run):
-        properties = run.properties
-        if properties.bold:
-            yield self.export_run_property_bold
+        properties = self.get_effective_run_properties(run)
+        property_rules = [
+            (properties.bold, self.export_run_property_bold),
+            (properties.italic, self.export_run_property_italic),
+            (properties.underline, self.export_run_property_underline),
+            (properties.caps, self.export_run_property_caps),
+            (properties.small_caps, self.export_run_property_small_caps),
+            (properties.strike, self.export_run_property_strike),
+            (properties.dstrike, self.export_run_property_dstrike),
+            (properties.vanish, self.export_run_property_vanish),
+            (properties.hidden, self.export_run_property_hidden),
+            (properties.vertical_align, self.export_run_property_vertical_align),  # noqa
+        ]
+        for actual_value, handler in property_rules:
+            if actual_value:
+                yield handler
 
     def export_run_apply_properties(self, run, results):
         styles_to_apply = self.get_run_styles_to_apply(run)

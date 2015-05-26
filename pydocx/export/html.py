@@ -128,7 +128,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(chain(self.head(), results))
 
     def calculate_numbering_spans(self, paragraphs):
-        numbering = self.numbering_definitions_part.numbering
         numbering_tracking = defaultdict(dict)
 
         previous_num_def = None
@@ -145,9 +144,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # * If the def = prev, and level - prev,
         # then close the previous level
         for paragraph in paragraphs:
-            num_def = paragraph.get_numbering_definition(numbering)
+            num_def = paragraph.get_numbering_definition()
             if num_def is not None:
-                level = paragraph.get_numbering_level(numbering)
+                level = paragraph.get_numbering_level()
                 if num_def == previous_num_def:
                     assert levels
                     level_id = int(level.level_id)
@@ -215,9 +214,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tracking
 
     def export_numbering_level_begin(self, paragraph):
-        numbering = self.numbering_definitions_part.numbering
-
-        num_def = paragraph.get_numbering_definition(numbering)
+        num_def = paragraph.get_numbering_definition()
         if not num_def:
             raise StopIteration
 
@@ -247,9 +244,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         raise StopIteration
 
     def export_numbering_level_end(self, paragraph):
-        numbering = self.numbering_definitions_part.numbering
-
-        num_def = paragraph.get_numbering_definition(numbering)
+        num_def = paragraph.get_numbering_definition()
         if not num_def:
             raise StopIteration
 

@@ -22,38 +22,40 @@ class Paragraph(XmlModel):
     )
 
     def __init__(self, **kwargs):
-        self._effective_properties = None
         super(Paragraph, self).__init__(**kwargs)
+        self._effective_properties = None
 
-    def get_effective_properties(self, numbering):
+    @property
+    def effective_properties(self):
         if not self._effective_properties:
-            self._effective_properties = self.properties
+            properties = self.properties
+            self._effective_properties = properties
         return self._effective_properties
 
-    def get_numbering_definition(self, numbering):
+    def get_numbering_definition(self):
         # TODO add memoization
-        properties = self.get_effective_properties(numbering)
-        if not properties:
+        if not self.container.numbering_definitions_part:
             return
-        numbering_properties = properties.numbering_properties
+        numbering = self.container.numbering_definitions_part.numbering
+        if not self.effective_properties:
+            return
+        numbering_properties = self.effective_properties.numbering_properties
         if not numbering_properties:
             return
-
         return numbering.get_numbering_definition(
             num_id=numbering_properties.num_id,
         )
 
-    def get_numbering_level(self, numbering):
+    def get_numbering_level(self):
         # TODO add memoization
-        properties = self.get_effective_properties(numbering)
-        if not properties:
+        numbering_definition = self.get_numbering_definition()
+        if not numbering_definition:
             return
-        numbering_properties = properties.numbering_properties
+        if not self.effective_properties:
+            return
+        numbering_properties = self.effective_properties.numbering_properties
         if not numbering_properties:
             return
-
-        numbering_definition = self.get_numbering_definition(numbering)
-        if numbering_definition:
-            return numbering_definition.get_level(
-                level_id=numbering_properties.level_id,
-            )
+        return numbering_definition.get_level(
+            level_id=numbering_properties.level_id,
+        )

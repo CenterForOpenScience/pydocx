@@ -7,6 +7,7 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlChild, XmlCollection
 from pydocx.openxml.wordprocessing.paragraph import Paragraph
+from pydocx.openxml.wordprocessing.table import Table
 from pydocx.openxml.wordprocessing.section_properties import SectionProperties
 
 
@@ -15,6 +16,7 @@ class Body(XmlModel):
 
     children = XmlCollection(
         Paragraph,
+        Table,
     )
 
     final_section_properties = XmlChild(type=SectionProperties)

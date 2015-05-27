@@ -16,6 +16,9 @@ from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.run_properties import RunProperties  # noqa
 from pydocx.openxml.wordprocessing.style import Style
 from pydocx.openxml.wordprocessing.styles import Styles
+from pydocx.openxml.wordprocessing.table import Table
+from pydocx.openxml.wordprocessing.table_row import TableRow
+from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.text import Text
 
 __all__ = [
@@ -36,5 +39,8 @@ __all__ = [
     'RunProperties',
     'Style',
     'Styles',
+    'Table',
+    'TableRow',
+    'TableCell',
     'Text',
 ]

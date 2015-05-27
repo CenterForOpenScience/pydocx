@@ -450,6 +450,27 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
+    def export_table(self, table):
+        results = super(PyDocXHTMLExporter, self).export_table(table)
+        tag = HtmlTag('table', border='1')
+        return tag.apply(results)
+
+    def export_table_row(self, table_row):
+        results = super(PyDocXHTMLExporter, self).export_table_row(table_row)
+        tag = HtmlTag('tr')
+        return tag.apply(results)
+
+    def export_table_cell(self, table_cell):
+        self.numbering_tracking[table_cell] = self.calculate_numbering_spans(
+            item
+            for item in table_cell.children
+            if isinstance(item, wordprocessing.Paragraph)
+        )
+
+        results = super(PyDocXHTMLExporter, self).export_table_cell(table_cell)
+        tag = HtmlTag('td')
+        return tag.apply(results)
+
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):
 

@@ -58,6 +58,9 @@ class PyDocXExporter(object):
             wordprocessing.Hyperlink: self.export_hyperlink,
             wordprocessing.Break: self.export_break,
             wordprocessing.NoBreakHyphen: self.export_no_break_hyphen,
+            wordprocessing.Table: self.export_table,
+            wordprocessing.TableRow: self.export_table_row,
+            wordprocessing.TableCell: self.export_table_cell,
         }
 
     @property
@@ -244,6 +247,15 @@ class PyDocXExporter(object):
 
     def export_no_break_hyphen(self, hyphen):
         yield '-'
+
+    def export_table(self, table):
+        return self.yield_nested(table.rows, self.export_node)
+
+    def export_table_row(self, table_row):
+        return self.yield_nested(table_row.cells, self.export_node)
+
+    def export_table_cell(self, table_cell):
+        return self.yield_nested(table_cell.children, self.export_node)
 
 
 ParserContext = namedtuple(

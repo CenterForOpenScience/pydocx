@@ -8,7 +8,7 @@ from __future__ import (
 
 import base64
 import xml.sax.saxutils
-from itertools import chain
+from itertools import chain, islice
 from collections import defaultdict
 
 from pydocx.constants import (
@@ -93,6 +93,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         super(PyDocXHTMLExporter, self).__init__(*args, **kwargs)
         self.numbering_tracking = {}
         self.numbering_is_active = False
+        self.table_cell_rowspan_tracking = {}
+        self.in_table_cell = False
 
     def head(self):
         tag = HtmlTag('head')
@@ -276,8 +278,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
         raise StopIteration
 
     def get_paragraph_tag(self, paragraph):
-        if not self.numbering_is_active:
-            return HtmlTag('p')
+        if self.numbering_is_active:
+            return
+        if self.in_table_cell:
+            return
+        return HtmlTag('p')
 
     def export_paragraph(self, paragraph):
         for result in self.export_numbering_level_begin(paragraph):
@@ -450,7 +455,36 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
+    def calculate_table_cell_spans(self, table):
+        if not table.rows:
+            return
+
+        active_rowspan_cells_by_column = {}
+        cell_to_rowspan_count = defaultdict(int)
+        for row in table.rows:
+            for column_index, cell in enumerate(row.cells):
+                properties = cell.properties
+                # If this element is omitted, then this cell shall not be
+                # part of any vertically merged grouping of cells, and any
+                # vertically merged group of preceding cells shall be
+                # closed.
+                if properties is None or properties.vertical_merge is None:
+                    # if properties are missing, this is the same as the
+                    # the element being omitted
+                    active_rowspan_cells_by_column[column_index] = None
+                elif properties:
+                    vertical_merge = properties.vertical_merge.get('val', 'continue')  # noqa
+                    if vertical_merge == 'restart':
+                        active_rowspan_cells_by_column[column_index] = cell
+                        cell_to_rowspan_count[cell] += 1
+                    elif vertical_merge == 'continue':
+                        active_rowspan_for_column = active_rowspan_cells_by_column.get(column_index)  # noqa
+                        if active_rowspan_for_column:
+                            cell_to_rowspan_count[active_rowspan_for_column] += 1  # noqa
+        return dict(cell_to_rowspan_count)
+
     def export_table(self, table):
+        self.table_cell_rowspan_tracking[table] = self.calculate_table_cell_spans(table)  # noqa
         results = super(PyDocXHTMLExporter, self).export_table(table)
         tag = HtmlTag('table', border='1')
         return tag.apply(results)
@@ -467,9 +501,45 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if isinstance(item, wordprocessing.Paragraph)
         )
 
-        results = super(PyDocXHTMLExporter, self).export_table_cell(table_cell)
-        tag = HtmlTag('td')
-        return tag.apply(results)
+        start_new_tag = False
+        if table_cell.properties:
+            if table_cell.properties.should_close_previous_vertical_merge():
+                start_new_tag = True
+        else:
+            # This means the properties element is missing, which means the
+            # merge element is missing
+            start_new_tag = True
+
+        tag = None
+        if start_new_tag:
+            parent_table = list(islice(table_cell.nearest_ancestors(wordprocessing.Table), 0, 1))[0]  # noqa
+            rowspan_counts = self.table_cell_rowspan_tracking[parent_table]
+            count = rowspan_counts.get(table_cell)
+            attrs = {}
+            if count and count > 1:
+                attrs['rowspan'] = count
+            tag = HtmlTag('td', **attrs)
+
+        # For multiple sequential paragraphs, insert line breaks in between
+        # them
+        line_break = wordprocessing.Break()
+        if tag:
+            yield tag
+
+        self.in_table_cell = True
+        previous = None
+        for item in table_cell.children:
+            if isinstance(previous, wordprocessing.Paragraph):
+                if isinstance(item, wordprocessing.Paragraph):
+                    for result in self.export_node(line_break):
+                        yield result
+            for result in self.export_node(item):
+                yield result
+            previous = item
+
+        self.in_table_cell = False
+        if tag:
+            yield tag.close()
 
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):

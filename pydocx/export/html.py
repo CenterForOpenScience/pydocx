@@ -92,7 +92,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def __init__(self, *args, **kwargs):
         super(PyDocXHTMLExporter, self).__init__(*args, **kwargs)
         self.numbering_tracking = {}
-        self.numbering_is_active = False
         self.table_cell_rowspan_tracking = {}
         self.in_table_cell = False
 
@@ -150,6 +149,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         previous_num_def_paragraph = None
         levels = []
 
+        possible_numbering_paragraphs = []
+
         # * If this is the final list item for the def, close the def
         # * If this is the first list item for the def, open the def
         # * If the def = prev and level = prev,
@@ -160,9 +161,20 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # then close the previous level
         for paragraph in paragraphs:
             num_def = paragraph.get_numbering_definition()
+
+            if previous_num_def is not None:
+                # There is a previous numbering def, so it could be part of
+                # that previous list. We won't know until we process all of the
+                # paragraphs.
+                possible_numbering_paragraphs.append(paragraph)
+
             if num_def is None:
-                # TODO
                 continue
+
+            # Because this paragraph has a numbering def, it's active. This
+            # controls whether or not a p tag will be generated
+            numbering_tracking[paragraph]['active'] = True
+
             level = paragraph.get_numbering_level()
             # TODO what if level is None?
             if num_def == previous_num_def:
@@ -180,7 +192,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     numbering_tracking[paragraph]['open-level'] = level
                     levels.append(level)
                 elif level_id < previous_level_id:
-                    # import ipdb; ipdb.set_trace()
                     numbering_tracking[paragraph]['close-item'] = True
                     numbering_tracking[paragraph]['open-item'] = True
                     # This level is less than the previous level
@@ -214,6 +225,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
             # Finalize the previous numbering definition if it exists
             assert previous_num_def_paragraph
             numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
+
+        # Declare all of the paragraphs up to and including the previous num
+        # def paragraph. Any paragraph that follows the last num def paragraph
+        # is not an active numbering paragraph
+        for paragraph in possible_numbering_paragraphs:
+            numbering_tracking[paragraph]['active'] = True
+            if paragraph == previous_num_def_paragraph:
+                break
 
         return numbering_tracking
 
@@ -268,7 +287,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
             else:
                 # unordered list implies bullet format, so don't pass the class
                 yield HtmlTag('ul', **attrs)
-            self.numbering_is_active = True
             yield li
         raise StopIteration
 
@@ -283,7 +301,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         for level in reversed(levels):
             yield HtmlTag('li', closed=True)
             # TODO only end numbering on the final numbering paragraph
-            self.numbering_is_active = False
             if self._is_ordered_list(level):
                 yield HtmlTag('ol', closed=True)
             else:
@@ -291,7 +308,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         raise StopIteration
 
     def get_paragraph_tag(self, paragraph):
-        if self.numbering_is_active:
+        tracking = self.get_numbering_tracking(paragraph)
+        if tracking.get('active'):
             return
         if self.in_table_cell:
             return

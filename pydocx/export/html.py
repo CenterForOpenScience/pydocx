@@ -147,7 +147,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         numbering_tracking = defaultdict(dict)
 
         previous_num_def = None
-        previous_paragraph = None
         previous_num_def_paragraph = None
         levels = []
 
@@ -161,44 +160,58 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # then close the previous level
         for paragraph in paragraphs:
             num_def = paragraph.get_numbering_definition()
-            if num_def is not None:
-                level = paragraph.get_numbering_level()
-                if num_def == previous_num_def:
-                    assert levels
-                    level_id = int(level.level_id)
-                    previous_level = levels[-1]
-                    previous_level_id = int(previous_level.level_id)
-                    if level_id == previous_level_id:
-                        # The level hasn't changed
-                        numbering_tracking[paragraph]['close-item'] = True
-                        numbering_tracking[paragraph]['open-item'] = True
-                    elif level_id > previous_level_id:
-                        # This level is greater than the previous level, so
-                        # start a new level
-                        numbering_tracking[paragraph]['open-level'] = level
-                        levels.append(level)
-                    elif level_id < previous_level_id:
-                        # This level is less than the previous level, so close
-                        # the previous level
-                        numbering_tracking[paragraph]['close-level'] = [levels.pop()]  # noqa
-                elif previous_num_def is None:
-                    # There hasn't been a previous numbering definition
+            if num_def is None:
+                # TODO
+                continue
+            level = paragraph.get_numbering_level()
+            # TODO what if level is None?
+            if num_def == previous_num_def:
+                assert levels
+                level_id = int(level.level_id)
+                previous_level = levels[-1]
+                previous_level_id = int(previous_level.level_id)
+                if level_id == previous_level_id:
+                    # The level hasn't changed
+                    numbering_tracking[paragraph]['close-item'] = True
+                    numbering_tracking[paragraph]['open-item'] = True
+                elif level_id > previous_level_id:
+                    # This level is greater than the previous level, so
+                    # start a new level
                     numbering_tracking[paragraph]['open-level'] = level
                     levels.append(level)
-                else:
-                    # There was a previous numbering definition. Close all of
-                    # the levels and open the new definition
-                    assert previous_paragraph
-                    numbering_tracking[previous_paragraph]['close-level'] = levels  # noqa
-                    numbering_tracking[paragraph]['open-level'] = level
-                    levels = [level]
+                elif level_id < previous_level_id:
+                    # import ipdb; ipdb.set_trace()
+                    numbering_tracking[paragraph]['close-item'] = True
+                    numbering_tracking[paragraph]['open-item'] = True
+                    # This level is less than the previous level
+                    # Close the previous levels until we match up with this
+                    # level
+                    popped_levels = []
+                    while levels:
+                        if levels[-1] == level:
+                            break
+                        popped_level = levels.pop()
+                        popped_levels.insert(0, popped_level)
+                    # TODO what if previous_num_def_paragraph is None?
+                    assert previous_num_def_paragraph
+                    numbering_tracking[previous_num_def_paragraph]['close-level'] = popped_levels  # noqa
+            elif previous_num_def is None:
+                # There hasn't been a previous numbering definition
+                numbering_tracking[paragraph]['open-level'] = level
+                levels.append(level)
+            else:
+                # The num def has changed
+                # Close all of the levels and open the new definition
+                assert previous_num_def_paragraph
+                numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
+                numbering_tracking[paragraph]['open-level'] = level
+                levels = [level]
 
-                previous_num_def = num_def
-                previous_num_def_paragraph = paragraph
-            previous_paragraph = paragraph
+            previous_num_def = num_def
+            previous_num_def_paragraph = paragraph
 
         if previous_num_def is not None:
-            # Finialize the previous numbering definition if it exists
+            # Finalize the previous numbering definition if it exists
             assert previous_num_def_paragraph
             numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
 

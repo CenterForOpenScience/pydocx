@@ -141,6 +141,8 @@ class XmlModel(object):
     ):
         for field_name, field in self.__class__.__dict__.items():
             if isinstance(field, XmlField):
+                # TODO field.default may only refer to the attr, and not if the
+                # field itself is missing
                 value = kwargs.get(field_name, field.default)
                 if hasattr(value, 'parent'):
                     value.parent = self

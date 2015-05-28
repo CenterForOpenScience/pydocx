@@ -418,7 +418,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def export_run_property_dstrike(self, run, results):
         attrs = {
-            'class': 'pydocx-dstrike',
+            'class': 'pydocx-strike',
         }
         tag = HtmlTag('span', **attrs)
         return tag.apply(results)

@@ -879,7 +879,7 @@ class SuperAndSubScripts(TranslationTestCase):
         return xml
 
 
-class AvaliableInlineTags(TranslationTestCase):
+class AvailableInlineTags(TranslationTestCase):
     expected_output = '''
         <p><strong>aaa</strong></p>
         <p><span class="pydocx-underline">bbb</span></p>

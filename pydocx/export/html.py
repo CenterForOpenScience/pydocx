@@ -451,11 +451,23 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_run_property_vertical_align(self, run, results):
         align = run.effective_properties.vertical_align
         if align == 'superscript':
-            tag = HtmlTag('sup')
+            return self.export_run_property_vertical_align_superscript(
+                run,
+                results,
+            )
         elif align == 'subscript':
-            tag = HtmlTag('sub')
-        else:
-            return results
+            return self.export_run_property_vertical_align_subscript(
+                run,
+                results,
+            )
+        return results
+
+    def export_run_property_vertical_align_superscript(self, run, results):
+        tag = HtmlTag('sup')
+        return tag.apply(results)
+
+    def export_run_property_vertical_align_subscript(self, run, results):
+        tag = HtmlTag('sub')
         return tag.apply(results)
 
     def export_text(self, text):

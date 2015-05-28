@@ -12,7 +12,6 @@ from xml.dom import minidom
 
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter
-from pydocx.util.xml import parse_xml_from_string
 from pydocx.openxml.packaging import (
     FootnotesPart,
     MainDocumentPart,
@@ -285,6 +284,16 @@ class XMLDocx2Html(PyDocXHTMLExporter):
             uri='/word/document.xml',
         )
 
+        if self.numbering_dict is not None:
+            numbering_xml = DXB.numbering(self.numbering_dict)
+            self.relationships.append({
+                'external': False,
+                'target_path': 'numbering.xml',
+                'data': numbering_xml,
+                'relationship_id': 'numbering',
+                'relationship_type': NumberingDefinitionsPart.relationship_type,  # noqa
+            })
+
         if self.styles_xml:
             self.relationships.append({
                 'external': False,
@@ -322,14 +331,6 @@ class XMLDocx2Html(PyDocXHTMLExporter):
             target_mode='Internal',
             relationship_type=MainDocumentPart.relationship_type,
         )
-
-        self.numbering_root = None
-        if self.numbering_dict is not None:
-            data = DXB.numbering(self.numbering_dict)
-            self.numbering_root = parse_xml_from_string(
-                xml=data,
-                remove_namespaces=True,
-            )
 
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.

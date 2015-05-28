@@ -276,15 +276,11 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         self.styles_xml = kwargs.pop('styles_xml', '')
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
-    def _load(self):
-        # TODO Ideally, we could just do package = self.document.package, but
-        # that would cause an empty container to be (forever) loaded, since we
-        # don't have a mechanism for re-validating parts after they have
-        # already been loaded.
+    def load_document(self):
         # It's likely that we could replace this logic with a
         # WordprocessingDocumentFactory
-        self.document = WordprocessingDocument(path=None)
-        package = self.document.package
+        document = WordprocessingDocument(path=None)
+        package = document.package
         document_part = package.create_part(
             uri='/word/document.xml',
         )
@@ -337,12 +333,6 @@ class XMLDocx2Html(PyDocXHTMLExporter):
 
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.
-        self.page_width = 612
+        self._page_width = 612
 
-        self.parse_begin(self.document.main_document_part)
-
-    def get_list_style(self, num_id, ilvl):
-        try:
-            return self.numbering_dict[num_id][ilvl]
-        except KeyError:
-            return 'decimal'
+        return document

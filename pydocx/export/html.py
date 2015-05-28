@@ -487,9 +487,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
             tag_name = 'br'
         yield HtmlTag(tag_name, allow_self_closing=True)
 
-    def escape(self, text):
-        return xml.sax.saxutils.quoteattr(text)[1:-1]
-
     def calculate_table_cell_spans(self, table):
         if not table.rows:
             return

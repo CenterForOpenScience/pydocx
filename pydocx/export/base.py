@@ -8,6 +8,7 @@ from __future__ import (
 
 import logging
 import posixpath
+import xml.sax.saxutils
 from collections import namedtuple
 
 from abc import abstractmethod, ABCMeta
@@ -243,7 +244,10 @@ class PyDocXExporter(object):
         return self.yield_nested(hyperlink.children, self.export_node)
 
     def export_text(self, text):
-        yield text.text
+        if not text.text:
+            yield ''
+        else:
+            yield self.escape(text.text)
 
     def export_no_break_hyphen(self, hyphen):
         yield '-'
@@ -256,6 +260,9 @@ class PyDocXExporter(object):
 
     def export_table_cell(self, table_cell):
         return self.yield_nested(table_cell.children, self.export_node)
+
+    def escape(self, text):
+        return xml.sax.saxutils.quoteattr(text)[1:-1]
 
 
 ParserContext = namedtuple(

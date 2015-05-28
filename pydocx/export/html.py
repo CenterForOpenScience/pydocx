@@ -253,11 +253,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def get_numbering_tracking(self, paragraph):
         numbering_tracking = self.numbering_tracking.get(paragraph.parent)
         if not numbering_tracking:
-            raise StopIteration
+            return
 
         tracking = numbering_tracking.get(paragraph)
         if not tracking:
-            raise StopIteration
+            return
 
         return tracking
 
@@ -267,6 +267,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
             raise StopIteration
 
         tracking = self.get_numbering_tracking(paragraph)
+        if not tracking:
+            raise StopIteration
 
         li = HtmlTag('li')
         if tracking.get('close-item'):
@@ -296,6 +298,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
             raise StopIteration
 
         tracking = self.get_numbering_tracking(paragraph)
+        if not tracking:
+            raise StopIteration
 
         levels = tracking.get('close-level', [])
         for level in reversed(levels):
@@ -309,7 +313,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def get_paragraph_tag(self, paragraph):
         tracking = self.get_numbering_tracking(paragraph)
-        if tracking.get('active'):
+        if tracking and tracking.get('active'):
             return
         if self.in_table_cell:
             return

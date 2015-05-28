@@ -278,6 +278,12 @@ class TableWithListAndParagraph(TranslationTestCase):
         </table>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 1),

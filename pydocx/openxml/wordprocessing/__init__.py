@@ -19,6 +19,7 @@ from pydocx.openxml.wordprocessing.styles import Styles
 from pydocx.openxml.wordprocessing.table import Table
 from pydocx.openxml.wordprocessing.table_row import TableRow
 from pydocx.openxml.wordprocessing.table_cell import TableCell
+from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 from pydocx.openxml.wordprocessing.text import Text
 
 __all__ = [

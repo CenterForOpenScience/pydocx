@@ -548,9 +548,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
         )
 
         start_new_tag = False
+        colspan = 1
         if table_cell.properties:
             if table_cell.properties.should_close_previous_vertical_merge():
                 start_new_tag = True
+            try:
+                # Should be done by properties, or as a helper
+                colspan = int(table_cell.properties.grid_span)
+            except (TypeError, ValueError):
+                colspan = 1
+
         else:
             # This means the properties element is missing, which means the
             # merge element is missing
@@ -560,10 +567,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if start_new_tag:
             parent_table = list(islice(table_cell.nearest_ancestors(wordprocessing.Table), 0, 1))[0]  # noqa
             rowspan_counts = self.table_cell_rowspan_tracking[parent_table]
-            count = rowspan_counts.get(table_cell)
+            rowspan = rowspan_counts.get(table_cell, 1)
             attrs = {}
-            if count and count > 1:
-                attrs['rowspan'] = count
+            if colspan > 1:
+                attrs['colspan'] = colspan
+            if rowspan > 1:
+                attrs['rowspan'] = rowspan
             tag = HtmlTag('td', **attrs)
 
         # For multiple sequential paragraphs, insert line breaks in between

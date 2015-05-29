@@ -315,7 +315,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         levels = tracking.get('close-level', [])
         for level in reversed(levels):
             yield HtmlTag('li', closed=True)
-            # TODO only end numbering on the final numbering paragraph
             if self._is_ordered_list(level):
                 yield HtmlTag('ol', closed=True)
             else:

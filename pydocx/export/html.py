@@ -329,6 +329,29 @@ class PyDocXHTMLExporter(PyDocXExporter):
             return
         return HtmlTag('p')
 
+    def export_line_break_for_paragraph_if_needed(self, paragraph):
+        # If multiple paragraphs are member of the same list item or same table
+        # cell, instead of wrapping each paragraph with a paragraph tag,
+        # separate the paragraphs with line breaks
+        previous_from_parent = self.previous.get(paragraph.parent)
+        if previous_from_parent is None:
+            raise StopIteration
+
+        if self.get_paragraph_tag(previous_from_parent) is not None:
+            raise StopIteration
+
+        tracking = self.get_numbering_tracking(paragraph)
+        if tracking:
+            if tracking.get('open-item') is not None:
+                raise StopIteration
+
+            if tracking.get('open-level') is not None:
+                raise StopIteration
+
+        line_break = wordprocessing.Break()
+        for result in self.export_node(line_break):
+            yield result
+
     def export_paragraph(self, paragraph):
         for result in self.export_numbering_level_begin(paragraph):
             yield result
@@ -337,11 +360,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = self.get_paragraph_tag(paragraph)
         if tag:
             results = tag.apply(results, allow_empty=False)
+        else:
+            line_break_results = self.export_line_break_for_paragraph_if_needed(paragraph)  # noqa
+            results = chain(line_break_results, results)
+
+        results = chain(results, self.export_numbering_level_end(paragraph))
 
         for result in results:
-            yield result
-
-        for result in self.export_numbering_level_end(paragraph):
             yield result
 
     def export_paragraph_property_justification(self, paragraph, results):
@@ -582,26 +607,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 attrs['rowspan'] = rowspan
             tag = HtmlTag('td', **attrs)
 
-        # For multiple sequential paragraphs, insert line breaks in between
-        # them
-        line_break = wordprocessing.Break()
+        results = super(PyDocXHTMLExporter, self).export_table_cell(table_cell)
         if tag:
-            yield tag
+            results = tag.apply(results)
 
         self.in_table_cell = True
-        previous = None
-        for item in table_cell.children:
-            if isinstance(previous, wordprocessing.Paragraph):
-                if isinstance(item, wordprocessing.Paragraph):
-                    for result in self.export_node(line_break):
-                        yield result
-            for result in self.export_node(item):
-                yield result
-            previous = item
-
+        for result in results:
+            yield result
         self.in_table_cell = False
-        if tag:
-            yield tag.close()
 
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):

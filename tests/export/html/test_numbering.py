@@ -328,7 +328,8 @@ class NumberingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA<br />BBB</li>
+                <li>AAA<br />Foo</li>
+                <li>BBB</li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)

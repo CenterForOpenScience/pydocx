@@ -49,6 +49,7 @@ class PyDocXExporter(object):
         self._document = None
         # TODO each XmlModel should be self-aware of its container
         self._page_width = None
+        self.previous = {}
 
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
@@ -142,9 +143,13 @@ class PyDocXExporter(object):
 
     # TODO not a fan of this name
     def yield_nested(self, iterable, func):
+        previous = None
         for item in iterable:
+            # TODO better name / structure for this.
+            self.previous[item.parent] = previous
             for result in func(item):
                 yield result
+            previous = item
 
     def export_body(self, body):
         return self.yield_nested(body.children, self.export_node)

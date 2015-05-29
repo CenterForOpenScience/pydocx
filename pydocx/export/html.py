@@ -176,7 +176,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
             numbering_tracking[paragraph]['active'] = True
 
             level = paragraph.get_numbering_level()
-            # TODO what if level is None?
+            if level is None:
+                # TODO should trigger a break tag, but doesn't currently
+                continue
+
             if num_def == previous_num_def:
                 assert levels
                 level_id = int(level.level_id)

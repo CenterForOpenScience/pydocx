@@ -52,7 +52,7 @@ class Run(XmlModel):
                         )
         return inherited_properties
 
-    def _get_inherited_properties(self):
+    def _get_inherited_properties_from_parent_style(self):
         inherited_properties = {}
 
         properties = self.properties
@@ -78,17 +78,24 @@ class Run(XmlModel):
         return inherited_properties
 
     @property
+    def inherited_properties(self):
+        properties = {}
+        properties.update(
+            self._get_properties_inherited_from_parent_paragraph(),
+        )
+        properties.update(
+            self._get_inherited_properties_from_parent_style(),
+        )
+        return RunProperties(**properties)
+
+    @property
     def effective_properties(self):
         if not self.container.style_definitions_part:
             return self.properties
 
+        inherited_properties = self.inherited_properties
         effective_properties = {}
-        effective_properties.update(
-            self._get_properties_inherited_from_parent_paragraph(),
-        )
-        effective_properties.update(
-            self._get_inherited_properties(),
-        )
+        effective_properties.update(dict(inherited_properties.fields))
         if self.properties:
             effective_properties.update(dict(self.properties.fields))
         return RunProperties(**effective_properties)

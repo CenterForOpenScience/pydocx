@@ -1038,87 +1038,61 @@ class NestedListTestCase(TranslationTestCase):
 class MultipleNestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol class="pydocx-list-style-type-decimal">
-            <li>
-                    AAA
+        <li>
+            AAA
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    BBB
                     <ol class="pydocx-list-style-type-decimal">
-                            <li>
-                                    BBB
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    CCC
-                                            </li>
-                                            <li>
-                                                    DDD
-                                            </li>
-                                    </ol>
-                            </li>
-                            <li>
-                                    EEE
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    FFF
-                                            </li>
-                                            <li>
-                                                    GGG
-                                            </li>
-                                    </ol>
-                            </li>
-                            <li>
-                                    HHH
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    III
-                                            </li>
-                                            <li>
-                                                    JJJ
-                                            </li>
-                                    </ol>
-                            </li>
+                        <li>CCC</li>
+                        <li>DDD</li>
                     </ol>
-            </li>
-            <li>
-                    KKK
-            </li>
+                </li>
+                <li>
+                    EEE
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>FFF</li>
+                        <li>GGG</li>
+                    </ol>
+                </li>
+                <li>
+                    HHH
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>III</li>
+                        <li>JJJ</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+        <li>KKK</li>
     </ol>
     <ol class="pydocx-list-style-type-lowerLetter">
-            <li>
-                    LLL
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    MMM
-                            </li>
-                            <li>
-                                    NNN
-                            </li>
+        <li>
+            LLL
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>MMM</li>
+                <li>NNN</li>
+            </ol>
+        </li>
+        <li>
+            OOO
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>PPP</li>
+                <li>
+                    QQQ
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>RRR</li>
                     </ol>
-            </li>
-            <li>
-                    OOO
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    PPP
-                            </li>
-                            <li>
-                                    QQQ
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    RRR
-                                            </li>
-                                    </ol>
-                            </li>
-                    </ol>
-            </li>
-            <li>
-                    SSS
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    TTT
-                            </li>
-                            <li>
-                                    UUU
-                            </li>
-                    </ol>
-            </li>
+                </li>
+            </ol>
+        </li>
+        <li>
+            SSS
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>TTT</li>
+                <li>UUU</li>
+            </ol>
+        </li>
     </ol>
     """
 

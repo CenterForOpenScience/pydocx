@@ -348,6 +348,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if tracking.get('open-level') is not None:
                 raise StopIteration
 
+        previous_tracking = self.get_numbering_tracking(previous_from_parent)
+        if previous_tracking:
+            if tracking.get('close-level') is not None:
+                raise StopIteration
+
         line_break = wordprocessing.Break()
         for result in self.export_node(line_break):
             yield result

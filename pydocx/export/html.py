@@ -147,6 +147,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         previous_num_def = None
         previous_num_def_paragraph = None
+        previous_num_def_paragraph_index = 0
         levels = []
 
         possible_numbering_paragraphs = []
@@ -159,14 +160,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # then open a new list, open a new list item
         # * If the def = prev, and level - prev,
         # then close the previous level
-        for paragraph in paragraphs:
+        for index, paragraph in enumerate(paragraphs):
             num_def = paragraph.get_numbering_definition()
 
             if previous_num_def is not None:
                 # There is a previous numbering def, so it could be part of
                 # that previous list. We won't know until we process all of the
                 # paragraphs.
-                possible_numbering_paragraphs.append(paragraph)
+                possible_numbering_paragraphs.append((index, paragraph))
 
             if num_def is None:
                 continue
@@ -221,21 +222,28 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 numbering_tracking[paragraph]['open-level'] = level
                 levels = [level]
 
+                # Bare paragraphs contained within the numbering span are
+                # considered a part of the numbering span
+                for index, paragraph in possible_numbering_paragraphs:
+                    if index < previous_num_def_paragraph_index:
+                        numbering_tracking[paragraph]['active'] = True
+
+                possible_numbering_paragraphs = []
+
             previous_num_def = num_def
             previous_num_def_paragraph = paragraph
+            previous_num_def_paragraph_index = index
 
         if previous_num_def is not None:
             # Finalize the previous numbering definition if it exists
             assert previous_num_def_paragraph
             numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
 
-        # Declare all of the paragraphs up to and including the previous num
-        # def paragraph. Any paragraph that follows the last num def paragraph
-        # is not an active numbering paragraph
-        for paragraph in possible_numbering_paragraphs:
-            numbering_tracking[paragraph]['active'] = True
-            if paragraph == previous_num_def_paragraph:
-                break
+        # Bare paragraphs contained within the numbering span are considered a
+        # part of the numbering span
+        for index, paragraph in possible_numbering_paragraphs:
+            if index < previous_num_def_paragraph_index:
+                numbering_tracking[paragraph]['active'] = True
 
         return numbering_tracking
 

@@ -9,6 +9,7 @@ import re
 import os.path
 from io import BytesIO
 from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter
@@ -38,7 +39,10 @@ def html_is_equal(a, b):
 
 def assert_html_equal(actual_html, expected_html, filename=None):
     if not html_is_equal(actual_html, expected_html):
-        html = prettify(actual_html)
+        try:
+            html = prettify(actual_html)
+        except ExpatError:
+            html = actual_html
         if filename:
             with open('tests/failures/%s.html' % filename, 'w') as f:
                 f.write(html)

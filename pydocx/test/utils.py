@@ -7,13 +7,8 @@ from __future__ import (
 import posixpath
 import re
 import os.path
+from io import BytesIO
 from xml.dom import minidom
-
-try:
-    from cString import StringIO
-    BytesIO = StringIO
-except ImportError:
-    from io import BytesIO
 
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter

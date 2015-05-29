@@ -517,6 +517,15 @@ class InvalidIlvlOrderTestCase(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+            '3': 'decimal',
+        }
+    }
+
     def get_xml(self):
         tags = [
             DXB.li(text='AAA', ilvl=1, numId=1),

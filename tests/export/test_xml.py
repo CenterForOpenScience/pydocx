@@ -1122,6 +1122,19 @@ class MultipleNestedListTestCase(TranslationTestCase):
     </ol>
     """
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+        },
+        '2': {
+            '0': 'lowerLetter',
+            '1': 'lowerLetter',
+            '2': 'decimal',
+        },
+    }
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 1),

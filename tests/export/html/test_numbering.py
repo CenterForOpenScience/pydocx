@@ -210,3 +210,87 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             <p>Bar</p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_separate_lists_with_paragraph_in_between_and_after(self):
+        numbering_xml = '''
+            {letter}
+            {decimal}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+            decimal=self.simple_list_definition.format(
+                num_id=2,
+                num_format='decimal',
+            ),
+        )
+
+        document_xml = '''
+            <p><r><t>Foo</t></r></p>
+            {aaa}
+            <p><r><t>Bar</t></r></p>
+            {bbb}
+            <p><r><t>Baz</t></r></p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=2,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>Foo</p>
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+            <p>Bar</p>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>BBB</li>
+            </ol>
+            <p>Baz</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_single_list_followed_by_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p><r><t>Foo</t></r></p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+            <p>Foo</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)

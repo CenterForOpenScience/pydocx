@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
+from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_row import TableRow
 
 
@@ -15,3 +16,7 @@ class Table(XmlModel):
     rows = XmlCollection(
         TableRow,
     )
+
+
+# Python makes defining nested class hierarchies at the global level difficult
+TableCell.children.types.add(Table)

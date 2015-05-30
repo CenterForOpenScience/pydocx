@@ -17,4 +17,5 @@ class TableCell(XmlModel):
 
     children = XmlCollection(
         Paragraph,
+        # Table is added in wordprocessing.table
     )

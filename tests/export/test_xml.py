@@ -1019,6 +1019,14 @@ class NestedListTestCase(TranslationTestCase):
     </ol>
     """
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+        },
+    }
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 1),

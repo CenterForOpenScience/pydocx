@@ -84,7 +84,7 @@ class HtmlTag(object):
         return ' '.join(
             '{k}="{v}"'.format(k=k, v=v)
             for k, v in
-            self.attrs.items()
+            sorted(self.attrs.items())
         )
 
 

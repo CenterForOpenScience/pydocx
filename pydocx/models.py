@@ -97,15 +97,22 @@ class XmlCollection(XmlField):
     def __init__(self, *types, **kwargs):
         default = kwargs.pop('default', [])
         super(XmlCollection, self).__init__(self, default=default)
-        name_to_type_map = {}
-        for type_spec in types:
-            if isinstance(type_spec, tuple):
-                tag_name, model = type_spec
-            else:
-                model = type_spec
-                tag_name = getattr(model, 'XML_TAG')
-            name_to_type_map[tag_name] = model
-        self.name_to_type_map = name_to_type_map
+        self.types = set(types)
+        self._name_to_type_map = None
+
+    @property
+    def name_to_type_map(self):
+        if self._name_to_type_map is None:
+            name_to_type_map = {}
+            for type_spec in self.types:
+                if isinstance(type_spec, tuple):
+                    tag_name, model = type_spec
+                else:
+                    model = type_spec
+                    tag_name = getattr(model, 'XML_TAG')
+                name_to_type_map[tag_name] = model
+            self._name_to_type_map = name_to_type_map
+        return self._name_to_type_map
 
     def get_handler_for_tag(self, tag):
         return self.name_to_type_map.get(tag)

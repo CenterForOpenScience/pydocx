@@ -23,6 +23,7 @@ from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
+from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 
 __all__ = [
     'AbstractNum',
@@ -48,4 +49,5 @@ __all__ = [
     'TableCell',
     'Text',
     'SmartTagRun',
+    'InsertedRun',
 ]

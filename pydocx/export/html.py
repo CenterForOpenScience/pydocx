@@ -671,6 +671,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 attrs['height'] = '{px:.0f}px'.format(px=height_px)
             yield HtmlTag('img', allow_self_closing=True, **attrs)
 
+    def export_inserted_run(self, inserted_run):
+        results = super(PyDocXHTMLExporter, self).export_inserted_run(inserted_run)  # noqa
+        attrs = {
+            'class': 'pydocx-insert',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):
 

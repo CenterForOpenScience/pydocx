@@ -858,11 +858,17 @@ class SDTTestCase(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         body = b''
-        body += DXB.li(text='AAA', ilvl=0, numId=0)
+        body += DXB.li(text='AAA', ilvl=0, numId=1)
         body += DXB.sdt_tag(p_tag=DXB.p_tag(text='BBB'))
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml

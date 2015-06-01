@@ -3,6 +3,7 @@ from pydocx.openxml.wordprocessing.abstract_num import AbstractNum
 from pydocx.openxml.wordprocessing.body import Body
 from pydocx.openxml.wordprocessing.br import Break
 from pydocx.openxml.wordprocessing.document import Document
+from pydocx.openxml.wordprocessing.drawing import Drawing
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.level import Level
 from pydocx.openxml.wordprocessing.level_override import LevelOverride
@@ -27,6 +28,7 @@ __all__ = [
     'Body',
     'Break',
     'Document',
+    'Drawing',
     'Hyperlink',
     'Level',
     'LevelOverride',

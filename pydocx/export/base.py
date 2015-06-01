@@ -63,6 +63,7 @@ class PyDocXExporter(object):
             wordprocessing.Table: self.export_table,
             wordprocessing.TableRow: self.export_table_row,
             wordprocessing.TableCell: self.export_table_cell,
+            wordprocessing.Drawing: self.export_drawing,
         }
 
     @property
@@ -268,6 +269,9 @@ class PyDocXExporter(object):
 
     def escape(self, text):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
+
+    def export_drawing(self, drawing):
+        raise StopIteration
 
 
 ParserContext = namedtuple(

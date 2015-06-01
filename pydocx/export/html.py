@@ -7,6 +7,7 @@ from __future__ import (
 )
 
 import base64
+import posixpath
 import xml.sax.saxutils
 from itertools import chain, islice
 from collections import defaultdict
@@ -25,6 +26,7 @@ from pydocx.constants import (
 )
 from pydocx.export.base import PyDocXExporter, OldPyDocXExporter
 from pydocx.openxml import wordprocessing
+from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
@@ -37,6 +39,10 @@ def convert_twips_to_ems(value):
     0.125
     '''
     return value / TWIPS_PER_POINT / POINTS_PER_EM
+
+
+def convert_emus_to_pixels(emus):
+    return emus / EMUS_PER_PIXEL
 
 
 class HtmlTag(object):
@@ -621,6 +627,49 @@ class PyDocXHTMLExporter(PyDocXExporter):
         for result in results:
             yield result
         self.in_table_cell = False
+
+    def export_drawing(self, drawing):
+        length, width = drawing.get_picture_extents()
+        relationship_id = drawing.get_picture_relationship_id()
+        if not relationship_id:
+            raise StopIteration
+        image = None
+        try:
+            image = drawing.container.get_part_by_id(
+                relationship_id=relationship_id,
+            )
+        except KeyError:
+            pass
+        return self.export_image(image=image, length=length, width=width)
+
+    def get_image_source(self, image):
+        if image is None:
+            return
+        elif uri_is_external(image.uri):
+            return image.uri
+        else:
+            data = image.stream.read()
+            _, filename = posixpath.split(image.uri)
+            extension = filename.split('.')[-1].lower()
+            b64_encoded_src = 'data:image/{ext};base64,{data}'.format(
+                ext=extension,
+                data=base64.b64encode(data).decode(),
+            )
+            return self.escape(b64_encoded_src)
+
+    def export_image(self, image, length, width):
+        image_src = self.get_image_source(image)
+        if image_src:
+            attrs = {
+                'src': image_src,
+            }
+            if length and width:
+                # The "width" in openxml is actually the height
+                width_px = convert_emus_to_pixels(length)
+                height_px = convert_emus_to_pixels(width)
+                attrs['width'] = '{px:.0f}px'.format(px=width_px)
+                attrs['height'] = '{px:.0f}px'.format(px=height_px)
+            yield HtmlTag('img', allow_self_closing=True, **attrs)
 
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):

@@ -64,6 +64,7 @@ class PyDocXExporter(object):
             wordprocessing.TableRow: self.export_table_row,
             wordprocessing.TableCell: self.export_table_cell,
             wordprocessing.Drawing: self.export_drawing,
+            wordprocessing.SmartTagRun: self.export_smart_tag_run,
         }
 
     @property
@@ -272,6 +273,9 @@ class PyDocXExporter(object):
 
     def export_drawing(self, drawing):
         raise StopIteration
+
+    def export_smart_tag_run(self, smart_tag):
+        return self.yield_nested(smart_tag.children, self.export_node)
 
 
 ParserContext = namedtuple(

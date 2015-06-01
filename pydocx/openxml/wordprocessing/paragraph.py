@@ -9,6 +9,7 @@ from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
+from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 
 
 class Paragraph(XmlModel):
@@ -19,6 +20,7 @@ class Paragraph(XmlModel):
     children = XmlCollection(
         Run,
         Hyperlink,
+        SmartTagRun,
     )
 
     def __init__(self, **kwargs):

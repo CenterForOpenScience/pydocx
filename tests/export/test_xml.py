@@ -688,7 +688,10 @@ class InsertTagInList(TranslationTestCase):
 class SmartTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAABBB
+            <li>
+                AAA
+                <br />
+                BBB
             </li>
             <li>CCC</li>
         </ol>

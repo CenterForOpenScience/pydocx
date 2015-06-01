@@ -666,7 +666,10 @@ class DeleteTagInList(TranslationTestCase):
 class InsertTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA<span class="pydocx-insert">BBB</span>
+            <li>
+                AAA
+                <br />
+                <span class="pydocx-insert">BBB</span>
             </li>
             <li>CCC</li>
         </ol>

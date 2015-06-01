@@ -18,6 +18,7 @@ TAGS_HOLDING_CONTENT_TAGS = (
 )
 
 # http://openxmldeveloper.org/discussions/formats/f/15/p/396/933.aspx
+# English Metric Units
 EMUS_PER_PIXEL = 9525
 USE_ALIGNMENTS = True
 

@@ -111,7 +111,11 @@ class ConvertRootUpperRomanListToHeadingTestCase(DocumentGeneratorTestCase):
         document.add(NumberingDefinitionsPart, numbering_xml)
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = '<p>AAA</p>'
+        expected_html = '''
+            <ol class="pydocx-list-style-type-None">
+                <li>AAA</li>
+            </ol>
+        '''
         self.assert_document_generates_html(document, expected_html)
 
     def test_missing_numbering_part(self):

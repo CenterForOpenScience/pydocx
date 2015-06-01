@@ -694,14 +694,20 @@ class SmartTagInList(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         smart_tag = DXB.smart_tag(run_tags)
         p_tag = DXB.p_tag([smart_tag])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml

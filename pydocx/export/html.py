@@ -21,6 +21,7 @@ from pydocx.constants import (
     POINTS_PER_EM,
     PYDOCX_STYLES,
     TWIPS_PER_POINT,
+    EMUS_PER_PIXEL,
 )
 from pydocx.export.base import PyDocXExporter, OldPyDocXExporter
 from pydocx.openxml import wordprocessing
@@ -30,9 +31,9 @@ from pydocx.util.xml import (
 )
 
 
-def convert_measurement(value):
+def convert_twips_to_ems(value):
     '''
-    >>> convert_measurement(30)
+    >>> convert_twips_to_ems(30)
     0.125
     '''
     return value / TWIPS_PER_POINT / POINTS_PER_EM
@@ -414,13 +415,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     first_line = None
             style = {}
             if right:
-                right = convert_measurement(right)
+                right = convert_twips_to_ems(right)
                 style['margin-right'] = '{0:.2f}em'.format(right)
             if left:
-                left = convert_measurement(left)
+                left = convert_twips_to_ems(left)
                 style['margin-left'] = '{0:.2f}em'.format(left)
             if first_line:
-                first_line = convert_measurement(first_line)
+                first_line = convert_twips_to_ems(first_line)
                 style['text-indent'] = '{0:.2f}em'.format(first_line)
             if style:
                 attrs = {
@@ -982,13 +983,13 @@ class OldPyDocXHTMLExporter(OldPyDocXExporter):
             attrs['class'] = 'pydocx-%s' % alignment
         style = {}
         if firstLine:
-            firstLine = convert_measurement(firstLine)
+            firstLine = convert_twips_to_ems(firstLine)
             style['text-indent'] = '%.2fem' % firstLine
         if left:
-            left = convert_measurement(left)
+            left = convert_twips_to_ems(left)
             style['margin-left'] = '%.2fem' % left
         if right:
-            right = convert_measurement(right)
+            right = convert_twips_to_ems(right)
             style['margin-right'] = '%.2fem' % right
         if style:
             attrs['style'] = convert_dictionary_to_style_fragment(style)

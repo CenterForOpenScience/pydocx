@@ -672,14 +672,20 @@ class InsertTagInList(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         insert_tags = DXB.insert_tag(run_tags)
         p_tag = DXB.p_tag([insert_tags])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml

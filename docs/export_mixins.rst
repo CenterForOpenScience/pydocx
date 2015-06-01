@@ -11,29 +11,6 @@ They exist in
 Each mixin is defined as a class
 in its own module.
 
-Convert root level upperRoman lists to headings
-###############################################
-
-Useful if you want
-root-level only
-list items
-that are formatted
-with "upperRoman"
-to be treated as headers.
-
-Example usage:
-
-.. code-block:: python
-
-    from pydocx.export.mixins import ConvertRootUpperRomanListToHeadingMixin
-
-
-    class CustomExporter(
-        ConvertRootUpperRomanListToHeadingMixin,
-        PyDocXHTMLExporter,
-    ):
-        pass
-
 Detect faked superscript and subscript
 ######################################
 

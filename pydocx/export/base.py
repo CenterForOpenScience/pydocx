@@ -24,7 +24,7 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.exceptions import MalformedDocxException
-from pydocx.openxml import wordprocessing
+from pydocx.openxml import wordprocessing, vml
 from pydocx.openxml.wordprocessing import (
     ParagraphProperties,
     RunProperties,
@@ -66,6 +66,9 @@ class PyDocXExporter(object):
             wordprocessing.Drawing: self.export_drawing,
             wordprocessing.SmartTagRun: self.export_smart_tag_run,
             wordprocessing.InsertedRun: self.export_inserted_run,
+            wordprocessing.Picture: self.export_picture,
+            vml.Shape: self.export_vml_shape,
+            vml.ImageData: self.export_vml_image_data,
         }
 
     @property
@@ -280,6 +283,15 @@ class PyDocXExporter(object):
 
     def export_inserted_run(self, inserted_run):
         return self.yield_nested(inserted_run.children, self.export_node)
+
+    def export_picture(self, picture):
+        return self.yield_nested(picture.children, self.export_node)
+
+    def export_vml_shape(self, shape):
+        return self.yield_nested(shape.children, self.export_node)
+
+    def export_vml_image_data(self, image_data):
+        raise StopIteration
 
 
 ParserContext = namedtuple(

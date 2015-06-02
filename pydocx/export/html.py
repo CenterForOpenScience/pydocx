@@ -640,7 +640,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
             )
         except KeyError:
             pass
-        return self.export_image(image=image, length=length, width=width)
+        attrs = {}
+        if length and width:
+            # The "width" in openxml is actually the height
+            width_px = '{px:.0f}px'.format(px=convert_emus_to_pixels(length))
+            height_px = '{px:.0f}px'.format(px=convert_emus_to_pixels(width))
+            attrs['width'] = width_px
+            attrs['height'] = height_px
+        return self.export_image(image=image, **attrs)
 
     def get_image_source(self, image):
         if image is None:
@@ -657,18 +664,15 @@ class PyDocXHTMLExporter(PyDocXExporter):
             )
             return self.escape(b64_encoded_src)
 
-    def export_image(self, image, length, width):
+    def export_image(self, image, width=None, height=None):
         image_src = self.get_image_source(image)
         if image_src:
             attrs = {
                 'src': image_src,
             }
-            if length and width:
-                # The "width" in openxml is actually the height
-                width_px = convert_emus_to_pixels(length)
-                height_px = convert_emus_to_pixels(width)
-                attrs['width'] = '{px:.0f}px'.format(px=width_px)
-                attrs['height'] = '{px:.0f}px'.format(px=height_px)
+            if width and height:
+                attrs['width'] = width
+                attrs['height'] = height
             yield HtmlTag('img', allow_self_closing=True, **attrs)
 
     def export_inserted_run(self, inserted_run):
@@ -678,6 +682,19 @@ class PyDocXHTMLExporter(PyDocXExporter):
         }
         tag = HtmlTag('span', **attrs)
         return tag.apply(results)
+
+    def export_vml_image_data(self, image_data):
+        width, height = image_data.get_picture_extents()
+        if not image_data.relationship_id:
+            raise StopIteration
+        image = None
+        try:
+            image = image_data.container.get_part_by_id(
+                relationship_id=image_data.relationship_id,
+            )
+        except KeyError:
+            pass
+        return self.export_image(image=image, width=width, height=height)
 
 
 class OldPyDocXHTMLExporter(OldPyDocXExporter):

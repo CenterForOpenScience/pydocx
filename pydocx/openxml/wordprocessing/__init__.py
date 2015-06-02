@@ -24,6 +24,7 @@ from pydocx.openxml.wordprocessing.table_cell_properties import TableCellPropert
 from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
+from pydocx.openxml.wordprocessing.picture import Picture
 
 __all__ = [
     'AbstractNum',
@@ -50,4 +51,5 @@ __all__ = [
     'Text',
     'SmartTagRun',
     'InsertedRun',
+    'Picture',
 ]

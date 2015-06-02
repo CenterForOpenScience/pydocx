@@ -47,7 +47,6 @@ class PyDocXExporter(object):
     def __init__(self, path):
         self.path = path
         self._document = None
-        # TODO each XmlModel should be self-aware of its container
         self._page_width = None
         self.previous = {}
 

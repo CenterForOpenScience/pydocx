@@ -613,13 +613,19 @@ class DeleteTagInList(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         delete_tags = DXB.delete_tag(['BBB'])
         p_tag = DXB.p_tag([delete_tags])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml

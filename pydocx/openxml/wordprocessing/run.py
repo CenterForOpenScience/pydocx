@@ -14,6 +14,7 @@ from pydocx.openxml.wordprocessing.drawing import Drawing
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.text import Text
+from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 
 
 class Run(XmlModel):
@@ -27,6 +28,7 @@ class Run(XmlModel):
         Text,
         Drawing,
         Picture,
+        DeletedText,
     )
 
     def _get_properties_inherited_from_parent_paragraph(self):

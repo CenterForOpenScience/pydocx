@@ -66,6 +66,8 @@ class PyDocXExporter(object):
             wordprocessing.SmartTagRun: self.export_smart_tag_run,
             wordprocessing.InsertedRun: self.export_inserted_run,
             wordprocessing.Picture: self.export_picture,
+            wordprocessing.DeletedRun: self.export_deleted_run,
+            wordprocessing.DeletedText: self.export_deleted_text,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
         }
@@ -259,6 +261,9 @@ class PyDocXExporter(object):
         else:
             yield self.escape(text.text)
 
+    def export_deleted_text(self, deleted_text):
+        raise StopIteration
+
     def export_no_break_hyphen(self, hyphen):
         yield '-'
 
@@ -285,6 +290,9 @@ class PyDocXExporter(object):
 
     def export_picture(self, picture):
         return self.yield_nested(picture.children, self.export_node)
+
+    def export_deleted_run(self, deleted_run):
+        return self.yield_nested(deleted_run.children, self.export_node)
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)

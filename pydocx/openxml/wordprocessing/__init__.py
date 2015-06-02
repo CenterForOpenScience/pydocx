@@ -25,6 +25,8 @@ from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.picture import Picture
+from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
+from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 
 __all__ = [
     'AbstractNum',
@@ -52,4 +54,6 @@ __all__ = [
     'SmartTagRun',
     'InsertedRun',
     'Picture',
+    'DeletedRun',
+    'DeletedText',
 ]

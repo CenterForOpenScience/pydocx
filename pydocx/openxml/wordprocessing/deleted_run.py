@@ -10,13 +10,13 @@ from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 
 
-class InsertedRun(XmlModel):
-    XML_TAG = 'ins'
+class DeletedRun(XmlModel):
+    XML_TAG = 'del'
 
     children = XmlCollection(
         Run,
         SmartTagRun,
-        # TODO Needs DeletedRun
+        # TODO Needs InsertedRun
     )
 
-InsertedRun.children.types.add(InsertedRun)
+DeletedRun.children.types.add(DeletedRun)

@@ -522,6 +522,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if result:
                 yield result
 
+    def export_deleted_text(self, deleted_text):
+        # TODO deleted_text should be ignored if it is NOT contained within a
+        # deleted run
+        results = self.export_text(deleted_text)
+        attrs = {
+            'class': 'pydocx-delete',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results, allow_empty=False)
+
     def export_hyperlink(self, hyperlink):
         results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
         target_uri = hyperlink.get_target_uri()
@@ -530,9 +540,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             tag = HtmlTag('a', href=href)
             results = tag.apply(results, allow_empty=False)
 
-        # Prevent underline style from applying
+        # Prevent underline style from applying by temporarily monkey-patching
+        # the export function. There's got to be a better way.
         old = self.export_run_property_underline
-        # TODO there's got to be a better way
         self.export_run_property_underline = lambda run, results: results
         for result in results:
             yield result

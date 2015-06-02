@@ -606,7 +606,9 @@ class RTagWithNoText(TranslationTestCase):
 class DeleteTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA
+            <li>
+                AAA
+                <br />
                 <span class="pydocx-delete">BBB</span>
             </li>
             <li>CCC</li>

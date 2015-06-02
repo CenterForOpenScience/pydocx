@@ -11,6 +11,7 @@ from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperti
 from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
+from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 
 
 class Paragraph(XmlModel):
@@ -23,6 +24,7 @@ class Paragraph(XmlModel):
         Hyperlink,
         SmartTagRun,
         InsertedRun,
+        DeletedRun,
     )
 
     def __init__(self, **kwargs):

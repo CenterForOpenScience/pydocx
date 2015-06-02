@@ -8,12 +8,10 @@ from __future__ import (
 import sys
 import time
 
-from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.openxml.packaging import ImagePart
 
 from pydocx.test import TranslationTestCase
 from pydocx.test.document_builder import DocxBuilder as DXB
-from pydocx.test.utils import XMLDocx2Html
 
 
 class ImageLocal(TranslationTestCase):
@@ -101,48 +99,6 @@ class ImageTestCase(TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
-
-    def test_get_image_id(self):
-        parser = XMLDocx2Html(
-            document_xml=self.get_xml(),
-            relationships=self.relationships,
-        )
-        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
-        els = []
-        els.extend(find_all(tree, 'drawing'))
-        els.extend(find_all(tree, 'pict'))
-        image_ids = []
-        for el in els:
-            image_ids.append(parser._get_image_id(el))
-        expected = [
-            'rId0',
-            'rId1',
-        ]
-        self.assertEqual(
-            set(image_ids),
-            set(expected),
-        )
-
-    def test_get_image_sizes(self):
-        parser = XMLDocx2Html(
-            document_xml=self.get_xml(),
-            relationships=self.relationships,
-        )
-        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
-        els = []
-        els.extend(find_all(tree, 'drawing'))
-        els.extend(find_all(tree, 'pict'))
-        image_ids = []
-        for el in els:
-            image_ids.append(parser._get_image_size(el))
-        expected = [
-            ('40px', '20px'),
-            ('41pt', '21pt'),
-        ]
-        self.assertEqual(
-            set(image_ids),
-            set(expected),
-        )
 
 
 class TableTag(TranslationTestCase):

@@ -6,6 +6,7 @@
   consisting of
   the previous arguments
 - Added ``next_element`` to parser context
+- Removed ``ConvertRootUpperRomanListToHeadingMixin``
 
 **0.7.0**
 

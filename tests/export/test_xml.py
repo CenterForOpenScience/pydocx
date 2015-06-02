@@ -73,12 +73,18 @@ class ImageTestCase(TranslationTestCase):
 
     expected_output = '''
         <p>
-            <img src="data:image/jpeg;base64,Y29udGVudDE="
-                height="20px" width="40px" />
+            <img
+                height="20px"
+                src="data:image/jpeg;base64,Y29udGVudDE="
+                width="40px"
+            />
         </p>
         <p>
-            <img src="data:image/jpeg;base64,Y29udGVudDI="
-                height="21pt" width="41pt" />
+            <img
+                height="21pt"
+                src="data:image/jpeg;base64,Y29udGVudDI="
+                width="41pt"
+            />
         </p>
     '''
 

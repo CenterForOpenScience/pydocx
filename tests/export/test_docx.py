@@ -100,12 +100,17 @@ def test_has_image():
 
     actual_html = convert(file_path)
     image_data = get_image_data(file_path, 'image1.gif')
-    assert_html_equal(actual_html, BASE_HTML % '''
+    expected_html = BASE_HTML % '''
         <p>
             AAA
-            <img src="data:image/gif;base64,%s" height="55px" width="260px" />
+            <img
+                height="55px"
+                src="data:image/gif;base64,{data}"
+                width="260px"
+            />
         </p>
-    ''' % image_data)
+    '''.format(data=image_data)
+    assert_html_equal(actual_html, expected_html)
 
 
 @raises(MalformedDocxException)

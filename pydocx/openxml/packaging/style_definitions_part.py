@@ -57,7 +57,8 @@ class StyleDefinitionsPart(OpenXmlPart):
         styles = self.styles.get_styles_by_type(style_type)
         base_style = styles.get(style_id)
 
-        yield base_style
+        if base_style:
+            yield base_style
 
         # Build up the stack of styles to merge together
         current_style = base_style

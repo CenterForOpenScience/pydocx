@@ -45,7 +45,7 @@ class Run(XmlModel):
             parent_paragraph = parent_paragraph[0]
             style_stack = parent_paragraph.get_style_chain_stack()
             for style in reversed(list(style_stack)):
-                if style and style.run_properties:
+                if style.run_properties:
                     inherited_properties.update(
                         dict(style.run_properties.fields),
                     )

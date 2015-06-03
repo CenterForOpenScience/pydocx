@@ -195,9 +195,21 @@ class PyDocXHTMLExporter(PyDocXExporter):
             numbering_tracking[paragraph]['active'] = True
 
             if paragraph.get_heading_style():
-                # TODO explain why this works
+                # A paragraph that is defined a a heading never opens a new
+                # list. So if a heading has level 0 numbering, that numbering
+                # is ignored. However, if a heading appears as a sub-level,
+                # instead of opening that new level, it is appended to the
+                # content of the current item, one level up
+                # If we have a paragraph defined as a heading style at the root
+                # level of a numbering list
+
                 previous_num_def_paragraph = paragraph
                 previous_num_def_paragraph_index = index
+
+                # Don't set previous_num_def here because we are ignoring this
+                # paragraph's level information
+
+                # prevent levels from being opened / closed for this paragraph
                 continue
 
             level = paragraph.get_numbering_level()

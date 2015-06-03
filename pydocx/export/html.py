@@ -44,8 +44,11 @@ def convert_emus_to_pixels(emus):
     return emus / EMUS_PER_PIXEL
 
 
-def get_first_from_sequence(sequence):
-    return list(islice(sequence, 0, 1))[0]
+def get_first_from_sequence(sequence, default=None):
+    normalized_sequence = list(islice(sequence, 0, 1))
+    if normalized_sequence:
+        return normalized_sequence[0]
+    return default
 
 
 class HtmlTag(object):

@@ -6,16 +6,12 @@ from __future__ import (
     unicode_literals,
 )
 
-import logging
 import xml.sax.saxutils
-from collections import namedtuple
 
 from pydocx.constants import TWIPS_PER_POINT
 from pydocx.exceptions import MalformedDocxException
 from pydocx.openxml import wordprocessing, vml
 from pydocx.openxml.packaging import WordprocessingDocument
-
-logger = logging.getLogger("NewParser")
 
 
 class PyDocXExporter(object):
@@ -274,24 +270,3 @@ class PyDocXExporter(object):
 
     def export_vml_image_data(self, image_data):
         raise StopIteration
-
-
-ParserContext = namedtuple(
-    'ParserContext',
-    [
-        'element',
-        'parsed_result',
-        'stack',
-        'next_element',
-    ],
-)
-
-ParserStack = namedtuple(
-    'ParserStack',
-    [
-        'element',
-        'iterator',
-        'parsed_result',
-        'next_element',
-    ],
-)

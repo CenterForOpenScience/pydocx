@@ -44,6 +44,10 @@ def convert_emus_to_pixels(emus):
     return emus / EMUS_PER_PIXEL
 
 
+def get_first_from_sequence(sequence):
+    return list(islice(sequence, 0, 1))[0]
+
+
 class HtmlTag(object):
     closed_tag_format = '</{tag}>'
 
@@ -595,7 +599,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         tag = None
         if start_new_tag:
-            parent_table = list(islice(table_cell.nearest_ancestors(wordprocessing.Table), 0, 1))[0]  # noqa
+            parent_tables = table_cell.nearest_ancestors(wordprocessing.Table)
+            parent_table = get_first_from_sequence(parent_tables)
             rowspan_counts = self.table_cell_rowspan_tracking[parent_table]
             rowspan = rowspan_counts.get(table_cell, 1)
             attrs = {}

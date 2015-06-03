@@ -364,21 +364,24 @@ class PyDocXHTMLExporter(PyDocXExporter):
             yield result
 
         results = super(PyDocXHTMLExporter, self).export_paragraph(paragraph)
+
+        # TODO I could see this section being its own helper method. that would
+        # make it possible to just return a chain() for everything here
         tag = self.get_paragraph_tag(paragraph)
         if tag:
             results = tag.apply(results, allow_empty=False)
         else:
             line_break_results = self.export_line_break_for_paragraph_if_needed(paragraph)  # noqa
+            # TODO only export the line break if results is non-empty
             results = chain(line_break_results, results)
-
         results = chain(results, self.export_numbering_level_end(paragraph))
 
         for result in results:
             yield result
 
     def export_paragraph_property_justification(self, paragraph, results):
-        # TODO these classes should be applied on the paragraph, and not as
-        # inline styles
+        # TODO these classes could be applied on the paragraph, and not as
+        # inline spans
         alignment = paragraph.effective_properties.justification
         if alignment in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
             pydocx_class = 'pydocx-{alignment}'.format(
@@ -389,6 +392,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             }
             tag = HtmlTag('span', **attrs)
             results = tag.apply(results, allow_empty=False)
+        elif alignment is not None:
+            # TODO What if alignment is something else?
+            pass
         return results
 
     def export_paragraph_property_indentation(self, paragraph, results):
@@ -399,6 +405,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
             right = indentation.get(INDENTATION_RIGHT)
             left = indentation.get(INDENTATION_LEFT)
             first_line = indentation.get(INDENTATION_FIRST_LINE)
+            # TODO would be nice if this integer conversion was handled
+            # implicitly by the model somehow
             if right:
                 try:
                     right = int(right)
@@ -536,7 +544,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             results = tag.apply(results, allow_empty=False)
 
         # Prevent underline style from applying by temporarily monkey-patching
-        # the export function. There's got to be a better way.
+        # the export unliner function. There's got to be a better way.
         old = self.export_run_property_underline
         self.export_run_property_underline = lambda run, results: results
         for result in results:

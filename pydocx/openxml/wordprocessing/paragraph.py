@@ -38,6 +38,21 @@ class Paragraph(XmlModel):
             self._effective_properties = properties
         return self._effective_properties
 
+    def get_style_chain_stack(self):
+        if not self.properties:
+            raise StopIteration
+
+        parent_style = self.properties.parent_style
+        if not parent_style:
+            raise StopIteration
+
+        stack = self.container.style_definitions_part.get_style_chain_stack(
+            'paragraph',
+            parent_style,
+        )
+        for result in stack:
+            yield result
+
     def get_numbering_definition(self):
         # TODO add memoization
         if not self.container.numbering_definitions_part:

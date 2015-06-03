@@ -39,23 +39,16 @@ class Run(XmlModel):
         if not self.container.style_definitions_part:
             return inherited_properties
 
-        styles_part = self.container.style_definitions_part
-
         nearest_paragraphs = self.nearest_ancestors(Paragraph)
         parent_paragraph = list(islice(nearest_paragraphs, 0, 1))
         if parent_paragraph:
             parent_paragraph = parent_paragraph[0]
-            if parent_paragraph.properties:
-                parent_style = parent_paragraph.properties.parent_style
-                style_stack = styles_part.get_style_chain_stack(
-                    'paragraph',
-                    parent_style,
-                )
-                for style in reversed(list(style_stack)):
-                    if style and style.run_properties:
-                        inherited_properties.update(
-                            dict(style.run_properties.fields),
-                        )
+            style_stack = parent_paragraph.get_style_chain_stack()
+            for style in reversed(list(style_stack)):
+                if style and style.run_properties:
+                    inherited_properties.update(
+                        dict(style.run_properties.fields),
+                    )
         return inherited_properties
 
     def _get_inherited_properties_from_parent_style(self):

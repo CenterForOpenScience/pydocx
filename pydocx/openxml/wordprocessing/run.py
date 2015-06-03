@@ -31,6 +31,21 @@ class Run(XmlModel):
         DeletedText,
     )
 
+    def get_style_chain_stack(self):
+        if not self.properties:
+            raise StopIteration
+
+        parent_style = self.properties.parent_style
+        if not parent_style:
+            raise StopIteration
+
+        stack = self.container.style_definitions_part.get_style_chain_stack(
+            'character',
+            parent_style,
+        )
+        for result in stack:
+            yield result
+
     def _get_properties_inherited_from_parent_paragraph(self):
         from pydocx.openxml.wordprocessing.paragraph import Paragraph
 
@@ -53,27 +68,12 @@ class Run(XmlModel):
 
     def _get_inherited_properties_from_parent_style(self):
         inherited_properties = {}
-
-        properties = self.properties
-        if not properties:
-            return inherited_properties
-
-        if not self.container.style_definitions_part:
-            return properties
-
-        styles_part = self.container.style_definitions_part
-
-        parent_style = properties.parent_style
-        if parent_style:
-            style_stack = styles_part.get_style_chain_stack(
-                'character',
-                parent_style,
-            )
-            for style in reversed(list(style_stack)):
-                if style and style.run_properties:
-                    inherited_properties.update(
-                        dict(style.run_properties.fields),
-                    )
+        style_stack = self.get_style_chain_stack()
+        for style in reversed(list(style_stack)):
+            if style.run_properties:
+                inherited_properties.update(
+                    dict(style.run_properties.fields),
+                )
         return inherited_properties
 
     @property

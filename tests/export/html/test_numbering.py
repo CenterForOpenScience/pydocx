@@ -352,8 +352,6 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <ol class="pydocx-list-style-type-None">
-                <li>AAA</li>
-            </ol>
+            <p>AAA</p>
         '''
         self.assert_document_generates_html(document, expected_html)

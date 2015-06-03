@@ -53,6 +53,12 @@ class Paragraph(XmlModel):
         for result in stack:
             yield result
 
+    def get_heading_style(self):
+        style_stack = self.get_style_chain_stack()
+        for style in style_stack:
+            if style.is_a_heading():
+                return style
+
     def get_numbering_definition(self):
         # TODO add memoization
         if not self.container.numbering_definitions_part:

@@ -346,6 +346,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if previous_from_parent is None:
             raise StopIteration
 
+        if not isinstance(previous_from_parent, wordprocessing.Paragraph):
+            raise StopIteration
+
         if self.get_paragraph_tag(previous_from_parent) is not None:
             raise StopIteration
 

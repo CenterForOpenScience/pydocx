@@ -103,6 +103,15 @@ class PyDocXHTMLExporter(PyDocXExporter):
         self.numbering_tracking = {}
         self.table_cell_rowspan_tracking = {}
         self.in_table_cell = False
+        self.heading_level_conversion_map = {
+            'heading 1': 'h1',
+            'heading 2': 'h2',
+            'heading 3': 'h3',
+            'heading 4': 'h4',
+            'heading 5': 'h5',
+            'heading 6': 'h6',
+        }
+        self.default_heading_level = 'h6'
 
     def head(self):
         tag = HtmlTag('head')
@@ -184,6 +193,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
             # Because this paragraph has a numbering def, it's active. This
             # controls whether or not a p tag will be generated
             numbering_tracking[paragraph]['active'] = True
+
+            if paragraph.get_heading_style():
+                # TODO explain why this works
+                previous_num_def_paragraph = paragraph
+                previous_num_def_paragraph_index = index
+                continue
 
             level = paragraph.get_numbering_level()
             if level is None:
@@ -331,12 +346,22 @@ class PyDocXHTMLExporter(PyDocXExporter):
         raise StopIteration
 
     def get_paragraph_tag(self, paragraph):
+        heading_style = paragraph.get_heading_style()
+        if heading_style:
+            return self.get_heading_tag(heading_style)
+        if self.in_table_cell:
+            return
         tracking = self.get_numbering_tracking(paragraph)
         if tracking and tracking.get('active'):
             return
-        if self.in_table_cell:
-            return
         return HtmlTag('p')
+
+    def get_heading_tag(self, heading_style):
+        tag = self.heading_level_conversion_map.get(
+            heading_style.name.lower(),
+            self.default_heading_level,
+        )
+        return HtmlTag(tag)
 
     def export_line_break_for_paragraph_if_needed(self, paragraph):
         # If multiple paragraphs are member of the same list item or same table
@@ -450,6 +475,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if tag:
                 results = tag.apply(results, allow_empty=False)
         return results
+
+    def get_run_styles_to_apply(self, run):
+        parent_paragraphs = run.nearest_ancestors(wordprocessing.Paragraph)
+        parent_paragraph = get_first_from_sequence(parent_paragraphs)
+        if parent_paragraph and parent_paragraph.get_heading_style():
+            # If the parent paragraph is a heading, return nothing
+            raise StopIteration
+        results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
+        for result in results:
+            yield result
 
     def export_run_property_bold(self, run, results):
         tag = HtmlTag('strong')

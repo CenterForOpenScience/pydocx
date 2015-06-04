@@ -12,6 +12,7 @@ from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
+from pydocx.openxml.wordprocessing.sdt_run import SdtRun
 
 
 class Paragraph(XmlModel):
@@ -25,6 +26,7 @@ class Paragraph(XmlModel):
         SmartTagRun,
         InsertedRun,
         DeletedRun,
+        SdtRun,
     )
 
     def __init__(self, **kwargs):
@@ -38,6 +40,16 @@ class Paragraph(XmlModel):
             properties = self.properties
             self._effective_properties = properties
         return self._effective_properties
+
+    def has_structured_document_parent(self):
+        from pydocx.openxml.wordprocessing import SdtBlock
+        structured_parent = self.nearest_ancestors(SdtBlock)
+        try:
+            next(structured_parent)
+            return True
+        except StopIteration:
+            pass
+        return False
 
     def get_style_chain_stack(self):
         if not self.properties:

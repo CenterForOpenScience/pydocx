@@ -31,6 +31,10 @@ from pydocx.openxml.wordprocessing.footnotes import Footnotes
 from pydocx.openxml.wordprocessing.footnote import Footnote
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
 from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
+from pydocx.openxml.wordprocessing.sdt_run import SdtRun
+from pydocx.openxml.wordprocessing.sdt_block import SdtBlock
+from pydocx.openxml.wordprocessing.sdt_content_run import SdtContentRun
+from pydocx.openxml.wordprocessing.sdt_content_block import SdtContentBlock
 
 __all__ = [
     'AbstractNum',
@@ -64,4 +68,8 @@ __all__ = [
     'Footnote',
     'FootnoteReference',
     'FootnoteReferenceMark',
+    'SdtRun',
+    'SdtContentRun',
+    'SdtBlock',
+    'SdtContentBlock',
 ]

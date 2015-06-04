@@ -44,6 +44,10 @@ class PyDocXExporter(object):
             wordprocessing.FootnoteReference: self.export_footnote_reference,
             wordprocessing.Footnote: self.export_footnote,
             wordprocessing.FootnoteReferenceMark: self.export_footnote_reference_mark,  # noqa
+            wordprocessing.SdtRun: self.export_sdt_run,
+            wordprocessing.SdtContentRun: self.export_sdt_content_run,
+            wordprocessing.SdtBlock: self.export_sdt_block,
+            wordprocessing.SdtContentBlock: self.export_sdt_content_block,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
         }
@@ -300,3 +304,21 @@ class PyDocXExporter(object):
 
     def export_vml_image_data(self, image_data):
         raise StopIteration
+
+    def export_sdt(self, sdt):
+        return self.export_node(sdt.content)
+
+    def export_sdt_content(self, sdt_content):
+        return self.yield_nested(sdt_content.children, self.export_node)
+
+    def export_sdt_run(self, sdt_run):
+        return self.export_sdt(sdt_run)
+
+    def export_sdt_content_run(self, sdt_content_run):
+        return self.export_sdt_content(sdt_content_run)
+
+    def export_sdt_block(self, sdt_block):
+        return self.export_sdt(sdt_block)
+
+    def export_sdt_content_block(self, sdt_content_block):
+        return self.export_sdt_content(sdt_content_block)

@@ -401,6 +401,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tracking = self.get_numbering_tracking(paragraph)
         if tracking and tracking.get('active'):
             return
+        if paragraph.has_structured_document_parent():
+            return
         return HtmlTag('p')
 
     def get_heading_tag(self, heading_style):

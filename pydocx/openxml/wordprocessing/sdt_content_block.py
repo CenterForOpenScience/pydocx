@@ -5,24 +5,20 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlChild, XmlCollection
+from pydocx.models import XmlModel, XmlCollection
 from pydocx.openxml.wordprocessing.paragraph import Paragraph
 from pydocx.openxml.wordprocessing.table import Table
-from pydocx.openxml.wordprocessing.section_properties import SectionProperties
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
-from pydocx.openxml.wordprocessing.sdt_block import SdtBlock
 
 
-class Body(XmlModel):
-    XML_TAG = 'body'
+class SdtContentBlock(XmlModel):
+    XML_TAG = 'sdtContent'
 
     children = XmlCollection(
         Paragraph,
         Table,
         InsertedRun,
         DeletedRun,
-        SdtBlock,
+        # SdtBlock,
     )
-
-    final_section_properties = XmlChild(type=SectionProperties)

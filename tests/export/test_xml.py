@@ -488,6 +488,7 @@ class InvalidIlvlOrderTestCase(TranslationTestCase):
 
     def get_xml(self):
         tags = [
+            # purposefully start at 1 instead of 0
             DXB.li(text='AAA', ilvl=1, numId=1),
             DXB.li(text='BBB', ilvl=3, numId=1),
             DXB.li(text='CCC', ilvl=2, numId=1),

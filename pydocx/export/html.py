@@ -232,17 +232,26 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     numbering_tracking[paragraph]['open-level'] = level
                     levels.append(level)
                 elif level_id < previous_level_id:
-                    numbering_tracking[paragraph]['close-item'] = True
-                    numbering_tracking[paragraph]['open-item'] = True
                     # This level is less than the previous level
                     # Close the previous levels until we match up with this
                     # level
                     popped_levels = []
                     while levels:
-                        if levels[-1] == level:
+                        # Pop levels until we get to level, or lower
+                        previous_level = levels[-1]
+                        previous_level_id = int(previous_level.level_id)
+                        if previous_level_id <= level_id:
                             break
                         popped_level = levels.pop()
                         popped_levels.insert(0, popped_level)
+                    if levels:
+                        numbering_tracking[paragraph]['close-item'] = True
+                        numbering_tracking[paragraph]['open-item'] = True
+                    else:
+                        # This handles the mangled level case
+                        levels = [level]
+                        numbering_tracking[paragraph]['open-level'] = level
+
                     # TODO what if previous_num_def_paragraph is None?
                     assert previous_num_def_paragraph
                     numbering_tracking[previous_num_def_paragraph]['close-level'] = popped_levels  # noqa

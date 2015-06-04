@@ -28,6 +28,9 @@ from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnotes import Footnotes
+from pydocx.openxml.wordprocessing.footnote import Footnote
+from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
+from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
 
 __all__ = [
     'AbstractNum',
@@ -58,4 +61,7 @@ __all__ = [
     'DeletedRun',
     'DeletedText',
     'Footnotes',
+    'Footnote',
+    'FootnoteReference',
+    'FootnoteReferenceMark',
 ]

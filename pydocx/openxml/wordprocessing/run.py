@@ -15,6 +15,8 @@ from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
+from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
+from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
 
 
 class Run(XmlModel):
@@ -29,6 +31,8 @@ class Run(XmlModel):
         Drawing,
         Picture,
         DeletedText,
+        FootnoteReference,
+        FootnoteReferenceMark,
     )
 
     def get_style_chain_stack(self):

@@ -306,7 +306,27 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         results = super(PyDocXHTMLExporter, self).export_body(body)
         tag = HtmlTag('body')
-        return tag.apply(results)
+        return tag.apply(chain(results, self.footer()))
+
+    def footer(self):
+        for result in self.export_footnotes():
+            yield result
+
+    def export_footnotes(self):
+        results = super(PyDocXHTMLExporter, self).export_footnotes()
+        attrs = {
+            'class': 'pydocx-list-style-type-decimal',
+        }
+        ol = HtmlTag('ol', **attrs)
+        results = ol.apply(results, allow_empty=False)
+
+        page_break = HtmlTag('hr', allow_self_closing=True)
+        return page_break.apply(results, allow_empty=False)
+
+    def export_footnote(self, footnote):
+        results = super(PyDocXHTMLExporter, self).export_footnote(footnote)
+        tag = HtmlTag('li')
+        return tag.apply(results, allow_empty=False)
 
     def _is_ordered_list(self, numbering_level):
         return numbering_level.num_format != 'bullet'
@@ -753,3 +773,33 @@ class PyDocXHTMLExporter(PyDocXExporter):
         except KeyError:
             pass
         return self.export_image(image=image, width=width, height=height)
+
+    def export_footnote_reference(self, footnote_reference):
+        results = super(PyDocXHTMLExporter, self).export_footnote_reference(
+            footnote_reference,
+        )
+        footnote_id = footnote_reference.footnote_id
+        href = '#footnote-{fid}'.format(fid=footnote_id)
+        name = 'footnote-ref-{fid}'.format(fid=footnote_id)
+        tag = HtmlTag('a', href=href, name=name)
+        for result in tag.apply(results, allow_empty=False):
+            yield result
+
+    def export_footnote_reference_mark(self, footnote_reference_mark):
+        footnote_parents = footnote_reference_mark.nearest_ancestors(
+            wordprocessing.Footnote,
+        )
+        footnote_parent = get_first_from_sequence(footnote_parents)
+        if not footnote_parent:
+            raise StopIteration
+
+        footnote_id = footnote_parent.footnote_id
+        if not footnote_id:
+            raise StopIteration
+
+        name = 'footnote-{fid}'.format(fid=footnote_id)
+        href = '#footnote-ref-{fid}'.format(fid=footnote_id)
+        tag = HtmlTag('a', href=href, name=name)
+        results = tag.apply(['^'])
+        for result in results:
+            yield result

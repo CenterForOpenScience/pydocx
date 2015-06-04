@@ -21,6 +21,8 @@ class PyDocXExporter(object):
         self._page_width = None
         self.previous = {}
 
+        self.footnote_tracker = []
+
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
             wordprocessing.Body: self.export_body,
@@ -39,6 +41,9 @@ class PyDocXExporter(object):
             wordprocessing.Picture: self.export_picture,
             wordprocessing.DeletedRun: self.export_deleted_run,
             wordprocessing.DeletedText: self.export_deleted_text,
+            wordprocessing.FootnoteReference: self.export_footnote_reference,
+            wordprocessing.Footnote: self.export_footnote,
+            wordprocessing.FootnoteReferenceMark: self.export_footnote_reference_mark,  # noqa
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
         }
@@ -264,6 +269,30 @@ class PyDocXExporter(object):
 
     def export_deleted_run(self, deleted_run):
         return self.yield_nested(deleted_run.children, self.export_node)
+
+    def export_footnote_reference(self, footnote_reference):
+        if footnote_reference.footnote is None:
+            raise StopIteration
+        self.footnote_tracker.append(footnote_reference)
+        footnote_index = len(self.footnote_tracker)
+        yield '{0}'.format(footnote_index)
+
+    def export_footnote(self, footnote):
+        # TODO a footnote can have paragraph children, should we track
+        # numbering?
+        return self.yield_nested(footnote.children, self.export_node)
+
+    def export_footnotes(self):
+        if not self.footnote_tracker:
+            raise StopIteration
+        for footnote_reference in self.footnote_tracker:
+            footnote = footnote_reference.footnote
+            if footnote:
+                for result in self.export_node(footnote):
+                    yield result
+
+    def export_footnote_reference_mark(self, footnote_reference_mark):
+        raise StopIteration
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)

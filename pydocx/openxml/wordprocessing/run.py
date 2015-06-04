@@ -43,12 +43,14 @@ class Run(XmlModel):
         if not parent_style:
             raise StopIteration
 
-        stack = self.container.style_definitions_part.get_style_chain_stack(
-            'character',
-            parent_style,
-        )
-        for result in stack:
-            yield result
+        # TODO the getattr is necessary because of footnotes. From the context
+        # of a footnote, a paragraph's container is the footnote part, which
+        # doesn't have access to the style_definitions_part
+        part = getattr(self.container, 'style_definitions_part', None)
+        if part:
+            style_stack = part.get_style_chain_stack('character', parent_style)
+            for result in style_stack:
+                yield result
 
     def _get_properties_inherited_from_parent_paragraph(self):
         from pydocx.openxml.wordprocessing.paragraph import Paragraph

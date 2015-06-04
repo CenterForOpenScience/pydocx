@@ -46,12 +46,14 @@ class Paragraph(XmlModel):
         if not parent_style:
             raise StopIteration
 
-        stack = self.container.style_definitions_part.get_style_chain_stack(
-            'paragraph',
-            parent_style,
-        )
-        for result in stack:
-            yield result
+        # TODO the getattr is necessary because of footnotes. From the context
+        # of a footnote, a paragraph's container is the footnote part, which
+        # doesn't have access to the style_definitions_part
+        part = getattr(self.container, 'style_definitions_part', None)
+        if part:
+            style_stack = part.get_style_chain_stack('paragraph', parent_style)
+            for result in style_stack:
+                yield result
 
     def get_heading_style(self):
         style_stack = self.get_style_chain_stack()
@@ -61,15 +63,19 @@ class Paragraph(XmlModel):
 
     def get_numbering_definition(self):
         # TODO add memoization
-        if not self.container.numbering_definitions_part:
+
+        # TODO the getattr is necessary because of footnotes. From the context
+        # of a footnote, a paragraph's container is the footnote part, which
+        # doesn't have access to the numbering_definitions_part
+        part = getattr(self.container, 'numbering_definitions_part', None)
+        if not part:
             return
-        numbering = self.container.numbering_definitions_part.numbering
         if not self.effective_properties:
             return
         numbering_properties = self.effective_properties.numbering_properties
         if not numbering_properties:
             return
-        return numbering.get_numbering_definition(
+        return part.numbering.get_numbering_definition(
             num_id=numbering_properties.num_id,
         )
 

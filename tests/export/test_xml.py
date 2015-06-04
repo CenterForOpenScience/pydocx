@@ -473,8 +473,6 @@ class InvalidIlvlOrderTestCase(TranslationTestCase):
                     <li>BBB</li>
                 </ol>
             </li>
-        </ol>
-        <ol class="pydocx-list-style-type-decimal">
             <li>CCC</li>
         </ol>
     '''

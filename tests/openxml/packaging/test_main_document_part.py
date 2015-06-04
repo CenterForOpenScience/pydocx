@@ -19,8 +19,7 @@ from pydocx.util.zip import create_zip_archive
 class MainDocumentPartTestCase(unittest.TestCase):
     def test_document_property_is_a_Document_instance(self):
         factory = WordprocessingDocumentFactory()
-        document_xml = b'<document />'
-        factory.add(MainDocumentPart, document_xml)
+        factory.add(MainDocumentPart, '')
 
         package = create_zip_archive(factory.to_zip_dict())
         # TODO the interface for creating a new WordprocessingDocument sucks

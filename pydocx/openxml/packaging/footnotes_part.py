@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 from pydocx.openxml.packaging.open_xml_part import OpenXmlPart
+from pydocx.openxml.wordprocessing import Footnotes
 
 
 class FootnotesPart(OpenXmlPart):
@@ -22,3 +23,17 @@ class FootnotesPart(OpenXmlPart):
         'relationships',
         'footnotes',
     ])
+
+    def __init__(self, *args, **kwargs):
+        super(FootnotesPart, self).__init__(*args, **kwargs)
+        self._footnotes = None
+
+    @property
+    def footnotes(self):
+        if not self._footnotes:
+            self._footnotes = self.load_footnotes()
+        return self._footnotes
+
+    def load_footnotes(self):
+        self._footnotes = Footnotes.load(self.root_element)
+        return self._footnotes

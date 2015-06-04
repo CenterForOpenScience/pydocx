@@ -27,6 +27,7 @@ from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
+from pydocx.openxml.wordprocessing.footnotes import Footnotes
 
 __all__ = [
     'AbstractNum',
@@ -56,4 +57,5 @@ __all__ = [
     'Picture',
     'DeletedRun',
     'DeletedText',
+    'Footnotes',
 ]

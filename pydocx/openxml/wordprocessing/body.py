@@ -9,6 +9,8 @@ from pydocx.models import XmlModel, XmlChild, XmlCollection
 from pydocx.openxml.wordprocessing.paragraph import Paragraph
 from pydocx.openxml.wordprocessing.table import Table
 from pydocx.openxml.wordprocessing.section_properties import SectionProperties
+from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
+from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 
 
 class Body(XmlModel):
@@ -17,6 +19,8 @@ class Body(XmlModel):
     children = XmlCollection(
         Paragraph,
         Table,
+        InsertedRun,
+        DeletedRun,
     )
 
     final_section_properties = XmlChild(type=SectionProperties)

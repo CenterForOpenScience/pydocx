@@ -8,6 +8,7 @@ import os
 from contextlib import contextmanager
 from tempfile import mkstemp
 from unittest import TestCase
+from xml.parsers.expat import ExpatError
 
 from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.test.utils import (
@@ -118,7 +119,10 @@ class DocumentGeneratorTestCase(TestCase):
         actual = exporter.parsed
         expected = self.format_expected_html(expected_html)
         if not html_is_equal(actual, expected):
-            actual = prettify(actual)
+            try:
+                actual = prettify(actual)
+            except ExpatError:
+                pass
             message = [
                 'The expected HTML did not match the actual HTML:',
                 actual,

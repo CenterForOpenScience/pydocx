@@ -32,7 +32,7 @@ class StyleDefinitionsPart(OpenXmlPart):
     def styles(self):
         if self._styles:
             return self._styles
-        self._styles = Styles.load(self.root_element)
+        self._styles = Styles.load(self.root_element, container=self)
         return self._styles
 
     def get_style_chain_stack(self, style_type, style_id):

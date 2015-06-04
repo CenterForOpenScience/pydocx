@@ -35,5 +35,5 @@ class FootnotesPart(OpenXmlPart):
         return self._footnotes
 
     def load_footnotes(self):
-        self._footnotes = Footnotes.load(self.root_element)
+        self._footnotes = Footnotes.load(self.root_element, container=self)
         return self._footnotes

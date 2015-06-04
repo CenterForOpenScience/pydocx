@@ -35,5 +35,5 @@ class NumberingDefinitionsPart(OpenXmlPart):
         return self._numbering
 
     def load_numbering(self):
-        self._numbering = Numbering.load(self.root_element)
+        self._numbering = Numbering.load(self.root_element, container=self)
         return self._numbering

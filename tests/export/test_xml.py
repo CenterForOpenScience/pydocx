@@ -422,16 +422,16 @@ class MangledIlvlTestCase(TranslationTestCase):
     '''
 
     def get_xml(self):
-        li_text = [
-            ('AAA', 0, 2),
-            ('BBB', 1, 1),
-            ('CCC', 0, 1),
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=2),
+            DXB.li(text='BBB', ilvl=1, numId=1),
+            DXB.li(text='CCC', ilvl=0, numId=1),
         ]
-        lis = b''
-        for text, ilvl, numId in li_text:
-            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        body = b''
+        for el in tags:
+            body += el
 
-        xml = DXB.xml(lis)
+        xml = DXB.xml(body)
         return xml
 
 
@@ -449,19 +449,19 @@ class SeperateListsTestCase(TranslationTestCase):
     '''
 
     def get_xml(self):
-        li_text = [
-            ('AAA', 0, 2),
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=2),
             # Because AAA and CCC are part of the same list (same list id)
             # and BBB is different, these need to be split into three
             # lists (or lose everything from BBB and after.
-            ('BBB', 0, 1),
-            ('CCC', 0, 2),
+            DXB.li(text='BBB', ilvl=0, numId=1),
+            DXB.li(text='CCC', ilvl=0, numId=2),
         ]
-        lis = b''
-        for text, ilvl, numId in li_text:
-            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        body = b''
+        for el in tags:
+            body += el
 
-        xml = DXB.xml(lis)
+        xml = DXB.xml(body)
         return xml
 
 

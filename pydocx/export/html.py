@@ -67,7 +67,12 @@ class HtmlTag(object):
             if not first:
                 raise StopIteration
 
-        for result in chain(first, results, [self.close()]):
+        if self.allow_self_closing:
+            results = chain(first, results)
+        else:
+            results = chain(first, results, [self.close()])
+
+        for result in results:
             yield result
 
     def close(self):

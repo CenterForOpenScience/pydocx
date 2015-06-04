@@ -55,9 +55,6 @@ class Run(XmlModel):
 
         inherited_properties = {}
 
-        if not self.container.style_definitions_part:
-            return inherited_properties
-
         nearest_paragraphs = self.nearest_ancestors(Paragraph)
         parent_paragraph = list(islice(nearest_paragraphs, 0, 1))
         if parent_paragraph:
@@ -93,9 +90,6 @@ class Run(XmlModel):
 
     @property
     def effective_properties(self):
-        if not self.container.style_definitions_part:
-            return self.properties
-
         inherited_properties = self.inherited_properties
         effective_properties = {}
         effective_properties.update(dict(inherited_properties.fields))

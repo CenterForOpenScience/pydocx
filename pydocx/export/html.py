@@ -220,6 +220,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             level = paragraph.get_numbering_level()
             if level is None:
                 # TODO should trigger a break tag, but doesn't currently
+                # TODO this might actually be triggering a break tag now
                 continue
 
             if num_def == previous_num_def:
@@ -410,6 +411,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return HtmlTag(tag)
 
     def export_line_break_for_paragraph_if_needed(self, paragraph):
+        # TODO refactor this method into a predicate
+
         # If multiple paragraphs are member of the same list item or same table
         # cell, instead of wrapping each paragraph with a paragraph tag,
         # separate the paragraphs with line breaks
@@ -454,6 +457,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         else:
             line_break_results = self.export_line_break_for_paragraph_if_needed(paragraph)  # noqa
             # TODO only export the line break if results is non-empty
+            # TODO figure out how to use tag.apply(allow_empty=False)
+            # TODO need a test case?
             results = chain(line_break_results, results)
         results = chain(results, self.export_numbering_level_end(paragraph))
 

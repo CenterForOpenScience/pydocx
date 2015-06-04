@@ -235,6 +235,7 @@ class PyDocXExporter(object):
         if not text.text:
             yield ''
         else:
+            # TODO should we do this here, or in the HTML exporter?
             yield self.escape(text.text)
 
     def export_deleted_text(self, deleted_text):

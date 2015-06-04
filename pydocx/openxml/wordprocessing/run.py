@@ -58,6 +58,7 @@ class Run(XmlModel):
         inherited_properties = {}
 
         nearest_paragraphs = self.nearest_ancestors(Paragraph)
+        # TODO use get_first_from_sequence utility?
         parent_paragraph = list(islice(nearest_paragraphs, 0, 1))
         if parent_paragraph:
             parent_paragraph = parent_paragraph[0]

@@ -33,6 +33,7 @@ class Paragraph(XmlModel):
 
     @property
     def effective_properties(self):
+        # TODO need to calculate effective properties like Run
         if not self._effective_properties:
             properties = self.properties
             self._effective_properties = properties

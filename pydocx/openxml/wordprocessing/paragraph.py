@@ -53,11 +53,11 @@ class Paragraph(XmlModel):
 
     def get_style_chain_stack(self):
         if not self.properties:
-            raise StopIteration
+            return
 
         parent_style = self.properties.parent_style
         if not parent_style:
-            raise StopIteration
+            return
 
         # TODO the getattr is necessary because of footnotes. From the context
         # of a footnote, a paragraph's container is the footnote part, which

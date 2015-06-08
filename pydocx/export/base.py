@@ -281,7 +281,7 @@ class PyDocXExporter(object):
 
     def export_footnote_reference(self, footnote_reference):
         if footnote_reference.footnote is None:
-            raise StopIteration
+            return
         self.footnote_tracker.append(footnote_reference)
         footnote_index = len(self.footnote_tracker)
         yield '{0}'.format(footnote_index)
@@ -293,7 +293,7 @@ class PyDocXExporter(object):
 
     def export_footnotes(self):
         if not self.footnote_tracker:
-            raise StopIteration
+            return
         for footnote_reference in self.footnote_tracker:
             footnote = footnote_reference.footnote
             if footnote:

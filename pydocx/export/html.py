@@ -65,7 +65,7 @@ class HtmlTag(object):
         if not allow_empty:
             first.append(next(results))
             if not first:
-                raise StopIteration
+                return
 
         if self.allow_self_closing:
             results = chain(first, results)
@@ -346,11 +346,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_numbering_level_begin(self, paragraph):
         num_def = paragraph.get_numbering_definition()
         if not num_def:
-            raise StopIteration
+            return
 
         tracking = self.get_numbering_tracking(paragraph)
         if not tracking:
-            raise StopIteration
+            return
 
         li = HtmlTag('li')
         if tracking.get('close-item'):
@@ -372,16 +372,15 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # unordered list implies bullet format, so don't pass the class
                 yield HtmlTag('ul', **attrs)
             yield li
-        raise StopIteration
 
     def export_numbering_level_end(self, paragraph):
         num_def = paragraph.get_numbering_definition()
         if not num_def:
-            raise StopIteration
+            return
 
         tracking = self.get_numbering_tracking(paragraph)
         if not tracking:
-            raise StopIteration
+            return
 
         levels = tracking.get('close-level', [])
         for level in reversed(levels):
@@ -390,7 +389,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 yield HtmlTag('ol', closed=True)
             else:
                 yield HtmlTag('ul', closed=True)
-        raise StopIteration
 
     def get_paragraph_tag(self, paragraph):
         heading_style = paragraph.get_heading_style()
@@ -536,8 +534,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         parent_paragraphs = run.nearest_ancestors(wordprocessing.Paragraph)
         parent_paragraph = get_first_from_sequence(parent_paragraphs)
         if parent_paragraph and parent_paragraph.get_heading_style():
-            # If the parent paragraph is a heading, return nothing
-            raise StopIteration
+            # If the parent paragraph is a heading, return an empty generator
+            return
         results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
         for result in results:
             yield result
@@ -720,7 +718,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         length, width = drawing.get_picture_extents()
         relationship_id = drawing.get_picture_relationship_id()
         if not relationship_id:
-            raise StopIteration
+            return
         image = None
         try:
             image = drawing.container.get_part_by_id(
@@ -774,7 +772,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_vml_image_data(self, image_data):
         width, height = image_data.get_picture_extents()
         if not image_data.relationship_id:
-            raise StopIteration
+            return
         image = None
         try:
             image = image_data.container.get_part_by_id(
@@ -801,11 +799,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
         )
         footnote_parent = get_first_from_sequence(footnote_parents)
         if not footnote_parent:
-            raise StopIteration
+            return
 
         footnote_id = footnote_parent.footnote_id
         if not footnote_id:
-            raise StopIteration
+            return
 
         name = 'footnote-{fid}'.format(fid=footnote_id)
         href = '#footnote-ref-{fid}'.format(fid=footnote_id)

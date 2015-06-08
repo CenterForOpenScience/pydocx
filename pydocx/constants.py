@@ -25,10 +25,14 @@ USE_ALIGNMENTS = True
 # https://en.wikipedia.org/wiki/Twip
 TWIPS_PER_POINT = 20
 
+# TODO These alignment values are for traditional conformance. Strict
+# conformance uses different values
 JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'
 JUSTIFY_RIGHT = 'right'
 
+# TODO These indentation values are for traditional conformance. Strict
+# conformance uses different values
 INDENTATION_RIGHT = 'right'
 INDENTATION_LEFT = 'left'
 INDENTATION_FIRST_LINE = 'firstLine'

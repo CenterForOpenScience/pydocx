@@ -72,3 +72,35 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p>capacités</p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_tab_char_with_text(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>foo</t>
+                <tab />
+                <t>bar</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>foo<span class="pydocx-tab"></span>bar</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_tab_char_by_itself(self):
+        document_xml = '''
+            <p>
+              <r>
+                <tab />
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p><span class="pydocx-tab"></span></p>'
+        self.assert_document_generates_html(document, expected_html)

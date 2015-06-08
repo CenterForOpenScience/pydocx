@@ -355,3 +355,150 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             <p>AAA</p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_single_paragraph_missing_level_definition(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>foo</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_multiple_paragraphs_with_one_missing_level_definition(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            <p><r><t>foo</t></r></p>
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>bar</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>foo</p>
+            <p>bar</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_valid_list_level_followed_by_missing_level(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+            <p>foo</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_missing_level_in_between_valid_levels(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+            {aaa}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>
+                    AAA
+                    <br />
+                    foo
+                </li>
+                <li>AAA</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)

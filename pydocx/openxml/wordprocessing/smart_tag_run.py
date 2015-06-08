@@ -15,3 +15,5 @@ class SmartTagRun(XmlModel):
     children = XmlCollection(
         Run,
     )
+
+SmartTagRun.children.types.add(SmartTagRun)

@@ -491,6 +491,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # inline styles
         indentation = paragraph.effective_properties.indentation
         if indentation:
+            # TODO add test cases that use other indentation types
             right = indentation.get(INDENTATION_RIGHT)
             left = indentation.get(INDENTATION_LEFT)
             first_line = indentation.get(INDENTATION_FIRST_LINE)
@@ -520,6 +521,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 style['margin-left'] = '{0:.2f}em'.format(left)
             if first_line:
                 first_line = convert_twips_to_ems(first_line)
+                # TODO text-indent doesn't work with inline elements like span
                 style['text-indent'] = '{0:.2f}em'.format(first_line)
             if style:
                 attrs = {

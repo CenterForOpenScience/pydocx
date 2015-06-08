@@ -170,7 +170,8 @@ class PyDocXExporter(object):
         return results
 
     def export_break(self, br):
-        raise StopIteration
+        return
+        yield
 
     def export_run(self, run):
         results = self.yield_nested(run.children, self.export_node)
@@ -243,7 +244,8 @@ class PyDocXExporter(object):
             yield self.escape(text.text)
 
     def export_deleted_text(self, deleted_text):
-        raise StopIteration
+        return
+        yield
 
     def export_no_break_hyphen(self, hyphen):
         yield '-'
@@ -261,7 +263,8 @@ class PyDocXExporter(object):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
     def export_drawing(self, drawing):
-        raise StopIteration
+        return
+        yield
 
     def export_smart_tag_run(self, smart_tag):
         return self.yield_nested(smart_tag.children, self.export_node)
@@ -297,13 +300,15 @@ class PyDocXExporter(object):
                     yield result
 
     def export_footnote_reference_mark(self, footnote_reference_mark):
-        raise StopIteration
+        return
+        yield
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
 
     def export_vml_image_data(self, image_data):
-        raise StopIteration
+        return
+        yield
 
     def export_sdt(self, sdt):
         return self.export_node(sdt.content)

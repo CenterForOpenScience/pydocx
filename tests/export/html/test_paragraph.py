@@ -104,3 +104,22 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p><span class="pydocx-tab"></span></p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_nested_smartTag(self):
+        document_xml = '''
+            <p>
+              <smartTag>
+                <smartTag>
+                  <r>
+                    <t>foo</t>
+                  </r>
+                </smartTag>
+              </smartTag>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>foo</p>'
+        self.assert_document_generates_html(document, expected_html)

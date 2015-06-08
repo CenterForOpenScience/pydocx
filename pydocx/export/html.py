@@ -412,38 +412,39 @@ class PyDocXHTMLExporter(PyDocXExporter):
         )
         return HtmlTag(tag)
 
-    def export_line_break_for_paragraph_if_needed(self, paragraph):
-        # TODO refactor this method into a predicate
-
+    def should_yield_line_break_for_paragraph(self, paragraph):
         # If multiple paragraphs are member of the same list item or same table
         # cell, instead of wrapping each paragraph with a paragraph tag,
         # separate the paragraphs with line breaks
         previous_from_parent = self.previous.get(paragraph.parent)
         if previous_from_parent is None:
-            raise StopIteration
+            return False
 
         if not isinstance(previous_from_parent, wordprocessing.Paragraph):
-            raise StopIteration
+            return False
 
         if self.get_paragraph_tag(previous_from_parent) is not None:
-            raise StopIteration
+            return False
 
         tracking = self.get_numbering_tracking(paragraph)
         if tracking:
             if tracking.get('open-item') is not None:
-                raise StopIteration
+                return False
 
             if tracking.get('open-level') is not None:
-                raise StopIteration
+                return False
 
         previous_tracking = self.get_numbering_tracking(previous_from_parent)
         if previous_tracking:
             if previous_tracking.get('close-level') is not None:
-                raise StopIteration
+                return False
+        return True
 
-        line_break = wordprocessing.Break()
-        for result in self.export_node(line_break):
-            yield result
+    def export_line_break_for_paragraph_if_needed(self, paragraph):
+        if self.should_yield_line_break_for_paragraph(paragraph):
+            line_break = wordprocessing.Break()
+            for result in self.export_node(line_break):
+                yield result
 
     def export_paragraph(self, paragraph):
         for result in self.export_numbering_level_begin(paragraph):

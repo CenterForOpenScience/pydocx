@@ -123,3 +123,57 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p>foo</p>'
         self.assert_document_generates_html(document, expected_html)
+
+
+class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
+    def test_with_empty_text_does_not_render_paragraph(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                 <jc val="center" />
+              </pPr>
+              <r>
+                <t></t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_with_missing_text_does_not_render_paragraph(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                 <jc val="center" />
+              </pPr>
+              <r></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_with_blank_space_in_text_does_render_paragraph_with_span(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                 <jc val="center" />
+              </pPr>
+              <r>
+                <t> </t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p><span class="pydocx-center"> </span></p>'
+        self.assert_document_generates_html(document, expected_html)

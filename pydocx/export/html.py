@@ -526,7 +526,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     'style': convert_dictionary_to_style_fragment(style)
                 }
                 tag = HtmlTag('span', **attrs)
-            if tag:
                 results = tag.apply(results, allow_empty=False)
         return results
 

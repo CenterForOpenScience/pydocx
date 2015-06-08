@@ -810,3 +810,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
         results = tag.apply(['^'])
         for result in results:
             yield result
+
+    def export_tab_char(self, tab_char):
+        results = super(PyDocXHTMLExporter, self).export_tab_char(tab_char)
+        attrs = {
+            'class': 'pydocx-tab',
+        }
+        tag = HtmlTag('span', **attrs)
+        return tag.apply(results)

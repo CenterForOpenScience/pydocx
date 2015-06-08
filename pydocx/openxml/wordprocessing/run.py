@@ -14,6 +14,7 @@ from pydocx.openxml.wordprocessing.drawing import Drawing
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.text import Text
+from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
 from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
@@ -25,6 +26,7 @@ class Run(XmlModel):
     properties = XmlChild(type=RunProperties)
 
     children = XmlCollection(
+        TabChar,
         Break,
         NoBreakHyphen,
         Text,

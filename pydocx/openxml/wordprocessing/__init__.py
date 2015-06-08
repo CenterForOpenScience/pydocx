@@ -30,6 +30,7 @@ from pydocx.openxml.wordprocessing.sdt_run import SdtRun
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.style import Style
 from pydocx.openxml.wordprocessing.styles import Styles
+from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.table import Table
 from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
@@ -68,6 +69,7 @@ __all__ = [
     'SmartTagRun',
     'Style',
     'Styles',
+    'TabChar',
     'Table',
     'TableCell',
     'TableRow',

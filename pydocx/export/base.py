@@ -48,6 +48,7 @@ class PyDocXExporter(object):
             wordprocessing.SdtContentRun: self.export_sdt_content_run,
             wordprocessing.SdtBlock: self.export_sdt_block,
             wordprocessing.SdtContentBlock: self.export_sdt_content_block,
+            wordprocessing.TabChar: self.export_tab_char,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
         }
@@ -327,3 +328,7 @@ class PyDocXExporter(object):
 
     def export_sdt_content_block(self, sdt_content_block):
         return self.export_sdt_content(sdt_content_block)
+
+    def export_tab_char(self, tab_char):
+        return
+        yield

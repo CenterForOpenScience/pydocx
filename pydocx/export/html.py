@@ -195,6 +195,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if num_def is None:
                 continue
 
+            level = paragraph.get_numbering_level()
+            if level is None:
+                continue
+
             # Because this paragraph has a numbering def, it's active. This
             # controls whether or not a p tag will be generated
             numbering_tracking[paragraph]['active'] = True
@@ -215,12 +219,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # paragraph's level information
 
                 # prevent levels from being opened / closed for this paragraph
-                continue
-
-            level = paragraph.get_numbering_level()
-            if level is None:
-                # TODO should trigger a break tag, but doesn't currently
-                # TODO this might actually be triggering a break tag now
                 continue
 
             if num_def == previous_num_def:

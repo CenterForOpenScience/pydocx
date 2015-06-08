@@ -471,6 +471,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # TODO these classes could be applied on the paragraph, and not as
         # inline spans
         alignment = paragraph.effective_properties.justification
+        # TODO These alignment values are for traditional conformance. Strict
+        # conformance uses different values
         if alignment in [JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT]:
             pydocx_class = 'pydocx-{alignment}'.format(
                 alignment=alignment,

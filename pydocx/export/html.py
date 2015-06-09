@@ -221,7 +221,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # prevent levels from being opened / closed for this paragraph
                 continue
 
-            if num_def == previous_num_def:
+            if previous_num_def is None:
+                # There hasn't been a previous numbering definition
+                numbering_tracking[paragraph]['open-level'] = level
+                levels.append(level)
+            elif num_def == previous_num_def:
                 assert levels
                 level_id = int(level.level_id)
                 previous_level = levels[-1]
@@ -259,10 +263,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
                     # TODO what if previous_num_def_paragraph is None?
                     assert previous_num_def_paragraph
                     numbering_tracking[previous_num_def_paragraph]['close-level'] = popped_levels  # noqa
-            elif previous_num_def is None:
-                # There hasn't been a previous numbering definition
-                numbering_tracking[paragraph]['open-level'] = level
-                levels.append(level)
             else:
                 # The num def has changed
                 # Close all of the levels and open the new definition

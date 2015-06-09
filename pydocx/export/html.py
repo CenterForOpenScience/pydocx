@@ -203,6 +203,17 @@ class PyDocXHTMLExporter(PyDocXExporter):
             # controls whether or not a p tag will be generated
             numbering_tracking[paragraph]['active'] = True
 
+            open_new_level = False
+            open_new_list = False
+            continue_current_list = False
+
+            if previous_num_def is None:
+                open_new_level = True
+            elif num_def == previous_num_def:
+                continue_current_list = True
+            elif previous_num_def is not None and num_def != previous_num_def:
+                open_new_list = True
+
             if paragraph.get_heading_style():
                 # A paragraph that is defined a a heading never opens a new
                 # list. So if a heading has level 0 numbering, that numbering
@@ -221,11 +232,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # prevent levels from being opened / closed for this paragraph
                 continue
 
-            if previous_num_def is None:
+            if open_new_level:
                 # There hasn't been a previous numbering definition
                 numbering_tracking[paragraph]['open-level'] = level
                 levels.append(level)
-            elif num_def == previous_num_def:
+
+            if continue_current_list:
                 assert levels
                 level_id = int(level.level_id)
                 previous_level = levels[-1]
@@ -260,10 +272,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
                         levels = [level]
                         numbering_tracking[paragraph]['open-level'] = level
 
-                    # TODO what if previous_num_def_paragraph is None?
+                    # TODO could previous_num_def_paragraph ever be None?
                     assert previous_num_def_paragraph
                     numbering_tracking[previous_num_def_paragraph]['close-level'] = popped_levels  # noqa
-            else:
+
+            if open_new_list:
                 # The num def has changed
                 # Close all of the levels and open the new definition
                 assert previous_num_def_paragraph

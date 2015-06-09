@@ -63,14 +63,16 @@ class HtmlTag(object):
     def apply(self, results, allow_empty=True):
         first = [self]
         if not allow_empty:
-            first.append(next(results))
-            if not first:
-                return
+            # next will raise a StopIteration if results is empty
+            next_result = next(results)
+            first.append(next_result)
 
-        if self.allow_self_closing:
-            results = chain(first, results)
-        else:
-            results = chain(first, results, [self.close()])
+        sequence = [first, results]
+
+        if not self.allow_self_closing:
+            sequence.append([self.close()])
+
+        results = chain(*sequence)
 
         for result in results:
             yield result

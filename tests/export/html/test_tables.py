@@ -283,3 +283,54 @@ class TableTestCase(DocumentGeneratorTestCase):
             </table>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_empty_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td></td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_empty_paragraph_after_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                        <p>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)

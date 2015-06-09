@@ -8,7 +8,7 @@ from __future__ import (
 
 import base64
 import posixpath
-from itertools import chain, islice
+from itertools import chain
 from collections import defaultdict
 
 from pydocx.constants import (
@@ -45,10 +45,12 @@ def convert_emus_to_pixels(emus):
 
 
 def get_first_from_sequence(sequence, default=None):
-    normalized_sequence = list(islice(sequence, 0, 1))
-    if normalized_sequence:
-        return normalized_sequence[0]
-    return default
+    first_result = default
+    try:
+        first_result = next(sequence)
+    except StopIteration:
+        pass
+    return first_result
 
 
 class HtmlTag(object):
@@ -63,9 +65,10 @@ class HtmlTag(object):
     def apply(self, results, allow_empty=True):
         first = [self]
         if not allow_empty:
-            # next will raise a StopIteration if results is empty
-            next_result = next(results)
-            first.append(next_result)
+            first_result = get_first_from_sequence(results)
+            if not first_result:
+                return
+            first.append(first_result)
 
         sequence = [first, results]
 
@@ -470,10 +473,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
             results = tag.apply(results, allow_empty=False)
         else:
             line_break_results = self.export_line_break_for_paragraph_if_needed(paragraph)  # noqa
-            # TODO only export the line break if results is non-empty
-            # TODO figure out how to use tag.apply(allow_empty=False)
-            # TODO need a test case?
-            results = chain(line_break_results, results)
+            first_result = get_first_from_sequence(results)
+            if first_result:
+                results = chain(
+                    line_break_results,
+                    [first_result],
+                    results,
+                )
         results = chain(results, self.export_numbering_level_end(paragraph))
 
         for result in results:

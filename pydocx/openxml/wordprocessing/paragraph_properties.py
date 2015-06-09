@@ -15,4 +15,6 @@ class ParagraphProperties(XmlModel):
     parent_style = XmlChild(name='pStyle', attrname='val')
     numbering_properties = XmlChild(type=NumberingProperties)
     justification = XmlChild(name='jc', attrname='val')
+    # TODO ind can appear multiple times. Need to merge them in document order
+    # This probably means other elements can appear multiple times
     indentation = XmlChild(name='ind', type=lambda el: dict(el.attrib))

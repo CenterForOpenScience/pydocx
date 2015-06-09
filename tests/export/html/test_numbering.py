@@ -568,3 +568,34 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_empty_item(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li></li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)

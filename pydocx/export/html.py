@@ -452,6 +452,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if previous_tracking:
             if previous_tracking.get('close-level') is not None:
                 return False
+
+        # TODO Do not output a break tag if the previous paragraph was empty
         return True
 
     def export_line_break_for_paragraph_if_needed(self, paragraph):

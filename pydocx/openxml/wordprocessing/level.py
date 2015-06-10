@@ -20,3 +20,6 @@ class Level(XmlModel):
     paragraph_style = XmlChild(name='pStyle', attrname='val')
     run_properties = XmlChild(type=RunProperties)
     paragraph_properties = XmlChild(type=ParagraphProperties)
+
+    def is_bullet_format(self):
+        return self.num_format == 'bullet'

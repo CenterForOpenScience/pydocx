@@ -346,7 +346,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(results, allow_empty=False)
 
     def _is_ordered_list(self, numbering_level):
-        return numbering_level.num_format != 'bullet'
+        return not numbering_level.is_bullet_format()
 
     def get_numbering_tracking(self, paragraph):
         numbering_tracking = self.numbering_tracking.get(paragraph.parent)

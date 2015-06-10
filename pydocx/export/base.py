@@ -94,11 +94,10 @@ class PyDocXExporter(object):
                 yield result
 
     def export_node(self, node):
-        for node_type, caller in self.node_type_to_export_func_map.items():
-            if isinstance(node, node_type):
-                for result in caller(node):
-                    yield result
-                break
+        caller = self.node_type_to_export_func_map.get(type(node))
+        if callable(caller):
+            for result in caller(node):
+                yield result
 
     @property
     def page_width(self):

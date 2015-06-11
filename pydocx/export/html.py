@@ -768,7 +768,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             height_px = '{px:.0f}px'.format(px=convert_emus_to_pixels(width))
             attrs['width'] = width_px
             attrs['height'] = height_px
-        return self.export_image(image=image, **attrs)
+        tag = self.get_image_tag(image=image, **attrs)
+        if tag:
+            yield tag
 
     def get_image_source(self, image):
         if image is None:
@@ -785,7 +787,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             )
             return self.escape(b64_encoded_src)
 
-    def export_image(self, image, width=None, height=None):
+    def get_image_tag(self, image, width=None, height=None):
         image_src = self.get_image_source(image)
         if image_src:
             attrs = {
@@ -794,7 +796,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if width and height:
                 attrs['width'] = width
                 attrs['height'] = height
-            yield HtmlTag('img', allow_self_closing=True, **attrs)
+            return HtmlTag('img', allow_self_closing=True, **attrs)
 
     def export_inserted_run(self, inserted_run):
         results = super(PyDocXHTMLExporter, self).export_inserted_run(inserted_run)  # noqa
@@ -815,7 +817,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             )
         except KeyError:
             pass
-        return self.export_image(image=image, width=width, height=height)
+        tag = self.get_image_tag(image=image, width=width, height=height)
+        if tag:
+            yield tag
 
     def export_footnote_reference(self, footnote_reference):
         results = super(PyDocXHTMLExporter, self).export_footnote_reference(

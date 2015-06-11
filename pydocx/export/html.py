@@ -644,12 +644,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('span', **attrs)
         return tag.apply(results, allow_empty=False)
 
-    def export_hyperlink(self, hyperlink):
-        results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
+    def get_hyperlink_tag(self, hyperlink):
         target_uri = hyperlink.get_target_uri()
         if target_uri:
             href = self.escape(target_uri)
-            tag = HtmlTag('a', href=href)
+            return HtmlTag('a', href=href)
+
+    def export_hyperlink(self, hyperlink):
+        results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
+        tag = self.get_hyperlink_tag(hyperlink)
+        if tag:
             results = tag.apply(results, allow_empty=False)
 
         # Prevent underline style from applying by temporarily monkey-patching

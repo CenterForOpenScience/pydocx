@@ -199,8 +199,12 @@ class PyDocXExporter(object):
 
     def export_run_apply_properties(self, run, results):
         styles_to_apply = self.get_run_styles_to_apply(run)
+        # Preserve style application order, but don't duplicate
+        applied_styles = set()
         for func in styles_to_apply:
-            results = func(run, results)
+            if func not in applied_styles:
+                results = func(run, results)
+                applied_styles.add(func)
         return results
 
     def export_run_property_bold(self, run, results):

@@ -359,11 +359,25 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         return tracking
 
-    def export_numbering_level_begin(self, paragraph):
-        num_def = paragraph.get_numbering_definition()
-        if not num_def:
+    def get_numbering_level_tag_begin(self, paragraph):
+        tracking = self.get_numbering_tracking(paragraph)
+        if not tracking:
             return
 
+        level = tracking.get('open-level')
+        if level is not None:
+            pydocx_class = 'pydocx-list-style-type-{fmt}'.format(
+                fmt=level.num_format,
+            )
+            attrs = {}
+            if self._is_ordered_list(level):
+                attrs['class'] = pydocx_class
+                return HtmlTag('ol', **attrs)
+            else:
+                # unordered list implies bullet format, so don't pass the class
+                return HtmlTag('ul', **attrs)
+
+    def export_numbering_level_begin(self, paragraph):
         tracking = self.get_numbering_tracking(paragraph)
         if not tracking:
             return

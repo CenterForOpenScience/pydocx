@@ -664,12 +664,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
             yield result
         self.export_run_property_underline = old
 
-    def export_break(self, br):
+    def get_break_tag(self, br):
         if br.is_page_break():
             tag_name = 'hr'
         else:
             tag_name = 'br'
-        yield HtmlTag(tag_name, allow_self_closing=True)
+        return HtmlTag(tag_name, allow_self_closing=True)
+
+    def export_break(self, br):
+        tag = self.get_break_tag(br)
+        yield tag
 
     def export_table(self, table):
         table_cell_spans = table.calculate_table_cell_spans()

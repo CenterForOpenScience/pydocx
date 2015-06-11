@@ -675,11 +675,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = self.get_break_tag(br)
         yield tag
 
+    def get_table_tag(self, table):
+        return HtmlTag('table', border='1')
+
     def export_table(self, table):
         table_cell_spans = table.calculate_table_cell_spans()
         self.table_cell_rowspan_tracking[table] = table_cell_spans
         results = super(PyDocXHTMLExporter, self).export_table(table)
-        tag = HtmlTag('table', border='1')
+        tag = self.get_table_tag(table)
         return tag.apply(results)
 
     def export_table_row(self, table_row):

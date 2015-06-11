@@ -19,6 +19,8 @@ from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
 from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
 
+from pydocx.util.memoize import memoized
+
 
 class Run(XmlModel):
     XML_TAG = 'r'
@@ -94,6 +96,7 @@ class Run(XmlModel):
         return RunProperties(**properties)
 
     @property
+    @memoized
     def effective_properties(self):
         inherited_properties = self.inherited_properties
         effective_properties = {}

@@ -411,7 +411,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def get_paragraph_tag(self, paragraph):
         heading_style = paragraph.get_heading_style()
         if heading_style:
-            return self.get_heading_tag(heading_style)
+            tag = self.get_heading_tag(heading_style)
+            if tag:
+                return tag
         if self.in_table_cell:
             return
         tracking = self.get_numbering_tracking(paragraph)

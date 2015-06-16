@@ -174,6 +174,7 @@ class PyDocXExporter(object):
         yield
 
     def export_run(self, run):
+        # TODO squash multiple sequential text nodes into one?
         results = self.yield_nested(run.children, self.export_node)
         if run.effective_properties:
             results = self.export_run_apply_properties(run, results)
@@ -264,6 +265,7 @@ class PyDocXExporter(object):
         return self.yield_nested(table_cell.children, self.export_node)
 
     def escape(self, text):
+        #  TODO should we use escape here instead?
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
     def export_drawing(self, drawing):

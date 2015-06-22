@@ -32,7 +32,6 @@ class Paragraph(XmlModel):
     def __init__(self, **kwargs):
         super(Paragraph, self).__init__(**kwargs)
         self._effective_properties = None
-        self._heading_style = None
 
     @property
     def effective_properties(self):
@@ -71,13 +70,16 @@ class Paragraph(XmlModel):
 
     @property
     def heading_style(self):
-        if self._heading_style is not None:
-            return self._heading_style
+        if hasattr(self, '_heading_style'):
+            return getattr(self, '_heading_style')
         style_stack = self.get_style_chain_stack()
+        heading_style = None
         for style in style_stack:
             if style.is_a_heading():
-                self.heading_style = style
-                return style
+                heading_style = style
+                break
+        self.heading_style = heading_style
+        return heading_style
 
     @heading_style.setter
     def heading_style(self, style):

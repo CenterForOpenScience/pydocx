@@ -219,7 +219,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             elif previous_num_def is not None and num_def != previous_num_def:
                 open_new_list = True
 
-            if paragraph.get_heading_style():
+            if paragraph.heading_style:
                 # A paragraph that is defined a a heading never opens a new
                 # list. So if a heading has level 0 numbering, that numbering
                 # is ignored. However, if a heading appears as a sub-level,
@@ -409,7 +409,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 yield HtmlTag('ul', closed=True)
 
     def get_paragraph_tag(self, paragraph):
-        heading_style = paragraph.get_heading_style()
+        heading_style = paragraph.heading_style
         if heading_style:
             tag = self.get_heading_tag(heading_style)
             if tag:
@@ -559,7 +559,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def get_run_styles_to_apply(self, run):
         parent_paragraphs = run.nearest_ancestors(wordprocessing.Paragraph)
         parent_paragraph = get_first_from_sequence(parent_paragraphs)
-        if parent_paragraph and parent_paragraph.get_heading_style():
+        if parent_paragraph and parent_paragraph.heading_style:
             # If the parent paragraph is a heading, return an empty generator
             return
         results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)

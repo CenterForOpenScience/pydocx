@@ -32,6 +32,7 @@ class Paragraph(XmlModel):
     def __init__(self, **kwargs):
         super(Paragraph, self).__init__(**kwargs)
         self._effective_properties = None
+        self._heading_style = None
 
     @property
     def effective_properties(self):
@@ -68,11 +69,19 @@ class Paragraph(XmlModel):
             for result in style_stack:
                 yield result
 
-    def get_heading_style(self):
+    @property
+    def heading_style(self):
+        if self._heading_style is not None:
+            return self._heading_style
         style_stack = self.get_style_chain_stack()
         for style in style_stack:
             if style.is_a_heading():
+                self.heading_style = style
                 return style
+
+    @heading_style.setter
+    def heading_style(self, style):
+        self._heading_style = style
 
     def get_numbering_definition(self):
         # TODO add memoization

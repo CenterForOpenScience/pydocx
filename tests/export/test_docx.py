@@ -18,7 +18,8 @@ from pydocx.util.zip import ZipFile
 
 
 def convert(path, *args, **kwargs):
-    return PyDocXHTMLExporter(path, *args, **kwargs).parsed
+    exporter = PyDocXHTMLExporter(path, *args, **kwargs)
+    return exporter.export()
 
 
 class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):

@@ -81,13 +81,9 @@ class PyDocXExporter(object):
         if self.main_document_part:
             return self.main_document_part.numbering_definitions_part
 
-    @property
-    def parsed(self):
+    def export(self):
         if self.main_document_part is None:
             raise MalformedDocxException
-        return self.export()
-
-    def export(self):
         document = self.main_document_part.document
         if document:
             for result in self.export_node(document):

@@ -12,6 +12,39 @@ from pydocx.openxml.packaging import MainDocumentPart
 
 
 class ParagraphTestCase(DocumentGeneratorTestCase):
+    def test_single_whitespace_in_text_run_is_preserved(self):
+        document_xml = '''
+            <p>
+              <r><t>Foo</t></r>
+              <r>
+                <t> </t>
+              </r>
+              <r><t>Bar</t></r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>Foo Bar</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_only_whitespace_is_ignored(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t> </t>
+              </r>
+              <r>
+                <t> </t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
     def test_multiple_text_tags_in_a_single_run_tag_create_single_paragraph(
         self,
     ):

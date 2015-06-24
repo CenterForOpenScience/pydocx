@@ -704,7 +704,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             results = tag.apply(results, allow_empty=False)
 
         # Prevent underline style from applying by temporarily monkey-patching
-        # the export unliner function. There's got to be a better way.
+        # the export underline function. There's got to be a better way.
         old = self.export_run_property_underline
         self.export_run_property_underline = lambda run, results: results
         for result in results:

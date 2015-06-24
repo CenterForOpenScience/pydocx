@@ -401,12 +401,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 fmt=level.num_format,
             )
             attrs = {}
+            tag_name = 'ul'
             if self._is_ordered_list(level):
                 attrs['class'] = pydocx_class
-                return HtmlTag('ol', **attrs)
-            else:
-                # unordered list implies bullet format, so don't pass the class
-                return HtmlTag('ul', **attrs)
+                tag_name = 'ol'
+            return HtmlTag(tag_name, **attrs)
 
     def export_numbering_level_begin(self, paragraph):
         tracking = self.get_numbering_tracking(paragraph)

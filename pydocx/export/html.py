@@ -45,6 +45,10 @@ def convert_emus_to_pixels(emus):
 
 
 def get_first_from_sequence(sequence, default=None):
+    '''
+    Given a sequence, return the first item in the sequence. If the sequence is
+    empty, return the passed in default.
+    '''
     first_result = default
     try:
         first_result = next(sequence)

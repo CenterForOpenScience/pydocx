@@ -39,6 +39,7 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'nested_table_rowspan',
         'nested_tables',
         'no_break_hyphen',
+        'resized_image',
         'shift_enter',
         'simple',
         'simple_lists',

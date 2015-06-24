@@ -478,10 +478,15 @@ class NumberingTestCase(DocumentGeneratorTestCase):
                 </pPr>
                 <r><t>foo</t></r>
             </p>
-            {aaa}
+            {bbb}
         '''.format(
             aaa=self.simple_list_item.format(
                 content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
                 num_id=1,
                 ilvl=0,
             ),
@@ -498,7 +503,7 @@ class NumberingTestCase(DocumentGeneratorTestCase):
                     <br />
                     foo
                 </li>
-                <li>AAA</li>
+                <li>BBB</li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -548,10 +553,15 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         document_xml = '''
             {aaa}
             <p />
-            {aaa}
+            {bbb}
         '''.format(
             aaa=self.simple_list_item.format(
                 content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
                 num_id=1,
                 ilvl=0,
             ),
@@ -564,7 +574,7 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
                 <li>AAA</li>
-                <li>AAA</li>
+                <li>BBB</li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)

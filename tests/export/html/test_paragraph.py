@@ -193,7 +193,7 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
         expected_html = ''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_with_blank_space_in_text_does_render_paragraph_with_span(self):
+    def test_with_blank_space_in_text_does_not_render_paragraph_with_span(self):  # noqa
         document_xml = '''
             <p>
               <pPr>
@@ -208,5 +208,5 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = '<p><span class="pydocx-center"> </span></p>'
+        expected_html = ''
         self.assert_document_generates_html(document, expected_html)

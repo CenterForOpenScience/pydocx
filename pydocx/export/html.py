@@ -57,6 +57,34 @@ def get_first_from_sequence(sequence, default=None):
     return first_result
 
 
+def is_only_whitespace(obj):
+    '''
+    If the obj has `strip` return True if calling strip on the obj results in
+    an empty instance. Otherwise, return False.
+    '''
+    if hasattr(obj, 'strip'):
+        return not obj.strip()
+    return False
+
+
+def is_not_empty_and_not_only_whitespace(gen):
+    '''
+    Determine if a generator is empty, or consists only of whitespace.
+
+    If the generator is non-empty, return the original generator. Otherwise,
+    return None
+    '''
+    queue = []
+    try:
+        for item in gen:
+            queue.append(item)
+            if not is_only_whitespace(item):
+                # This item isn't whitespace, so we're done scanning
+                return chain(queue, gen)
+    except StopIteration:
+        pass
+
+
 class HtmlTag(object):
     closed_tag_format = '</{tag}>'
 
@@ -69,10 +97,9 @@ class HtmlTag(object):
     def apply(self, results, allow_empty=True):
         first = [self]
         if not allow_empty:
-            first_result = get_first_from_sequence(results)
-            if not first_result:
+            results = is_not_empty_and_not_only_whitespace(results)
+            if results is None:
                 return
-            first.append(first_result)
 
         sequence = [first, results]
 

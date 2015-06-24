@@ -202,7 +202,24 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(chain(self.head(), results))
 
     def calculate_numbering_spans(self, paragraphs):
+        # TODO This method could probably use a few passes for cleanup,
+        # optimization.
+
+        # In OpenXML "numbering spans" can occur across paragraph definitions
+        # The start or end of a new numbering level is inferred by the
+        # particular numbering definition used by a paragraph, and how it
+        # differs from the previous numbering definition
+
+        # These open and close events are tracked in the structure below.
         numbering_tracking = defaultdict(dict)
+
+        # The above structure uses the following keys to describe the numbering
+        # span structure:
+        #   active - This paragraph is in a numbering span
+        #   open-level - Open a new level of the type defined
+        #   close-level - Close the list of levels
+        #   open-item - A new item within the current level should be opened
+        #   close-item - The current item in the current level should be closed
 
         previous_num_def = None
         previous_num_def_paragraph = None

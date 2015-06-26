@@ -252,38 +252,21 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if level is None:
                 continue
 
-            # Because this paragraph has a numbering def, it's active. This
-            # controls whether or not a p tag will be generated
-            numbering_tracking[paragraph]['active'] = True
-
             open_new_level = False
             open_new_list = False
             continue_current_list = False
 
-            if previous_num_def is None:
-                open_new_level = True
-            elif num_def == previous_num_def:
-                continue_current_list = True
-            elif previous_num_def is not None and num_def != previous_num_def:
+            if not paragraph.heading_style:
+                if previous_num_def is None:
+                    open_new_level = True
+                elif num_def == previous_num_def:
+                    continue_current_list = True
+            if previous_num_def is not None and num_def != previous_num_def:
                 open_new_list = True
 
-            if paragraph.heading_style:
-                # A paragraph that is defined a a heading never opens a new
-                # list. So if a heading has level 0 numbering, that numbering
-                # is ignored. However, if a heading appears as a sub-level,
-                # instead of opening that new level, it is appended to the
-                # content of the current item, one level up
-                # If we have a paragraph defined as a heading style at the root
-                # level of a numbering list
-
-                previous_num_def_paragraph = paragraph
-                previous_num_def_paragraph_index = index
-
-                # Don't set previous_num_def here because we are ignoring this
-                # paragraph's level information
-
-                # prevent levels from being opened / closed for this paragraph
-                continue
+            # Because this paragraph has a numbering def, it's active. This
+            # controls whether or not a p tag will be generated
+            numbering_tracking[paragraph]['active'] = True
 
             if open_new_level:
                 # There hasn't been a previous numbering definition
@@ -334,20 +317,23 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # Close all of the levels and open the new definition
                 assert previous_num_def_paragraph
                 numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
-                numbering_tracking[paragraph]['open-level'] = level
-                levels = [level]
 
-                # Bare paragraphs contained within the numbering span are
-                # considered a part of the numbering span
-                for index, paragraph in possible_numbering_paragraphs:
-                    if index < previous_num_def_paragraph_index:
-                        numbering_tracking[paragraph]['active'] = True
+                if not paragraph.heading_style:
+                    numbering_tracking[paragraph]['open-level'] = level
+                    levels = [level]
+
+                    # Bare paragraphs contained within the numbering span are
+                    # considered a part of the numbering span
+                    for index, paragraph in possible_numbering_paragraphs:
+                        if index < previous_num_def_paragraph_index:
+                            numbering_tracking[paragraph]['active'] = True
 
                 possible_numbering_paragraphs = []
 
-            previous_num_def = num_def
-            previous_num_def_paragraph = paragraph
-            previous_num_def_paragraph_index = index
+            if not paragraph.heading_style:
+                previous_num_def = num_def
+                previous_num_def_paragraph = paragraph
+                previous_num_def_paragraph_index = index
 
         if previous_num_def is not None:
             # Finalize the previous numbering definition if it exists

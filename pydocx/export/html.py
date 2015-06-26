@@ -228,6 +228,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         possible_numbering_paragraphs = []
 
+        def mark_possible_numbering_paragraphs_as_active():
+            # Bare paragraphs contained within the numbering span are
+            # considered a part of the numbering span
+            for index, paragraph in possible_numbering_paragraphs:
+                if index < previous_num_def_paragraph_index:
+                    numbering_tracking[paragraph]['active'] = True
+
         # * If this is the final list item for the def, close the def
         # * If this is the first list item for the def, open the def
         # * If the def = prev and level = prev,
@@ -321,13 +328,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 if not paragraph.heading_style:
                     numbering_tracking[paragraph]['open-level'] = level
                     levels = [level]
-
-                    # Bare paragraphs contained within the numbering span are
-                    # considered a part of the numbering span
-                    for index, paragraph in possible_numbering_paragraphs:
-                        if index < previous_num_def_paragraph_index:
-                            numbering_tracking[paragraph]['active'] = True
-
+                    mark_possible_numbering_paragraphs_as_active()
                 possible_numbering_paragraphs = []
 
             if not paragraph.heading_style:
@@ -340,12 +341,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             assert previous_num_def_paragraph
             numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
 
-        # Bare paragraphs contained within the numbering span are considered a
-        # part of the numbering span
-        for index, paragraph in possible_numbering_paragraphs:
-            if index < previous_num_def_paragraph_index:
-                numbering_tracking[paragraph]['active'] = True
-
+        mark_possible_numbering_paragraphs_as_active()
         return numbering_tracking
 
     def export_body(self, body):

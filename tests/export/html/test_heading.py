@@ -206,9 +206,85 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>
                     foo
-                    <h1>bar</h1>
                 </li>
             </ol>
+            <h1>bar</h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_heading_in_nested_sub_list(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="lowerLetter"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document_xml = '''
+            <p>
+              <pPr>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>foo</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <numPr>
+                    <ilvl val="1" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>bar</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+                <numPr>
+                    <ilvl val="2" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>baz</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                    <li>
+                            foo
+                            <ol class="pydocx-list-style-type-lowerLetter">
+                                    <li>bar</li>
+                            </ol>
+                    </li>
+            </ol>
+            <h1>baz</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -308,5 +384,131 @@ class HeadingTestCase(DocumentGeneratorTestCase):
                     <td><h1>foo</h1></td>
                 </tr>
             </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_heading_as_new_list_following_bare_paragraph_plus_list(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+            </abstractNum>
+            <num numId="2">
+                <abstractNumId val="2"/>
+            </num>
+            <abstractNum abstractNumId="2">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document_xml = '''
+            <p>
+              <pPr>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>foo</t>
+              </r>
+            </p>
+            <p><r><t>bare paragraph</t></r></p>
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="2" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>bar</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>foo</li>
+            </ol>
+            <p>bare paragraph</p>
+            <h1>bar</h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_heading_as_list_following_bare_paragraph_plus_list(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document_xml = '''
+            <p>
+              <pPr>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>foo</t>
+              </r>
+            </p>
+            <p><r><t>bare paragraph</t></r></p>
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>bar</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>foo</li>
+            </ol>
+            <p>bare paragraph</p>
+            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)

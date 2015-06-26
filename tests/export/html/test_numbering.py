@@ -8,7 +8,11 @@ from __future__ import (
 
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.openxml.packaging import MainDocumentPart, NumberingDefinitionsPart
+from pydocx.openxml.packaging import (
+    MainDocumentPart,
+    NumberingDefinitionsPart,
+    StyleDefinitionsPart,
+)
 
 
 class NumberingTestCase(DocumentGeneratorTestCase):
@@ -207,6 +211,71 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>BBB</li>
             </ol>
+            <p>Bar</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_basic_list_followed_by_list_that_is_heading_and_paragraph(self):
+        numbering_xml = '''
+            {letter}
+            {decimal}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+            decimal=self.simple_list_definition.format(
+                num_id=2,
+                num_format='decimal',
+            ),
+        )
+
+        style_xml = '''
+            <style styleId="style1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        list_item_with_parent_style_heading = '''
+            <p>
+                <pPr>
+                    <pStyle val="style1" />
+                    <numPr>
+                        <ilvl val="{ilvl}" />
+                        <numId val="{num_id}" />
+                    </numPr>
+                </pPr>
+                <r><t>{content}</t></r>
+            </p>
+        '''
+
+        document_xml = '''
+            {aaa}
+            {bbb}
+            <p><r><t>Bar</t></r></p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=list_item_with_parent_style_heading.format(
+                content='BBB',
+                num_id=2,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+            <h1>BBB</h1>
             <p>Bar</p>
         '''
         self.assert_document_generates_html(document, expected_html)

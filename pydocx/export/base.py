@@ -43,7 +43,7 @@ class PyDocXExporter(object):
             wordprocessing.DeletedText: self.export_deleted_text,
             wordprocessing.FootnoteReference: self.export_footnote_reference,
             wordprocessing.Footnote: self.export_footnote,
-            wordprocessing.FootnoteReferenceMark: self.export_footnote_reference_mark,  # noqa
+            wordprocessing.FootnoteReferenceMark: self.export_footnote_reference_mark,
             wordprocessing.SdtRun: self.export_sdt_run,
             wordprocessing.SdtContentRun: self.export_sdt_content_run,
             wordprocessing.SdtBlock: self.export_sdt_block,
@@ -140,14 +140,14 @@ class PyDocXExporter(object):
     def export_paragraph(self, paragraph):
         results = self.yield_nested(paragraph.children, self.export_node)
         if paragraph.effective_properties:
-            results = self.export_paragraph_apply_properties(paragraph, results)  # noqa
+            results = self.export_paragraph_apply_properties(paragraph, results)
         return results
 
     def get_paragraph_styles_to_apply(self, paragraph):
         properties = paragraph.effective_properties
         property_rules = [
-            (properties.justification, self.export_paragraph_property_justification),  # noqa
-            (properties.indentation, self.export_paragraph_property_indentation),  # noqa
+            (properties.justification, self.export_paragraph_property_justification),
+            (properties.indentation, self.export_paragraph_property_indentation),
         ]
         for actual_value, handler in property_rules:
             if actual_value:
@@ -188,7 +188,7 @@ class PyDocXExporter(object):
             (properties.dstrike, self.export_run_property_dstrike),
             (properties.vanish, self.export_run_property_vanish),
             (properties.hidden, self.export_run_property_hidden),
-            (properties.vertical_align, self.export_run_property_vertical_align),  # noqa
+            (properties.vertical_align, self.export_run_property_vertical_align),
         ]
         for actual_value, handler in property_rules:
             if actual_value:

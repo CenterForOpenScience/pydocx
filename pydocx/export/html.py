@@ -323,7 +323,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 # The num def has changed
                 # Close all of the levels and open the new definition
                 assert previous_num_def_paragraph
-                numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
+                numbering_tracking[previous_num_def_paragraph]['close-level'] = levels
 
                 if not paragraph.heading_style:
                     numbering_tracking[paragraph]['open-level'] = level
@@ -830,7 +830,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             return HtmlTag('img', allow_self_closing=True, **attrs)
 
     def export_inserted_run(self, inserted_run):
-        results = super(PyDocXHTMLExporter, self).export_inserted_run(inserted_run)  # noqa
+        results = super(PyDocXHTMLExporter, self).export_inserted_run(inserted_run)
         attrs = {
             'class': 'pydocx-insert',
         }

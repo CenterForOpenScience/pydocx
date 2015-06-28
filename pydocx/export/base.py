@@ -24,7 +24,6 @@ class PyDocXExporter(object):
         self.path = path
         self._document = None
         self._page_width = None
-        self.previous = {}
 
         self.footnote_tracker = []
 
@@ -133,13 +132,10 @@ class PyDocXExporter(object):
 
     # TODO not a fan of this name
     def yield_nested(self, iterable, func):
-        previous = None
         for item in iterable:
             # TODO better name / structure for this.
-            self.previous[item.parent] = previous
             for result in func(item):
                 yield result
-            previous = item
 
     def yield_numbering_spans(self, items):
         builder = NumberingSpanBuilder(items)

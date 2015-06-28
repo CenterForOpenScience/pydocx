@@ -9,7 +9,6 @@ from __future__ import (
 import base64
 import posixpath
 from itertools import chain
-from collections import defaultdict
 
 from pydocx.constants import (
     INDENTATION_FIRST_LINE,
@@ -24,6 +23,7 @@ from pydocx.constants import (
     EMUS_PER_PIXEL,
 )
 from pydocx.export.base import PyDocXExporter
+from pydocx.export.numbering_span import NumberingItem
 from pydocx.openxml import wordprocessing
 from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
@@ -141,7 +141,6 @@ class HtmlTag(object):
 class PyDocXHTMLExporter(PyDocXExporter):
     def __init__(self, *args, **kwargs):
         super(PyDocXHTMLExporter, self).__init__(*args, **kwargs)
-        self.numbering_tracking = {}
         self.table_cell_rowspan_tracking = {}
         self.in_table_cell = False
         self.heading_level_conversion_map = {
@@ -201,156 +200,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         results = super(PyDocXHTMLExporter, self).export_document(document)
         return tag.apply(chain(self.head(), results))
 
-    def calculate_numbering_spans(self, paragraphs):
-        # TODO This method could probably use a few passes for cleanup,
-        # optimization.
-
-        # In OpenXML "numbering spans" can occur across paragraph definitions
-        # The start or end of a new numbering level is inferred by the
-        # particular numbering definition used by a paragraph, and how it
-        # differs from the previous numbering definition
-
-        # These open and close events are tracked in the structure below.
-        numbering_tracking = defaultdict(dict)
-
-        # The above structure uses the following keys to describe the numbering
-        # span structure:
-        #   active - This paragraph is in a numbering span
-        #   open-level - Open a new level of the type defined
-        #   close-level - Close the list of levels
-        #   open-item - A new item within the current level should be opened
-        #   close-item - The current item in the current level should be closed
-
-        previous_num_def = None
-        previous_num_def_paragraph = None
-        previous_num_def_paragraph_index = 0
-        levels = []
-
-        possible_numbering_paragraphs = []
-
-        def mark_possible_numbering_paragraphs_as_active():
-            # Bare paragraphs contained within the numbering span are
-            # considered a part of the numbering span
-            for index, paragraph in possible_numbering_paragraphs:
-                if index < previous_num_def_paragraph_index:
-                    numbering_tracking[paragraph]['active'] = True
-
-        # * If this is the final list item for the def, close the def
-        # * If this is the first list item for the def, open the def
-        # * If the def = prev and level = prev,
-        # then close the list item and open a new one
-        # * If the def = prev, and level + prev,
-        # then open a new list, open a new list item
-        # * If the def = prev, and level - prev,
-        # then close the previous level
-        for index, paragraph in enumerate(paragraphs):
-            num_def = paragraph.get_numbering_definition()
-
-            if previous_num_def is not None:
-                # There is a previous numbering def, so it could be part of
-                # that previous list. We won't know until we process all of the
-                # paragraphs.
-                possible_numbering_paragraphs.append((index, paragraph))
-
-            if num_def is None:
-                continue
-
-            level = paragraph.get_numbering_level()
-            if level is None:
-                continue
-
-            open_new_level = False
-            open_new_list = False
-            continue_current_list = False
-
-            if not paragraph.heading_style:
-                if previous_num_def is None:
-                    open_new_level = True
-                elif num_def == previous_num_def:
-                    continue_current_list = True
-            if previous_num_def is not None and num_def != previous_num_def:
-                open_new_list = True
-
-            # Because this paragraph has a numbering def, it's active. This
-            # controls whether or not a p tag will be generated
-            numbering_tracking[paragraph]['active'] = True
-
-            if open_new_level:
-                # There hasn't been a previous numbering definition
-                numbering_tracking[paragraph]['open-level'] = level
-                levels.append(level)
-
-            if continue_current_list:
-                assert levels
-                level_id = int(level.level_id)
-                previous_level = levels[-1]
-                previous_level_id = int(previous_level.level_id)
-                if level_id == previous_level_id:
-                    # The level hasn't changed
-                    numbering_tracking[paragraph]['close-item'] = True
-                    numbering_tracking[paragraph]['open-item'] = True
-                elif level_id > previous_level_id:
-                    # This level is greater than the previous level, so
-                    # start a new level
-                    numbering_tracking[paragraph]['open-level'] = level
-                    levels.append(level)
-                elif level_id < previous_level_id:
-                    # This level is less than the previous level
-                    # Close the previous levels until we match up with this
-                    # level
-                    popped_levels = []
-                    while levels:
-                        # Pop levels until we get to level, or lower
-                        previous_level = levels[-1]
-                        previous_level_id = int(previous_level.level_id)
-                        if previous_level_id <= level_id:
-                            break
-                        popped_level = levels.pop()
-                        popped_levels.insert(0, popped_level)
-                    if levels:
-                        numbering_tracking[paragraph]['close-item'] = True
-                        numbering_tracking[paragraph]['open-item'] = True
-                    else:
-                        # This handles the mangled level case
-                        levels = [level]
-                        numbering_tracking[paragraph]['open-level'] = level
-
-                    # TODO could previous_num_def_paragraph ever be None?
-                    assert previous_num_def_paragraph
-                    numbering_tracking[previous_num_def_paragraph]['close-level'] = popped_levels  # noqa
-
-            if open_new_list:
-                # The num def has changed
-                # Close all of the levels and open the new definition
-                assert previous_num_def_paragraph
-                numbering_tracking[previous_num_def_paragraph]['close-level'] = levels
-
-                if not paragraph.heading_style:
-                    numbering_tracking[paragraph]['open-level'] = level
-                    levels = [level]
-                    mark_possible_numbering_paragraphs_as_active()
-                possible_numbering_paragraphs = []
-
-            if not paragraph.heading_style:
-                previous_num_def = num_def
-                previous_num_def_paragraph = paragraph
-                previous_num_def_paragraph_index = index
-
-        if previous_num_def is not None:
-            # Finalize the previous numbering definition if it exists
-            assert previous_num_def_paragraph
-            numbering_tracking[previous_num_def_paragraph]['close-level'] = levels  # noqa
-
-        mark_possible_numbering_paragraphs_as_active()
-        return numbering_tracking
-
     def export_body(self, body):
-        self.numbering_tracking[body] = self.calculate_numbering_spans(
-            item
-            for item in body.children
-            if isinstance(item, wordprocessing.Paragraph)
-        )
-
         results = super(PyDocXHTMLExporter, self).export_body(body)
         tag = HtmlTag('body')
         return tag.apply(chain(results, self.footer()))
@@ -375,68 +225,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('li')
         return tag.apply(results, allow_empty=False)
 
-    def _is_ordered_list(self, numbering_level):
-        return not numbering_level.is_bullet_format()
-
-    def get_numbering_tracking(self, paragraph):
-        numbering_tracking = self.numbering_tracking.get(paragraph.parent)
-        if not numbering_tracking:
-            return
-
-        tracking = numbering_tracking.get(paragraph)
-        if not tracking:
-            return
-
-        return tracking
-
-    def get_numbering_level_tag_begin(self, paragraph):
-        tracking = self.get_numbering_tracking(paragraph)
-        if not tracking:
-            return
-
-        level = tracking.get('open-level')
-        if level is not None:
-            pydocx_class = 'pydocx-list-style-type-{fmt}'.format(
-                fmt=level.num_format,
-            )
-            attrs = {}
-            tag_name = 'ul'
-            if self._is_ordered_list(level):
-                attrs['class'] = pydocx_class
-                tag_name = 'ol'
-            return HtmlTag(tag_name, **attrs)
-
-    def export_numbering_level_begin(self, paragraph):
-        tracking = self.get_numbering_tracking(paragraph)
-        if not tracking:
-            return
-
-        li = HtmlTag('li')
-        if tracking.get('close-item'):
-            yield li.close()
-
-        if tracking.get('open-item'):
-            yield li
-
-        level = tracking.get('open-level')
-        if level is not None:
-            tag = self.get_numbering_level_tag_begin(paragraph)
-            yield tag
-            yield li
-
-    def export_numbering_level_end(self, paragraph):
-        tracking = self.get_numbering_tracking(paragraph)
-        if not tracking:
-            return
-
-        levels = tracking.get('close-level', [])
-        for level in reversed(levels):
-            yield HtmlTag('li', closed=True)
-            if self._is_ordered_list(level):
-                yield HtmlTag('ol', closed=True)
-            else:
-                yield HtmlTag('ul', closed=True)
-
     def get_paragraph_tag(self, paragraph):
         heading_style = paragraph.heading_style
         if heading_style:
@@ -445,10 +233,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 return tag
         if self.in_table_cell:
             return
-        tracking = self.get_numbering_tracking(paragraph)
-        if tracking and tracking.get('active'):
-            return
         if paragraph.has_structured_document_parent():
+            return
+        if isinstance(paragraph.parent, NumberingItem):
             return
         return HtmlTag('p')
 
@@ -459,63 +246,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
         )
         return HtmlTag(tag)
 
-    def should_yield_line_break_for_paragraph(self, paragraph):
-        # If multiple paragraphs are member of the same list item or same table
-        # cell, instead of wrapping each paragraph with a paragraph tag,
-        # separate the paragraphs with line breaks
-        previous_from_parent = self.previous.get(paragraph.parent)
-        if previous_from_parent is None:
-            return False
-
-        if not isinstance(previous_from_parent, wordprocessing.Paragraph):
-            return False
-
-        if self.get_paragraph_tag(previous_from_parent) is not None:
-            return False
-
-        tracking = self.get_numbering_tracking(paragraph)
-        if tracking:
-            if tracking.get('open-item') is not None:
-                return False
-
-            if tracking.get('open-level') is not None:
-                return False
-
-        previous_tracking = self.get_numbering_tracking(previous_from_parent)
-        if previous_tracking:
-            if previous_tracking.get('close-level') is not None:
-                return False
-
-        # TODO Do not output a break tag if the previous paragraph was empty
-        return True
-
-    def export_line_break_for_paragraph_if_needed(self, paragraph):
-        if self.should_yield_line_break_for_paragraph(paragraph):
-            line_break = wordprocessing.Break()
-            for result in self.export_node(line_break):
-                yield result
-
     def export_paragraph(self, paragraph):
-        for result in self.export_numbering_level_begin(paragraph):
-            yield result
-
         results = super(PyDocXHTMLExporter, self).export_paragraph(paragraph)
 
-        # TODO I could see this section being its own helper method. that would
-        # make it possible to just return a chain() for everything here
         tag = self.get_paragraph_tag(paragraph)
         if tag:
             results = tag.apply(results, allow_empty=False)
-        else:
-            line_break_results = self.export_line_break_for_paragraph_if_needed(paragraph)  # noqa
-            first_result = get_first_from_sequence(results)
-            if first_result:
-                results = chain(
-                    line_break_results,
-                    [first_result],
-                    results,
-                )
-        results = chain(results, self.export_numbering_level_end(paragraph))
 
         for result in results:
             yield result
@@ -736,12 +472,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(results)
 
     def export_table_cell(self, table_cell):
-        self.numbering_tracking[table_cell] = self.calculate_numbering_spans(
-            item
-            for item in table_cell.children
-            if isinstance(item, wordprocessing.Paragraph)
-        )
-
         start_new_tag = False
         colspan = 1
         if table_cell.properties:
@@ -771,7 +501,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 attrs['rowspan'] = rowspan
             tag = HtmlTag('td', **attrs)
 
-        results = super(PyDocXHTMLExporter, self).export_table_cell(table_cell)
+        numbering_spans = self.yield_numbering_spans(table_cell.children)
+        children = self.yield_with_line_breaks_between_paragraphs(numbering_spans)
+        results = self.yield_nested(children, self.export_node)
         if tag:
             results = tag.apply(results)
 
@@ -888,4 +620,32 @@ class PyDocXHTMLExporter(PyDocXExporter):
             'class': 'pydocx-tab',
         }
         tag = HtmlTag('span', **attrs)
+        return tag.apply(results)
+
+    def export_numbering_span(self, numbering_span):
+        results = super(PyDocXHTMLExporter, self).export_numbering_span(numbering_span)
+        pydocx_class = 'pydocx-list-style-type-{fmt}'.format(
+            fmt=numbering_span.numbering_level.num_format,
+        )
+        attrs = {}
+        tag_name = 'ul'
+        if not numbering_span.numbering_level.is_bullet_format():
+            attrs['class'] = pydocx_class
+            tag_name = 'ol'
+        tag = HtmlTag(tag_name, **attrs)
+        return tag.apply(results)
+
+    def yield_with_line_breaks_between_paragraphs(self, items):
+        previous = None
+        for item in items:
+            if isinstance(item, wordprocessing.Paragraph) and item.children:
+                if isinstance(previous, wordprocessing.Paragraph) and previous.children:
+                    yield wordprocessing.Break()
+            yield item
+            previous = item
+
+    def export_numbering_item(self, numbering_item):
+        children = self.yield_with_line_breaks_between_paragraphs(numbering_item.children)
+        results = self.yield_nested(children, self.export_node)
+        tag = HtmlTag('li')
         return tag.apply(results)

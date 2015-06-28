@@ -10,6 +10,11 @@ import xml.sax.saxutils
 
 from pydocx.constants import TWIPS_PER_POINT
 from pydocx.exceptions import MalformedDocxException
+from pydocx.export.numbering_span import (
+    NumberingItem,
+    NumberingSpan,
+    NumberingSpanBuilder,
+)
 from pydocx.openxml import wordprocessing, vml
 from pydocx.openxml.packaging import WordprocessingDocument
 
@@ -51,6 +56,8 @@ class PyDocXExporter(object):
             wordprocessing.TabChar: self.export_tab_char,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
+            NumberingSpan: self.export_numbering_span,
+            NumberingItem: self.export_numbering_item,
         }
 
     @property
@@ -134,8 +141,15 @@ class PyDocXExporter(object):
                 yield result
             previous = item
 
+    def yield_numbering_spans(self, items):
+        builder = NumberingSpanBuilder(items)
+        numbering_spans = builder.get_numbering_spans()
+        for item in numbering_spans:
+            yield item
+
     def export_body(self, body):
-        return self.yield_nested(body.children, self.export_node)
+        numbering_spans = self.yield_numbering_spans(body.children)
+        return self.yield_nested(numbering_spans, self.export_node)
 
     def export_paragraph(self, paragraph):
         results = self.yield_nested(paragraph.children, self.export_node)
@@ -258,7 +272,8 @@ class PyDocXExporter(object):
         return self.yield_nested(table_row.cells, self.export_node)
 
     def export_table_cell(self, table_cell):
-        return self.yield_nested(table_cell.children, self.export_node)
+        numbering_spans = self.yield_numbering_spans(table_cell.children)
+        return self.yield_nested(numbering_spans, self.export_node)
 
     def escape(self, text):
         #  TODO should we use escape here instead?
@@ -333,3 +348,9 @@ class PyDocXExporter(object):
     def export_tab_char(self, tab_char):
         return
         yield
+
+    def export_numbering_span(self, numbering_span):
+        return self.yield_nested(numbering_span.children, self.export_node)
+
+    def export_numbering_item(self, numbering_item):
+        return self.yield_nested(numbering_item.children, self.export_node)

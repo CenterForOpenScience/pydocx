@@ -334,3 +334,142 @@ class TableTestCase(DocumentGeneratorTestCase):
             </table>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_empty_paragraph_before_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                        </p>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_paragraph_that_has_empty_run_before_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                            <r></r>
+                        </p>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_paragraph_that_has_empty_run_after_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                        <p>
+                            <r></r>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_empty_text_before_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                            <r><t></t></r>
+                        </p>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_one_row_one_cell_with_empty_text_after_other_paragraph(self):
+        document_xml = '''
+            <tbl>
+                <tr>
+                    <tc>
+                        <p>
+                            <r><t>Foo</t></r>
+                        </p>
+                        <p>
+                            <r><t></t></r>
+                        </p>
+                    </tc>
+                </tr>
+            </tbl>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <table border="1">
+                <tr>
+                    <td>Foo</td>
+                </tr>
+            </table>
+        '''
+        self.assert_document_generates_html(document, expected_html)

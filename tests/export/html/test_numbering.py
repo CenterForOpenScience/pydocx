@@ -648,6 +648,88 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_paragraph_and_run_with_empty_text_in_between_list_items(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r><t></t></r>
+            </p>
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_empty_run_in_between_list_items(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
     def test_empty_item(self):
         numbering_xml = '''
             {letter}

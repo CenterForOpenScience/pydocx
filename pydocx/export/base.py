@@ -130,12 +130,28 @@ class PyDocXExporter(object):
     def export_document(self, document):
         return self.export_node(document.body)
 
-    # TODO not a fan of this name
     def yield_nested(self, iterable, func):
         for item in iterable:
-            # TODO better name / structure for this.
             for result in func(item):
                 yield result
+
+    def yield_nested_with_line_breaks_between_paragraphs(self, iterable, func):
+        br = wordprocessing.Break()
+
+        previous_was_paragraph = False
+        previous_was_empty = False
+        for item in iterable:
+            empty = True
+            is_paragraph = isinstance(item, wordprocessing.Paragraph)
+            for result in func(item):
+                if empty:
+                    empty = False
+                    if is_paragraph and previous_was_paragraph and not previous_was_empty:
+                        for br_result in func(br):
+                            yield br_result
+                yield result
+            previous_was_paragraph = is_paragraph
+            previous_was_empty = empty
 
     def yield_numbering_spans(self, items):
         builder = NumberingSpanBuilder(items)

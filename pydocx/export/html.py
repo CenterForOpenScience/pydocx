@@ -502,8 +502,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
             tag = HtmlTag('td', **attrs)
 
         numbering_spans = self.yield_numbering_spans(table_cell.children)
-        children = self.yield_with_line_breaks_between_paragraphs(numbering_spans)
-        results = self.yield_nested(children, self.export_node)
+        results = self.yield_nested_with_line_breaks_between_paragraphs(
+            numbering_spans,
+            self.export_node,
+        )
         if tag:
             results = tag.apply(results)
 
@@ -635,17 +637,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag(tag_name, **attrs)
         return tag.apply(results)
 
-    def yield_with_line_breaks_between_paragraphs(self, items):
-        previous = None
-        for item in items:
-            if isinstance(item, wordprocessing.Paragraph) and item.children:
-                if isinstance(previous, wordprocessing.Paragraph) and previous.children:
-                    yield wordprocessing.Break()
-            yield item
-            previous = item
-
     def export_numbering_item(self, numbering_item):
-        children = self.yield_with_line_breaks_between_paragraphs(numbering_item.children)
-        results = self.yield_nested(children, self.export_node)
+        results = self.yield_nested_with_line_breaks_between_paragraphs(
+            numbering_item.children,
+            self.export_node,
+        )
         tag = HtmlTag('li')
         return tag.apply(results)

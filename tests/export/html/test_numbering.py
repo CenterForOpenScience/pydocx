@@ -730,6 +730,150 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_paragraph_with_empty_run_followed_by_non_empty_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>BBB</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />BBB</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_multiple_empty_runs_followed_by_non_empty_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>BBB</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />BBB</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_empty_run_paragraph_empty_run_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>Foo</t></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>Bar</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />Foo<br />Bar</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
     def test_empty_item(self):
         numbering_xml = '''
             {letter}

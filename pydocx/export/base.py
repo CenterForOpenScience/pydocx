@@ -136,10 +136,14 @@ class PyDocXExporter(object):
                 yield result
 
     def yield_nested_with_line_breaks_between_paragraphs(self, iterable, func):
+        '''
+        Yield a line break in between adjacent paragraphs, ignoring any
+        paragraphs that are empty or otherwise don't contain any content.
+        '''
         br = wordprocessing.Break()
 
         previous_was_paragraph = False
-        previous_was_empty = False
+        previous_was_empty = True
         for item in iterable:
             empty = True
             is_paragraph = isinstance(item, wordprocessing.Paragraph)
@@ -151,7 +155,10 @@ class PyDocXExporter(object):
                             yield br_result
                 yield result
             previous_was_paragraph = is_paragraph
-            previous_was_empty = empty
+            if not empty:
+                # Once it's not empty, there's always a previous non-empty
+                # paragraph.
+                previous_was_empty = empty
 
     def yield_numbering_spans(self, items):
         builder = NumberingSpanBuilder(items)

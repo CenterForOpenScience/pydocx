@@ -221,6 +221,7 @@ class NumberingSpanBuilder(object):
                 yield item
             yield paragraph
             self.current_span = None
+            self.current_item = None
             self.candidate_numbering_items = []
             self.current_item_index = index
             return

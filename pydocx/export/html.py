@@ -249,9 +249,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_paragraph(self, paragraph):
         results = super(PyDocXHTMLExporter, self).export_paragraph(paragraph)
 
+        results = is_not_empty_and_not_only_whitespace(results)
+        if results is None:
+            return
+
         tag = self.get_paragraph_tag(paragraph)
         if tag:
-            results = tag.apply(results, allow_empty=False)
+            results = tag.apply(results)
 
         for result in results:
             yield result

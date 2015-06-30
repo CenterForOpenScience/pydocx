@@ -458,7 +458,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def export_break(self, br):
         tag = self.get_break_tag(br)
-        yield tag
+        if tag:
+            yield tag
 
     def get_table_tag(self, table):
         return HtmlTag('table', border='1')

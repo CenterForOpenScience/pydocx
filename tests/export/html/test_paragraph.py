@@ -210,3 +210,45 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
 
         expected_html = ''
         self.assert_document_generates_html(document, expected_html)
+
+
+class IgnoringBreakTagExporter(DocumentGeneratorTestCase.exporter):
+    def get_break_tag(self, br):
+        # Return None
+        return
+
+
+class IgnoringBreakTagTestCase(DocumentGeneratorTestCase):
+    exporter = IgnoringBreakTagExporter
+
+    def test_break_tag_by_itself_yields_no_output(self):
+        document_xml = '''
+            <p>
+              <r>
+                <br />
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_break_tag_with_text_break_tag_is_ignored(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+                <br />
+                <t>Bar</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>FooBar</p>'
+        self.assert_document_generates_html(document, expected_html)

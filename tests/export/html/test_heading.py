@@ -593,3 +593,73 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <p>after table</p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_heading_has_precedence_over_list_single_lvl_multiple_items(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>foo</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>non-heading list item</t>
+              </r>
+            </p>
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+                <numPr>
+                    <ilvl val="0" />
+                    <numId val="1" />
+                </numPr>
+              </pPr>
+              <r>
+                <t>bar</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <h1>foo</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>non-heading list item</li>
+            </ol>
+            <h1>bar</h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)

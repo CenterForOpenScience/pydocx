@@ -15,6 +15,8 @@ from pydocx.constants import (
     TWIPS_PER_POINT,
 )
 from pydocx.export.base import PyDocXExporter
+from pydocx.export.mixins import PyDocXHTMLExporterImageResizeMixin
+
 from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
     convert_dictionary_to_style_fragment,
@@ -22,7 +24,6 @@ from pydocx.util.xml import (
 
 
 class PyDocXHTMLExporter(PyDocXExporter):
-
     def __init__(self, *args, **kwargs):
         super(PyDocXHTMLExporter, self).__init__(*args, **kwargs)
         self.heading_level_conversion_map = {
@@ -90,7 +91,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         footnotes = [
             self.footnote(self.footnote_id_to_content[footnote_id])
             for footnote_id in self.footnote_ordering
-        ]
+            ]
         if footnotes:
             return '{page_break}{footnotes}'.format(
                 page_break=self.page_break(),
@@ -377,12 +378,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return value / TWIPS_PER_POINT / POINTS_PER_EM
 
     def indent(
-        self,
-        text,
-        alignment=None,
-        firstLine=None,
-        left=None,
-        right=None,
+            self,
+            text,
+            alignment=None,
+            firstLine=None,
+            left=None,
+            right=None,
     ):
         attrs = {}
         if alignment:
@@ -407,3 +408,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def break_tag(self):
         return '<br />'
+
+
+class PyDocXHTMLExporterWithImageResize(PyDocXHTMLExporterImageResizeMixin, PyDocXHTMLExporter):
+    pass

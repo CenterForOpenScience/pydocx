@@ -4,10 +4,11 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.export.html import PyDocXHTMLExporter
+from pydocx.export.html import PyDocXHTMLExporter, PyDocXHTMLExporterWithImageResize
 from pydocx.export.markdown import PyDocXMarkdownExporter
 
 __all__ = [
     'PyDocXHTMLExporter',
     'PyDocXMarkdownExporter',
+    'PyDocXHTMLExporterWithImageResize'
 ]

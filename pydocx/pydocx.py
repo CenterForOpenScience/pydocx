@@ -4,13 +4,19 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.export import PyDocXHTMLExporter, PyDocXMarkdownExporter
+from pydocx.export import PyDocXHTMLExporter, PyDocXMarkdownExporter, \
+    PyDocXHTMLExporterWithImageResize
 
 
 class PyDocX(object):
     @staticmethod
-    def to_html(path_or_stream):
-        return PyDocXHTMLExporter(path_or_stream).parsed
+    def to_html(path_or_stream, image_resize=False):
+        if image_resize:
+            exporter_cls = PyDocXHTMLExporterWithImageResize
+        else:
+            exporter_cls = PyDocXHTMLExporter
+
+        return exporter_cls(path_or_stream).parsed
 
     @staticmethod
     def to_markdown(path_or_stream):

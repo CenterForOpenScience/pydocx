@@ -180,7 +180,7 @@ class PyDocXExporter(object):
         properties = paragraph.effective_properties
         property_rules = [
             (properties.justification, self.export_paragraph_property_justification),
-            (properties.indentation, self.export_paragraph_property_indentation),
+            (True, self.export_paragraph_property_indentation),
         ]
         for actual_value, handler in property_rules:
             if actual_value:

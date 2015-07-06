@@ -17,4 +17,10 @@ class ParagraphProperties(XmlModel):
     justification = XmlChild(name='jc', attrname='val')
     # TODO ind can appear multiple times. Need to merge them in document order
     # This probably means other elements can appear multiple times
-    indentation = XmlChild(name='ind', type=lambda el: dict(el.attrib))
+
+    # TODO Left/right is for traditional conformance. Need to handle start/end
+    # for strict conformance
+    indentation_left = XmlChild(name='ind', attrname='left')
+    indentation_right = XmlChild(name='ind', attrname='right')
+    indentation_first_line = XmlChild(name='ind', attrname='firstLine')
+    indentation_hanging = XmlChild(name='ind', attrname='hanging')

@@ -31,12 +31,6 @@ JUSTIFY_CENTER = 'center'
 JUSTIFY_LEFT = 'left'
 JUSTIFY_RIGHT = 'right'
 
-# TODO These indentation values are for traditional conformance. Strict
-# conformance uses different values
-INDENTATION_RIGHT = 'right'
-INDENTATION_LEFT = 'left'
-INDENTATION_FIRST_LINE = 'firstLine'
-
 POINTS_PER_EM = 12
 
 PYDOCX_STYLES = {

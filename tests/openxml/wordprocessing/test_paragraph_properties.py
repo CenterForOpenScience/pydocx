@@ -33,3 +33,30 @@ class ParagraphPropertiesTestCase(TestCase):
         '''
         properties = self._load_from_xml(xml)
         assert isinstance(properties.numbering_properties, NumberingProperties)
+
+    def test_indentation_left(self):
+        xml = '''
+            <pPr>
+                <ind left="123" right="456" firstLine="789" />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        self.assertEqual(properties.indentation_left, '123')
+
+    def test_indentation_right(self):
+        xml = '''
+            <pPr>
+                <ind left="123" right="456" firstLine="789" />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        self.assertEqual(properties.indentation_right, '456')
+
+    def test_indentation_first_line(self):
+        xml = '''
+            <pPr>
+                <ind left="123" right="456" firstLine="789" />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        self.assertEqual(properties.indentation_first_line, '789')

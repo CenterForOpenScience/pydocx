@@ -65,6 +65,9 @@ class BucketModel(XmlModel):
 
     data = XmlChild(type=DataModel)
 
+    circle_color = XmlChild(name='circle', attrname='color')
+    circle_size = XmlChild(name='circle', attrname='sz')
+
 
 class BaseTestCase(TestCase):
     def _get_model_instance_from_xml(self, xml):
@@ -172,6 +175,16 @@ class XmlChildTestCase(BaseTestCase):
         '''
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.data.content, 'Foo')
+
+    def test_multiple_fields_on_same_element_with_different_attrnames(self):
+        xml = '''
+            <bucket>
+                <circle color="red" sz="big" />
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.circle_color, 'red')
+        self.assertEqual(bucket.circle_size, 'big')
 
 
 class XmlCollectionTestCase(BaseTestCase):

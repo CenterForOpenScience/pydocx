@@ -241,7 +241,7 @@ class XmlModel(object):
 
         # Child tag fields may specify a handler/type, which is responsible for
         # parsing the child tag
-        tag_name_to_field_name = {}
+        tag_name_to_field_names = defaultdict(list)
         child_handlers = {}
 
         def create_child_handler(field):
@@ -281,9 +281,9 @@ class XmlModel(object):
             assert tag_name
 
             # Based on the tag name, we need to know what the field name is
-            tag_name_to_field_name[tag_name] = field_name
+            tag_name_to_field_names[tag_name].append(field_name)
             # Save the handler
-            child_handlers[tag_name] = create_child_handler(field)
+            child_handlers[field_name] = create_child_handler(field)
 
         # Build a mapping of tag names to collections
         collection_member_to_collections = defaultdict(list)
@@ -296,10 +296,10 @@ class XmlModel(object):
             for child in element:
                 tag = child.tag
                 # Does this child have a corresponding field?
-                field_name = tag_name_to_field_name.get(tag, None)
-                if field_name:
+                field_names = tag_name_to_field_names.get(tag, [])
+                for field_name in field_names:
                     # Execute the handler
-                    handler = child_handlers.get(tag, None)
+                    handler = child_handlers.get(field_name, None)
                     if callable(handler):
                         kwargs[field_name] = handler(child)
 

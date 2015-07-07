@@ -24,3 +24,20 @@ class ParagraphProperties(XmlModel):
     indentation_right = XmlChild(name='ind', attrname='right')
     indentation_first_line = XmlChild(name='ind', attrname='firstLine')
     indentation_hanging = XmlChild(name='ind', attrname='hanging')
+
+    @property
+    def start_margin_position(self):
+        # Regarding indentation,
+        #   position = left - hanging
+        #   position = left + firstLine (only if hanging isn't specified)
+        # 17.3.1.12 - The firstLine and hanging attributes are mutually
+        # exclusive, if both are specified, then the firstLine value is
+        # ignored.
+        start_margin = self.indentation_left
+        if self.indentation_hanging:
+            start_margin -= self.indentation_hanging
+        elif self.indentation_first_line:
+            start_margin += self.indentation_first_line
+        if start_margin:
+            return start_margin
+        return 0

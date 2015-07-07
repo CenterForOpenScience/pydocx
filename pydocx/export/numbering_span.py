@@ -6,7 +6,125 @@ from __future__ import (
     unicode_literals,
 )
 
+import string
+
 from pydocx.openxml import wordprocessing
+from pydocx.util.memoize import memoized
+
+# Defined in 17.15.1.25
+DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
+
+
+numeral_map = tuple(zip(
+    (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
+    ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
+))
+
+
+def int_to_roman(i):
+    '''
+    Given any integer, return the roman numberal string.
+
+    >>> int_to_roman(1)
+    u'I'
+    >>> int_to_roman(2)
+    u'II'
+    >>> int_to_roman(3)
+    u'III'
+    >>> int_to_roman(3789)
+    u'MMMDCCLXXXIX'
+    '''
+    result = []
+    for integer, numeral in numeral_map:
+        count = i // integer
+        result.append(numeral * count)
+        i -= integer * count
+    return ''.join(result)
+
+
+def roman_to_int(n):
+    '''
+    Given a roman numberal string, return the decimal equivalent.
+
+    >>> roman_to_int('I')
+    1
+    >>> roman_to_int('II')
+    2
+    >>> roman_to_int('III')
+    3
+    >>> roman_to_int('MMMDCCLXXXIX')
+    3789
+    '''
+    i = result = 0
+    for integer, numeral in numeral_map:
+        while n[i:i + len(numeral)] == numeral:
+            result += integer
+            i += len(numeral)
+    return result
+
+
+def alpha_to_int(n):
+    '''
+    Given a ASCII lowercase base-26 string, return the decimal equivalent.
+
+    >>> alpha_to_int('a')
+    1
+    >>> alpha_to_int('z')
+    26
+    >>> alpha_to_int('A')
+    1
+    >>> alpha_to_int('Z')
+    26
+    >>> alpha_to_int('aa')
+    27
+    >>> alpha_to_int('az')
+    52
+    >>> alpha_to_int('ba')
+    53
+    >>> alpha_to_int('bA')
+    53
+    >>> alpha_to_int('zz')
+    702
+    >>> alpha_to_int('zzz')
+    18278
+    '''
+    result = 0
+    for index, c in enumerate(reversed(n.lower())):
+        ascii_index = string.ascii_lowercase.find(c)
+        if ascii_index < 0:
+            raise ValueError
+        result += (ascii_index + 1) * len(string.ascii_lowercase) ** index
+    return result
+
+
+def int_to_alpha(i):
+    '''
+    Given any integer, return the equivalent base-26 ASCII lowercase string.
+
+    >>> int_to_alpha(-1)
+    u''
+    >>> int_to_alpha(0)
+    u''
+    >>> int_to_alpha(1)
+    u'a'
+    >>> int_to_alpha(26)
+    u'z'
+    >>> int_to_alpha(27)
+    u'aa'
+    >>> int_to_alpha(52)  # (1 * 26 ^ 1) + (26 * 26 ^ 0)
+    u'az'
+    >>> int_to_alpha(53)  # (2 * 26 ^ 1) + (1 * 26 ^ 0)
+    u'ba'
+    >>> int_to_alpha(18278) # (26 * 26 ^ 2) + (26 * 26 ^ 1) + (26 * 26 ^ 0)
+    u'zzz'
+    '''
+    result = []
+    base = len(string.ascii_lowercase)
+    while i >= 1:
+        div, mod = divmod(i - 1, base)
+        result.append(string.ascii_lowercase[mod])
+        i = div
+    return ''.join(reversed(result))
 
 
 class NumberingSpan(object):
@@ -66,6 +184,21 @@ class NumberingSpanBuilder(object):
         self.current_item_index = 0
         self.candidate_numbering_items = []
 
+        self.faked_list_patterns = [
+            '{0}. ',
+            '{0} ',
+            '{0}) ',
+            '({0}) ',
+        ]
+
+        self.faked_list_numbering_format_sequencer = {
+            'decimal': lambda i: int(i),
+            'upperRoman': lambda i: int_to_roman(i).upper(),
+            'lowerRoman': lambda i: int_to_roman(i).lower(),
+            'upperLetter': lambda i: int_to_alpha(i).upper(),
+            'lowerLetter': lambda i: int_to_alpha(i).lower(),
+        }
+
     def include_candidate_items_in_current_item(self, new_item_index):
         '''
         A generator to determine which of the candidate numbering items need to
@@ -97,7 +230,10 @@ class NumberingSpanBuilder(object):
         '''
         if self.current_span is None:
             return True
-        num_def = paragraph.get_numbering_definition()
+        level = self.get_numbering_level(paragraph)
+        num_def = None
+        if level:
+            num_def = level.parent
         return num_def != self.current_span.numbering_definition
 
     def should_start_new_item(self, paragraph):
@@ -109,12 +245,15 @@ class NumberingSpanBuilder(object):
         '''
         if self.current_span is None:
             return False
-        num_def = paragraph.get_numbering_definition()
+        level = self.get_numbering_level(paragraph)
+        num_def = None
+        if level:
+            num_def = level.parent
         return num_def == self.current_span.numbering_definition
 
     def handle_start_new_span(self, index, paragraph):
-        num_def = paragraph.get_numbering_definition()
-        level = paragraph.get_numbering_level()
+        level = self.get_numbering_level(paragraph)
+        num_def = level.parent
 
         if self.current_span:
             # We're starting a new span, but there's an existing span.
@@ -140,8 +279,8 @@ class NumberingSpanBuilder(object):
         self.current_span.append_child(self.current_item)
 
     def handle_start_new_item(self, index, paragraph):
-        num_def = paragraph.get_numbering_definition()
-        level = paragraph.get_numbering_level()
+        level = self.get_numbering_level(paragraph)
+        num_def = level.parent
 
         for item in self.include_candidate_items_in_current_item(index):
             # If an item gets yielded back here, it means it isn't being
@@ -212,6 +351,142 @@ class NumberingSpanBuilder(object):
             self.numbering_span_stack.pop()
         return previous_span
 
+    @memoized
+    def get_numbering_level(self, paragraph):
+        return self.detect_faked_list(paragraph)
+
+    def convert_tab_count_to_distance(self, tab_count):
+        # TODO the full implementation of this is significantly more
+        # complicated since we need to examine the custom tab stops, and also
+        # the document's default tab stop.
+        return tab_count * DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL
+
+    def text_is_a_faked_list(self, text, pattern, num_format, index):
+        sequencer = self.faked_list_numbering_format_sequencer.get(num_format)
+        if callable(sequencer):
+            try:
+                sequenced_index = sequencer(index)
+            except ValueError:
+                return False
+            expected_text = pattern.format(sequenced_index)
+            if text.startswith(expected_text):
+                return expected_text
+        return False
+
+    def level_is_a_continuation_of_current_level(self, level, next_span_position):
+        if not self.current_span:
+            return False
+        current_level = self.current_span.numbering_level
+        if not level:
+            return False
+        if not level.start:
+            return False
+        if level.num_format != current_level.num_format:
+            return False
+        level_start = int(level.start)
+        return level_start == next_span_position
+
+    @memoized
+    def get_left_position_for_paragraph(self, paragraph):
+        tab_count = paragraph.get_number_of_initial_tabs()
+
+        left_position = 0
+        properties = paragraph.effective_properties
+        if properties:
+            properties = properties.start_margin_position
+
+        # Add the tab distance
+        tab_distance = self.convert_tab_count_to_distance(tab_count)
+        left_position += tab_distance
+        return left_position
+
+    def get_current_span_paragraph(self):
+        if not self.current_span:
+            return
+        if not self.current_span.children:
+            return
+        first_item = self.current_span.children[0]
+        if not first_item.children:
+            return
+        return first_item.children[0]
+
+    def detect_new_faked_level_started(self, paragraph, current_level_id=None):
+        text = paragraph.get_text()
+
+        level_id = 0
+        if current_level_id is not None:
+            level_id = current_level_id + 1
+
+        next_span_position = 1
+        for pattern in self.faked_list_patterns:
+            for num_format in self.faked_list_numbering_format_sequencer:
+                matching_text = self.text_is_a_faked_list(
+                    text,
+                    pattern,
+                    num_format,
+                    next_span_position,
+                )
+                if matching_text:
+                    paragraph.strip_text_from_left(matching_text)
+                    level = wordprocessing.Level(
+                        level_id='{0}'.format(level_id),
+                        num_format=num_format,
+                    )
+                    return level
+
+    def detect_faked_list(self, paragraph):
+        level = paragraph.get_numbering_level()
+
+        if self.current_span:
+            current_level = self.current_span.numbering_level
+            current_span_position = len(self.current_span.children)
+            next_span_position = current_span_position + 1
+
+            if self.level_is_a_continuation_of_current_level(level, next_span_position):
+                return current_level
+            elif level:
+                return level
+
+            text = paragraph.get_text()
+            left_position = self.get_left_position_for_paragraph(paragraph)
+            current_span_paragraph = self.get_current_span_paragraph()
+            current_span_left_position = self.get_left_position_for_paragraph(
+                current_span_paragraph,
+            )
+            if left_position > 0:
+                paragraph.remove_initial_tabs()
+
+            if left_position > current_span_left_position:
+                new_faked_level = self.detect_new_faked_level_started(
+                    paragraph,
+                    int(current_level.level_id),
+                )
+                if new_faked_level:
+                    current_level.parent.levels.append(new_faked_level)
+                    new_faked_level.parent = current_level.parent
+                    paragraph.remove_initial_tabs()
+                    return new_faked_level
+            elif left_position == current_span_left_position:
+                for pattern in self.faked_list_patterns:
+                    matching_text = self.text_is_a_faked_list(
+                        text,
+                        pattern,
+                        current_level.num_format,
+                        next_span_position,
+                    )
+                    if matching_text:
+                        paragraph.strip_text_from_left(matching_text)
+                        return current_level
+        elif level:
+            return level
+        else:
+            level = self.detect_new_faked_level_started(paragraph)
+            if level:
+                wordprocessing.AbstractNum(
+                    levels=[level],
+                )
+                return level
+
     def handle_paragraph(self, index, paragraph):
         if paragraph.heading_style:
             # TODO Headings shouldn't break numbering. See #162
@@ -226,8 +501,10 @@ class NumberingSpanBuilder(object):
             self.current_item_index = index
             return
 
-        num_def = paragraph.get_numbering_definition()
-        level = paragraph.get_numbering_level()
+        level = self.get_numbering_level(paragraph)
+        num_def = None
+        if level:
+            num_def = level.parent
 
         if num_def is None or level is None:
             if self.current_span is None:

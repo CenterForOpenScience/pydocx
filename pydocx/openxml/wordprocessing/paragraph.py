@@ -9,6 +9,8 @@ from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
+from pydocx.openxml.wordprocessing.tab_char import TabChar
+from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
@@ -116,3 +118,57 @@ class Paragraph(XmlModel):
         return numbering_definition.get_level(
             level_id=numbering_properties.level_id,
         )
+
+    @property
+    def runs(self):
+        for p_child in self.children:
+            if isinstance(p_child, Run):
+                yield p_child
+
+    def get_text(self):
+        text = []
+        for run in self.runs:
+            for r_child in run.children:
+                if isinstance(r_child, Text):
+                    if r_child.text:
+                        text.append(r_child.text)
+        return ''.join(text)
+
+    def strip_text_from_left(self, text):
+        len_text = len(text)
+        for run in self.runs:
+            for r_child in run.children:
+                if isinstance(r_child, Text):
+                    if r_child.text:
+                        len_r_child_text = len(r_child.text)
+                        if len_r_child_text >= len_text:
+                            if r_child.text.startswith(text):
+                                r_child.text = r_child.text[len_text:]
+                        else:
+                            if text.startswith(r_child.text):
+                                r_child.text = ''
+                                text = text[len_r_child_text:]
+
+    def remove_initial_tabs(self):
+        for p_child in self.children:
+            if isinstance(p_child, Run):
+                for r_child in p_child.children[:]:
+                    if isinstance(r_child, TabChar):
+                        p_child.children.remove(r_child)
+                    else:
+                        break
+            else:
+                break
+
+    def get_number_of_initial_tabs(self):
+        tab_count = 0
+        for p_child in self.children:
+            if isinstance(p_child, Run):
+                for r_child in p_child.children:
+                    if isinstance(r_child, TabChar):
+                        tab_count += 1
+                    else:
+                        break
+            else:
+                break
+        return tab_count

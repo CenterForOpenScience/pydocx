@@ -945,3 +945,115 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_faked_list(self):
+        document_xml = '''
+            <p><r><t>1. AAA</t></r></p>
+            <p><r><t>2. BBB</t></r></p>
+            <p><r>
+                <tab />
+                <t>1. CCC</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>2. DDD</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <tab />
+                <t>1. EEE</t>
+            </r></p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA</li>
+                <li>BBB
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>CCC</li>
+                        <li>DDD
+                            <ol class="pydocx-list-style-type-decimal">
+                                <li>EEE</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_real_list_plus_fake_list(self):
+        document_xml = '''
+            {foo}
+            <p><r><t>2. Bar</t></r></p>
+            <p><r><t>3. Baz</t></r></p>
+        '''.format(
+            foo=self.simple_list_item.format(
+                content='Foo',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            {decimal}
+        '''.format(
+            decimal=self.simple_list_definition.format(
+                num_id=1,
+                num_format='decimal',
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>Foo</li>
+                <li>Bar</li>
+                <li>Baz</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_initial_faked_list_plus_real_list(self):
+        document_xml = '''
+            <p><r><t>1. Foo</t></r></p>
+            <p><r><t>2. Bar</t></r></p>
+            {foo}
+        '''.format(
+            foo=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <start val="3" />
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>Foo</li>
+                <li>Bar</li>
+                <li>AAA</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)

@@ -25,14 +25,14 @@ def int_to_roman(i):
     '''
     Given any integer, return the roman numberal string.
 
-    >>> int_to_roman(1)
-    u'I'
-    >>> int_to_roman(2)
-    u'II'
-    >>> int_to_roman(3)
-    u'III'
-    >>> int_to_roman(3789)
-    u'MMMDCCLXXXIX'
+    >>> int_to_roman(1) == 'I'
+    True
+    >>> int_to_roman(2) == 'II'
+    True
+    >>> int_to_roman(3) == 'III'
+    True
+    >>> int_to_roman(3789) == 'MMMDCCLXXXIX'
+    True
     '''
     result = []
     for integer, numeral in numeral_map:
@@ -101,22 +101,22 @@ def int_to_alpha(i):
     '''
     Given any integer, return the equivalent base-26 ASCII lowercase string.
 
-    >>> int_to_alpha(-1)
-    u''
-    >>> int_to_alpha(0)
-    u''
-    >>> int_to_alpha(1)
-    u'a'
-    >>> int_to_alpha(26)
-    u'z'
-    >>> int_to_alpha(27)
-    u'aa'
-    >>> int_to_alpha(52)  # (1 * 26 ^ 1) + (26 * 26 ^ 0)
-    u'az'
-    >>> int_to_alpha(53)  # (2 * 26 ^ 1) + (1 * 26 ^ 0)
-    u'ba'
-    >>> int_to_alpha(18278) # (26 * 26 ^ 2) + (26 * 26 ^ 1) + (26 * 26 ^ 0)
-    u'zzz'
+    >>> int_to_alpha(-1) == ''
+    True
+    >>> int_to_alpha(0) == ''
+    True
+    >>> int_to_alpha(1) == 'a'
+    True
+    >>> int_to_alpha(26) == 'z'
+    True
+    >>> int_to_alpha(27) == 'aa'  # (1 * 26 ^ 1) + (1 * 26 ^ 0)
+    True
+    >>> int_to_alpha(52) == 'az'  # (1 * 26 ^ 1) + (26 * 26 ^ 0)
+    True
+    >>> int_to_alpha(53) == 'ba'  # (2 * 26 ^ 1) + (1 * 26 ^ 0)
+    True
+    >>> int_to_alpha(18278) == 'zzz'  # (26 * 26 ^ 2) + (26 * 26 ^ 1) + (26 * 26 ^ 0)
+    True
     '''
     result = []
     base = len(string.ascii_lowercase)

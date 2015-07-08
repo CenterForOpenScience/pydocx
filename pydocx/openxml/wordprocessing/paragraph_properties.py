@@ -33,11 +33,13 @@ class ParagraphProperties(XmlModel):
         # 17.3.1.12 - The firstLine and hanging attributes are mutually
         # exclusive, if both are specified, then the firstLine value is
         # ignored.
-        start_margin = self.indentation_left
+        start_margin = 0
+        if self.indentation_left:
+            start_margin += int(self.indentation_left)
         if self.indentation_hanging:
-            start_margin -= self.indentation_hanging
+            start_margin -= int(self.indentation_hanging)
         elif self.indentation_first_line:
-            start_margin += self.indentation_first_line
+            start_margin += int(self.indentation_first_line)
         if start_margin:
             return start_margin
         return 0

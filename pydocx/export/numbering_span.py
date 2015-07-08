@@ -143,6 +143,14 @@ class NumberingSpan(object):
         assert isinstance(child, NumberingItem)
         self.children.append(child)
 
+    def get_first_child_of_first_item(self):
+        if not self.children:
+            return
+        first_item = self.children[0]
+        if not first_item.children:
+            return
+        return first_item.children[0]
+
 
 class NumberingItem(object):
     '''
@@ -400,7 +408,7 @@ class NumberingSpanBuilder(object):
         left_position += tab_distance
         return left_position
 
-    def get_current_span_paragraph(self):
+    def get_paragraph_of_number(self):
         if not self.current_span:
             return
         if not self.current_span.children:
@@ -434,6 +442,10 @@ class NumberingSpanBuilder(object):
                     )
                     return level
 
+    def get_left_position_for_numbering_span(self, numbering_span):
+        paragraph = numbering_span.get_first_child_of_first_item()
+        return self.get_left_position_for_paragraph(paragraph)
+
     def detect_faked_list(self, paragraph):
         level = paragraph.get_numbering_level()
 
@@ -449,9 +461,8 @@ class NumberingSpanBuilder(object):
 
             text = paragraph.get_text()
             left_position = self.get_left_position_for_paragraph(paragraph)
-            current_span_paragraph = self.get_current_span_paragraph()
-            current_span_left_position = self.get_left_position_for_paragraph(
-                current_span_paragraph,
+            current_span_left_position = self.get_left_position_for_numbering_span(
+                self.current_span,
             )
             if left_position > 0:
                 paragraph.remove_initial_tabs()
@@ -466,6 +477,29 @@ class NumberingSpanBuilder(object):
                     new_faked_level.parent = current_level.parent
                     paragraph.remove_initial_tabs()
                     return new_faked_level
+            elif left_position < current_span_left_position:
+                previous_level = None
+                for previous_span in reversed(self.numbering_span_stack[:-1]):
+                    previous_span_left_pos = self.get_left_position_for_numbering_span(
+                        previous_span,
+                    )
+                    if left_position == previous_span_left_pos:
+                        previous_level = previous_span.numbering_level
+                        break
+                if previous_level:
+                    previous_span_position = len(previous_span.children)
+                    next_span_position = previous_span_position + 1
+                    for pattern in self.faked_list_patterns:
+                        matching_text = self.text_is_a_faked_list(
+                            text,
+                            pattern,
+                            previous_level.num_format,
+                            next_span_position,
+                        )
+                        if matching_text:
+                            paragraph.strip_text_from_left(matching_text)
+                            return previous_level
+
             elif left_position == current_span_left_position:
                 for pattern in self.faked_list_patterns:
                     matching_text = self.text_is_a_faked_list(

@@ -170,16 +170,16 @@ class NumberingItem(object):
         self.children.append(child)
 
 
-class NumberingSpanBuilder(object):
+class BaseNumberingSpanBuilder(object):
     '''
-    De-flatten a list of OOXML components into a list of NumberingSpan + Items by calling
-    `get_numbering_spans`
+    De-flatten a list of OOXML components into a list of NumberingSpan + Items
+    by calling `get_numbering_spans`
 
     In OOXML, several components can hold paragraphs. For example, the Body and
     TableCell components. Some of these paragraphs may define numbering
     information. The numbering structure is nested, but the list of paragraphs
-    is flat. The purpose of this builder class is to convert the flattened
-    list of paragraphs + paragraphs with numbering definitions + other misc
+    is flat. The purpose of this builder class is to convert the flattened list
+    of paragraphs + paragraphs with numbering definitions + other misc
     components into nested hierarchical numbering structure. This is
     accomplished using the NumberingSpan and NumberingItem classes.
     '''
@@ -192,20 +192,9 @@ class NumberingSpanBuilder(object):
         self.current_item_index = 0
         self.candidate_numbering_items = []
 
-        self.faked_list_patterns = [
-            '{0}. ',
-            '{0} ',
-            '{0}) ',
-            '({0}) ',
-        ]
-
-        self.faked_list_numbering_format_sequencer = {
-            'decimal': lambda i: int(i),
-            'upperRoman': lambda i: int_to_roman(i).upper(),
-            'lowerRoman': lambda i: int_to_roman(i).lower(),
-            'upperLetter': lambda i: int_to_alpha(i).upper(),
-            'lowerLetter': lambda i: int_to_alpha(i).lower(),
-        }
+    @memoized
+    def get_numbering_level(self, paragraph):
+        return paragraph.get_numbering_level()
 
     def include_candidate_items_in_current_item(self, new_item_index):
         '''
@@ -359,6 +348,105 @@ class NumberingSpanBuilder(object):
             self.numbering_span_stack.pop()
         return previous_span
 
+    def handle_paragraph(self, index, paragraph):
+        if paragraph.heading_style:
+            # TODO Headings shouldn't break numbering. See #162
+            # TODO not sure if reseting the stack is necessary or desired
+            self.numbering_span_stack = []
+            for _, item in self.candidate_numbering_items:
+                yield item
+            yield paragraph
+            self.current_span = None
+            self.current_item = None
+            self.candidate_numbering_items = []
+            self.current_item_index = index
+            return
+
+        level = self.get_numbering_level(paragraph)
+        num_def = None
+        if level:
+            num_def = level.parent
+
+        if num_def is None or level is None:
+            if self.current_span is None:
+                # This paragraph doesn't have any numbering information, and
+                # there's no current numbering span, so we just yield it back
+                yield paragraph
+            else:
+                # There is a current numbering span, but this paragraph doesn't
+                # have any numbering information. Save the paragraph to a queue
+                # for later processing. If a new item from the same span is
+                # added, we'll re-add this paragraph to the current item.
+                # Otherwise the paragraph will exist outside any numbering span
+                self.candidate_numbering_items.append((index, paragraph))
+            return
+
+        start_new_span = self.should_start_new_span(paragraph)
+        start_new_item = self.should_start_new_item(paragraph)
+
+        if start_new_span:
+            for item in self.handle_start_new_span(index, paragraph):
+                yield item
+
+        if start_new_item:
+            for item in self.handle_start_new_item(index, paragraph):
+                yield item
+
+        if self.current_item:
+            self.current_item.append_child(paragraph)
+        else:
+            yield paragraph
+
+    def process_component(self, index, component):
+        if isinstance(component, wordprocessing.Paragraph):
+            for new_component in self.handle_paragraph(index, component):
+                yield new_component
+        elif self.current_item:
+            self.candidate_numbering_items.append((index, component))
+        else:
+            yield component
+
+    def get_numbering_spans(self):
+        '''
+        For each flattened numbering span defined in `self.components`, return
+        a new list of items that is de-flattened.
+        '''
+        new_items = []
+        index = 0
+
+        for index, component in enumerate(self.components):
+            new_items.extend(self.process_component(index, component))
+
+        for item in self.include_candidate_items_in_current_item(self.current_item_index):
+            new_items.append(item)
+
+        return new_items
+
+
+class FakeNumberingDetection(object):
+    '''
+    Detect paragraphs that visually look like numbering spans, and convert them
+    into numbering spans.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        super(FakeNumberingDetection, self).__init__(*args, **kwargs)
+
+        self.faked_list_patterns = [
+            '{0}. ',
+            '{0} ',
+            '{0}) ',
+            '({0}) ',
+        ]
+
+        self.faked_list_numbering_format_sequencer = {
+            'decimal': lambda i: int(i),
+            'upperRoman': lambda i: int_to_roman(i).upper(),
+            'lowerRoman': lambda i: int_to_roman(i).lower(),
+            'upperLetter': lambda i: int_to_alpha(i).upper(),
+            'lowerLetter': lambda i: int_to_alpha(i).lower(),
+        }
+
     @memoized
     def get_numbering_level(self, paragraph):
         return self.detect_faked_list(paragraph)
@@ -407,16 +495,6 @@ class NumberingSpanBuilder(object):
         tab_distance = self.convert_tab_count_to_distance(tab_count)
         left_position += tab_distance
         return left_position
-
-    def get_paragraph_of_number(self):
-        if not self.current_span:
-            return
-        if not self.current_span.children:
-            return
-        first_item = self.current_span.children[0]
-        if not first_item.children:
-            return
-        return first_item.children[0]
 
     def detect_new_faked_level_started(self, paragraph, current_level_id=None):
         text = paragraph.get_text()
@@ -521,76 +599,6 @@ class NumberingSpanBuilder(object):
                 )
                 return level
 
-    def handle_paragraph(self, index, paragraph):
-        if paragraph.heading_style:
-            # TODO Headings shouldn't break numbering. See #162
-            # TODO not sure if reseting the stack is necessary or desired
-            self.numbering_span_stack = []
-            for _, item in self.candidate_numbering_items:
-                yield item
-            yield paragraph
-            self.current_span = None
-            self.current_item = None
-            self.candidate_numbering_items = []
-            self.current_item_index = index
-            return
 
-        level = self.get_numbering_level(paragraph)
-        num_def = None
-        if level:
-            num_def = level.parent
-
-        if num_def is None or level is None:
-            if self.current_span is None:
-                # This paragraph doesn't have any numbering information, and
-                # there's no current numbering span, so we just yield it back
-                yield paragraph
-            else:
-                # There is a current numbering span, but this paragraph doesn't
-                # have any numbering information. Save the paragraph to a queue
-                # for later processing. If a new item from the same span is
-                # added, we'll re-add this paragraph to the current item.
-                # Otherwise the paragraph will exist outside any numbering span
-                self.candidate_numbering_items.append((index, paragraph))
-            return
-
-        start_new_span = self.should_start_new_span(paragraph)
-        start_new_item = self.should_start_new_item(paragraph)
-
-        if start_new_span:
-            for item in self.handle_start_new_span(index, paragraph):
-                yield item
-
-        if start_new_item:
-            for item in self.handle_start_new_item(index, paragraph):
-                yield item
-
-        if self.current_item:
-            self.current_item.append_child(paragraph)
-        else:
-            yield paragraph
-
-    def process_component(self, index, component):
-        if isinstance(component, wordprocessing.Paragraph):
-            for new_component in self.handle_paragraph(index, component):
-                yield new_component
-        elif self.current_item:
-            self.candidate_numbering_items.append((index, component))
-        else:
-            yield component
-
-    def get_numbering_spans(self):
-        '''
-        For each flattened numbering span defined in `self.components`, return
-        a new list of items that is de-flattened.
-        '''
-        new_items = []
-        index = 0
-
-        for index, component in enumerate(self.components):
-            new_items.extend(self.process_component(index, component))
-
-        for item in self.include_candidate_items_in_current_item(self.current_item_index):
-            new_items.append(item)
-
-        return new_items
+class NumberingSpanBuilder(FakeNumberingDetection, BaseNumberingSpanBuilder):
+    pass

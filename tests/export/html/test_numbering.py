@@ -15,7 +15,7 @@ from pydocx.openxml.packaging import (
 )
 
 
-class NumberingTestCase(DocumentGeneratorTestCase):
+class NumberingTestBase(object):
     simple_list_item = '''
         <p>
             <pPr>
@@ -39,6 +39,8 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         </abstractNum>
     '''
 
+
+class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def test_lowerLetter_numbering_format_is_handled(self):
         num_id = 1
         numbering_xml = self.simple_list_definition.format(
@@ -946,45 +948,8 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_faked_list(self):
-        document_xml = '''
-            <p><r><t>1. AAA</t></r></p>
-            <p><r><t>2. BBB</t></r></p>
-            <p><r>
-                <tab />
-                <t>1. CCC</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <t>2. DDD</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <tab />
-                <t>1. EEE</t>
-            </r></p>
-        '''
 
-        document = WordprocessingDocumentFactory()
-        document.add(MainDocumentPart, document_xml)
-
-        expected_html = '''
-            <ol class="pydocx-list-style-type-decimal">
-                <li>AAA</li>
-                <li>BBB
-                    <ol class="pydocx-list-style-type-decimal">
-                        <li>CCC</li>
-                        <li>DDD
-                            <ol class="pydocx-list-style-type-decimal">
-                                <li>EEE</li>
-                            </ol>
-                        </li>
-                    </ol>
-                </li>
-            </ol>
-        '''
-        self.assert_document_generates_html(document, expected_html)
-
+class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def test_real_list_plus_fake_list(self):
         document_xml = '''
             {foo}
@@ -1016,6 +981,44 @@ class NumberingTestCase(DocumentGeneratorTestCase):
                 <li>Foo</li>
                 <li>Bar</li>
                 <li>Baz</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_real_list_plus_nested_fake_list_with_mixed_formats(self):
+        document_xml = '''
+            {aaa}
+            <p><r><tab /><t>a. BBB</t></r></p>
+            <p><r><tab /><t>b. CCC</t></r></p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            {decimal}
+        '''.format(
+            decimal=self.simple_list_definition.format(
+                num_id=1,
+                num_format='decimal',
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA
+                    <ol class="pydocx-list-style-type-lowerLetter">
+                        <li>BBB</li>
+                        <li>CCC</li>
+                    </ol>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1057,3 +1060,101 @@ class NumberingTestCase(DocumentGeneratorTestCase):
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+
+class FakedNestedNumberingBase(object):
+    def setUp(self):
+        super(FakedNestedNumberingBase, self).setUp()
+
+        self.document_xml = '''
+            <p><r><t>{0}AAA</t></r></p>
+            <p><r><t>{1}BBB</t></r></p>
+            <p><r>
+                <tab />
+                <t>{2}CCC</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{3}DDD</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <tab />
+                <t>{4}EEE</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <tab />
+                <t>{5}FFF</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{6}GGG</t>
+            </r></p>
+            <p><r><t>{7}HHH</t></r></p>
+        '''
+
+        self.expected_html = '''
+            <ol class="pydocx-list-style-type-{0}">
+                <li>AAA</li>
+                <li>BBB
+                    <ol class="pydocx-list-style-type-{1}">
+                        <li>CCC</li>
+                        <li>DDD
+                            <ol class="pydocx-list-style-type-{2}">
+                                <li>EEE</li>
+                                <li>FFF</li>
+                            </ol>
+                        </li>
+                        <li>GGG</li>
+                    </ol>
+                </li>
+                <li>HHH</li>
+            </ol>
+        '''
+
+    def assert_html_using_pattern(self, pattern):
+        document_xml_format = [
+            pattern.format(digit)
+            for digit in self.document_xml_sequence
+        ]
+        document_xml = self.document_xml.format(*document_xml_format)
+        expected_html = self.expected_html.format(*self.expected_html_format)
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_format_digit_dot(self):
+        self.assert_html_using_pattern('{0}. ')
+
+    def test_format_digit(self):
+        self.assert_html_using_pattern('{0} ')
+
+    def test_digit_paren(self):
+        self.assert_html_using_pattern('{0}) ')
+
+    def test_parent_digit_paren(self):
+        self.assert_html_using_pattern('({0}) ')
+
+
+class FakedNestedDecimalTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+    expected_html_format = ['decimal', 'decimal', 'decimal']
+    document_xml_sequence = [1, 2, 1, 2, 1, 2, 3, 3]
+
+
+class FakedNestedLowerLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+    expected_html_format = ['lowerLetter', 'lowerLetter', 'lowerLetter']
+    document_xml_sequence = ['a', 'b', 'a', 'b', 'a', 'b', 'c', 'c']
+
+
+class FakedNestedUpperLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+    expected_html_format = ['upperLetter', 'upperLetter', 'upperLetter']
+    document_xml_sequence = ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C']
+
+
+class FakedNestedLowerRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+    expected_html_format = ['lowerRoman', 'lowerRoman', 'lowerRoman']
+    document_xml_sequence = ['i', 'ii', 'i', 'ii', 'i', 'ii', 'iii', 'iii']
+
+
+class FakedNestedUpperRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+    expected_html_format = ['upperRoman', 'upperRoman', 'upperRoman']
+    document_xml_sequence = ['I', 'II', 'I', 'II', 'I', 'II', 'III', 'III']

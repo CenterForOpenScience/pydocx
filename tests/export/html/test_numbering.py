@@ -1110,11 +1110,17 @@ class FakedNestedNumberingBase(FakedNestedNumberingBase):
                 <tab />
                 <t>{5}ABBB</t>
             </r></p>
+            <p>
+                <pPr>
+                    <ind left="1440" />
+                </pPr>
+                <r><t>{6}ABBC</t></r>
+            </p>
             <p><r>
                 <tab />
-                <t>{6}ABC</t>
+                <t>{7}ABC</t>
             </r></p>
-            <p><r><t>{7}AC</t></r></p>
+            <p><r><t>{8}AC</t></r></p>
         '''
 
         self.expected_html = '''
@@ -1127,6 +1133,7 @@ class FakedNestedNumberingBase(FakedNestedNumberingBase):
                             <ol class="pydocx-list-style-type-{2}">
                                 <li>ABBA</li>
                                 <li>ABBB</li>
+                                <li>ABBC</li>
                             </ol>
                         </li>
                         <li>ABC</li>
@@ -1139,24 +1146,24 @@ class FakedNestedNumberingBase(FakedNestedNumberingBase):
 
 class FakedNestedDecimalTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
     expected_html_format = ['decimal', 'decimal', 'decimal']
-    document_xml_sequence = [1, 2, 1, 2, 1, 2, 3, 3]
+    document_xml_sequence = [1, 2, 1, 2, 1, 2, 3, 3, 3]
 
 
 class FakedNestedLowerLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
     expected_html_format = ['lowerLetter', 'lowerLetter', 'lowerLetter']
-    document_xml_sequence = ['a', 'b', 'a', 'b', 'a', 'b', 'c', 'c']
+    document_xml_sequence = ['a', 'b', 'a', 'b', 'a', 'b', 'c', 'c', 'c']
 
 
 class FakedNestedUpperLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
     expected_html_format = ['upperLetter', 'upperLetter', 'upperLetter']
-    document_xml_sequence = ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C']
+    document_xml_sequence = ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C', 'C']
 
 
 class FakedNestedLowerRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
     expected_html_format = ['lowerRoman', 'lowerRoman', 'lowerRoman']
-    document_xml_sequence = ['i', 'ii', 'i', 'ii', 'i', 'ii', 'iii', 'iii']
+    document_xml_sequence = ['i', 'ii', 'i', 'ii', 'i', 'ii', 'iii', 'iii', 'iii']
 
 
 class FakedNestedUpperRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
     expected_html_format = ['upperRoman', 'upperRoman', 'upperRoman']
-    document_xml_sequence = ['I', 'II', 'I', 'II', 'I', 'II', 'III', 'III']
+    document_xml_sequence = ['I', 'II', 'I', 'II', 'I', 'II', 'III', 'III', 'III']

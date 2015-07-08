@@ -15,7 +15,7 @@ from pydocx.util.memoize import memoized
 DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
 
 
-numeral_map = tuple(zip(
+roman_numeral_map = tuple(zip(
     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
 ))
@@ -35,7 +35,7 @@ def int_to_roman(i):
     True
     '''
     result = []
-    for integer, numeral in numeral_map:
+    for integer, numeral in roman_numeral_map:
         count = i // integer
         result.append(numeral * count)
         i -= integer * count
@@ -56,7 +56,7 @@ def roman_to_int(n):
     3789
     '''
     i = result = 0
-    for integer, numeral in numeral_map:
+    for integer, numeral in roman_numeral_map:
         while n[i:i + len(numeral)] == numeral:
             result += integer
             i += len(numeral)

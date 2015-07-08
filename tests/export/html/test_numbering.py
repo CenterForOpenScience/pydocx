@@ -1063,56 +1063,6 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
 
 class FakedNestedNumberingBase(object):
-    def setUp(self):
-        super(FakedNestedNumberingBase, self).setUp()
-
-        self.document_xml = '''
-            <p><r><t>{0}AAA</t></r></p>
-            <p><r><t>{1}BBB</t></r></p>
-            <p><r>
-                <tab />
-                <t>{2}CCC</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <t>{3}DDD</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <tab />
-                <t>{4}EEE</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <tab />
-                <t>{5}FFF</t>
-            </r></p>
-            <p><r>
-                <tab />
-                <t>{6}GGG</t>
-            </r></p>
-            <p><r><t>{7}HHH</t></r></p>
-        '''
-
-        self.expected_html = '''
-            <ol class="pydocx-list-style-type-{0}">
-                <li>AAA</li>
-                <li>BBB
-                    <ol class="pydocx-list-style-type-{1}">
-                        <li>CCC</li>
-                        <li>DDD
-                            <ol class="pydocx-list-style-type-{2}">
-                                <li>EEE</li>
-                                <li>FFF</li>
-                            </ol>
-                        </li>
-                        <li>GGG</li>
-                    </ol>
-                </li>
-                <li>HHH</li>
-            </ol>
-        '''
-
     def assert_html_using_pattern(self, pattern):
         document_xml_format = [
             pattern.format(digit)
@@ -1133,6 +1083,58 @@ class FakedNestedNumberingBase(object):
 
     def test_parent_digit_paren(self):
         self.assert_html_using_pattern('({0}) ')
+
+
+class FakedNestedNumberingBase(FakedNestedNumberingBase):
+    def setUp(self):
+        super(FakedNestedNumberingBase, self).setUp()
+
+        self.document_xml = '''
+            <p><r><t>{0}AA</t></r></p>
+            <p><r><t>{1}AB</t></r></p>
+            <p><r>
+                <tab />
+                <t>{2}ABA</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{3}ABB</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <tab />
+                <t>{4}ABBA</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <tab />
+                <t>{5}ABBB</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{6}ABC</t>
+            </r></p>
+            <p><r><t>{7}AC</t></r></p>
+        '''
+
+        self.expected_html = '''
+            <ol class="pydocx-list-style-type-{0}">
+                <li>AA</li>
+                <li>AB
+                    <ol class="pydocx-list-style-type-{1}">
+                        <li>ABA</li>
+                        <li>ABB
+                            <ol class="pydocx-list-style-type-{2}">
+                                <li>ABBA</li>
+                                <li>ABBB</li>
+                            </ol>
+                        </li>
+                        <li>ABC</li>
+                    </ol>
+                </li>
+                <li>AC</li>
+            </ol>
+        '''
 
 
 class FakedNestedDecimalTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):

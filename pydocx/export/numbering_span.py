@@ -489,7 +489,14 @@ class FakeNumberingDetection(object):
         left_position = 0
         properties = paragraph.effective_properties
         if properties:
-            properties = properties.start_margin_position
+            left_position = properties.start_margin_position
+            # TODO find a better way to "zero" out the indentation. We do this
+            # otherwise since we're "consuming" the indentation by converting
+            # this paragraph into a numbering item, much in the same way we
+            # remove leading tabs
+            properties.indentation_left = 0
+            properties.indentation_first_line = 0
+            properties.indentation_hanging = 0
 
         # Add the tab distance
         tab_distance = self.convert_tab_count_to_distance(tab_count)

@@ -209,9 +209,9 @@ class Paragraph(XmlModel):
                     if isinstance(r_child, TabChar):
                         p_child.children.remove(r_child)
                     else:
-                        break
+                        return
             else:
-                break
+                return
 
     def get_number_of_initial_tabs(self):
         '''

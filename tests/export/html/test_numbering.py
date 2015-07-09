@@ -963,6 +963,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             ),
         )
 
+        # This works because simple_list_definition doesn't define an
+        # indentation for the level. So the real list indentation is
+        # effectively 0
         numbering_xml = '''
             {decimal}
         '''.format(
@@ -985,7 +988,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_real_list_plus_nested_fake_list_with_mixed_formats(self):
+    def test_real_list_plus_tab_nested_fake_list_with_mixed_formats(self):
         document_xml = '''
             {aaa}
             <p><r><tab /><t>a. BBB</t></r></p>
@@ -998,6 +1001,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             ),
         )
 
+        # This works because simple_list_definition doesn't define an
+        # indentation for the level. So the real list indentation is
+        # effectively 0
         numbering_xml = '''
             {decimal}
         '''.format(
@@ -1036,6 +1042,8 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             ),
         )
 
+        # This works because the level definition doesn't define an indentation
+        # for the level. So the real list indentation is effectively 0
         numbering_xml = '''
             <num numId="1">
                 <abstractNumId val="1"/>
@@ -1060,6 +1068,222 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_one_fake_list_followed_by_another_fake_list_same_format(self):
+        document_xml = '''
+            <p><r><t>1. AA</t></r></p>
+            <p><r><t>2. AB</t></r></p>
+            <p><r><t>1. BA</t></r></p>
+            <p><r><t>2. BB</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AA</li>
+                <li>AB</li>
+            </ol>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>BA</li>
+                <li>BB</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_one_fake_list_followed_by_another_fake_list_different_format(self):
+        document_xml = '''
+            <p><r><t>1. AA</t></r></p>
+            <p><r><t>2. AB</t></r></p>
+            <p><r><t>a. BA</t></r></p>
+            <p><r><t>b. BB</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AA</li>
+                <li>AB</li>
+            </ol>
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>BA</li>
+                <li>BB</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_real_nested_list_continuation_fake_nested_list_using_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            <p>
+                <pPr>
+                    <ind left="720" hanging="0" />
+                </pPr>
+                <r><t>2. CCC</t></r>
+            </p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="720" hanging="0" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>BBB</li>
+                        <li>CCC</li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_real_nested_list_continuation_fake_list_using_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            <p>
+                <pPr>
+                    <ind left="720" hanging="360" />
+                </pPr>
+                <r><t>2. CCC</t></r>
+            </p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="720" hanging="0" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>BBB</li>
+                    </ol>
+                </li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_faked_list_using_indentation(self):
+        document_xml = '''
+            <p><r><t>1. AA</t></r></p>
+            <p>
+                <pPr>
+                    <ind left="200" />
+                </pPr>
+                <r><t>a. AAA</t></r>
+            </p>
+            <p>
+                <pPr>
+                    <ind left="0" firstLine="200" />
+                </pPr>
+                <r><t>b. AAB</t></r>
+            </p>
+            <p>
+                <pPr>
+                    <ind left="400" hanging="200" firstLine="300" />
+                </pPr>
+                <r><t>c. AAC</t></r>
+            </p>
+            <p>
+                <pPr>
+                    <ind left="200" firstLine="400" />
+                </pPr>
+                <r><t>A. AACA</t></r>
+            </p>
+            <p>
+                <pPr>
+                    <ind left="100" firstLine="100" />
+                </pPr>
+                <r><t>d. AAD</t></r>
+            </p>
+            <p><r><t>2. AB</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AA
+                    <ol class="pydocx-list-style-type-lowerLetter">
+                        <li>AAA</li>
+                        <li>AAB</li>
+                        <li>AAC
+                            <ol class="pydocx-list-style-type-upperLetter">
+                                <li>AACA</li>
+                            </ol>
+                        </li>
+                        <li>AAD</li>
+                    </ol>
+                </li>
+                <li>AB</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
 
 class FakedNestedNumberingBase(object):

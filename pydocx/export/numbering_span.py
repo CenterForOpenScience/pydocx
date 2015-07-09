@@ -529,7 +529,11 @@ class FakeNumberingDetection(object):
 
     def get_left_position_for_numbering_span(self, numbering_span):
         paragraph = numbering_span.get_first_child_of_first_item()
-        return self.get_left_position_for_paragraph(paragraph)
+        left_pos = self.get_left_position_for_paragraph(paragraph)
+        num_level_para_properties = numbering_span.numbering_level.paragraph_properties
+        if num_level_para_properties:
+            left_pos += num_level_para_properties.start_margin_position
+        return left_pos
 
     def detect_faked_list(self, paragraph):
         level = paragraph.get_numbering_level()
@@ -596,6 +600,14 @@ class FakeNumberingDetection(object):
                     if matching_text:
                         paragraph.strip_text_from_left(matching_text)
                         return current_level
+                # Maybe it's a new level?
+                level = self.detect_new_faked_level_started(paragraph)
+                if level:
+                    wordprocessing.AbstractNum(
+                        levels=[level],
+                    )
+                    return level
+
         elif level:
             return level
         else:

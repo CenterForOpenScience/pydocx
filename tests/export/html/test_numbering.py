@@ -1285,6 +1285,45 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
+    def test_faked_list_that_skips_numbers(self):
+        document_xml = '''
+            <p><r><tab /><t>1. AA</t></r></p>
+            <p><r><tab /><t>2. AB</t></r></p>
+            <p><r><tab /><t>4. AC</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AA</li>
+                <li>AB</li>
+            </ol>
+            <p>
+                <span class="pydocx-tab"></span>
+                4. AC
+            </p>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_faked_list_that_does_not_start_from_1(self):
+        document_xml = '''
+            <p><r><tab /><t>2. AA</t></r></p>
+            <p><r><tab /><t>3. AB</t></r></p>
+        '''
+
+        expected_html = '''
+            <p>
+                <span class="pydocx-tab"></span>
+                2. AA
+            </p>
+            <p>
+                <span class="pydocx-tab"></span>
+                3. AB
+            </p>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
 
 class FakedNestedNumberingBase(object):
     def assert_html_using_pattern(self, pattern):

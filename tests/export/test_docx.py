@@ -23,6 +23,7 @@ def convert(path, *args, **kwargs):
 
 class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
     cases = (
+        'read_same_image_multiple_times',
         'all_configured_styles',
         'has_title',
         'inline_tags',

@@ -553,15 +553,13 @@ class FakeNumberingDetection(object):
             current_span_left_position = self.get_left_position_for_numbering_span(
                 self.current_span,
             )
-            if left_position > 0:
-                paragraph.remove_initial_tabs()
-
             if left_position > current_span_left_position:
                 new_faked_level = self.detect_new_faked_level_started(
                     paragraph,
                     int(current_level.level_id),
                 )
                 if new_faked_level:
+                    paragraph.remove_initial_tabs()
                     current_level.parent.levels.append(new_faked_level)
                     new_faked_level.parent = current_level.parent
                     paragraph.remove_initial_tabs()
@@ -587,6 +585,7 @@ class FakeNumberingDetection(object):
                         )
                         if matching_text:
                             paragraph.strip_text_from_left(matching_text)
+                            paragraph.remove_initial_tabs()
                             return previous_level
 
             elif left_position == current_span_left_position:
@@ -599,6 +598,7 @@ class FakeNumberingDetection(object):
                     )
                     if matching_text:
                         paragraph.strip_text_from_left(matching_text)
+                        paragraph.remove_initial_tabs()
                         return current_level
                 # Maybe it's a new level?
                 level = self.detect_new_faked_level_started(paragraph)
@@ -606,6 +606,7 @@ class FakeNumberingDetection(object):
                     wordprocessing.AbstractNum(
                         levels=[level],
                     )
+                    paragraph.remove_initial_tabs()
                     return level
 
         elif level:
@@ -613,6 +614,9 @@ class FakeNumberingDetection(object):
         else:
             level = self.detect_new_faked_level_started(paragraph)
             if level:
+                left_position = self.get_left_position_for_paragraph(paragraph)
+                if left_position > 0:
+                    paragraph.remove_initial_tabs()
                 wordprocessing.AbstractNum(
                     levels=[level],
                 )

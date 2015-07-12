@@ -6,10 +6,15 @@ from __future__ import (
     unicode_literals,
 )
 
+import re
 import string
 
 from pydocx.openxml import wordprocessing
 from pydocx.util.memoize import memoized
+
+from pydocx.openxml.wordprocessing.run import Run
+from pydocx.openxml.wordprocessing.tab_char import TabChar
+from pydocx.openxml.wordprocessing.text import Text
 
 # Defined in 17.15.1.25
 DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
@@ -520,7 +525,7 @@ class FakeNumberingDetection(object):
                     next_span_position,
                 )
                 if matching_text:
-                    paragraph.strip_text_from_left(matching_text)
+                    self.clean_paragraph(paragraph, matching_text)
                     level = wordprocessing.Level(
                         level_id='{0}'.format(level_id),
                         num_format=num_format,
@@ -559,10 +564,8 @@ class FakeNumberingDetection(object):
                     int(current_level.level_id),
                 )
                 if new_faked_level:
-                    paragraph.remove_initial_tabs()
                     current_level.parent.levels.append(new_faked_level)
                     new_faked_level.parent = current_level.parent
-                    paragraph.remove_initial_tabs()
                     return new_faked_level
             elif left_position < current_span_left_position:
                 previous_level = None
@@ -584,8 +587,7 @@ class FakeNumberingDetection(object):
                             next_span_position,
                         )
                         if matching_text:
-                            paragraph.strip_text_from_left(matching_text)
-                            paragraph.remove_initial_tabs()
+                            self.clean_paragraph(paragraph, matching_text)
                             return previous_level
 
             elif left_position == current_span_left_position:
@@ -597,8 +599,7 @@ class FakeNumberingDetection(object):
                         next_span_position,
                     )
                     if matching_text:
-                        paragraph.strip_text_from_left(matching_text)
-                        paragraph.remove_initial_tabs()
+                        self.clean_paragraph(paragraph, matching_text)
                         return current_level
                 # Maybe it's a new level?
                 level = self.detect_new_faked_level_started(paragraph)
@@ -606,7 +607,7 @@ class FakeNumberingDetection(object):
                     wordprocessing.AbstractNum(
                         levels=[level],
                     )
-                    paragraph.remove_initial_tabs()
+                    self.clean_paragraph(paragraph, matching_text)
                     return level
 
         elif level:
@@ -614,13 +615,90 @@ class FakeNumberingDetection(object):
         else:
             level = self.detect_new_faked_level_started(paragraph)
             if level:
-                left_position = self.get_left_position_for_paragraph(paragraph)
-                if left_position > 0:
-                    paragraph.remove_initial_tabs()
                 wordprocessing.AbstractNum(
                     levels=[level],
                 )
                 return level
+
+    def remove_initial_tab_chars_from_paragraph(self, paragraph):
+        '''
+        Remove initial TabChars from the paragraph, stopping at the first
+        non-TabChar node that is encountered.
+        '''
+        for p_child in paragraph.children:
+            if isinstance(p_child, Run):
+                for r_child in p_child.children[:]:
+                    if isinstance(r_child, TabChar):
+                        p_child.children.remove(r_child)
+                    else:
+                        return
+            else:
+                return
+
+    def remove_initial_text_from_paragraph(self, paragraph, initial_text):
+        '''
+        Remove the matching `initial_text` starting from the left. Non-Text
+        nodes (for example tabs and breaks) are ignored.
+
+        For example:
+
+        Given the following paragraph XML definition:
+
+            <p>
+                <r>
+                    <t>abc</t>
+                </r>
+                <r>
+                    <t>def</t>
+                </r>
+            </p>
+
+        `remove_initial_tab_chars_from_paragraph(paragraph, 'abcd')` will
+        result in the equivalent paragraph XML definition:
+
+            <p>
+                <r>
+                    <t></t>
+                </r>
+                <r>
+                    <t>ef</t>
+                </r>
+            </p>
+        '''
+        if not initial_text:
+            return
+        len_text = len(initial_text)
+        for run in paragraph.runs:
+            for r_child in run.children:
+                if isinstance(r_child, Text):
+                    if r_child.text:
+                        len_r_child_text = len(r_child.text)
+                        if len_r_child_text >= len_text:
+                            if r_child.text.startswith(initial_text):
+                                r_child.text = r_child.text[len_text:]
+                        else:
+                            if initial_text.startswith(r_child.text):
+                                r_child.text = ''
+                                initial_text = initial_text[len_r_child_text:]
+                else:
+                    # TODO does it matter if we encounter a non-text character?
+                    pass
+
+    def clean_paragraph(self, paragraph, initial_text=None):
+        '''
+        Given a paragraph and initial_text, remove any initial tabs, whitespace
+        in addition to the initial_text.
+        '''
+        # We have to get the left position first, because if there is a new
+        # faked level detected, the paragraph is cleaned and any initial
+        # tabs are removed. Since this result is memoized, when a future
+        # paragraph checks it for this paragraph, it won't have to
+        # re-calculate it against the modified paragraph (which would
+        # result in an incorrect value)
+        self.get_left_position_for_paragraph(paragraph)
+
+        self.remove_initial_text_from_paragraph(paragraph, initial_text)
+        self.remove_initial_tab_chars_from_paragraph(paragraph)
 
 
 class NumberingSpanBuilder(FakeNumberingDetection, BaseNumberingSpanBuilder):

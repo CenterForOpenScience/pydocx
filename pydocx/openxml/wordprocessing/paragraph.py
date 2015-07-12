@@ -154,65 +154,6 @@ class Paragraph(XmlModel):
                         text.append(r_child.text)
         return ''.join(text)
 
-    def strip_text_from_left(self, text):
-        '''
-        Remove the matching `text` starting from the left. Non-Text nodes (for
-        example tabs and breaks) are ignored.
-
-        For example:
-
-        Given the following paragraph XML definition:
-
-            <p>
-                <r>
-                    <t>abc</t>
-                </r>
-                <r>
-                    <t>def</t>
-                </r>
-            </p>
-
-        `strip_text_from_left('abcd')` will result in the equivalent paragraph
-        XML definition:
-
-            <p>
-                <r>
-                    <t></t>
-                </r>
-                <r>
-                    <t>ef</t>
-                </r>
-            </p>
-        '''
-        len_text = len(text)
-        for run in self.runs:
-            for r_child in run.children:
-                if isinstance(r_child, Text):
-                    if r_child.text:
-                        len_r_child_text = len(r_child.text)
-                        if len_r_child_text >= len_text:
-                            if r_child.text.startswith(text):
-                                r_child.text = r_child.text[len_text:]
-                        else:
-                            if text.startswith(r_child.text):
-                                r_child.text = ''
-                                text = text[len_r_child_text:]
-
-    def remove_initial_tabs(self):
-        '''
-        Remove initial TabChars from the paragraph, stopping at the first
-        non-TabChar node that is encountered.
-        '''
-        for p_child in self.children:
-            if isinstance(p_child, Run):
-                for r_child in p_child.children[:]:
-                    if isinstance(r_child, TabChar):
-                        p_child.children.remove(r_child)
-                    else:
-                        return
-            else:
-                return
-
     def get_number_of_initial_tabs(self):
         '''
         Return the number of initial TabChars.

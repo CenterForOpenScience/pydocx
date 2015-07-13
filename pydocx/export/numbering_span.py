@@ -575,6 +575,7 @@ class FakeNumberingDetection(object):
                 if previous_level:
                     previous_span_position = len(previous_span.children)
                     next_span_position = previous_span_position + 1
+                    # TODO shouldn't we use the previous_levels num format?
                     for pattern in self.faked_list_patterns:
                         matching_text = self.text_is_a_faked_list(
                             paragraph_text,
@@ -587,6 +588,8 @@ class FakeNumberingDetection(object):
                             return previous_level
 
             elif left_position == current_span_left_position:
+                # TODO shouldn't we just be using the num_format pattern for
+                # this level instead of checking them all?
                 for pattern in self.faked_list_patterns:
                     matching_text = self.text_is_a_faked_list(
                         paragraph_text,

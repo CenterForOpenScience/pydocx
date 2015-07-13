@@ -618,6 +618,7 @@ class FakeNumberingDetection(object):
                     levels=[level],
                 )
                 return level
+        return level
 
     def remove_initial_tab_chars_from_paragraph(self, paragraph):
         '''

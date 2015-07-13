@@ -8,6 +8,29 @@ from __future__ import (
 import inspect
 from collections import defaultdict
 
+try:
+    unicode_string = unicode
+except NameError:
+    unicode_string = str
+
+
+def force_unicode(string, encoding='utf-8'):
+    '''
+    Given a string, return the unicode equivalent if possible. For python3+,
+    this means just returning the string unchanged. For python2, if the string
+    is already unicode, the string is also returned unchanged. Otherwise, the
+    string is decoded using the specified encoding which defaults to UTF-8.
+
+    >>> force_unicode(None)
+    >>> force_unicode('foo') == 'foo'
+    True
+    '''
+    if string is None:
+        return
+    if isinstance(string, unicode_string):
+        return string
+    return string.decode(encoding)
+
 
 class XmlException(Exception):
     pass
@@ -224,7 +247,8 @@ class XmlModel(object):
             if isinstance(field, XmlChild):
                 tag_fields[field_name] = field
             if isinstance(field, XmlContent):
-                kwargs[field_name] = element.text
+                content = force_unicode(element.text)
+                kwargs[field_name] = content
             if isinstance(field, XmlCollection):
                 collections[field_name] = field
 

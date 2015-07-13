@@ -547,6 +547,9 @@ class FakeNumberingDetection(object):
 
             if self.level_is_a_continuation_of_current_level(level, next_span_position):
                 return current_level
+            # TODO there's another scenario where level visually represents a
+            # sub-level of the current span, but is not a continuation, and
+            # doesn't numerically follow
             elif level:
                 return level
 

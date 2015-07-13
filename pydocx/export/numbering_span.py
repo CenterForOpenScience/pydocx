@@ -189,7 +189,9 @@ class BaseNumberingSpanBuilder(object):
     accomplished using the NumberingSpan and NumberingItem classes.
     '''
 
-    def __init__(self, components):
+    def __init__(self, components=None):
+        if not components:
+            components = []
         self.components = components
         self.numbering_span_stack = []
         self.current_span = None

@@ -498,13 +498,6 @@ class FakeNumberingDetection(object):
         properties = paragraph.effective_properties
         if properties:
             left_position = properties.start_margin_position
-            # TODO find a better way to "zero" out the indentation. We do this
-            # otherwise since we're "consuming" the indentation by converting
-            # this paragraph into a numbering item, much in the same way we
-            # remove leading tabs
-            properties.indentation_left = 0
-            properties.indentation_first_line = 0
-            properties.indentation_hanging = 0
 
         # Add the tab distance
         tab_distance = self.convert_tab_count_to_distance(tab_count)
@@ -512,7 +505,7 @@ class FakeNumberingDetection(object):
         return left_position
 
     def detect_new_faked_level_started(self, paragraph, current_level_id=None):
-        text = paragraph.get_text()
+        paragraph_text = paragraph.get_text()
 
         level_id = 0
         if current_level_id is not None:
@@ -522,7 +515,7 @@ class FakeNumberingDetection(object):
         for pattern in self.faked_list_patterns:
             for num_format in self.faked_list_numbering_format_sequencer:
                 matching_text = self.text_is_a_faked_list(
-                    text,
+                    paragraph_text,
                     pattern,
                     num_format,
                     next_span_position,
@@ -545,6 +538,7 @@ class FakeNumberingDetection(object):
 
     def detect_faked_list(self, paragraph):
         level = paragraph.get_numbering_level()
+        left_position = self.get_left_position_for_paragraph(paragraph)
 
         if self.current_span:
             current_level = self.current_span.numbering_level
@@ -556,8 +550,7 @@ class FakeNumberingDetection(object):
             elif level:
                 return level
 
-            text = paragraph.get_text()
-            left_position = self.get_left_position_for_paragraph(paragraph)
+            paragraph_text = paragraph.get_text()
             current_span_left_position = self.get_left_position_for_numbering_span(
                 self.current_span,
             )
@@ -584,7 +577,7 @@ class FakeNumberingDetection(object):
                     next_span_position = previous_span_position + 1
                     for pattern in self.faked_list_patterns:
                         matching_text = self.text_is_a_faked_list(
-                            text,
+                            paragraph_text,
                             pattern,
                             previous_level.num_format,
                             next_span_position,
@@ -596,7 +589,7 @@ class FakeNumberingDetection(object):
             elif left_position == current_span_left_position:
                 for pattern in self.faked_list_patterns:
                     matching_text = self.text_is_a_faked_list(
-                        text,
+                        paragraph_text,
                         pattern,
                         current_level.num_format,
                         next_span_position,
@@ -687,21 +680,25 @@ class FakeNumberingDetection(object):
                     # TODO does it matter if we encounter a non-text character?
                     pass
 
+    def remove_left_indentation_from_paragraph(self, paragraph):
+        '''
+        Given a paragraph, zero out the left, first_line and handing
+        indentation for the paragraph's effective properties.
+        '''
+        properties = paragraph.effective_properties
+        if properties:
+            properties.indentation_left = 0
+            properties.indentation_first_line = 0
+            properties.indentation_hanging = 0
+
     def clean_paragraph(self, paragraph, initial_text=None):
         '''
         Given a paragraph and initial_text, remove any initial tabs, whitespace
         in addition to the initial_text.
         '''
-        # We have to get the left position first, because if there is a new
-        # faked level detected, the paragraph is cleaned and any initial
-        # tabs are removed. Since this result is memoized, when a future
-        # paragraph checks it for this paragraph, it won't have to
-        # re-calculate it against the modified paragraph (which would
-        # result in an incorrect value)
-        self.get_left_position_for_paragraph(paragraph)
-
         self.remove_initial_text_from_paragraph(paragraph, initial_text)
         self.remove_initial_tab_chars_from_paragraph(paragraph)
+        self.remove_left_indentation_from_paragraph(paragraph)
 
 
 class NumberingSpanBuilder(FakeNumberingDetection, BaseNumberingSpanBuilder):

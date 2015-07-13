@@ -1336,16 +1336,28 @@ class FakedNestedNumberingBase(object):
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
     def test_format_digit_dot(self):
-        self.assert_html_using_pattern('{0}. ')
+        self.assert_html_using_pattern('{0}.')
 
-    def test_format_digit(self):
+    def test_format_digit_space(self):
         self.assert_html_using_pattern('{0} ')
 
-    def test_digit_paren(self):
-        self.assert_html_using_pattern('{0}) ')
+    def test_format_space_digit_spaces(self):
+        self.assert_html_using_pattern('  {0}   ')
 
-    def test_parent_digit_paren(self):
-        self.assert_html_using_pattern('({0}) ')
+    def test_digit_paren(self):
+        self.assert_html_using_pattern('{0})')
+
+    def test_digit_paren_with_spaces(self):
+        self.assert_html_using_pattern(' {0}  )  ')
+
+    def test_paren_digit_paren(self):
+        self.assert_html_using_pattern('({0})')
+
+    def test_paren_digit_paren_with_spaces(self):
+        self.assert_html_using_pattern('  (  {0}  )  ')
+
+    def test_format_digit_dot_with_spacing(self):
+        self.assert_html_using_pattern('  {0}  .  ')
 
 
 class FakedNestedNumberingBase(FakedNestedNumberingBase):

@@ -87,6 +87,19 @@ class GetTextTestCase(ParagraphTestBase):
         paragraph = self._load_from_xml(xml)
         self.assertEqual(paragraph.get_text(), 'abc')
 
+    def test_single_run_many_text_nodes_with_spacing(self):
+        xml = '''
+            <p>
+                <r>
+                    <t> a </t>
+                    <t> b </t>
+                    <t> c </t>
+                </r>
+            </p>
+        '''
+        paragraph = self._load_from_xml(xml)
+        self.assertEqual(paragraph.get_text(), ' a  b  c ')
+
 
 class GetNumberOfInitialTabsTestCase(ParagraphTestBase):
     def test_empty_paragraph(self):

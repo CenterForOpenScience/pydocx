@@ -440,10 +440,10 @@ class FakeNumberingDetection(object):
         super(FakeNumberingDetection, self).__init__(*args, **kwargs)
 
         self.faked_list_patterns = [
-            '{0}. ',
-            '{0} ',
-            '{0}) ',
-            '({0}) ',
+            r'^\s*\(\s*{0}\s*\)\s*',
+            r'^\s*{0}\s*\)\s*',
+            r'^\s*{0}\s*\.\s*',
+            r'^\s*{0} \s*',
         ]
 
         self.faked_list_numbering_format_sequencer = {
@@ -464,16 +464,17 @@ class FakeNumberingDetection(object):
         # the document's default tab stop.
         return tab_count * DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL
 
-    def text_is_a_faked_list(self, text, pattern, num_format, index):
+    def text_is_a_faked_list(self, text, pattern_template, num_format, index):
         sequencer = self.faked_list_numbering_format_sequencer.get(num_format)
         if callable(sequencer):
             try:
                 sequenced_index = sequencer(index)
             except ValueError:
                 return False
-            expected_text = pattern.format(sequenced_index)
-            if text.startswith(expected_text):
-                return expected_text
+            pattern = pattern_template.format(sequenced_index)
+            matching = re.match(pattern, text)
+            if matching:
+                return matching.group()
         return False
 
     def level_is_a_continuation_of_current_level(self, level, next_span_position):

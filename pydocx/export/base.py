@@ -797,6 +797,7 @@ class PyDocXExporter(MultiMemoizeMixin):
             if is_uri_external:
                 data = image_part.uri
             else:
+                image_part.stream.seek(0)
                 data = image_part.stream.read()
         except KeyError:
             return ''

@@ -950,6 +950,34 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
 
 class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
+    def test_fake_decimal_list_with_many_items(self):
+        paragraphs = []
+        expected_items = []
+        for i in range(1, 100):
+            content = 'Foo-{index}'.format(index=i)
+            paragraphs.append(
+                '<p><r><t>{index}. {content}</t></r></p>'.format(
+                    index=i,
+                    content=content,
+                ),
+            )
+            expected_items.append(content)
+
+        document_xml = ''.join(paragraphs)
+
+        items = [
+            '<li>{item}</li>'.format(item=item)
+            for item in expected_items
+        ]
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+            {items}
+            </ol>
+        '''.format(items=''.join(items))
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
     def test_real_list_plus_fake_list(self):
         document_xml = '''
             {foo}

@@ -553,6 +553,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         elif uri_is_external(image.uri):
             return image.uri
         else:
+            image.stream.seek(0)
             data = image.stream.read()
             _, filename = posixpath.split(image.uri)
             extension = filename.split('.')[-1].lower()

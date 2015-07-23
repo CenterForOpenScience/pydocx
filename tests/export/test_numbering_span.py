@@ -137,6 +137,30 @@ class RemoveInitialTextFromParagraphTestCase(NumberingSpanTestBase):
         self.builder.remove_initial_text_from_paragraph(paragraph, 'abcd')
         self.assertEqual(repr(paragraph), repr(expected))
 
+    def test_longer_text_after_split_matching_text_is_preserved(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='abcde'),
+                Text(text='f'),
+                # The key here is that the following text is longer that the
+                # initial text, and the text above matches the initial text,
+                # but is split.
+                Text(text='ghijklm'),
+                Text(text='nop'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                Text(text=''),
+                Text(text='ghijklm'),
+                Text(text='nop'),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(paragraph, 'abcdef')
+        self.assertEqual(repr(paragraph), repr(expected))
+
 
 class RemoveInitialTabCharsFromParagraphTestCase(NumberingSpanTestBase):
     def test_empty_paragraph_nothing_changes(self):

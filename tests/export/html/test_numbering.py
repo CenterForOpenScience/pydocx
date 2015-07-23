@@ -1353,7 +1353,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
 
-class FakedNestedNumberingBase(object):
+class FakedNumberingPatternBase(object):
     def assert_html_using_pattern(self, pattern):
         document_xml_format = [
             pattern.format(digit)
@@ -1388,9 +1388,9 @@ class FakedNestedNumberingBase(object):
         self.assert_html_using_pattern('  {0}  .  ')
 
 
-class FakedNestedNumberingBase(FakedNestedNumberingBase):
+class FakedNestedNumberingPatternBase(FakedNumberingPatternBase):
     def setUp(self):
-        super(FakedNestedNumberingBase, self).setUp()
+        super(FakedNestedNumberingPatternBase, self).setUp()
 
         self.document_xml = '''
             <p><r><t>{0}AA</t></r></p>
@@ -1447,26 +1447,41 @@ class FakedNestedNumberingBase(FakedNestedNumberingBase):
         '''
 
 
-class FakedNestedDecimalTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+class FakedNestedDecimalTestCase(
+    FakedNestedNumberingPatternBase,
+    DocumentGeneratorTestCase,
+):
     expected_html_format = ['decimal', 'decimal', 'decimal']
     document_xml_sequence = [1, 2, 1, 2, 1, 2, 3, 3, 3]
 
 
-class FakedNestedLowerLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+class FakedNestedLowerLetterTestCase(
+    FakedNestedNumberingPatternBase,
+    DocumentGeneratorTestCase,
+):
     expected_html_format = ['lowerLetter', 'lowerLetter', 'lowerLetter']
     document_xml_sequence = ['a', 'b', 'a', 'b', 'a', 'b', 'c', 'c', 'c']
 
 
-class FakedNestedUpperLetterTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+class FakedNestedUpperLetterTestCase(
+    FakedNestedNumberingPatternBase,
+    DocumentGeneratorTestCase,
+):
     expected_html_format = ['upperLetter', 'upperLetter', 'upperLetter']
     document_xml_sequence = ['A', 'B', 'A', 'B', 'A', 'B', 'C', 'C', 'C']
 
 
-class FakedNestedLowerRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+class FakedNestedLowerRomanTestCase(
+    FakedNestedNumberingPatternBase,
+    DocumentGeneratorTestCase,
+):
     expected_html_format = ['lowerRoman', 'lowerRoman', 'lowerRoman']
     document_xml_sequence = ['i', 'ii', 'i', 'ii', 'i', 'ii', 'iii', 'iii', 'iii']
 
 
-class FakedNestedUpperRomanTestCase(FakedNestedNumberingBase, DocumentGeneratorTestCase):
+class FakedNestedUpperRomanTestCase(
+    FakedNestedNumberingPatternBase,
+    DocumentGeneratorTestCase,
+):
     expected_html_format = ['upperRoman', 'upperRoman', 'upperRoman']
     document_xml_sequence = ['I', 'II', 'I', 'II', 'I', 'II', 'III', 'III', 'III']

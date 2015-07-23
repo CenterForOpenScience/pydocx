@@ -1366,12 +1366,6 @@ class FakedNumberingPatternBase(object):
     def test_format_digit_dot(self):
         self.assert_html_using_pattern('{0}.')
 
-    def test_format_digit_space(self):
-        self.assert_html_using_pattern('{0} ')
-
-    def test_format_space_digit_spaces(self):
-        self.assert_html_using_pattern('  {0}   ')
-
     def test_digit_paren(self):
         self.assert_html_using_pattern('{0})')
 

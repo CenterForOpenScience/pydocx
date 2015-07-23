@@ -443,7 +443,6 @@ class FakeNumberingDetection(object):
             r'^\s*\(\s*{0}\s*\)\s*',
             r'^\s*{0}\s*\)\s*',
             r'^\s*{0}\s*\.\s*',
-            r'^\s*{0} \s*',
         ]
 
         self.faked_list_numbering_format_sequencer = {

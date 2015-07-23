@@ -669,12 +669,12 @@ class FakeNumberingDetection(object):
         '''
         if not initial_text:
             return
-        len_text = len(initial_text)
         for run in paragraph.runs:
             for r_child in run.children:
                 if isinstance(r_child, Text):
                     if r_child.text:
                         len_r_child_text = len(r_child.text)
+                        len_text = len(initial_text)
                         if len_r_child_text >= len_text:
                             if r_child.text.startswith(initial_text):
                                 r_child.text = r_child.text[len_text:]

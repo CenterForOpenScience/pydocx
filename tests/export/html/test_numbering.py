@@ -13,6 +13,7 @@ from pydocx.openxml.packaging import (
     NumberingDefinitionsPart,
     StyleDefinitionsPart,
 )
+from pydocx.export.numbering_span import int_to_alpha, int_to_roman
 
 
 class NumberingTestBase(object):
@@ -949,15 +950,16 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
-class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
-    def test_fake_decimal_list_with_many_items(self):
+class FakedNumberingManyItemsTestCase(NumberingTestBase, DocumentGeneratorTestCase):
+    def assert_html(self, list_type, digit_generator):
         paragraphs = []
         expected_items = []
         for i in range(1, 100):
-            content = 'Foo-{index}'.format(index=i)
+            content = 'Foo-{i}'.format(i=i)
+            digit = digit_generator(i)
             paragraphs.append(
-                '<p><r><t>{index}. {content}</t></r></p>'.format(
-                    index=i,
+                '<p><r><t>{digit}. {content}</t></r></p>'.format(
+                    digit=digit,
                     content=content,
                 ),
             )
@@ -971,13 +973,45 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         ]
 
         expected_html = '''
-            <ol class="pydocx-list-style-type-decimal">
+            <ol class="pydocx-list-style-type-{list_type}">
             {items}
             </ol>
-        '''.format(items=''.join(items))
+        '''.format(
+            list_type=list_type,
+            items=''.join(items),
+        )
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
+    def test_fake_decimal_list_with_many_items(self):
+        self.assert_html('decimal', int)
+
+    def test_fake_lower_alpha_list_with_many_items(self):
+        def digit_generator(index):
+            return int_to_alpha(index).lower()
+
+        self.assert_html('lowerLetter', digit_generator)
+
+    def test_fake_upper_alpha_list_with_many_items(self):
+        def digit_generator(index):
+            return int_to_alpha(index).upper()
+
+        self.assert_html('upperLetter', digit_generator)
+
+    def test_fake_upper_roman_list_with_many_items(self):
+        def digit_generator(index):
+            return int_to_roman(index).upper()
+
+        self.assert_html('upperRoman', digit_generator)
+
+    def test_fake_lower_roman_list_with_many_items(self):
+        def digit_generator(index):
+            return int_to_roman(index).lower()
+
+        self.assert_html('lowerRoman', digit_generator)
+
+
+class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def test_real_list_plus_fake_list(self):
         document_xml = '''
             {foo}
@@ -1315,9 +1349,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
     def test_faked_list_that_skips_numbers(self):
         document_xml = '''
-            <p><r><tab /><t>1. AA</t></r></p>
-            <p><r><tab /><t>2. AB</t></r></p>
-            <p><r><tab /><t>4. AC</t></r></p>
+            <p><r><t>1. AA</t></r></p>
+            <p><r><t>2. AB</t></r></p>
+            <p><r><t>4. AC</t></r></p>
         '''
 
         expected_html = '''
@@ -1326,7 +1360,6 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
                 <li>AB</li>
             </ol>
             <p>
-                <span class="pydocx-tab"></span>
                 4. AC
             </p>
         '''
@@ -1335,19 +1368,90 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
     def test_faked_list_that_does_not_start_from_1(self):
         document_xml = '''
-            <p><r><tab /><t>2. AA</t></r></p>
-            <p><r><tab /><t>3. AB</t></r></p>
+            <p><r><t>2. AA</t></r></p>
+            <p><r><t>3. AB</t></r></p>
         '''
 
         expected_html = '''
-            <p>
-                <span class="pydocx-tab"></span>
-                2. AA
-            </p>
-            <p>
-                <span class="pydocx-tab"></span>
-                3. AB
-            </p>
+            <p>2. AA</p>
+            <p>3. AB</p>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_decimal_number_is_not_converted(self):
+        document_xml = '''
+            <p><r><t>1.1</t></r></p>
+            <p><r><t>1.2</t></r></p>
+        '''
+
+        expected_html = '''
+            <p>1.1</p>
+            <p>1.2</p>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_space_after_dot_followed_by_number_is_converted(self):
+        # This is like the decimal case, but there's a space after the dot
+        document_xml = '''
+            <p><r><t>1. 1</t></r></p>
+            <p><r><t>2. 2</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>1</li>
+                <li>2</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_space_required_after_digit_dot(self):
+        document_xml = '''
+            <p><r><t>1.a</t></r></p>
+            <p><r><t>a.b</t></r></p>
+            <p><r><t>A.c</t></r></p>
+            <p><r><t>I.d</t></r></p>
+            <p><r><t>i.e</t></r></p>
+        '''
+
+        expected_html = '''
+            <p>1.a</p>
+            <p>a.b</p>
+            <p>A.c</p>
+            <p>I.d</p>
+            <p>i.e</p>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_single_item_lists(self):
+        document_xml = '''
+            <p><r><t>1. a</t></r></p>
+            <p><r><t>a. b</t></r></p>
+            <p><r><t>A. c</t></r></p>
+            <p><r><t>I. d</t></r></p>
+            <p><r><t>i. e</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>a</li>
+            </ol>
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>b</li>
+            </ol>
+            <ol class="pydocx-list-style-type-upperLetter">
+                <li>c</li>
+            </ol>
+            <ol class="pydocx-list-style-type-upperRoman">
+                <li>d</li>
+            </ol>
+            <ol class="pydocx-list-style-type-lowerRoman">
+                <li>e</li>
+            </ol>
         '''
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
@@ -1363,8 +1467,8 @@ class FakedNumberingPatternBase(object):
         expected_html = self.expected_html.format(*self.expected_html_format)
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
-    def test_format_digit_dot(self):
-        self.assert_html_using_pattern('{0}.')
+    def test_format_digit_dot_space(self):
+        self.assert_html_using_pattern('{0}. ')
 
     def test_digit_paren(self):
         self.assert_html_using_pattern('{0})')
@@ -1380,6 +1484,78 @@ class FakedNumberingPatternBase(object):
 
     def test_format_digit_dot_with_spacing(self):
         self.assert_html_using_pattern('  {0}  .  ')
+
+
+class FakedNestedNoContentBase(FakedNumberingPatternBase):
+    def setUp(self):
+        super(FakedNestedNoContentBase, self).setUp()
+
+        self.document_xml = '''
+            <p><r><t>{0}</t></r></p>
+            <p><r><t>{1}</t></r></p>
+            <p><r>
+                <tab />
+                <t>{2}</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{3}</t>
+            </r></p>
+            <p><r><t>{4}</t></r></p>
+        '''
+
+        self.expected_html = '''
+            <ol class="pydocx-list-style-type-{0}">
+                <li></li>
+                <li>
+                    <ol class="pydocx-list-style-type-{1}">
+                        <li></li>
+                        <li></li>
+                    </ol>
+                </li>
+                <li></li>
+            </ol>
+        '''
+
+
+class FakedNestedDecimalNoContentTestCase(
+    FakedNestedNoContentBase,
+    DocumentGeneratorTestCase,
+):
+    expected_html_format = ['decimal', 'decimal']
+    document_xml_sequence = [1, 2, 1, 2, 3]
+
+
+class FakedNestedLowerLetterNoContentTestCase(
+    FakedNestedNoContentBase,
+    DocumentGeneratorTestCase,
+):
+    expected_html_format = ['lowerLetter', 'lowerLetter']
+    document_xml_sequence = ['a', 'b', 'a', 'b', 'c']
+
+
+class FakedNestedUpperLetterNoContentTestCase(
+    FakedNestedNoContentBase,
+    DocumentGeneratorTestCase,
+):
+    expected_html_format = ['upperLetter', 'upperLetter']
+    document_xml_sequence = ['A', 'B', 'A', 'B', 'C']
+
+
+class FakedNestedLowerRomanNoContentTestCase(
+    FakedNestedNoContentBase,
+    DocumentGeneratorTestCase,
+):
+    expected_html_format = ['lowerRoman', 'lowerRoman']
+    document_xml_sequence = ['i', 'ii', 'i', 'ii', 'iii']
+
+
+class FakedNestedUpperRomanNoContentTestCase(
+    FakedNestedNoContentBase,
+    DocumentGeneratorTestCase,
+):
+    expected_html_format = ['upperRoman', 'upperRoman']
+    document_xml_sequence = ['I', 'II', 'I', 'II', 'III']
 
 
 class FakedNestedNumberingPatternBase(FakedNumberingPatternBase):

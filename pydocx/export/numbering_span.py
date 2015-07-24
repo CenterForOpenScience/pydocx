@@ -430,20 +430,48 @@ class BaseNumberingSpanBuilder(object):
         return new_items
 
 
+class DefaultFakeNumberingDetector(object):
+    def __iter__(self):
+        for name in dir(self):
+            if name.startswith('detect_'):
+                func = getattr(self, name)
+                if callable(func):
+                    yield func
+
+    def detect_paren_digit_paren(self, digit, text):
+        pattern_template = r'^\s*\(\s*{0}\s*\)\s*'
+        pattern = pattern_template.format(digit)
+        matching = re.match(pattern, text)
+        if matching:
+            return matching.group()
+
+    def detect_digit_paren(self, digit, text):
+        pattern_template = r'^\s*{0}\s*\)\s*'
+        pattern = pattern_template.format(digit)
+        matching = re.match(pattern, text)
+        if matching:
+            return matching.group()
+
+    def detect_digit_dot_space(self, digit, text):
+        pattern_template = r'^\s*{0}\s*\.\s+'
+        pattern = pattern_template.format(digit)
+        matching = re.match(pattern, text)
+        if matching:
+            return matching.group()
+
+
 class FakeNumberingDetection(object):
     '''
     Detect paragraphs that visually look like numbering spans, and convert them
     into numbering spans.
     '''
 
+    faked_list_detector_class = DefaultFakeNumberingDetector
+
     def __init__(self, *args, **kwargs):
         super(FakeNumberingDetection, self).__init__(*args, **kwargs)
 
-        self.faked_list_patterns = [
-            r'^\s*\(\s*{0}\s*\)\s*',
-            r'^\s*{0}\s*\)\s*',
-            r'^\s*{0}\s*\.\s*',
-        ]
+        self.faked_list_detectors = self.faked_list_detector_class()
 
         self.faked_list_numbering_format_sequencer = {
             'decimal': lambda i: int(i),
@@ -463,17 +491,16 @@ class FakeNumberingDetection(object):
         # the document's default tab stop.
         return tab_count * DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL
 
-    def text_is_a_faked_list(self, text, pattern_template, num_format, index):
+    def text_is_a_faked_list(self, text, detector, num_format, index):
         sequencer = self.faked_list_numbering_format_sequencer.get(num_format)
         if callable(sequencer):
             try:
                 sequenced_index = sequencer(index)
             except ValueError:
                 return False
-            pattern = pattern_template.format(sequenced_index)
-            matching = re.match(pattern, text)
-            if matching:
-                return matching.group()
+            matching_text = detector(sequenced_index, text)
+            if matching_text:
+                return matching_text
         return False
 
     def level_is_a_continuation_of_current_level(self, level, next_span_position):
@@ -511,11 +538,11 @@ class FakeNumberingDetection(object):
             level_id = current_level_id + 1
 
         next_span_position = 1
-        for pattern in self.faked_list_patterns:
+        for detector in self.faked_list_detectors:
             for num_format in self.faked_list_numbering_format_sequencer:
                 matching_text = self.text_is_a_faked_list(
                     paragraph_text,
-                    pattern,
+                    detector,
                     num_format,
                     next_span_position,
                 )
@@ -578,10 +605,10 @@ class FakeNumberingDetection(object):
                     previous_span_position = len(previous_span.children)
                     next_span_position = previous_span_position + 1
                     # TODO shouldn't we use the previous_levels num format?
-                    for pattern in self.faked_list_patterns:
+                    for detector in self.faked_list_detectors:
                         matching_text = self.text_is_a_faked_list(
                             paragraph_text,
-                            pattern,
+                            detector,
                             previous_level.num_format,
                             next_span_position,
                         )
@@ -592,10 +619,10 @@ class FakeNumberingDetection(object):
             elif left_position == current_span_left_position:
                 # TODO shouldn't we just be using the num_format pattern for
                 # this level instead of checking them all?
-                for pattern in self.faked_list_patterns:
+                for detector in self.faked_list_detectors:
                     matching_text = self.text_is_a_faked_list(
                         paragraph_text,
-                        pattern,
+                        detector,
                         current_level.num_format,
                         next_span_position,
                     )

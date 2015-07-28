@@ -20,10 +20,8 @@ from pydocx.util.zip import create_zip_archive
 class NumberingDefinitionsPartTestCase(unittest.TestCase):
     def test_numbering_property_is_a_Numbering_instance(self):
         factory = WordprocessingDocumentFactory()
-        document_xml = b'<document />'
-        numbering_xml = b'<numbering />'
-        factory.add(NumberingDefinitionsPart, numbering_xml)
-        factory.add(MainDocumentPart, document_xml)
+        factory.add(NumberingDefinitionsPart, '')
+        factory.add(MainDocumentPart, '')
 
         package = create_zip_archive(factory.to_zip_dict())
         # TODO the interface for creating a new WordprocessingDocument sucks

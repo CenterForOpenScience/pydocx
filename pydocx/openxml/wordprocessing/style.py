@@ -17,3 +17,8 @@ class Style(XmlModel):
     name = XmlChild(attrname='val', default='')
     run_properties = XmlChild(type=RunProperties)
     parent_style = XmlChild(name='basedOn', attrname='val')
+
+    def is_a_heading(self):
+        if not self.name:
+            return False
+        return self.name.lower().startswith('heading')

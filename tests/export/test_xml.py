@@ -8,12 +8,10 @@ from __future__ import (
 import sys
 import time
 
-from pydocx.util.xml import find_all, parse_xml_from_string
 from pydocx.openxml.packaging import ImagePart
 
 from pydocx.test import TranslationTestCase
 from pydocx.test.document_builder import DocxBuilder as DXB
-from pydocx.test.utils import XMLDocx2Html
 
 
 class ImageLocal(TranslationTestCase):
@@ -73,12 +71,18 @@ class ImageTestCase(TranslationTestCase):
 
     expected_output = '''
         <p>
-            <img src="data:image/jpeg;base64,Y29udGVudDE="
-                height="20px" width="40px" />
+            <img
+                height="20px"
+                src="data:image/jpeg;base64,Y29udGVudDE="
+                width="40px"
+            />
         </p>
         <p>
-            <img src="data:image/jpeg;base64,Y29udGVudDI="
-                height="21pt" width="41pt" />
+            <img
+                height="21pt"
+                src="data:image/jpeg;base64,Y29udGVudDI="
+                width="41pt"
+            />
         </p>
     '''
 
@@ -95,48 +99,6 @@ class ImageTestCase(TranslationTestCase):
 
         xml = DXB.xml(body)
         return xml
-
-    def test_get_image_id(self):
-        parser = XMLDocx2Html(
-            document_xml=self.get_xml(),
-            relationships=self.relationships,
-        )
-        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
-        els = []
-        els.extend(find_all(tree, 'drawing'))
-        els.extend(find_all(tree, 'pict'))
-        image_ids = []
-        for el in els:
-            image_ids.append(parser._get_image_id(el))
-        expected = [
-            'rId0',
-            'rId1',
-        ]
-        self.assertEqual(
-            set(image_ids),
-            set(expected),
-        )
-
-    def test_get_image_sizes(self):
-        parser = XMLDocx2Html(
-            document_xml=self.get_xml(),
-            relationships=self.relationships,
-        )
-        tree = parse_xml_from_string(self.get_xml(), remove_namespaces=True)
-        els = []
-        els.extend(find_all(tree, 'drawing'))
-        els.extend(find_all(tree, 'pict'))
-        image_ids = []
-        for el in els:
-            image_ids.append(parser._get_image_size(el))
-        expected = [
-            ('40px', '20px'),
-            ('41pt', '21pt'),
-        ]
-        self.assertEqual(
-            set(image_ids),
-            set(expected),
-        )
 
 
 class TableTag(TranslationTestCase):
@@ -277,6 +239,12 @@ class TableWithListAndParagraph(TranslationTestCase):
             </tr>
         </table>
     '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
 
     def get_xml(self):
         li_text = [
@@ -454,16 +422,16 @@ class MangledIlvlTestCase(TranslationTestCase):
     '''
 
     def get_xml(self):
-        li_text = [
-            ('AAA', 0, 2),
-            ('BBB', 1, 1),
-            ('CCC', 0, 1),
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=2),
+            DXB.li(text='BBB', ilvl=1, numId=1),
+            DXB.li(text='CCC', ilvl=0, numId=1),
         ]
-        lis = b''
-        for text, ilvl, numId in li_text:
-            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        body = b''
+        for el in tags:
+            body += el
 
-        xml = DXB.xml(lis)
+        xml = DXB.xml(body)
         return xml
 
 
@@ -481,19 +449,19 @@ class SeperateListsTestCase(TranslationTestCase):
     '''
 
     def get_xml(self):
-        li_text = [
-            ('AAA', 0, 2),
+        tags = [
+            DXB.li(text='AAA', ilvl=0, numId=2),
             # Because AAA and CCC are part of the same list (same list id)
             # and BBB is different, these need to be split into three
             # lists (or lose everything from BBB and after.
-            ('BBB', 0, 1),
-            ('CCC', 0, 2),
+            DXB.li(text='BBB', ilvl=0, numId=1),
+            DXB.li(text='CCC', ilvl=0, numId=2),
         ]
-        lis = b''
-        for text, ilvl, numId in li_text:
-            lis += DXB.li(text=text, ilvl=ilvl, numId=numId)
+        body = b''
+        for el in tags:
+            body += el
 
-        xml = DXB.xml(lis)
+        xml = DXB.xml(body)
         return xml
 
 
@@ -505,14 +473,22 @@ class InvalidIlvlOrderTestCase(TranslationTestCase):
                     <li>BBB</li>
                 </ol>
             </li>
-        </ol>
-        <ol class="pydocx-list-style-type-decimal">
             <li>CCC</li>
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+            '3': 'decimal',
+        }
+    }
+
     def get_xml(self):
         tags = [
+            # purposefully start at 1 instead of 0
             DXB.li(text='AAA', ilvl=1, numId=1),
             DXB.li(text='BBB', ilvl=3, numId=1),
             DXB.li(text='CCC', ilvl=2, numId=1),
@@ -629,20 +605,28 @@ class RTagWithNoText(TranslationTestCase):
 class DeleteTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA
+            <li>
+                AAA
+                <br />
                 <span class="pydocx-delete">BBB</span>
             </li>
             <li>CCC</li>
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         delete_tags = DXB.delete_tag(['BBB'])
         p_tag = DXB.p_tag([delete_tags])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml
@@ -651,20 +635,29 @@ class DeleteTagInList(TranslationTestCase):
 class InsertTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA<span class="pydocx-insert">BBB</span>
+            <li>
+                AAA
+                <br />
+                <span class="pydocx-insert">BBB</span>
             </li>
             <li>CCC</li>
         </ol>
     '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
 
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         insert_tags = DXB.insert_tag(run_tags)
         p_tag = DXB.p_tag([insert_tags])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml
@@ -673,20 +666,29 @@ class InsertTagInList(TranslationTestCase):
 class SmartTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAABBB
+            <li>
+                AAA
+                <br />
+                BBB
             </li>
             <li>CCC</li>
         </ol>
     '''
+
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
 
     def get_xml(self):
         run_tags = [DXB.r_tag([DXB.t_tag(i)]) for i in 'BBB']
         smart_tag = DXB.smart_tag(run_tags)
         p_tag = DXB.p_tag([smart_tag])
 
-        body = DXB.li(text='AAA', ilvl=0, numId=0)
+        body = DXB.li(text='AAA', ilvl=0, numId=1)
         body += p_tag
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml
@@ -834,11 +836,17 @@ class SDTTestCase(TranslationTestCase):
         </ol>
     '''
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+        }
+    }
+
     def get_xml(self):
         body = b''
-        body += DXB.li(text='AAA', ilvl=0, numId=0)
+        body += DXB.li(text='AAA', ilvl=0, numId=1)
         body += DXB.sdt_tag(p_tag=DXB.p_tag(text='BBB'))
-        body += DXB.li(text='CCC', ilvl=0, numId=0)
+        body += DXB.li(text='CCC', ilvl=0, numId=1)
 
         xml = DXB.xml(body)
         return xml
@@ -879,7 +887,7 @@ class SuperAndSubScripts(TranslationTestCase):
         return xml
 
 
-class AvaliableInlineTags(TranslationTestCase):
+class AvailableInlineTags(TranslationTestCase):
     expected_output = '''
         <p><strong>aaa</strong></p>
         <p><span class="pydocx-underline">bbb</span></p>
@@ -1004,6 +1012,14 @@ class NestedListTestCase(TranslationTestCase):
     </ol>
     """
 
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+        },
+    }
+
     def get_xml(self):
         li_text = [
             ('AAA', 0, 1),
@@ -1023,89 +1039,76 @@ class NestedListTestCase(TranslationTestCase):
 class MultipleNestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol class="pydocx-list-style-type-decimal">
-            <li>
-                    AAA
+        <li>
+            AAA
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    BBB
                     <ol class="pydocx-list-style-type-decimal">
-                            <li>
-                                    BBB
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    CCC
-                                            </li>
-                                            <li>
-                                                    DDD
-                                            </li>
-                                    </ol>
-                            </li>
-                            <li>
-                                    EEE
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    FFF
-                                            </li>
-                                            <li>
-                                                    GGG
-                                            </li>
-                                    </ol>
-                            </li>
-                            <li>
-                                    HHH
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    III
-                                            </li>
-                                            <li>
-                                                    JJJ
-                                            </li>
-                                    </ol>
-                            </li>
+                        <li>CCC</li>
+                        <li>DDD</li>
                     </ol>
-            </li>
-            <li>
-                    KKK
-            </li>
+                </li>
+                <li>
+                    EEE
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>FFF</li>
+                        <li>GGG</li>
+                    </ol>
+                </li>
+                <li>
+                    HHH
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>III</li>
+                        <li>JJJ</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+        <li>KKK</li>
     </ol>
     <ol class="pydocx-list-style-type-lowerLetter">
-            <li>
-                    LLL
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    MMM
-                            </li>
-                            <li>
-                                    NNN
-                            </li>
+        <li>
+            LLL
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>MMM</li>
+                <li>NNN</li>
+            </ol>
+        </li>
+        <li>
+            OOO
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>PPP</li>
+                <li>
+                    QQQ
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>RRR</li>
                     </ol>
-            </li>
-            <li>
-                    OOO
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    PPP
-                            </li>
-                            <li>
-                                    QQQ
-                                    <ol class="pydocx-list-style-type-decimal">
-                                            <li>
-                                                    RRR
-                                            </li>
-                                    </ol>
-                            </li>
-                    </ol>
-            </li>
-            <li>
-                    SSS
-                    <ol class="pydocx-list-style-type-lowerLetter">
-                            <li>
-                                    TTT
-                            </li>
-                            <li>
-                                    UUU
-                            </li>
-                    </ol>
-            </li>
+                </li>
+            </ol>
+        </li>
+        <li>
+            SSS
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>TTT</li>
+                <li>UUU</li>
+            </ol>
+        </li>
     </ol>
     """
+
+    numbering_dict = {
+        '1': {
+            '0': 'decimal',
+            '1': 'decimal',
+            '2': 'decimal',
+        },
+        '2': {
+            '0': 'lowerLetter',
+            '1': 'lowerLetter',
+            '2': 'decimal',
+        },
+    }
 
     def get_xml(self):
         li_text = [

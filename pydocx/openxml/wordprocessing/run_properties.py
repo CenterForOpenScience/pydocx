@@ -37,3 +37,9 @@ class RunProperties(XmlModel):
         if self.sz is None:
             return
         return int(self.sz)
+
+    def is_superscript(self):
+        return self.vertical_align == 'superscript'
+
+    def is_subscript(self):
+        return self.vertical_align == 'subscript'

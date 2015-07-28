@@ -5,6 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
+import inspect
 from collections import defaultdict
 
 
@@ -96,15 +97,22 @@ class XmlCollection(XmlField):
     def __init__(self, *types, **kwargs):
         default = kwargs.pop('default', [])
         super(XmlCollection, self).__init__(self, default=default)
-        name_to_type_map = {}
-        for type_spec in types:
-            if isinstance(type_spec, tuple):
-                tag_name, model = type_spec
-            else:
-                model = type_spec
-                tag_name = getattr(model, 'XML_TAG')
-            name_to_type_map[tag_name] = model
-        self.name_to_type_map = name_to_type_map
+        self.types = set(types)
+        self._name_to_type_map = None
+
+    @property
+    def name_to_type_map(self):
+        if self._name_to_type_map is None:
+            name_to_type_map = {}
+            for type_spec in self.types:
+                if isinstance(type_spec, tuple):
+                    tag_name, model = type_spec
+                else:
+                    model = type_spec
+                    tag_name = getattr(model, 'XML_TAG')
+                name_to_type_map[tag_name] = model
+            self._name_to_type_map = name_to_type_map
+        return self._name_to_type_map
 
     def get_handler_for_tag(self, tag):
         return self.name_to_type_map.get(tag)
@@ -120,9 +128,9 @@ class XmlModel(object):
     class Person(XmlModel):
         XML_TAG = 'person'
 
-        first_name = Attribute(name='first', default='')
-        age = Attribute(default='')
-        address = ChildTag(attrname='val')
+        first_name = XmlAttribute(name='first', default='')
+        age = XmlAttribute(default='')
+        address = XmlChild(attrname='val')
 
     xml = """<?xml version="1.0"?>
     <person first='Dave' age='25'>
@@ -133,11 +141,41 @@ class XmlModel(object):
     person = Person.load(xml)
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(
+        self,
+        parent=None,
+        **kwargs
+    ):
         for field_name, field in self.__class__.__dict__.items():
             if isinstance(field, XmlField):
+                # TODO field.default may only refer to the attr, and not if the
+                # field itself is missing
                 value = kwargs.get(field_name, field.default)
+                if hasattr(value, 'parent'):
+                    value.parent = self
+                if isinstance(field, XmlCollection):
+                    for item in value:
+                        if hasattr(item, 'parent'):
+                            item.parent = self
                 setattr(self, field_name, value)
+
+        self._parent = parent
+        self.container = kwargs.get('container')
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        self._parent = parent
+
+    def nearest_ancestors(self, ancestor_type):
+        node = self.parent
+        while node:
+            if isinstance(node, ancestor_type):
+                yield node
+            node = node.parent
 
     def __repr__(self):
         return '{klass}({kwargs})'.format(
@@ -145,10 +183,11 @@ class XmlModel(object):
             kwargs=', '.join('{field}={value}'.format(
                 field=field,
                 value=repr(value),
-            ) for field, value in self),
+            ) for field, value in self.fields),
         )
 
-    def __iter__(self):
+    @property
+    def fields(self):
         '''
         A generator that loops through each of the defined fields for the
         model, and yields back only those fields which have been set to a value
@@ -161,7 +200,7 @@ class XmlModel(object):
                     yield field_name, value
 
     @classmethod
-    def load(cls, element):
+    def load(cls, element, **load_kwargs):
         xml_tag_decl = getattr(cls, 'XML_TAG', None)
         if element is not None and xml_tag_decl:
             if xml_tag_decl != element.tag:
@@ -172,11 +211,10 @@ class XmlModel(object):
                     ),
                 )
 
+        kwargs = dict(load_kwargs)
         attribute_fields = {}
         tag_fields = {}
         collections = {}
-
-        kwargs = {}
 
         # Enumerate the defined fields and separate them into attributes and
         # tags
@@ -218,13 +256,12 @@ class XmlModel(object):
 
                 # The type may be an XmlModel, if so, construct a new instance
                 # using XmlModel.load
-                if field.type and issubclass(field.type, XmlModel):
-                    return field.type.load(value)
-                # Or it could just be something that we can call
-                elif callable(field.type):
+                if callable(field.type):
+                    if inspect.isclass(field.type):
+                        if issubclass(field.type, XmlModel):
+                            return field.type.load(value, **load_kwargs)
                     return field.type(value)
-                else:
-                    return value
+                return value
             return child_handler
 
         # Evaluate the child tags
@@ -282,7 +319,7 @@ class XmlModel(object):
                         if issubclass(handler, XmlModel):
                             handler = handler.load
                         if callable(handler):
-                            item = handler(child)
+                            item = handler(child, **load_kwargs)
                             kwargs[field_name].append(item)
 
         # Create a new instance using the values we've calculated

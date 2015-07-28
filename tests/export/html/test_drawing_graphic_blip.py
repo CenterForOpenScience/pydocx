@@ -69,8 +69,11 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <p>
               Foo
-              <img src="http://google.com/image1.gif"
-                height="{height}px" width="{width}px" />
+              <img
+                height="{height}px"
+                src="http://google.com/image1.gif"
+                width="{width}px"
+              />
               Bar
             </p>
         '''.format(width=width_px, height=height_px)
@@ -131,8 +134,11 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <p>
               Foo
-              <img src="http://google.com/image1.gif"
-                height="{height}px" width="{width}px" />
+              <img
+                height="{height}px"
+                src="http://google.com/image1.gif"
+                width="{width}px"
+              />
               Bar
             </p>
         '''.format(width=width_px, height=height_px)
@@ -269,8 +275,11 @@ class DrawingGraphicBlipTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <p>
               Foo
-              <img src="data:image/jpeg;base64,{data}"
-                height="{height}px" width="{width}px" />
+              <img
+                height="{height}px"
+                src="data:image/jpeg;base64,{data}"
+                width="{width}px"
+              />
               Bar
             </p>
         '''.format(

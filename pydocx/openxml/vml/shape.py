@@ -20,6 +20,8 @@ class Shape(XmlModel):
     def get_style(self):
         if self.style:
             return dict(
-                item.split(':') for item in self.style.split(';')
+                item.split(':', 1)
+                for item in self.style.split(';')
+                if item
             )
         return {}

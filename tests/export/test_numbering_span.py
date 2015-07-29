@@ -161,6 +161,97 @@ class RemoveInitialTextFromParagraphTestCase(NumberingSpanTestBase):
         self.builder.remove_initial_text_from_paragraph(paragraph, 'abcdef')
         self.assertEqual(repr(paragraph), repr(expected))
 
+    def test_tabs_embedded_within_initial_text_can_be_removed(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='a'),
+                TabChar(),
+                Text(text='b'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                Text(text=''),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(
+            paragraph,
+            initial_text='aFOOb',
+            tab_char='FOO',
+        )
+        self.assertEqual(repr(paragraph), repr(expected))
+
+    def test_tab_char_is_not_removed_when_tab_char_is_not_set(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='a'),
+                TabChar(),
+                Text(text='b'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                TabChar(),
+                Text(text=''),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(
+            paragraph,
+            initial_text='ab',
+        )
+        self.assertEqual(repr(paragraph), repr(expected))
+
+    def test_tab_char_is_not_removed_when_tab_char_does_not_match_text(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='a'),
+                TabChar(),
+                Text(text='b'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                TabChar(),
+                Text(text='b'),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(
+            paragraph,
+            initial_text='aFOOb',
+            tab_char='BAR',
+        )
+        self.assertEqual(repr(paragraph), repr(expected))
+
+    def test_multiple_tab_chars_are_removed(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='a'),
+                TabChar(),
+                TabChar(),
+                TabChar(),
+                Text(text='b'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                Text(text=''),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(
+            paragraph,
+            initial_text='aFOOFOOFOOb',
+            tab_char='FOO',
+        )
+        self.assertEqual(repr(paragraph), repr(expected))
+
 
 class RemoveInitialTabCharsFromParagraphTestCase(NumberingSpanTestBase):
     def test_empty_paragraph_nothing_changes(self):

@@ -530,8 +530,11 @@ class FakeNumberingDetection(object):
         left_position += tab_distance
         return left_position
 
+    def get_paragraph_text(self, paragraph):
+        return paragraph.get_text(tab_char=' ')
+
     def detect_new_faked_level_started(self, paragraph, current_level_id=None):
-        paragraph_text = paragraph.get_text()
+        paragraph_text = self.get_paragraph_text(paragraph)
 
         level_id = 0
         if current_level_id is not None:
@@ -579,7 +582,7 @@ class FakeNumberingDetection(object):
             elif level:
                 return level
 
-            paragraph_text = paragraph.get_text()
+            paragraph_text = self.get_paragraph_text(paragraph)
             current_span_left_position = self.get_left_position_for_numbering_span(
                 self.current_span,
             )
@@ -664,7 +667,7 @@ class FakeNumberingDetection(object):
             else:
                 return
 
-    def remove_initial_text_from_paragraph(self, paragraph, initial_text):
+    def remove_initial_text_from_paragraph(self, paragraph, initial_text, tab_char=None):
         '''
         Remove the matching `initial_text` starting from the left. Non-Text
         nodes (for example tabs and breaks) are ignored.
@@ -697,7 +700,7 @@ class FakeNumberingDetection(object):
         if not initial_text:
             return
         for run in paragraph.runs:
-            for r_child in run.children:
+            for r_child in run.children[:]:
                 if isinstance(r_child, Text):
                     if r_child.text:
                         len_r_child_text = len(r_child.text)
@@ -709,9 +712,12 @@ class FakeNumberingDetection(object):
                             if initial_text.startswith(r_child.text):
                                 r_child.text = ''
                                 initial_text = initial_text[len_r_child_text:]
-                else:
-                    # TODO does it matter if we encounter a non-text character?
-                    pass
+                        if not initial_text:
+                            return
+                elif tab_char and isinstance(r_child, TabChar):
+                    if initial_text.startswith(tab_char):
+                        run.children.remove(r_child)
+                        initial_text = initial_text[len(tab_char):]
 
     def remove_left_indentation_from_paragraph(self, paragraph):
         '''
@@ -729,7 +735,7 @@ class FakeNumberingDetection(object):
         Given a paragraph and initial_text, remove any initial tabs, whitespace
         in addition to the initial_text.
         '''
-        self.remove_initial_text_from_paragraph(paragraph, initial_text)
+        self.remove_initial_text_from_paragraph(paragraph, initial_text, tab_char=' ')
         self.remove_initial_tab_chars_from_paragraph(paragraph)
         self.remove_left_indentation_from_paragraph(paragraph)
 

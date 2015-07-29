@@ -1411,9 +1411,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def test_space_required_after_digit_dot(self):
         document_xml = '''
             <p><r><t>1.a</t></r></p>
-            <p><r><t>a.b</t></r></p>
-            <p><r><t>A.c</t></r></p>
-            <p><r><t>I.d</t></r></p>
+            <p><r><t>a</t><t>.b</t></r></p>
+            <p><r><t>A</t><t>.</t><t>c</t></r></p>
+            <p><r><t>I.</t><t>d</t></r></p>
             <p><r><t>i.e</t></r></p>
         '''
 

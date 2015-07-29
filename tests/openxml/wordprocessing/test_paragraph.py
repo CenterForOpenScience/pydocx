@@ -100,6 +100,19 @@ class GetTextTestCase(ParagraphTestBase):
         paragraph = self._load_from_xml(xml)
         self.assertEqual(paragraph.get_text(), ' a  b  c ')
 
+    def test_with_tab_char_set(self):
+        xml = '''
+            <p>
+                <r>
+                    <t>a</t>
+                    <tab />
+                    <t>b</t>
+                </r>
+            </p>
+        '''
+        paragraph = self._load_from_xml(xml)
+        self.assertEqual(paragraph.get_text(tab_char=' '), 'a b')
+
 
 class GetNumberOfInitialTabsTestCase(ParagraphTestBase):
     def test_empty_paragraph(self):

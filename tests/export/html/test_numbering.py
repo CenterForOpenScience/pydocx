@@ -1427,6 +1427,35 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
+    def test_tab_char_is_sufficient_for_space_after_dot(self):
+        document_xml = '''
+            <p><r><t>1.</t><tab /><t>a</t></r></p>
+            <p><r><t>a.</t><tab /><t>b</t></r></p>
+            <p><r><t>A.</t><tab /><t>c</t></r></p>
+            <p><r><t>I.</t><tab /><t>d</t></r></p>
+            <p><r><t>i.</t><tab /><t>e</t></r></p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>a</li>
+            </ol>
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>b</li>
+            </ol>
+            <ol class="pydocx-list-style-type-upperLetter">
+                <li>c</li>
+            </ol>
+            <ol class="pydocx-list-style-type-upperRoman">
+                <li>d</li>
+            </ol>
+            <ol class="pydocx-list-style-type-lowerRoman">
+                <li>e</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
     def test_single_item_lists(self):
         document_xml = '''
             <p><r><t>1. a</t></r></p>

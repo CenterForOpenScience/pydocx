@@ -125,10 +125,11 @@ class Paragraph(XmlModel):
             if isinstance(p_child, Run):
                 yield p_child
 
-    def get_text(self):
+    def get_text(self, tab_char=None):
         '''
         Return a string of all of the contained Text nodes concatenated
-        together.
+        together. If `tab_char` is set, then any TabChar encountered will be
+        represented in the returned text using the specified string.
 
         For example:
 
@@ -152,6 +153,8 @@ class Paragraph(XmlModel):
                 if isinstance(r_child, Text):
                     if r_child.text:
                         text.append(r_child.text)
+                if tab_char and isinstance(r_child, TabChar):
+                    text.append(tab_char)
         return ''.join(text)
 
     def get_number_of_initial_tabs(self):

@@ -708,6 +708,7 @@ class FakeNumberingDetection(object):
                         if len_r_child_text >= len_text:
                             if r_child.text.startswith(initial_text):
                                 r_child.text = r_child.text[len_text:]
+                                initial_text = ''
                         else:
                             if initial_text.startswith(r_child.text):
                                 r_child.text = ''

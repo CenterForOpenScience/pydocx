@@ -1485,6 +1485,44 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
 
+    def test_trailing_text_is_not_removed(self):
+        document_xml = '''
+            <p>
+                <r>
+                    <t>1.</t>
+                    <t> Foo </t>
+                    <t>Bar</t>
+                </r>
+            </p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>Foo Bar</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_leading_text_is_not_removed(self):
+        document_xml = '''
+            <p>
+                <r>
+                    <t>1.</t>
+                    <t> Foo</t>
+                    <t> Bar</t>
+                </r>
+            </p>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>Foo Bar</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
 
 class FakedNumberingPatternBase(object):
     def assert_html_using_pattern(self, pattern):

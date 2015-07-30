@@ -45,6 +45,22 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = ''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_leading_whitespace_is_preserved(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>A</t>
+                <t> B</t>
+                <t> C</t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>A B C</p>'
+        self.assert_document_generates_html(document, expected_html)
+
     def test_multiple_text_tags_in_a_single_run_tag_create_single_paragraph(
         self,
     ):

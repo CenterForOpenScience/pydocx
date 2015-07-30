@@ -161,6 +161,25 @@ class RemoveInitialTextFromParagraphTestCase(NumberingSpanTestBase):
         self.builder.remove_initial_text_from_paragraph(paragraph, 'abcdef')
         self.assertEqual(repr(paragraph), repr(expected))
 
+    def test_initial_text_is_split_across_multiple_text_nodes(self):
+        paragraph = Paragraph(children=[
+            Run(children=[
+                Text(text='ab'),
+                Text(text='cdef'),
+                Text(text='chij'),
+            ]),
+        ])
+        expected = Paragraph(children=[
+            Run(children=[
+                Text(text=''),
+                Text(text='def'),
+                Text(text='chij'),
+            ]),
+        ])
+
+        self.builder.remove_initial_text_from_paragraph(paragraph, 'abc')
+        self.assertEqual(repr(paragraph), repr(expected))
+
     def test_tabs_embedded_within_initial_text_can_be_removed(self):
         paragraph = Paragraph(children=[
             Run(children=[

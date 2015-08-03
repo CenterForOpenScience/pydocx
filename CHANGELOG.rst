@@ -1,12 +1,12 @@
 **dev**
 
-- parser handlers have been updated
-  to accept a single ``context``
-  which is a namedtuple
-  consisting of
-  the previous arguments
-- Added ``next_element`` to parser context
 - Removed ``ConvertRootUpperRomanListToHeadingMixin``
+- Fixed issue where the same image referenced multiple times would not
+  display correctly after the first instance
+- Removed the preprocessor and re-implemented the functionality into the exporter
+- Re-implemented the exporter into a top-down generator algorithm
+- Implemented the necessary object classes for each element type (Paragraph,
+  Run, Text, etc)
 
 **0.7.0**
 

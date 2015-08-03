@@ -1,5 +1,7 @@
 **dev**
 
+- Note: This release consists of significant changes to the internal API and is not
+  backwards compatible with prior versions
 - Removed ``ConvertRootUpperRomanListToHeadingMixin``
 - Fixed issue where the same image referenced multiple times would not
   display correctly after the first instance

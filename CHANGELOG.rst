@@ -1,4 +1,4 @@
-**dev**
+**0.8.0**
 
 - Note: This release consists of significant changes to the internal API and is not
   backwards compatible with prior versions

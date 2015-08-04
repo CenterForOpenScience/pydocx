@@ -6,8 +6,12 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.export.numbering_span import BaseNumberingSpanBuilder
 from pydocx.test import DocumentGeneratorTestCase
-from pydocx.test.utils import WordprocessingDocumentFactory
+from pydocx.test.utils import (
+    PyDocXHTMLExporterNoStyle,
+    WordprocessingDocumentFactory,
+)
 from pydocx.openxml.packaging import (
     MainDocumentPart,
     NumberingDefinitionsPart,
@@ -1551,6 +1555,90 @@ class FakedNumberingPatternBase(object):
 
     def test_format_digit_dot_with_spacing(self):
         self.assert_html_using_pattern('  {0}  .  ')
+
+
+class PyDocXHTMLExporterNoStyleBaseNumberingSpan(PyDocXHTMLExporterNoStyle):
+    numbering_span_builder_class = BaseNumberingSpanBuilder
+
+
+class FakedNumberingDetectionDisabledBase(FakedNumberingPatternBase):
+    def setUp(self):
+        super(FakedNumberingDetectionDisabledBase, self).setUp()
+
+        self.document_xml = '''
+            <p><r><t>{0}AA</t></r></p>
+            <p><r><t>{1}AB</t></r></p>
+            <p><r>
+                <tab />
+                <t>{2}ABA</t>
+            </r></p>
+            <p><r>
+                <tab />
+                <t>{3}ABB</t>
+            </r></p>
+            <p><r><t>{4}AC</t></r></p>
+        '''
+
+        self.expected_html = '''
+            <p>{0}AA</p>
+            <p>{1}AB</p>
+            <p>
+                <span class="pydocx-tab"></span>{2}ABA
+            </p>
+            <p>
+                <span class="pydocx-tab"></span>{3}ABB
+            </p>
+            <p>{4}AC</p>
+        '''
+
+    def assert_html_using_pattern(self, pattern):
+        document_xml_format = [
+            pattern.format(digit)
+            for digit in self.document_xml_sequence
+        ]
+        document_xml = self.document_xml.format(*document_xml_format)
+        expected_html = self.expected_html.format(*document_xml_format)
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+
+class FakedNestedDecimalDisabledTestCase(
+    FakedNumberingDetectionDisabledBase,
+    DocumentGeneratorTestCase,
+):
+    exporter = PyDocXHTMLExporterNoStyleBaseNumberingSpan
+    document_xml_sequence = [1, 2, 1, 2, 3]
+
+
+class FakedNestedLowerLetterDisabledTestCase(
+    FakedNumberingDetectionDisabledBase,
+    DocumentGeneratorTestCase,
+):
+    exporter = PyDocXHTMLExporterNoStyleBaseNumberingSpan
+    document_xml_sequence = ['a', 'b', 'a', 'b', 'c']
+
+
+class FakedNestedUpperLetterDisabledTestCase(
+    FakedNumberingDetectionDisabledBase,
+    DocumentGeneratorTestCase,
+):
+    exporter = PyDocXHTMLExporterNoStyleBaseNumberingSpan
+    document_xml_sequence = ['A', 'B', 'A', 'B', 'C']
+
+
+class FakedNestedLowerRomanDisabledTestCase(
+    FakedNumberingDetectionDisabledBase,
+    DocumentGeneratorTestCase,
+):
+    exporter = PyDocXHTMLExporterNoStyleBaseNumberingSpan
+    document_xml_sequence = ['i', 'ii', 'i', 'ii', 'iii']
+
+
+class FakedNestedUpperRomanDisabledTestCase(
+    FakedNumberingDetectionDisabledBase,
+    DocumentGeneratorTestCase,
+):
+    exporter = PyDocXHTMLExporterNoStyleBaseNumberingSpan
+    document_xml_sequence = ['I', 'II', 'I', 'II', 'III']
 
 
 class FakedNestedNoContentBase(FakedNumberingPatternBase):

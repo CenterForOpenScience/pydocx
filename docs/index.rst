@@ -9,5 +9,6 @@ PyDocX
    conformance
    extending
    export_mixins
+   enumerated_list_detection
    development
    release_notes

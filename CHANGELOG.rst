@@ -9,6 +9,7 @@
 - Re-implemented the exporter into a top-down generator algorithm
 - Implemented the necessary object classes for each element type (Paragraph,
   Run, Text, etc)
+- Implemented enumerated list detection and conversion to numbering lists
 
 **0.7.0**
 

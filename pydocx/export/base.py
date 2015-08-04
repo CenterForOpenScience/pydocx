@@ -20,6 +20,8 @@ from pydocx.openxml.packaging import WordprocessingDocument
 
 
 class PyDocXExporter(object):
+    numbering_span_builder_class = NumberingSpanBuilder
+
     def __init__(self, path):
         self.path = path
         self._document = None
@@ -161,7 +163,7 @@ class PyDocXExporter(object):
                 previous_was_empty = empty
 
     def yield_numbering_spans(self, items):
-        builder = NumberingSpanBuilder(items)
+        builder = self.numbering_span_builder_class(items)
         numbering_spans = builder.get_numbering_spans()
         for item in numbering_spans:
             yield item
@@ -180,7 +182,7 @@ class PyDocXExporter(object):
         properties = paragraph.effective_properties
         property_rules = [
             (properties.justification, self.export_paragraph_property_justification),
-            (properties.indentation, self.export_paragraph_property_indentation),
+            (True, self.export_paragraph_property_indentation),
         ]
         for actual_value, handler in property_rules:
             if actual_value:

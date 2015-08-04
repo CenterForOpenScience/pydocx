@@ -11,9 +11,11 @@ from unittest import TestCase
 from xml.parsers.expat import ExpatError
 
 from pydocx.export.html import PyDocXHTMLExporter
+from pydocx.openxml.packaging import MainDocumentPart
 from pydocx.test.utils import (
     PyDocXHTMLExporterNoStyle,
     XMLDocx2Html,
+    WordprocessingDocumentFactory,
     assert_html_equal,
     html_is_equal,
     prettify,
@@ -145,6 +147,11 @@ class DocumentGeneratorTestCase(TestCase):
 
     def format_expected_html(self, html):
         return BASE_HTML_NO_STYLE % html
+
+    def assert_main_document_xml_generates_html(self, main_document_xml, expected_html):
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, main_document_xml)
+        self.assert_document_generates_html(document, expected_html)
 
 
 class TranslationTestCase(TestCase):

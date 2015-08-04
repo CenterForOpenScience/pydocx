@@ -8,6 +8,29 @@ from __future__ import (
 import inspect
 from collections import defaultdict
 
+try:
+    unicode_string = unicode
+except NameError:
+    unicode_string = str
+
+
+def force_unicode(string, encoding='utf-8'):
+    '''
+    Given a string, return the unicode equivalent if possible. For python3+,
+    this means just returning the string unchanged. For python2, if the string
+    is already unicode, the string is also returned unchanged. Otherwise, the
+    string is decoded using the specified encoding which defaults to UTF-8.
+
+    >>> force_unicode(None)
+    >>> force_unicode('foo') == 'foo'
+    True
+    '''
+    if string is None:
+        return
+    if isinstance(string, unicode_string):
+        return string
+    return string.decode(encoding)
+
 
 class XmlException(Exception):
     pass
@@ -224,7 +247,8 @@ class XmlModel(object):
             if isinstance(field, XmlChild):
                 tag_fields[field_name] = field
             if isinstance(field, XmlContent):
-                kwargs[field_name] = element.text
+                content = force_unicode(element.text)
+                kwargs[field_name] = content
             if isinstance(field, XmlCollection):
                 collections[field_name] = field
 
@@ -241,7 +265,7 @@ class XmlModel(object):
 
         # Child tag fields may specify a handler/type, which is responsible for
         # parsing the child tag
-        tag_name_to_field_name = {}
+        tag_name_to_field_names = defaultdict(list)
         child_handlers = {}
 
         def create_child_handler(field):
@@ -281,9 +305,9 @@ class XmlModel(object):
             assert tag_name
 
             # Based on the tag name, we need to know what the field name is
-            tag_name_to_field_name[tag_name] = field_name
+            tag_name_to_field_names[tag_name].append(field_name)
             # Save the handler
-            child_handlers[tag_name] = create_child_handler(field)
+            child_handlers[field_name] = create_child_handler(field)
 
         # Build a mapping of tag names to collections
         collection_member_to_collections = defaultdict(list)
@@ -296,10 +320,10 @@ class XmlModel(object):
             for child in element:
                 tag = child.tag
                 # Does this child have a corresponding field?
-                field_name = tag_name_to_field_name.get(tag, None)
-                if field_name:
+                field_names = tag_name_to_field_names.get(tag, [])
+                for field_name in field_names:
                     # Execute the handler
-                    handler = child_handlers.get(tag, None)
+                    handler = child_handlers.get(field_name, None)
                     if callable(handler):
                         kwargs[field_name] = handler(child)
 

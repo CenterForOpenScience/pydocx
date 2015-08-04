@@ -9,6 +9,8 @@ from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
+from pydocx.openxml.wordprocessing.tab_char import TabChar
+from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
@@ -116,3 +118,57 @@ class Paragraph(XmlModel):
         return numbering_definition.get_level(
             level_id=numbering_properties.level_id,
         )
+
+    @property
+    def runs(self):
+        for p_child in self.children:
+            if isinstance(p_child, Run):
+                yield p_child
+
+    def get_text(self, tab_char=None):
+        '''
+        Return a string of all of the contained Text nodes concatenated
+        together. If `tab_char` is set, then any TabChar encountered will be
+        represented in the returned text using the specified string.
+
+        For example:
+
+        Given the following paragraph XML definition:
+
+            <p>
+                <r>
+                    <t>abc</t>
+                </r>
+                <r>
+                    <t>def</t>
+                </r>
+            </p>
+
+        `get_text()` will return 'abcdef'
+        '''
+
+        text = []
+        for run in self.runs:
+            for r_child in run.children:
+                if isinstance(r_child, Text):
+                    if r_child.text:
+                        text.append(r_child.text)
+                if tab_char and isinstance(r_child, TabChar):
+                    text.append(tab_char)
+        return ''.join(text)
+
+    def get_number_of_initial_tabs(self):
+        '''
+        Return the number of initial TabChars.
+        '''
+        tab_count = 0
+        for p_child in self.children:
+            if isinstance(p_child, Run):
+                for r_child in p_child.children:
+                    if isinstance(r_child, TabChar):
+                        tab_count += 1
+                    else:
+                        break
+            else:
+                break
+        return tab_count

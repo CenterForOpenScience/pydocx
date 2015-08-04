@@ -51,11 +51,11 @@ class:
 
     # Pass in a path
     exporter = PyDocXHTMLExporter('file.docx')
-    html = exporter.parsed
+    html = exporter.export()
 
     # Pass in a file object
     exporter = PyDocXHTMLExporter(open('file.docx', 'rb'))
-    html = exporter.parsed
+    html = exporter.export()
 
     # Pass in a file-like object
     from cStringIO import StringIO
@@ -64,7 +64,7 @@ class:
        buf.write(f.read())
 
     exporter = PyDocXHTMLExporter(buf)
-    html = exporter.parsed
+    html = exporter.export()
 
 Currently Supported HTML elements
 #################################

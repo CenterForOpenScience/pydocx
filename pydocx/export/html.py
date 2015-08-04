@@ -11,9 +11,6 @@ import posixpath
 from itertools import chain
 
 from pydocx.constants import (
-    INDENTATION_FIRST_LINE,
-    INDENTATION_LEFT,
-    INDENTATION_RIGHT,
     JUSTIFY_CENTER,
     JUSTIFY_LEFT,
     JUSTIFY_RIGHT,
@@ -283,46 +280,54 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_paragraph_property_indentation(self, paragraph, results):
         # TODO these classes should be applied on the paragraph, and not as
         # inline styles
-        indentation = paragraph.effective_properties.indentation
-        if indentation:
-            # TODO add test cases that use other indentation types
-            right = indentation.get(INDENTATION_RIGHT)
-            left = indentation.get(INDENTATION_LEFT)
-            first_line = indentation.get(INDENTATION_FIRST_LINE)
+        properties = paragraph.effective_properties
+
+        style = {}
+
+        if properties.indentation_right:
             # TODO would be nice if this integer conversion was handled
             # implicitly by the model somehow
-            if right:
-                try:
-                    right = int(right)
-                except ValueError:
-                    right = None
-            if left:
-                try:
-                    left = int(left)
-                except ValueError:
-                    left = None
-            if first_line:
-                try:
-                    first_line = int(first_line)
-                except ValueError:
-                    first_line = None
-            style = {}
+            try:
+                right = int(properties.indentation_right)
+            except ValueError:
+                right = None
+
             if right:
                 right = convert_twips_to_ems(right)
                 style['margin-right'] = '{0:.2f}em'.format(right)
+
+        if properties.indentation_left:
+            # TODO would be nice if this integer conversion was handled
+            # implicitly by the model somehow
+            try:
+                left = int(properties.indentation_left)
+            except ValueError:
+                left = None
+
             if left:
                 left = convert_twips_to_ems(left)
                 style['margin-left'] = '{0:.2f}em'.format(left)
+
+        if properties.indentation_first_line:
+            # TODO would be nice if this integer conversion was handled
+            # implicitly by the model somehow
+            try:
+                first_line = int(properties.indentation_first_line)
+            except ValueError:
+                first_line = None
+
             if first_line:
                 first_line = convert_twips_to_ems(first_line)
                 # TODO text-indent doesn't work with inline elements like span
                 style['text-indent'] = '{0:.2f}em'.format(first_line)
-            if style:
-                attrs = {
-                    'style': convert_dictionary_to_style_fragment(style)
-                }
-                tag = HtmlTag('span', **attrs)
-                results = tag.apply(results, allow_empty=False)
+
+        if style:
+            attrs = {
+                'style': convert_dictionary_to_style_fragment(style)
+            }
+            tag = HtmlTag('span', **attrs)
+            results = tag.apply(results, allow_empty=False)
+
         return results
 
     def get_run_styles_to_apply(self, run):

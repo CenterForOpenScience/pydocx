@@ -1,44 +1,41 @@
+# coding: utf-8
 from __future__ import (
     absolute_import,
     print_function,
     unicode_literals,
 )
 
-from collections import Hashable
+import collections
+import functools
 
 
-class MultiMemoize(object):
+class memoized(object):
     '''
-    Adapted from: https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
-    func_names = {
-        'find_all': find_all,
-        ...
-    }
+    Decorator. Caches a function's return value each time it is called.
+    If called later with the same arguments, the cached value is returned
+    (not reevaluated).
     '''
-    def __init__(self, func_names):
-        self.cache = dict((func_name, {}) for func_name in func_names)
-        self.func_names = func_names
 
-    def __call__(self, func_name, *args):
-        if not isinstance(args, Hashable):
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        if not isinstance(args, collections.Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
-            return self.func_names[func_name](*args)
-        if args in self.cache[func_name]:
-            return self.cache[func_name][args]
+            return self.func(*args)
+        if args in self.cache:
+            return self.cache[args]
         else:
-            value = self.func_names[func_name](*args)
-            self.cache[func_name][args] = value
+            value = self.func(*args)
+            self.cache[args] = value
             return value
 
+    def __repr__(self):
+        '''Return the function's docstring.'''
+        return self.func.__doc__
 
-class MultiMemoizeMixin(object):
-    def __init__(self, *args, **kwargs):
-        super(MultiMemoizeMixin, self).__init__(*args, **kwargs)
-        self._memoization = None
-
-    def memod_tree_op(self, func_name, *args):
-        return self._memoization(func_name, *args)
-
-    def populate_memoization(self, func_names):
-        self._memoization = MultiMemoize(func_names)
+    def __get__(self, obj, objtype):
+        '''Support instance methods.'''
+        return functools.partial(self.__call__, obj)

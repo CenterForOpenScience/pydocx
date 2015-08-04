@@ -34,7 +34,7 @@ class OrangeModel(XmlModel):
 class ItemsModel(XmlModel):
     XML_TAG = 'items'
 
-    items = XmlCollection(
+    children = XmlCollection(
         ('apple', AppleModel),
         OrangeModel,
     )
@@ -93,6 +93,20 @@ class XmlChildTestCase(BaseTestCase):
         xml = '<bucket />'
         bucket = self._get_model_instance_from_xml(xml)
         self.assertEqual(bucket.items, None)
+
+    def test_parent_is_None_for_root_element(self):
+        xml = '<bucket />'
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.parent, None)
+
+    def test_parent_of_child_is_the_parent(self):
+        xml = '''
+            <bucket>
+                <prop />
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.properties.parent, bucket)
 
     def test_using_a_name_different_than_the_field_name(self):
         xml = '''
@@ -163,7 +177,7 @@ class XmlChildTestCase(BaseTestCase):
 class XmlCollectionTestCase(BaseTestCase):
     model = BucketModel
 
-    def test_items_items_empty_if_no_items_present(self):
+    def test_items_has_no_children_when_empty(self):
         xml = '''
             <bucket>
                 <items>
@@ -171,7 +185,17 @@ class XmlCollectionTestCase(BaseTestCase):
             </bucket>
         '''
         bucket = self._get_model_instance_from_xml(xml)
-        self.assertEqual(bucket.items.items, [])
+        self.assertEqual(bucket.items.children, [])
+
+    def test_items_parent_is_bucket(self):
+        xml = '''
+            <bucket>
+                <items>
+                </items>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        self.assertEqual(bucket.items.parent, bucket)
 
     def test_non_captured_items_are_ignored_by_collection(self):
         # The items collection does not capture bananas, so it's ignored
@@ -183,7 +207,7 @@ class XmlCollectionTestCase(BaseTestCase):
             </bucket>
         '''
         bucket = self._get_model_instance_from_xml(xml)
-        self.assertEqual(bucket.items.items, [])
+        self.assertEqual(bucket.items.children, [])
 
     def test_apples_and_oranges_included_in_collection_ordered(self):
         xml = '''
@@ -199,7 +223,7 @@ class XmlCollectionTestCase(BaseTestCase):
         bucket = self._get_model_instance_from_xml(xml)
         classes = [
             item.__class__
-            for item in bucket.items.items
+            for item in bucket.items.children
         ]
         expected_classes = [
             AppleModel,
@@ -208,6 +232,21 @@ class XmlCollectionTestCase(BaseTestCase):
             OrangeModel,
         ]
         self.assertEqual(classes, expected_classes)
+
+    def test_items_child_parent_is_items(self):
+        xml = '''
+            <bucket>
+                <items>
+                    <apple />
+                    <orange />
+                    <apple />
+                    <orange />
+                </items>
+            </bucket>
+        '''
+        bucket = self._get_model_instance_from_xml(xml)
+        for item in bucket.items.children:
+            self.assertEqual(item.parent, bucket.items)
 
     def test_apples_and_oranges_models_accessed_through_collection(self):
         xml = '''
@@ -223,7 +262,7 @@ class XmlCollectionTestCase(BaseTestCase):
         bucket = self._get_model_instance_from_xml(xml)
         types = [
             item.type
-            for item in bucket.items.items
+            for item in bucket.items.children
         ]
         expected_types = [
             'one',

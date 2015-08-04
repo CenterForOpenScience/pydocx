@@ -8,7 +8,11 @@ from __future__ import (
 
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
-from pydocx.openxml.packaging import MainDocumentPart, NumberingDefinitionsPart
+from pydocx.openxml.packaging import (
+    MainDocumentPart,
+    NumberingDefinitionsPart,
+    StyleDefinitionsPart,
+)
 
 
 class NumberingTestCase(DocumentGeneratorTestCase):
@@ -211,6 +215,71 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_basic_list_followed_by_list_that_is_heading_and_paragraph(self):
+        numbering_xml = '''
+            {letter}
+            {decimal}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+            decimal=self.simple_list_definition.format(
+                num_id=2,
+                num_format='decimal',
+            ),
+        )
+
+        style_xml = '''
+            <style styleId="style1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        list_item_with_parent_style_heading = '''
+            <p>
+                <pPr>
+                    <pStyle val="style1" />
+                    <numPr>
+                        <ilvl val="{ilvl}" />
+                        <numId val="{num_id}" />
+                    </numPr>
+                </pPr>
+                <r><t>{content}</t></r>
+            </p>
+        '''
+
+        document_xml = '''
+            {aaa}
+            {bbb}
+            <p><r><t>Bar</t></r></p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=list_item_with_parent_style_heading.format(
+                content='BBB',
+                num_id=2,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+            <h1>BBB</h1>
+            <p>Bar</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
     def test_separate_lists_with_paragraph_in_between_and_after(self):
         numbering_xml = '''
             {letter}
@@ -352,8 +421,527 @@ class NumberingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <ol class="pydocx-list-style-type-None">
+            <p>AAA</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_single_paragraph_missing_level_definition(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>foo</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_multiple_paragraphs_with_one_missing_level_definition(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            <p><r><t>foo</t></r></p>
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>bar</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>foo</p>
+            <p>bar</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_valid_list_level_followed_by_missing_level(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
                 <li>AAA</li>
+            </ol>
+            <p>foo</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_missing_level_in_between_valid_levels(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <pPr>
+                    <numPr>
+                        <numId val="1" />
+                    </numPr>
+                </pPr>
+                <r><t>foo</t></r>
+            </p>
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>
+                    AAA
+                    <br />
+                    foo
+                </li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_empty_paragraph_after_list_item(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p />
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_empty_paragraph_in_between_list_items(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p />
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_and_run_with_empty_text_in_between_list_items(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r><t></t></r>
+            </p>
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_empty_run_in_between_list_items(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_empty_run_followed_by_non_empty_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>BBB</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />BBB</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_with_multiple_empty_runs_followed_by_non_empty_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>BBB</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />BBB</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_empty_run_paragraph_empty_run_paragraph(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>Foo</t></r>
+            </p>
+            <p>
+                <r></r>
+            </p>
+            <p>
+                <r><t>Bar</t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA<br />Foo<br />Bar</li>
+                <li>CCC</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_paragraph_followed_by_paragraph_with_only_whitespace(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+            <p>
+                <r><t> </t></r>
+            </p>
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            ccc=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_empty_item(self):
+        numbering_xml = '''
+            {letter}
+        '''.format(
+            letter=self.simple_list_definition.format(
+                num_id=1,
+                num_format='lowerLetter',
+            ),
+        )
+
+        document_xml = '''
+            {aaa}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-lowerLetter">
+                <li></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)

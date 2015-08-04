@@ -137,3 +137,33 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p><a href="http://google.com">li<br />nk</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_underline_style_ignored(self):
+        document_xml = '''
+            <p>
+              <hyperlink id="foobar">
+                <r>
+                  <rPr>
+                    <u val="single" />
+                  </rPr>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type='foo/hyperlink',
+            target='http://google.com',
+            target_mode='External',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        expected_html = '<p><a href="http://google.com">link</a>.</p>'
+        self.assert_document_generates_html(document, expected_html)

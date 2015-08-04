@@ -6,7 +6,9 @@ from __future__ import (
 
 import os
 from contextlib import contextmanager
+from tempfile import mkstemp
 from unittest import TestCase
+from xml.parsers.expat import ExpatError
 
 from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.test.utils import (
@@ -107,21 +109,39 @@ class DocumentGeneratorTestCase(TestCase):
         document,
         expected_html,
         additional_parts=None,
+        save_zip_on_failure=False,
     ):
-        actual = self.convert_to_html(document, additional_parts)
+        zip_archive = self.get_zip_archive_for_document(
+            document,
+            additional_parts=additional_parts,
+        )
+        exporter = self.exporter(zip_archive)
+        actual = exporter.export()
         expected = self.format_expected_html(expected_html)
         if not html_is_equal(actual, expected):
-            actual = prettify(actual)
-            message = 'The expected HTML did not match the actual HTML:'
-            raise AssertionError(message + '\n' + actual)
+            try:
+                actual = prettify(actual)
+            except ExpatError:
+                pass
+            message = [
+                'The expected HTML did not match the actual HTML:',
+                actual,
+            ]
+            if save_zip_on_failure:
+                _, path_to_docx = mkstemp(suffix='.docx', prefix='pydocx-')
+                with open(path_to_docx, 'w') as f:
+                    zip_archive.seek(0)
+                    f.write(zip_archive.read())
+                message.append(
+                    'The docx was saved to {path}'.format(path=path_to_docx),
+                )
+            raise AssertionError('\n'.join(message))
 
-    def convert_to_html(self, document, additional_parts=None):
-        doc_zip = document.to_zip_dict()
+    def get_zip_archive_for_document(self, document, additional_parts=None):
+        doc_zip_dict = document.to_zip_dict()
         if additional_parts:
-            doc_zip.update(additional_parts)
-        zip_buf = create_zip_archive(doc_zip)
-        exporter = self.exporter(zip_buf)
-        return exporter.parsed
+            doc_zip_dict.update(additional_parts)
+        return create_zip_archive(doc_zip_dict)
 
     def format_expected_html(self, html):
         return BASE_HTML_NO_STYLE % html
@@ -155,14 +175,15 @@ class TranslationTestCase(TestCase):
         tree = self.get_xml()
 
         # Verify the final output.
-        parser = self.parser
+        export_class = self.parser
 
-        html = parser(
+        exporter = export_class(
             document_xml=tree,
             relationships=self.relationships,
             numbering_dict=self.numbering_dict,
             styles_xml=self.styles_xml,
-        ).parsed
+        )
+        html = exporter.export()
 
         if self.use_base_html:
             assert_html_equal(
@@ -217,7 +238,8 @@ class DocXFixtureTestCaseFactory(TestCase):
             setattr(cls, name, test_method)
 
     def convert_docx_to_html(self, path_to_docx, *args, **kwargs):
-        return self.exporter(path_to_docx, *args, **kwargs).parsed
+        exporter = self.exporter(path_to_docx, *args, **kwargs)
+        return exporter.export()
 
     def assertHtmlEqual(self, actual, expected):
         if not html_is_equal(actual, expected):

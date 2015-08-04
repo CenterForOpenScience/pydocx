@@ -5,65 +5,44 @@ from __future__ import (
     unicode_literals,
 )
 
-import copy
-
 
 class FakedSuperscriptAndSubscriptExportMixin(object):
-    def parse_r_determine_applicable_styles(self, context):
+    def get_run_styles_to_apply(self, run):
+        # a run is a faked subscript/superscript if the local size is smaller,
+        # and the position is raised or lower
         next_in_line = super(FakedSuperscriptAndSubscriptExportMixin, self)
-        styles = next_in_line.parse_r_determine_applicable_styles(context)
+        styles = next_in_line.get_run_styles_to_apply(run)
 
-        properties = self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-            context.element,
-            context.stack,
-        )
+        inherited_properties = run.inherited_properties
+        effective_properties = run.effective_properties
 
-        def get_properties_with_no_font_size():
-            # Only set paragraph_properties if properties has a size.
-            if not properties.size:
-                return
-            copied_el = copy.deepcopy(context.element)
-            rpr = copied_el.find('./rPr')
-            if rpr is None:
-                return
+        def could_be_a_faked_sub_or_superscript():
+            if effective_properties is None:
+                return False
+            if effective_properties.size is None:
+                return False
+            if inherited_properties is None:
+                return False
+            if inherited_properties.size is None:
+                return False
+            if run.properties is None:
+                return False
+            if not run.properties.size:
+                return False
+            if effective_properties.is_superscript():
+                return False
+            if effective_properties.is_subscript():
+                return False
+            if run.properties.size >= inherited_properties.size:
+                return False
+            return True
 
-            size_tag = rpr.find('./sz')
-            if size_tag is None:
-                return
+        if could_be_a_faked_sub_or_superscript():
+            vertical_position = run.properties.position
+            if vertical_position > 0:
+                yield self.export_run_property_vertical_align_superscript
+            elif vertical_position < 0:
+                yield self.export_run_property_vertical_align_subscript
 
-            rpr.remove(size_tag)
-
-            return self.document.main_document_part.style_definitions_part.get_resolved_properties_for_element(  # noqa
-                copied_el,
-                context.stack,
-            )
-
-        paragraph_properties = get_properties_with_no_font_size()
-
-        # If paragraph_properties is None then the size was not set
-        # (meaning it can't be bigger or smaller than the default for the
-        # paragraph, so early exit.
-        if paragraph_properties is None:
-            return styles
-
-        if paragraph_properties.size is None:
-            return styles
-
-        if paragraph_properties.size < properties.size:
-            return styles
-
-        if not properties.position:
-            return styles
-
-        if self.subscript in styles:
-            return styles
-
-        if self.superscript in styles:
-            return styles
-
-        if properties.position > 0:
-            styles.append(self.superscript)
-        else:
-            styles.append(self.subscript)
-
-        return styles
+        for style in styles:
+            yield style

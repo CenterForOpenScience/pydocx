@@ -16,8 +16,8 @@ class Styles(XmlModel):
 
     styles = XmlCollection(Style)
 
-    def __init__(self, styles=None):
-        super(Styles, self).__init__(styles=styles)
+    def __init__(self, styles=None, *args, **kwargs):
+        super(Styles, self).__init__(styles=styles, *args, **kwargs)
 
         styles_by_type = defaultdict(dict)
         for style in self.styles:

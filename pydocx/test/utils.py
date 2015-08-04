@@ -9,10 +9,10 @@ import re
 import os.path
 from io import BytesIO
 from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 
 from pydocx.packaging import PackageRelationship, ZipPackagePart
 from pydocx.export.html import PyDocXHTMLExporter
-from pydocx.util.xml import parse_xml_from_string
 from pydocx.openxml.packaging import (
     FootnotesPart,
     MainDocumentPart,
@@ -39,7 +39,10 @@ def html_is_equal(a, b):
 
 def assert_html_equal(actual_html, expected_html, filename=None):
     if not html_is_equal(actual_html, expected_html):
-        html = prettify(actual_html)
+        try:
+            html = prettify(actual_html)
+        except ExpatError:
+            html = actual_html
         if filename:
             with open('tests/failures/%s.html' % filename, 'w') as f:
                 f.write(html)
@@ -276,18 +279,24 @@ class XMLDocx2Html(PyDocXHTMLExporter):
         self.styles_xml = kwargs.pop('styles_xml', '')
         super(XMLDocx2Html, self).__init__(path=None, *args, **kwargs)
 
-    def _load(self):
-        # TODO Ideally, we could just do package = self.document.package, but
-        # that would cause an empty container to be (forever) loaded, since we
-        # don't have a mechanism for re-validating parts after they have
-        # already been loaded.
+    def load_document(self):
         # It's likely that we could replace this logic with a
         # WordprocessingDocumentFactory
-        self.document = WordprocessingDocument(path=None)
-        package = self.document.package
+        document = WordprocessingDocument(path=None)
+        package = document.package
         document_part = package.create_part(
             uri='/word/document.xml',
         )
+
+        if self.numbering_dict is not None:
+            numbering_xml = DXB.numbering(self.numbering_dict)
+            self.relationships.append({
+                'external': False,
+                'target_path': 'numbering.xml',
+                'data': numbering_xml,
+                'relationship_id': 'numbering',
+                'relationship_type': NumberingDefinitionsPart.relationship_type,  # noqa
+            })
 
         if self.styles_xml:
             self.relationships.append({
@@ -327,22 +336,8 @@ class XMLDocx2Html(PyDocXHTMLExporter):
             relationship_type=MainDocumentPart.relationship_type,
         )
 
-        self.numbering_root = None
-        if self.numbering_dict is not None:
-            data = DXB.numbering(self.numbering_dict)
-            self.numbering_root = parse_xml_from_string(
-                xml=data,
-                remove_namespaces=True,
-            )
-
         # This is the standard page width for a word document (in points), Also
         # the page width that we are looking for in the test.
-        self.page_width = 612
+        self._page_width = 612
 
-        self.parse_begin(self.document.main_document_part)
-
-    def get_list_style(self, num_id, ilvl):
-        try:
-            return self.numbering_dict[num_id][ilvl]
-        except KeyError:
-            return 'decimal'
+        return document

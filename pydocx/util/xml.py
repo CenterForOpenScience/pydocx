@@ -37,51 +37,6 @@ def el_iter(el):
             yield child
 
 
-def find_first(el, tag):
-    """
-    Find the first occurrence of a tag beneath the current element.
-
-    This method should not be used to navigate an OOXML schema
-    """
-    search_path = './/' + tag
-    # Due to a bug in python 2.6's ElementPath implementation, we have to
-    # strictly pass in a string
-    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
-    search_path = str(search_path)
-    return el.find(search_path)
-
-
-def find_all(el, tag):
-    """
-    Find all occurrences of a tag
-    """
-    search_path = './/' + tag
-    # Due to a bug in python 2.6's ElementPath implementation, we have to
-    # strictly pass in a string
-    # https://mail.python.org/pipermail/python-bugs-list/2008-July/056209.html
-    search_path = str(search_path)
-    return el.findall(search_path)
-
-
-def find_ancestor_with_tag(pre_processor, el, tag):
-    """
-    Find the first ancestor with that is a `tag`.
-    """
-    while pre_processor.parent(el) is not None:
-        el = pre_processor.parent(el)
-        if el.tag == tag:
-            return el
-    return None
-
-
-def has_descendant_with_tag(el, tag):
-    """
-    Determine if there is a child ahead in the element tree.
-    """
-    # Get child. stop at first child.
-    return True if find_first(el, tag) is not None else False
-
-
 def xml_remove_namespaces(xml_bytes):
     """
     Given a stream of xml bytes, strip all namespaces from tag and attribute
@@ -103,30 +58,6 @@ def xml_remove_namespaces(xml_bytes):
     return cElementTree.tostring(root, encoding='utf-8')
 
 
-def get_list_style(numbering_root, num_id, ilvl):
-    # This is needed on both the custom lxml parser and the pydocx parser. So
-    # make it a function.
-    ids = find_all(numbering_root, 'num')
-    for _id in ids:
-        if _id.attrib['numId'] != num_id:
-            continue
-        abstractid = _id.find('abstractNumId')
-        abstractid = abstractid.attrib['val']
-        style_information = find_all(
-            numbering_root,
-            'abstractNum',
-        )
-        for info in style_information:
-            if info.attrib['abstractNumId'] == abstractid:
-                for i in el_iter(info):
-                    if (
-                            'ilvl' in i.attrib and
-                            i.attrib['ilvl'] != ilvl):
-                        continue
-                    if i.find('numFmt') is not None:
-                        return i.find('numFmt').attrib['val']
-
-
 def parse_xml_from_string(xml, remove_namespaces=False):
     if remove_namespaces:
         xml = xml_remove_namespaces(xml)
@@ -139,8 +70,11 @@ def convert_dictionary_to_style_fragment(style):
 
 
 def convert_dictionary_to_html_attributes(attributes):
-    items = sorted(attributes.items())
-    return ' '.join('%s="%s"' % item for item in items)
+    return ' '.join(
+        '{k}="{v}"'.format(k=k, v=v)
+        for k, v in
+        sorted(attributes.items())
+    )
 
 
 def xml_tag_split(tag):

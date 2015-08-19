@@ -200,6 +200,11 @@ class XmlModel(object):
                 yield node
             node = node.parent
 
+    def has_ancestor(self, ancestor_type):
+        for ancestor in self.nearest_ancestors(ancestor_type):
+            return True
+        return False
+
     def __repr__(self):
         return '{klass}({kwargs})'.format(
             klass=self.__class__.__name__,

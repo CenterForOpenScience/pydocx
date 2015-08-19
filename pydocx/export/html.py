@@ -225,7 +225,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def get_paragraph_tag(self, paragraph):
         heading_style = paragraph.heading_style
         if heading_style:
-            tag = self.get_heading_tag(heading_style)
+            tag = self.get_heading_tag(paragraph)
             if tag:
                 return tag
         if self.in_table_cell:
@@ -236,7 +236,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
             return
         return HtmlTag('p')
 
-    def get_heading_tag(self, heading_style):
+    def get_heading_tag(self, paragraph):
+        if paragraph.has_ancestor(NumberingItem):
+            # Force-bold headings that appear in list items
+            return HtmlTag('strong')
+        heading_style = paragraph.heading_style
         tag = self.heading_level_conversion_map.get(
             heading_style.name.lower(),
             self.default_heading_level,

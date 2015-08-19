@@ -146,7 +146,11 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    <strong>foo</strong>
+                </li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -206,9 +210,13 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>
                     foo
+                    <ol class="pydocx-list-style-type-lowerLetter">
+                        <li>
+                            <strong>bar</strong>
+                        </li>
+                    </ol>
                 </li>
             </ol>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -340,9 +348,16 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
-            <p>bare paragraph</p>
-            <h1>bar</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    <strong>foo</strong>
+                    <br />
+                    bare paragraph
+                </li>
+                <li>
+                    <strong>bar</strong>
+                </li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -450,7 +465,9 @@ class HeadingTestCase(DocumentGeneratorTestCase):
                 <li>foo</li>
             </ol>
             <p>bare paragraph</p>
-            <h1>bar</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li><strong>bar</strong></li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -506,10 +523,9 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>foo</li>
+                <li>foo<br />bare paragraph</li>
+                <li><strong>bar</strong></li>
             </ol>
-            <p>bare paragraph</p>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -656,10 +672,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
             <ol class="pydocx-list-style-type-decimal">
+                <li><strong>foo</strong></li>
                 <li>non-heading list item</li>
+                <li><strong>bar</strong></li>
             </ol>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)

@@ -282,7 +282,11 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-lowerLetter">
                 <li>AAA</li>
             </ol>
-            <h1>BBB</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    <strong>BBB</strong>
+                </li>
+            </ol>
             <p>Bar</p>
         '''
         self.assert_document_generates_html(document, expected_html)

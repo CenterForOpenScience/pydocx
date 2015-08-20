@@ -1,4 +1,4 @@
-**dev**
+**0.8.1**
 
 - Headings in lists no longer break numbering. By default, in the HTML
   exporter, headings in lists are represented using the "strong" tag,

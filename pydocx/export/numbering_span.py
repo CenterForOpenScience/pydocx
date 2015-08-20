@@ -356,19 +356,6 @@ class BaseNumberingSpanBuilder(object):
         return previous_span
 
     def handle_paragraph(self, index, paragraph):
-        if paragraph.heading_style:
-            # TODO Headings shouldn't break numbering. See #162
-            # TODO not sure if reseting the stack is necessary or desired
-            self.numbering_span_stack = []
-            for _, item in self.candidate_numbering_items:
-                yield item
-            yield paragraph
-            self.current_span = None
-            self.current_item = None
-            self.candidate_numbering_items = []
-            self.current_item_index = index
-            return
-
         level = self.get_numbering_level(paragraph)
         num_def = None
         if level:

@@ -107,7 +107,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_heading_has_precedence_over_list_single_lvl(self):
+    def test_single_list_lvl_with_heading_is_converted_to_list_strong(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
@@ -146,11 +146,15 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    <strong>foo</strong>
+                </li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_heading_in_sub_list(self):
+    def test_heading_in_a_nested_list_numbering_is_preserved_with_strong(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
@@ -206,9 +210,13 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>
                     foo
+                    <ol class="pydocx-list-style-type-lowerLetter">
+                        <li>
+                            <strong>bar</strong>
+                        </li>
+                    </ol>
                 </li>
             </ol>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -288,7 +296,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_heading_in_list_with_bare_paragraph(self):
+    def test_headings_in_list_surrounding_paragraph_stay_in_list_with_strong(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
@@ -340,9 +348,16 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
-            <p>bare paragraph</p>
-            <h1>bar</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    <strong>foo</strong>
+                    <br />
+                    bare paragraph
+                </li>
+                <li>
+                    <strong>bar</strong>
+                </li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -450,7 +465,9 @@ class HeadingTestCase(DocumentGeneratorTestCase):
                 <li>foo</li>
             </ol>
             <p>bare paragraph</p>
-            <h1>bar</h1>
+            <ol class="pydocx-list-style-type-decimal">
+                <li><strong>bar</strong></li>
+            </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -506,10 +523,9 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>foo</li>
+                <li>foo<br />bare paragraph</li>
+                <li><strong>bar</strong></li>
             </ol>
-            <p>bare paragraph</p>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -594,7 +610,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
-    def test_heading_has_precedence_over_list_single_lvl_multiple_items(self):
+    def test_single_lvl_list_has_precedence_over_headings(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
@@ -656,10 +672,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <h1>foo</h1>
             <ol class="pydocx-list-style-type-decimal">
+                <li><strong>foo</strong></li>
                 <li>non-heading list item</li>
+                <li><strong>bar</strong></li>
             </ol>
-            <h1>bar</h1>
         '''
         self.assert_document_generates_html(document, expected_html)

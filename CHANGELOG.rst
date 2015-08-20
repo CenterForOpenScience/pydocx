@@ -1,3 +1,9 @@
+**dev**
+
+- Headings in lists no longer break numbering. By default, in the HTML
+  exporter, headings in lists are represented using the "strong" tag,
+  regardless of the heading level.
+
 **0.8.0**
 
 - Note: This release consists of significant changes to the internal API and is not

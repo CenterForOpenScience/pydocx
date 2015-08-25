@@ -201,7 +201,10 @@ class BaseNumberingSpanBuilder(object):
 
     @memoized
     def get_numbering_level(self, paragraph):
-        return paragraph.get_numbering_level()
+        level = paragraph.get_numbering_level()
+        if level and level.format_is_none():
+            return None
+        return level
 
     def include_candidate_items_in_current_item(self, new_item_index):
         '''
@@ -554,6 +557,9 @@ class FakeNumberingDetection(object):
 
     def detect_faked_list(self, paragraph):
         level = paragraph.get_numbering_level()
+        if level and level.format_is_none():
+            return None
+
         left_position = self.get_left_position_for_paragraph(paragraph)
 
         if self.current_span:

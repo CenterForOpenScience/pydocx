@@ -55,3 +55,18 @@ class LevelTestCase(TestCase):
         level = self._load_from_xml(xml)
         properties = level.paragraph_properties
         assert isinstance(properties, ParagraphProperties), properties
+
+    def test_format_is_none_when_not_set(self):
+        xml = '<lvl></lvl>'
+        level = self._load_from_xml(xml)
+        assert level.format_is_none()
+
+    def test_format_is_none_when_set_to_none(self):
+        xml = '<lvl><numFmt val="none" /></lvl>'
+        level = self._load_from_xml(xml)
+        assert level.format_is_none()
+
+    def test_format_is_none_when_set_to_none_case_insensitive(self):
+        xml = '<lvl><numFmt val="NoNe" /></lvl>'
+        level = self._load_from_xml(xml)
+        assert level.format_is_none()

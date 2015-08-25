@@ -23,3 +23,8 @@ class Level(XmlModel):
 
     def is_bullet_format(self):
         return self.num_format == 'bullet'
+
+    def format_is_none(self):
+        if not self.num_format:
+            return True
+        return self.num_format.lower() == 'none'

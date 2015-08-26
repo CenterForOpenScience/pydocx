@@ -71,3 +71,13 @@ class RunPropertiesTestCase(TestCase):
         xml = '<rPr><position val="10"/></rPr>'
         properties = self._load_styles_from_xml(xml)
         self.assertEqual(properties.position, int(properties.pos))
+
+    def test_size_property_can_be_a_decimal(self):
+        xml = '<rPr><sz val="10.1234"/></rPr>'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.size, 10.1234)
+
+    def test_size_property_has_garbage_returns_0(self):
+        xml = '<rPr><sz val="abcdef"/></rPr>'
+        properties = self._load_styles_from_xml(xml)
+        self.assertEqual(properties.size, None)

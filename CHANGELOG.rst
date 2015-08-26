@@ -1,3 +1,7 @@
+**dev**
+
+- Float font sizes are now handled properly
+
 **0.8.1**
 
 - Headings in lists no longer break numbering. By default, in the HTML

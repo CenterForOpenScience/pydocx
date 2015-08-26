@@ -1,3 +1,8 @@
+**dev**
+
+- Paragraphs that have numbering definitions with a level number format of None
+  are no longer considered list items.
+
 **0.8.1**
 
 - Headings in lists no longer break numbering. By default, in the HTML

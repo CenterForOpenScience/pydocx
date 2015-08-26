@@ -957,6 +957,162 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_numfmt_None_causes_list_to_be_ignored(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="none"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAA</p>
+            <p>BBB</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_numfmt_None_causes_sub_list_to_be_ignored(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+            {ddd}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=1,
+            ),
+            ddd=self.simple_list_item.format(
+                content='DDD',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="none"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    AAA
+                    <br />
+                    BBB
+                    <br />
+                    CCC
+                </li>
+                <li>DDD</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_root_level_numfmt_None_with_sublist(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+            {ddd}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=1,
+            ),
+            ddd=self.simple_list_item.format(
+                content='DDD',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="none"/>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAA</p>
+            <ol class="pydocx-list-style-type-decimal">
+                <li>BBB</li>
+                <li>CCC</li>
+            </ol>
+            <p>DDD</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
 
 class FakedNumberingManyItemsTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def assert_html(self, list_type, digit_generator):
@@ -1530,6 +1686,46 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         '''
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
+    def test_faked_list_with_list_level_numfmt_None_still_detected(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='1. AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='2. BBB',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="none"/>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA</li>
+                <li>BBB</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
 
 
 class FakedNumberingPatternBase(object):

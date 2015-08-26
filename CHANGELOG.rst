@@ -1,6 +1,6 @@
 **dev**
 
-- Float font sizes are now handled properly
+- Decimal font sizes are now handled properly
 
 **0.8.1**
 

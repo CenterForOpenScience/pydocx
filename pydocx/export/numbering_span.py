@@ -558,7 +558,7 @@ class FakeNumberingDetection(object):
     def detect_faked_list(self, paragraph):
         level = paragraph.get_numbering_level()
         if level and level.format_is_none():
-            return None
+            level = None
 
         left_position = self.get_left_position_for_paragraph(paragraph)
 

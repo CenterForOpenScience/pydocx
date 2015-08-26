@@ -1,4 +1,4 @@
-**dev**
+**0.8.2**
 
 - Paragraphs that have numbering definitions with a level number format of None
   are no longer considered list items.

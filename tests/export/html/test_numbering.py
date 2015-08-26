@@ -1046,9 +1046,9 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>
                     AAA
-                    <br/>
+                    <br />
                     BBB
-                    <br/>
+                    <br />
                     CCC
                 </li>
                 <li>DDD</li>

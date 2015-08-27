@@ -1,4 +1,4 @@
-**dev**
+**0.8.3**
 
 - Decimal font sizes are now handled properly
 

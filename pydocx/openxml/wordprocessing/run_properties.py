@@ -36,7 +36,11 @@ class RunProperties(XmlModel):
     def size(self):
         if self.sz is None:
             return
-        return int(self.sz)
+        try:
+            size = float(self.sz)
+        except ValueError:
+            size = None
+        return size
 
     def is_superscript(self):
         return self.vertical_align == 'superscript'

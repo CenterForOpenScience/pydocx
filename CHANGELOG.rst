@@ -1,3 +1,7 @@
+**dev**
+
+- Decimal font sizes are now handled properly
+
 **0.8.2**
 
 - Paragraphs that have numbering definitions with a level number format of None

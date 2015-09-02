@@ -335,14 +335,23 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return results
 
     def get_run_styles_to_apply(self, run):
-        parent_paragraphs = run.nearest_ancestors(wordprocessing.Paragraph)
-        parent_paragraph = get_first_from_sequence(parent_paragraphs)
+        parent_paragraph = run.get_first_ancestor(wordprocessing.Paragraph)
         if parent_paragraph and parent_paragraph.heading_style:
-            # If the parent paragraph is a heading, return an empty generator
-            return
-        results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
+            results = self.get_run_styles_to_apply_for_heading(run)
+        else:
+            results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
         for result in results:
             yield result
+
+    def get_run_styles_to_apply_for_heading(self, run):
+        allowed_handlers = set([
+            self.export_run_property_italic,
+        ])
+
+        handlers = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
+        for handler in handlers:
+            if handler in allowed_handlers:
+                yield handler
 
     def export_run_property_bold(self, run, results):
         tag = HtmlTag('strong')

@@ -27,12 +27,16 @@ class HeadingStylesTestCase(DocumentGeneratorTestCase):
         </p>
     '''
 
-    def test_bold_ignored(self):
+    def test_ignored_styles(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
               <rPr>
                 <b val="on"/>
+                <caps val="on"/>
+                <smallCaps val="on"/>
+                <strike val="on"/>
+                <dstrike val="on"/>
               </rPr>
             </style>
         '''

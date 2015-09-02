@@ -165,4 +165,4 @@ v2.0.0
 
   .. code-block:: shell-session
 
-    python setup.py sdist upload
+    make release

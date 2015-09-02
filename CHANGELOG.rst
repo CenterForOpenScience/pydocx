@@ -1,3 +1,7 @@
+**dev**
+
+- Headings now preserve italic, webHidden and vanish styles
+
 **0.8.3**
 
 - Decimal font sizes are now handled properly

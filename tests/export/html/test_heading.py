@@ -27,7 +27,7 @@ class HeadingStylesTestCase(DocumentGeneratorTestCase):
         </p>
     '''
 
-    def test_bold_styling_ignored(self):
+    def test_bold_ignored(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>

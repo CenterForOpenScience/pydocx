@@ -15,39 +15,104 @@ from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
 
-class HeadingTestCase(DocumentGeneratorTestCase):
-    def test_character_stylings_are_ignored(self):
-        # Even though the heading1 style has bold enabled, it's being ignored
-        # because the style is for a header
+class HeadingStylesTestCase(DocumentGeneratorTestCase):
+    document_xml = '''
+        <p>
+          <pPr>
+            <pStyle val="heading1"/>
+          </pPr>
+          <r>
+            <t>aaa</t>
+          </r>
+        </p>
+    '''
+
+    def test_ignored_styles(self):
         style_xml = '''
             <style styleId="heading1" type="paragraph">
               <name val="Heading 1"/>
               <rPr>
                 <b val="on"/>
+                <caps val="on"/>
+                <smallCaps val="on"/>
+                <strike val="on"/>
+                <dstrike val="on"/>
               </rPr>
             </style>
         '''
 
-        document_xml = '''
-            <p>
-              <pPr>
-                <pStyle val="heading1"/>
-              </pPr>
-              <r>
-                <t>aaa</t>
-              </r>
-            </p>
-        '''
-
         document = WordprocessingDocumentFactory()
         document.add(StyleDefinitionsPart, style_xml)
-        document.add(MainDocumentPart, document_xml)
+        document.add(MainDocumentPart, self.document_xml)
 
         expected_html = '''
             <h1>aaa</h1>
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_italic_preserved(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <i val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, self.document_xml)
+
+        expected_html = '''
+            <h1><em>aaa</em></h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_vanished_is_preserved(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <vanish val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, self.document_xml)
+
+        expected_html = '''
+            <h1>
+                <span class="pydocx-hidden">aaa</span>
+            </h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_hidden_is_preserved(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <webHidden val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, self.document_xml)
+
+        expected_html = '''
+            <h1>
+                <span class="pydocx-hidden">aaa</span>
+            </h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+
+class HeadingTestCase(DocumentGeneratorTestCase):
     def test_each_heading_level(self):
         style_template = '''
             <style styleId="heading%s" type="paragraph">

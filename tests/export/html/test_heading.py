@@ -46,6 +46,25 @@ class HeadingStylesTestCase(DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_italic_preserved(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <i val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, self.document_xml)
+
+        expected_html = '''
+            <h1><em>aaa</em></h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
 
 class HeadingTestCase(DocumentGeneratorTestCase):
     def test_each_heading_level(self):

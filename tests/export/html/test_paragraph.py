@@ -11,6 +11,50 @@ from pydocx.test.utils import WordprocessingDocumentFactory
 from pydocx.openxml.packaging import MainDocumentPart
 
 
+class NoEmptyParagraphsTestCase(DocumentGeneratorTestCase):
+    def test_no_runs_no_text(self):
+        document_xml = '<p></p>'
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_multiple_runs_with_only_whitespace(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t> </t>
+              </r>
+              <r>
+                <t> </t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_run_with_only_whitespace_styled(self):
+        document_xml = '''
+            <p>
+              <r>
+                <rPr>
+                  <b />
+                </rPr>
+                <t> </t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = ''
+        self.assert_document_generates_html(document, expected_html)
+
+
 class ParagraphTestCase(DocumentGeneratorTestCase):
     def test_single_styled_whitespace_in_text_run_is_preserved(self):
         document_xml = '''

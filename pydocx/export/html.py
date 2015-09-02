@@ -346,6 +346,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def get_run_styles_to_apply_for_heading(self, run):
         allowed_handlers = set([
             self.export_run_property_italic,
+            self.export_run_property_hidden,
+            self.export_run_property_vanish,
         ])
 
         handlers = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)

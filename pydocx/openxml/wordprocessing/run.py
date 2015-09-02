@@ -5,7 +5,6 @@ from __future__ import (
     unicode_literals,
 )
 
-from itertools import islice
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
@@ -61,11 +60,8 @@ class Run(XmlModel):
 
         inherited_properties = {}
 
-        nearest_paragraphs = self.nearest_ancestors(Paragraph)
-        # TODO use get_first_from_sequence utility?
-        parent_paragraph = list(islice(nearest_paragraphs, 0, 1))
+        parent_paragraph = self.get_first_ancestor(Paragraph)
         if parent_paragraph:
-            parent_paragraph = parent_paragraph[0]
             style_stack = parent_paragraph.get_style_chain_stack()
             for style in reversed(list(style_stack)):
                 if style.run_properties:

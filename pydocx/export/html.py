@@ -515,8 +515,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         tag = None
         if start_new_tag:
-            parent_tables = table_cell.nearest_ancestors(wordprocessing.Table)
-            parent_table = get_first_from_sequence(parent_tables)
+            parent_table = table_cell.get_first_ancestor(wordprocessing.Table)
             rowspan_counts = self.table_cell_rowspan_tracking[parent_table]
             rowspan = rowspan_counts.get(table_cell, 1)
             attrs = {}
@@ -624,10 +623,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             yield result
 
     def export_footnote_reference_mark(self, footnote_reference_mark):
-        footnote_parents = footnote_reference_mark.nearest_ancestors(
+        footnote_parent = footnote_reference_mark.get_first_ancestor(
             wordprocessing.Footnote,
         )
-        footnote_parent = get_first_from_sequence(footnote_parents)
         if not footnote_parent:
             return
 

@@ -45,13 +45,7 @@ class Paragraph(XmlModel):
 
     def has_structured_document_parent(self):
         from pydocx.openxml.wordprocessing import SdtBlock
-        structured_parent = self.nearest_ancestors(SdtBlock)
-        try:
-            next(structured_parent)
-            return True
-        except StopIteration:
-            pass
-        return False
+        return self.has_ancestor(SdtBlock)
 
     def get_style_chain_stack(self):
         if not self.properties:

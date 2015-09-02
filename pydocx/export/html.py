@@ -335,14 +335,25 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return results
 
     def get_run_styles_to_apply(self, run):
-        parent_paragraphs = run.nearest_ancestors(wordprocessing.Paragraph)
-        parent_paragraph = get_first_from_sequence(parent_paragraphs)
+        parent_paragraph = run.get_first_ancestor(wordprocessing.Paragraph)
         if parent_paragraph and parent_paragraph.heading_style:
-            # If the parent paragraph is a heading, return an empty generator
-            return
-        results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
+            results = self.get_run_styles_to_apply_for_heading(run)
+        else:
+            results = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
         for result in results:
             yield result
+
+    def get_run_styles_to_apply_for_heading(self, run):
+        allowed_handlers = set([
+            self.export_run_property_italic,
+            self.export_run_property_hidden,
+            self.export_run_property_vanish,
+        ])
+
+        handlers = super(PyDocXHTMLExporter, self).get_run_styles_to_apply(run)
+        for handler in handlers:
+            if handler in allowed_handlers:
+                yield handler
 
     def export_run_property_bold(self, run, results):
         tag = HtmlTag('strong')
@@ -504,8 +515,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         tag = None
         if start_new_tag:
-            parent_tables = table_cell.nearest_ancestors(wordprocessing.Table)
-            parent_table = get_first_from_sequence(parent_tables)
+            parent_table = table_cell.get_first_ancestor(wordprocessing.Table)
             rowspan_counts = self.table_cell_rowspan_tracking[parent_table]
             rowspan = rowspan_counts.get(table_cell, 1)
             attrs = {}
@@ -613,10 +623,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             yield result
 
     def export_footnote_reference_mark(self, footnote_reference_mark):
-        footnote_parents = footnote_reference_mark.nearest_ancestors(
+        footnote_parent = footnote_reference_mark.get_first_ancestor(
             wordprocessing.Footnote,
         )
-        footnote_parent = get_first_from_sequence(footnote_parents)
         if not footnote_parent:
             return
 

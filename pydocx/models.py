@@ -201,9 +201,12 @@ class XmlModel(object):
             node = node.parent
 
     def has_ancestor(self, ancestor_type):
+        first = self.get_first_ancestor(ancestor_type)
+        return first is not None
+
+    def get_first_ancestor(self, ancestor_type):
         for ancestor in self.nearest_ancestors(ancestor_type):
-            return True
-        return False
+            return ancestor
 
     def __repr__(self):
         return '{klass}({kwargs})'.format(

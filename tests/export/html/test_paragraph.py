@@ -64,7 +64,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
               </r>
               <r>
                 <rPr>
-                    <b />
+                  <b />
                 </rPr>
                 <t> </t>
               </r>
@@ -77,6 +77,65 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '<p>Foo Bar</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_single_multi_styled_whitespace_in_text_run_is_preserved(self):
+        document_xml = '''
+            <p>
+              <r>
+                <t>Foo</t>
+              </r>
+              <r>
+                <rPr>
+                  <b />
+                  <i />
+                  <u val="single"/>
+                  <caps />
+                  <smallCaps />
+                  <dstrike />
+                  <strike />
+                  <webHidden />
+                  <vanish />
+                </rPr>
+                <t> </t>
+              </r>
+              <r>
+                <t>Bar</t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>Foo Bar</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_multiple_runs_with_styles(self):
+        document_xml = '''
+            <p>
+              <r>
+                <rPr>
+                  <b />
+                </rPr>
+                <t>Foo-</t>
+              </r>
+              <r>
+                <rPr>
+                  <b />
+                </rPr>
+                <t>Bar</t>
+              </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>
+            <strong>Foo-</strong>
+            <strong>Bar</strong>
+            </p>
+        '''
         self.assert_document_generates_html(document, expected_html)
 
     def test_single_whitespace_in_text_run_is_preserved(self):

@@ -1,4 +1,4 @@
-**dev**
+**0.8.5**
 
 - Styled whitespace is no longer ignored. Previously, this would result in
   certain configurations with words grouped together without spaces.

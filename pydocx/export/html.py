@@ -371,62 +371,78 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if handler in allowed_handlers:
                 yield handler
 
+    def export_run_property(self, tag, run, results):
+        # Any leading whitespace in the run is not styled.
+        for result in results:
+            if is_only_whitespace(result):
+                yield result
+            else:
+                # We've encountered something that isn't explicit whitespace
+                results = chain([result], results)
+                break
+        else:
+            results = None
+
+        if results:
+            for result in tag.apply(results):
+                yield result
+
     def export_run_property_bold(self, run, results):
         tag = HtmlTag('strong')
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_italic(self, run, results):
         tag = HtmlTag('em')
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_underline(self, run, results):
         attrs = {
             'class': 'pydocx-underline',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_caps(self, run, results):
         attrs = {
             'class': 'pydocx-caps',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_small_caps(self, run, results):
         attrs = {
             'class': 'pydocx-small-caps',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_dstrike(self, run, results):
         attrs = {
             'class': 'pydocx-strike',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_strike(self, run, results):
         attrs = {
             'class': 'pydocx-strike',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_vanish(self, run, results):
         attrs = {
             'class': 'pydocx-hidden',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_hidden(self, run, results):
         attrs = {
             'class': 'pydocx-hidden',
         }
         tag = HtmlTag('span', **attrs)
-        return tag.apply(results, allow_empty=False)
+        return self.export_run_property(tag, run, results)
 
     def export_run_property_vertical_align(self, run, results):
         if run.effective_properties.is_superscript():

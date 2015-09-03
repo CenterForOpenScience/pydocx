@@ -75,9 +75,17 @@ def is_not_empty_and_not_only_whitespace(gen):
     try:
         for item in gen:
             queue.append(item)
-            if not is_only_whitespace(item):
+            is_whitespace = True
+            if isinstance(item, HtmlTag):
+                # If we encounter a tag that allows whitespace, then we can stop
+                is_whitespace = not item.allow_whitespace
+            else:
+                is_whitespace = is_only_whitespace(item)
+
+            if not is_whitespace:
                 # This item isn't whitespace, so we're done scanning
                 return chain(queue, gen)
+
     except StopIteration:
         pass
 
@@ -85,11 +93,19 @@ def is_not_empty_and_not_only_whitespace(gen):
 class HtmlTag(object):
     closed_tag_format = '</{tag}>'
 
-    def __init__(self, tag, allow_self_closing=False, closed=False, **attrs):
+    def __init__(
+        self,
+        tag,
+        allow_self_closing=False,
+        closed=False,
+        allow_whitespace=False,
+        **attrs
+    ):
         self.tag = tag
         self.allow_self_closing = allow_self_closing
         self.attrs = attrs
         self.closed = closed
+        self.allow_whitespace = allow_whitespace
 
     def apply(self, results, allow_empty=True):
         first = [self]
@@ -474,7 +490,11 @@ class PyDocXHTMLExporter(PyDocXExporter):
             tag_name = 'hr'
         else:
             tag_name = 'br'
-        return HtmlTag(tag_name, allow_self_closing=True)
+        return HtmlTag(
+            tag_name,
+            allow_whitespace=True,
+            allow_self_closing=True,
+        )
 
     def export_break(self, br):
         tag = self.get_break_tag(br)
@@ -586,7 +606,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if width and height:
                 attrs['width'] = width
                 attrs['height'] = height
-            return HtmlTag('img', allow_self_closing=True, **attrs)
+            return HtmlTag(
+                'img',
+                allow_self_closing=True,
+                allow_whitespace=True,
+                **attrs
+            )
 
     def export_inserted_run(self, inserted_run):
         results = super(PyDocXHTMLExporter, self).export_inserted_run(inserted_run)
@@ -645,7 +670,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         attrs = {
             'class': 'pydocx-tab',
         }
-        tag = HtmlTag('span', **attrs)
+        tag = HtmlTag('span', allow_whitespace=True, **attrs)
         return tag.apply(results)
 
     def export_numbering_span(self, numbering_span):

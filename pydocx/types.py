@@ -1,6 +1,16 @@
+from __future__ import (
+    absolute_import,
+    print_function,
+    unicode_literals,
+)
+
+
 class SimpleType(object):
     def __init__(self, value):
         self.value = value
+
+    def __bool__(self):
+        return self.__nonzero__()
 
 
 class OnOff(SimpleType):
@@ -38,9 +48,12 @@ class Underline(SimpleType):
 
     >>> bool(Underline('none'))
     False
+    >>> bool(Underline(''))
+    False
     >>> bool(Underline('single'))
     True
     '''
 
     def __nonzero__(self):
-        return self.value != 'none'
+        OFF_VALUES = ['none', '', None]
+        return self.value not in OFF_VALUES

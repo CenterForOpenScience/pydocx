@@ -1,13 +1,22 @@
 language: python
-python:
-  - "2.6"
-  - "2.7"
-script: ./run_tests.sh
-install:
-  - python setup.py -q install
-  - pip install -r requirements.txt
+install: pip install tox
+script: tox -v -e $TOX_ENV -- --verbose
 env:
-  - TRAVIS_EXECUTE_PERFORMANCE=1
+  - TOX_ENV=docs
+  - TOX_ENV=py27pep8
+  - TOX_ENV=py34pep8
+  - TOX_ENV=py26-defusedxml
+  - TOX_ENV=py27-defusedxml
+  - TOX_ENV=py33-defusedxml
+  - TOX_ENV=py34-defusedxml
+  - TOX_ENV=pypy-defusedxml
+  - TOX_ENV=py27-coverage
+  - TOX_ENV=py34-coverage
+  - TOX_ENV=py26
+  - TOX_ENV=py27
+  - TOX_ENV=py33
+  - TOX_ENV=py34
+  - TOX_ENV=pypy
 notifications:
   email:
     - jason.louard.ward@gmail.com

@@ -10,6 +10,8 @@ from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
 from pydocx.openxml.wordprocessing.br import Break
 from pydocx.openxml.wordprocessing.drawing import Drawing
+from pydocx.openxml.wordprocessing.field_char import FieldChar
+from pydocx.openxml.wordprocessing.field_code import FieldCode
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
 from pydocx.openxml.wordprocessing.text import Text
@@ -36,6 +38,8 @@ class Run(XmlModel):
         DeletedText,
         FootnoteReference,
         FootnoteReferenceMark,
+        FieldChar,
+        FieldCode,
     )
 
     def get_style_chain_stack(self):

@@ -16,7 +16,7 @@ from pydocx.openxml.wordprocessing.text import Text
 from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
-from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark  # noqa
+from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark
 
 from pydocx.util.memoize import memoized
 

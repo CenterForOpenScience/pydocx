@@ -55,6 +55,8 @@ class PyDocXExporter(object):
             wordprocessing.SdtBlock: self.export_sdt_block,
             wordprocessing.SdtContentBlock: self.export_sdt_content_block,
             wordprocessing.TabChar: self.export_tab_char,
+            wordprocessing.FieldChar: self.export_field_char,
+            wordprocessing.FieldCode: self.export_field_code,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
             NumberingSpan: self.export_numbering_span,
@@ -375,3 +377,11 @@ class PyDocXExporter(object):
 
     def export_numbering_item(self, numbering_item):
         return self.yield_nested(numbering_item.children, self.export_node)
+
+    def export_field_char(self, field_char):
+        return
+        yield
+
+    def export_field_code(self, field_code):
+        return
+        yield

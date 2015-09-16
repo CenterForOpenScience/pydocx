@@ -482,7 +482,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(results, allow_empty=False)
 
     def get_hyperlink_tag(self, hyperlink):
-        target_uri = hyperlink.get_target_uri()
+        target_uri = hyperlink.target_uri
         if target_uri:
             href = self.escape(target_uri)
             return HtmlTag('a', href=href)

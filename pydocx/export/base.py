@@ -96,14 +96,21 @@ class PyDocXExporter(object):
             raise MalformedDocxException
         document = self.main_document_part.document
         if document:
+            # self.first_pass = True
+            # for result in self.export_node(document):
+            #     pass
+
+            self.first_pass = False
             for result in self.export_node(document):
                 yield result
 
     def export_node(self, node):
         caller = self.node_type_to_export_func_map.get(type(node))
         if callable(caller):
-            for result in caller(node):
-                yield result
+            results = caller(node)
+            if results is not None:
+                for result in caller(node):
+                    yield result
 
     @property
     def page_width(self):

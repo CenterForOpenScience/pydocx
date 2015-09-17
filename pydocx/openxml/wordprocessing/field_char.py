@@ -17,7 +17,7 @@ class FieldChar(XmlModel):
     def char_type(self):
         if not self._char_type:
             return
-        return self.char_type.lower()
+        return self._char_type.lower()
 
     def is_type_begin(self):
         return self.char_type == 'begin'

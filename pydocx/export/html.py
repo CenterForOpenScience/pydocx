@@ -72,6 +72,8 @@ def is_not_empty_and_not_only_whitespace(gen):
     return None
     '''
     queue = []
+    if gen is None:
+        return
     try:
         for item in gen:
             queue.append(item)
@@ -108,13 +110,14 @@ class HtmlTag(object):
         self.allow_whitespace = allow_whitespace
 
     def apply(self, results, allow_empty=True):
-        first = [self]
         if not allow_empty:
             results = is_not_empty_and_not_only_whitespace(results)
             if results is None:
                 return
 
-        sequence = [first, results]
+        sequence = [[self]]
+        if results is not None:
+            sequence.append(results)
 
         if not self.allow_self_closing:
             sequence.append([self.close()])

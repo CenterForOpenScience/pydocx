@@ -11,4 +11,4 @@ from pydocx.models import XmlModel, XmlContent
 class FieldCode(XmlModel):
     XML_TAG = 'instrText'
 
-    text = XmlContent()
+    content = XmlContent()

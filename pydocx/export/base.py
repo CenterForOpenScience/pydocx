@@ -210,8 +210,7 @@ class PyDocXExporter(object):
         return results
 
     def export_break(self, br):
-        return
-        yield
+        pass
 
     def export_run(self, run):
         # TODO squash multiple sequential text nodes into one?
@@ -289,8 +288,7 @@ class PyDocXExporter(object):
             yield self.escape(text.text)
 
     def export_deleted_text(self, deleted_text):
-        return
-        yield
+        pass
 
     def export_no_break_hyphen(self, hyphen):
         yield '-'
@@ -310,8 +308,7 @@ class PyDocXExporter(object):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
     def export_drawing(self, drawing):
-        return
-        yield
+        pass
 
     def export_smart_tag_run(self, smart_tag):
         return self.yield_nested(smart_tag.children, self.export_node)
@@ -347,15 +344,13 @@ class PyDocXExporter(object):
                     yield result
 
     def export_footnote_reference_mark(self, footnote_reference_mark):
-        return
-        yield
+        pass
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
 
     def export_vml_image_data(self, image_data):
-        return
-        yield
+        pass
 
     def export_sdt(self, sdt):
         return self.export_node(sdt.content)
@@ -376,8 +371,7 @@ class PyDocXExporter(object):
         return self.export_sdt_content(sdt_content_block)
 
     def export_tab_char(self, tab_char):
-        return
-        yield
+        pass
 
     def export_numbering_span(self, numbering_span):
         return self.yield_nested(numbering_span.children, self.export_node)
@@ -386,9 +380,7 @@ class PyDocXExporter(object):
         return self.yield_nested(numbering_item.children, self.export_node)
 
     def export_field_char(self, field_char):
-        return
-        yield
+        pass
 
     def export_field_code(self, field_code):
-        return
-        yield
+        pass

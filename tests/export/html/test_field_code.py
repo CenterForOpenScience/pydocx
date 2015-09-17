@@ -38,7 +38,7 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = '<p>Link: <a href="http://www.google.com">AAA</a></p>'
+        expected_html = '<p>Link: <a href="http://www.google.com">AAA</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_hyperlink_spanning_multiple_paragraphs(self):

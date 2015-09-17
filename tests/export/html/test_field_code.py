@@ -109,3 +109,49 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p>Link: AAA.</p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_begin_without_end_before_next_begin(self):
+        document_xml = '''
+            <p>
+                <r><t>Link: </t></r>
+                <r>
+                    <fldChar fldCharType="begin"/>
+                </r>
+                <r>
+                    <instrText> HYPERLINK "https://www.google.com/"</instrText>
+                </r>
+                <r>
+                    <fldChar fldCharType="separate"/>
+                </r>
+                <r>
+                    <t>AAA</t>
+                </r>
+                <r><t>.</t></r>
+                <r>
+                    <fldChar fldCharType="begin"/>
+                </r>
+                <r>
+                    <instrText> HYPERLINK "https://www.facebook.com/"</instrText>
+                </r>
+                <r>
+                    <fldChar fldCharType="separate"/>
+                </r>
+                <r>
+                    <t>BBB</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="end"/>
+                </r>
+                <r><t>.</t></r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>
+                Link: AAA.
+                <a href="http://www.facebook.com/">BBB</a>.
+            </p>
+        '''
+        self.assert_document_generates_html(document, expected_html)

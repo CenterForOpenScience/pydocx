@@ -110,7 +110,7 @@ class PyDocXExporter(object):
         if callable(caller):
             results = caller(node)
             if results is not None:
-                for result in caller(node):
+                for result in results:
                     yield result
 
     @property

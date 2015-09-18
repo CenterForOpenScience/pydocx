@@ -29,6 +29,7 @@ from pydocx.openxml.wordprocessing.sdt_block import SdtBlock
 from pydocx.openxml.wordprocessing.sdt_content_block import SdtContentBlock
 from pydocx.openxml.wordprocessing.sdt_content_run import SdtContentRun
 from pydocx.openxml.wordprocessing.sdt_run import SdtRun
+from pydocx.openxml.wordprocessing.simple_field import SimpleField
 from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.style import Style
 from pydocx.openxml.wordprocessing.styles import Styles
@@ -70,6 +71,7 @@ __all__ = [
     'SdtContentBlock',
     'SdtContentRun',
     'SdtRun',
+    'SimpleField',
     'SmartTagRun',
     'Style',
     'Styles',

@@ -65,6 +65,7 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
             </p>
             <p><r><t>CCC</t></r></p>
             <p>
+                <p><r><t>DDD</t></r></p>
                 <r>
                     <fldChar fldCharType="end"/>
                 </r>
@@ -77,7 +78,8 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <p>Link: </p>
             <p><a href="http://www.google.com">AAABBB</a></p>
-            <p><a href="http://www.google.com">CCC</a>.</p>
+            <p><a href="http://www.google.com">CCC</a></p>
+            <p><a href="http://www.google.com">DDD</a>.</p>
         '''
         self.assert_document_generates_html(document, expected_html)
 

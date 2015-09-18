@@ -12,8 +12,8 @@ from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
 
-class FieldCodeTestCase(DocumentGeneratorTestCase):
-    def test_hyperlink_within_single_paragraph(self):
+class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
+    def test_spanning_single_paragraph(self):
         document_xml = '''
             <p>
                 <r><t>Link: </t></r>
@@ -41,7 +41,7 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>Link: <a href="http://www.google.com">AAA</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_hyperlink_spanning_multiple_paragraphs(self):
+    def test_spanning_multiple_paragraphs(self):
         document_xml = '''
             <p>
                 <r><t>Link: </t></r>
@@ -53,6 +53,8 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
                 <r>
                     <instrText> HYPERLINK "https://www.google.com/"</instrText>
                 </r>
+            </p>
+            <p>
                 <r>
                     <fldChar fldCharType="separate"/>
                 </r>
@@ -65,7 +67,7 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
             </p>
             <p><r><t>CCC</t></r></p>
             <p>
-                <p><r><t>DDD</t></r></p>
+                <r><t>DDD</t></r>
                 <r>
                     <fldChar fldCharType="end"/>
                 </r>

@@ -21,7 +21,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
                     <fldChar fldCharType="begin"/>
                 </r>
                 <r>
-                    <instrText> HYPERLINK "https://www.google.com/"</instrText>
+                    <instrText> HYPERLINK "http://www.google.com/"</instrText>
                 </r>
                 <r>
                     <fldChar fldCharType="separate"/>
@@ -38,7 +38,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = '<p>Link: <a href="http://www.google.com">AAA</a>.</p>'
+        expected_html = '<p>Link: <a href="http://www.google.com/">AAA</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_spanning_multiple_paragraphs(self):
@@ -51,7 +51,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
                     <fldChar fldCharType="begin"/>
                 </r>
                 <r>
-                    <instrText> HYPERLINK "https://www.google.com/"</instrText>
+                    <instrText> HYPERLINK "http://www.google.com/"</instrText>
                 </r>
             </p>
             <p>
@@ -79,9 +79,9 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <p>Link: </p>
-            <p><a href="http://www.google.com">AAABBB</a></p>
-            <p><a href="http://www.google.com">CCC</a></p>
-            <p><a href="http://www.google.com">DDD</a>.</p>
+            <p><a href="http://www.google.com/">AAABBB</a></p>
+            <p><a href="http://www.google.com/">CCC</a></p>
+            <p><a href="http://www.google.com/">DDD</a>.</p>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -97,7 +97,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
                     <fldChar fldCharType="begin"/>
                 </r>
                 <r>
-                    <instrText> HYPERLINK "https://www.google.com/"</instrText>
+                    <instrText> HYPERLINK "http://www.google.com/"</instrText>
                 </r>
                 <r>
                     <fldChar fldCharType="separate"/>
@@ -122,7 +122,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
                     <fldChar fldCharType="begin"/>
                 </r>
                 <r>
-                    <instrText> HYPERLINK "https://www.google.com/"</instrText>
+                    <instrText> HYPERLINK "http://www.google.com"</instrText>
                 </r>
                 <r>
                     <fldChar fldCharType="separate"/>
@@ -135,7 +135,7 @@ class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
                     <fldChar fldCharType="begin"/>
                 </r>
                 <r>
-                    <instrText> HYPERLINK "https://www.facebook.com/"</instrText>
+                    <instrText> HYPERLINK "http://www.facebook.com/"</instrText>
                 </r>
                 <r>
                     <fldChar fldCharType="separate"/>

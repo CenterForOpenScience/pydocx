@@ -184,8 +184,11 @@ class PyDocXExporter(object):
             yield item
 
     def export_body(self, body):
-        numbering_spans = self.yield_numbering_spans(body.children)
-        return self.yield_nested(numbering_spans, self.export_node)
+        children = self.yield_body_children(body)
+        return self.yield_nested(children, self.export_node)
+
+    def yield_body_children(self, body):
+        return self.yield_numbering_spans(body.children)
 
     def export_paragraph(self, paragraph):
         children = self.yield_paragraph_children(paragraph)

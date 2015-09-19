@@ -30,6 +30,9 @@ class PyDocXExporter(object):
 
         self.footnote_tracker = []
 
+        self.captured_runs = None
+        self.complex_field_runs = []
+
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
             wordprocessing.Body: self.export_body,
@@ -229,6 +232,10 @@ class PyDocXExporter(object):
         pass
 
     def export_run(self, run):
+        if self.first_pass:
+            if self.captured_runs is not None:
+                self.captured_runs.append(run)
+
         # TODO squash multiple sequential text nodes into one?
         results = self.yield_nested(run.children, self.export_node)
         if run.effective_properties:
@@ -402,7 +409,13 @@ class PyDocXExporter(object):
         return self.yield_nested(simple_field.children, self.export_node)
 
     def export_field_char(self, field_char):
-        pass
+        if self.first_pass:
+            if field_char.is_type_begin():
+                self.captured_runs = [field_char.parent]
+            elif field_char.is_type_end() and self.captured_runs is not None:
+                self.complex_field_runs.extend(self.captured_runs)
+                self.captured_runs = None
+            return
 
     def export_field_code(self, field_code):
         pass

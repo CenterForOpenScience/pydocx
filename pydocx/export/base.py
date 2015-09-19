@@ -26,6 +26,7 @@ class PyDocXExporter(object):
         self.path = path
         self._document = None
         self._page_width = None
+        self.first_pass = False
 
         self.footnote_tracker = []
 
@@ -97,9 +98,13 @@ class PyDocXExporter(object):
             raise MalformedDocxException
         document = self.main_document_part.document
         if document:
-            # self.first_pass = True
-            # for result in self.export_node(document):
-            #     pass
+            # process the document in two passes, since there are some cases
+            # where we can't know what to do until we look at the entire
+            # document (e.g. fields)
+            # In the first pass, discard any generated results
+            self.first_pass = True
+            for result in self.export_node(document):
+                pass
 
             self.first_pass = False
             for result in self.export_node(document):

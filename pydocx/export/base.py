@@ -183,10 +183,15 @@ class PyDocXExporter(object):
         return self.yield_nested(numbering_spans, self.export_node)
 
     def export_paragraph(self, paragraph):
-        results = self.yield_nested(paragraph.children, self.export_node)
+        children = self.yield_paragraph_children(paragraph)
+        results = self.yield_nested(children, self.export_node)
         if paragraph.effective_properties:
             results = self.export_paragraph_apply_properties(paragraph, results)
         return results
+
+    def yield_paragraph_children(self, paragraph):
+        for child in paragraph.children:
+            yield child
 
     def get_paragraph_styles_to_apply(self, paragraph):
         properties = paragraph.effective_properties

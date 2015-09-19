@@ -15,6 +15,7 @@ from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.sdt_run import SdtRun
+from pydocx.openxml.wordprocessing.simple_field import SimpleField
 
 
 class Paragraph(XmlModel):
@@ -29,6 +30,7 @@ class Paragraph(XmlModel):
         InsertedRun,
         DeletedRun,
         SdtRun,
+        SimpleField,
     )
 
     def __init__(self, **kwargs):

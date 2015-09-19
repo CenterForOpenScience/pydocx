@@ -70,6 +70,7 @@ class PyDocXExporter(object):
         }
 
         self.field_type_to_export_func_map = {
+            'HYPERLINK': getattr(self, 'export_field_hyperlink', None),
         }
 
     @property

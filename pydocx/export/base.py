@@ -188,6 +188,8 @@ class PyDocXExporter(object):
         return self.yield_nested(children, self.export_node)
 
     def yield_body_children(self, body):
+        if self.first_pass:
+            return body.children
         return self.yield_numbering_spans(body.children)
 
     def export_paragraph(self, paragraph):
@@ -337,6 +339,9 @@ class PyDocXExporter(object):
         return self.yield_nested(deleted_run.children, self.export_node)
 
     def export_footnote_reference(self, footnote_reference):
+        if self.first_pass:
+            return
+
         if footnote_reference.footnote is None:
             return
         self.footnote_tracker.append(footnote_reference)

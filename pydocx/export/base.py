@@ -109,9 +109,71 @@ class PyDocXExporter(object):
             for result in self.export_node(document):
                 pass
 
+            self._convert_complex_fields_into_simple_fields()
+
+            # actually render the results
             self.first_pass = False
             for result in self.export_node(document):
                 yield result
+
+    def _convert_complex_fields_into_simple_fields(self):
+        if not self.complex_field_runs:
+            return
+
+        fields = []
+        field = None
+        separate_triggered = False
+        previous_run = None
+
+        runs_to_remove = set()
+
+        for run in self.complex_field_runs:
+            for child in run.children:
+                if field is not None and previous_run is not None:
+                    if previous_run.parent is not run.parent:
+                        # scope has changed
+                        fields.append(field)
+                        field = wordprocessing.SimpleField(instr=field.instr, children=[])
+
+                if isinstance(child, wordprocessing.FieldChar):
+                    separate_triggered = False
+                    runs_to_remove.add(run)
+                    if child.is_type_begin():
+                        field = wordprocessing.SimpleField(children=[])
+                    elif child.is_type_end():
+                        if field is None:
+                            print('end tag without a beginning')
+                        else:
+                            fields.append(field)
+                        field = None
+                    elif child.is_type_separate():
+                        separate_triggered = True
+
+                if field is None:
+                    print(child, 'has no field')
+                elif separate_triggered:
+                    field.children.append(run)
+                    runs_to_remove.add(run)
+                elif isinstance(child, wordprocessing.FieldCode):
+                    field.instr = child.content
+                    runs_to_remove.add(run)
+            previous_run = run
+
+        for field in fields:
+            if not field.children:
+                continue
+            first_run = field.children[0]
+            previous_parent_new_children = []
+            for child in first_run.parent.children:
+                if child is first_run:
+                    # This is the insertion point of the new field
+                    previous_parent_new_children.append(field)
+                elif child not in runs_to_remove:
+                    previous_parent_new_children.append(child)
+            first_run.parent.children = previous_parent_new_children
+
+            for run in field.children:
+                run.parent = field
 
     def export_node(self, node):
         caller = self.node_type_to_export_func_map.get(type(node))

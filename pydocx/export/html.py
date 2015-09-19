@@ -716,5 +716,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         results = self.yield_nested(simple_field.children, self.export_node)
         if not field_args:
             return results
+        # TODO this doesn't handle any switches passed into the field_args such
+        # as "\l bookmark"
         tag = self.get_hyperlink_tag(field_args[0])
         return tag.apply(results)

@@ -473,8 +473,10 @@ class PyDocXExporter(object):
         return self.yield_nested(numbering_item.children, self.export_node)
 
     def parse_simple_field_instr(self, instr):
+        # TODO this might be better implemented directly in the SimpleField class
         if not instr.strip():
             return
+        # Matches: COMMAND args ...
         m = re.match('^\s*([^\s]+)\s+(.*)$', instr)
         if not m:
             return
@@ -483,6 +485,7 @@ class PyDocXExporter(object):
         if not raw_field_args:
             return field_type, None
         m = re.findall(
+            # Matches: One two "foo bar" baz
             r'(?:\s?\s*(?:"([^"]+)"|([^\s]+))+)',
             raw_field_args,
         )

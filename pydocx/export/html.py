@@ -484,15 +484,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('span', **attrs)
         return tag.apply(results, allow_empty=False)
 
-    def get_hyperlink_tag(self, hyperlink):
-        target_uri = hyperlink.target_uri
+    def get_hyperlink_tag(self, target_uri):
         if target_uri:
             href = self.escape(target_uri)
             return HtmlTag('a', href=href)
 
     def export_hyperlink(self, hyperlink):
         results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
-        tag = self.get_hyperlink_tag(hyperlink)
+        tag = self.get_hyperlink_tag(hyperlink.target_uri)
         if tag:
             results = tag.apply(results, allow_empty=False)
 

@@ -6,8 +6,11 @@ from __future__ import (
     unicode_literals,
 )
 
+from unittest import TestCase
+
 
 from pydocx.openxml.packaging import MainDocumentPart
+from pydocx.openxml.wordprocessing.simple_field import SimpleField
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
@@ -88,3 +91,28 @@ class HyperlinkSimpleFieldTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p><strong>AAA</strong></p>'
         self.assert_document_generates_html(document, expected_html)
+
+
+class ParseInstrIntoFieldTypeAndArgStringTestCase(TestCase):
+    def parse(self, instr):
+        field = SimpleField(instr=instr)
+        return field.parse_instr_into_field_type_and_arg_string()
+
+    def test_with_blank_string_returns_None(self):
+        result = self.parse('')
+        self.assertEqual(result, None)
+
+    def test_with_command_no_spaces_returns_command_and_empty_args(self):
+        result = self.parse('COMMAND')
+        self.assertEqual(result.groups(), ('COMMAND', ''))
+
+    def test_with_command_with_spaces_returns_command_and_empty_args(self):
+        result = self.parse('  COMMAND    ')
+        self.assertEqual(result.groups(), ('COMMAND', ''))
+
+    def test_command_with_spaces_and_args(self):
+        result = self.parse('  COMMAND    foo bar  "hello   world" ')
+        self.assertEqual(
+            result.groups(),
+            ('COMMAND', 'foo bar  "hello   world" '),
+        )

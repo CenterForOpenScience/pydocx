@@ -5,6 +5,8 @@ from __future__ import (
     unicode_literals,
 )
 
+import re
+
 from pydocx.models import XmlModel, XmlCollection, XmlAttribute
 
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
@@ -28,3 +30,26 @@ class SimpleField(XmlModel):
         DeletedRun,
         SdtRun,
     )
+
+    def parse_instr_into_field_type_and_arg_string(self):
+        return re.match('^\s*([^\s]+)\s*(.*)$', self.instr)
+
+    def parse_instr_arg_string_to_args(self, arg_string):
+        return re.findall(r'\s*(?:"([^"]+)"|([^\s]+))+', arg_string)
+
+    def parse_instr(self):
+        m = self.parse_instr_into_field_type_and_arg_string()
+        if not m:
+            return
+        field_type = m.group(1)
+        raw_field_args = m.group(2)
+        if not raw_field_args:
+            return field_type, None
+        m = self.parse_instr_arg_string_to_args(raw_field_args)
+        if not m:
+            return field_type, None
+        field_args = [
+            args[0] if args[0] else args[1]
+            for args in m
+        ]
+        return field_type, field_args

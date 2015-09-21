@@ -6,7 +6,6 @@ from __future__ import (
     unicode_literals,
 )
 
-import re
 import xml.sax.saxutils
 
 from pydocx.constants import TWIPS_PER_POINT
@@ -472,34 +471,10 @@ class PyDocXExporter(object):
     def export_numbering_item(self, numbering_item):
         return self.yield_nested(numbering_item.children, self.export_node)
 
-    def parse_simple_field_instr(self, instr):
-        # TODO this might be better implemented directly in the SimpleField class
-        if not instr.strip():
-            return
-        # Matches: COMMAND args ...
-        m = re.match('^\s*([^\s]+)\s+(.*)$', instr)
-        if not m:
-            return
-        field_type = m.group(1)
-        raw_field_args = m.group(2)
-        if not raw_field_args:
-            return field_type, None
-        m = re.findall(
-            # Matches: One two "foo bar" baz
-            r'(?:\s?\s*(?:"([^"]+)"|([^\s]+))+)',
-            raw_field_args,
-        )
-        field_args = [
-            args[0] if args[0] else args[1]
-            for args in m
-        ]
-        return field_type, field_args
-
     def export_simple_field(self, simple_field):
         default_results = self.yield_nested(simple_field.children, self.export_node)
 
-        instr = simple_field.instr
-        parsed_instr = self.parse_simple_field_instr(instr)
+        parsed_instr = simple_field.parse_instr()
         if not parsed_instr:
             return default_results
 

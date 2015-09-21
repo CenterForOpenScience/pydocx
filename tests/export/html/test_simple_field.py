@@ -96,7 +96,7 @@ class HyperlinkSimpleFieldTestCase(DocumentGeneratorTestCase):
 class ParseInstrIntoFieldTypeAndArgStringTestCase(TestCase):
     def parse(self, instr):
         field = SimpleField(instr=instr)
-        return field.parse_instr_into_field_type_and_arg_string()
+        return field._parse_instr_into_field_type_and_arg_string()
 
     def test_with_blank_string_returns_None(self):
         result = self.parse('')

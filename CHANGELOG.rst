@@ -1,4 +1,4 @@
-**dev**
+**0.8.6**
 
 - Implemented complex and simple field hyperlinks
 

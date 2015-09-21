@@ -26,8 +26,12 @@ class PyDocXExporter(object):
         self.path = path
         self._document = None
         self._page_width = None
+        self.first_pass = False
 
         self.footnote_tracker = []
+
+        self.captured_runs = None
+        self.complex_field_runs = []
 
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
@@ -55,10 +59,17 @@ class PyDocXExporter(object):
             wordprocessing.SdtBlock: self.export_sdt_block,
             wordprocessing.SdtContentBlock: self.export_sdt_content_block,
             wordprocessing.TabChar: self.export_tab_char,
+            wordprocessing.FieldChar: self.export_field_char,
+            wordprocessing.FieldCode: self.export_field_code,
+            wordprocessing.SimpleField: self.export_simple_field,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
+        }
+
+        self.field_type_to_export_func_map = {
+            'HYPERLINK': getattr(self, 'export_field_hyperlink', None),
         }
 
     @property
@@ -94,14 +105,87 @@ class PyDocXExporter(object):
             raise MalformedDocxException
         document = self.main_document_part.document
         if document:
+            # process the document in two passes, since there are some cases
+            # where we can't know what to do until we look at the entire
+            # document (e.g. fields)
+            # In the first pass, discard any generated results
+            self.first_pass = True
+            for result in self.export_node(document):
+                pass
+
+            self._convert_complex_fields_into_simple_fields()
+
+            # actually render the results
+            self.first_pass = False
             for result in self.export_node(document):
                 yield result
+
+    def _convert_complex_fields_into_simple_fields(self):
+        if not self.complex_field_runs:
+            return
+
+        fields = []
+        field = None
+        separate_triggered = False
+        previous_run = None
+
+        runs_to_remove = set()
+
+        for run in self.complex_field_runs:
+            for child in run.children:
+                if field is not None and previous_run is not None:
+                    if previous_run.parent is not run.parent:
+                        # scope has changed
+                        fields.append(field)
+                        field = wordprocessing.SimpleField(instr=field.instr, children=[])
+
+                if isinstance(child, wordprocessing.FieldChar):
+                    separate_triggered = False
+                    runs_to_remove.add(run)
+                    if child.is_type_begin():
+                        field = wordprocessing.SimpleField(children=[])
+                    elif child.is_type_end():
+                        if field is None:
+                            pass
+                        else:
+                            fields.append(field)
+                        field = None
+                    elif child.is_type_separate():
+                        separate_triggered = True
+
+                if field is None:
+                    pass
+                elif separate_triggered:
+                    field.children.append(run)
+                    runs_to_remove.add(run)
+                elif isinstance(child, wordprocessing.FieldCode):
+                    field.instr = child.content
+                    runs_to_remove.add(run)
+            previous_run = run
+
+        for field in fields:
+            if not field.children:
+                continue
+            first_run = field.children[0]
+            previous_parent_new_children = []
+            for child in first_run.parent.children:
+                if child is first_run:
+                    # This is the insertion point of the new field
+                    previous_parent_new_children.append(field)
+                elif child not in runs_to_remove:
+                    previous_parent_new_children.append(child)
+            first_run.parent.children = previous_parent_new_children
+
+            for run in field.children:
+                run.parent = field
 
     def export_node(self, node):
         caller = self.node_type_to_export_func_map.get(type(node))
         if callable(caller):
-            for result in caller(node):
-                yield result
+            results = caller(node)
+            if results is not None:
+                for result in results:
+                    yield result
 
     @property
     def page_width(self):
@@ -169,14 +253,24 @@ class PyDocXExporter(object):
             yield item
 
     def export_body(self, body):
-        numbering_spans = self.yield_numbering_spans(body.children)
-        return self.yield_nested(numbering_spans, self.export_node)
+        children = self.yield_body_children(body)
+        return self.yield_nested(children, self.export_node)
+
+    def yield_body_children(self, body):
+        if self.first_pass:
+            return body.children
+        return self.yield_numbering_spans(body.children)
 
     def export_paragraph(self, paragraph):
-        results = self.yield_nested(paragraph.children, self.export_node)
+        children = self.yield_paragraph_children(paragraph)
+        results = self.yield_nested(children, self.export_node)
         if paragraph.effective_properties:
             results = self.export_paragraph_apply_properties(paragraph, results)
         return results
+
+    def yield_paragraph_children(self, paragraph):
+        for child in paragraph.children:
+            yield child
 
     def get_paragraph_styles_to_apply(self, paragraph):
         properties = paragraph.effective_properties
@@ -201,10 +295,13 @@ class PyDocXExporter(object):
         return results
 
     def export_break(self, br):
-        return
-        yield
+        pass
 
     def export_run(self, run):
+        if self.first_pass:
+            if self.captured_runs is not None:
+                self.captured_runs.append(run)
+
         # TODO squash multiple sequential text nodes into one?
         results = self.yield_nested(run.children, self.export_node)
         if run.effective_properties:
@@ -280,8 +377,7 @@ class PyDocXExporter(object):
             yield self.escape(text.text)
 
     def export_deleted_text(self, deleted_text):
-        return
-        yield
+        pass
 
     def export_no_break_hyphen(self, hyphen):
         yield '-'
@@ -301,8 +397,7 @@ class PyDocXExporter(object):
         return xml.sax.saxutils.quoteattr(text)[1:-1]
 
     def export_drawing(self, drawing):
-        return
-        yield
+        pass
 
     def export_smart_tag_run(self, smart_tag):
         return self.yield_nested(smart_tag.children, self.export_node)
@@ -317,6 +412,9 @@ class PyDocXExporter(object):
         return self.yield_nested(deleted_run.children, self.export_node)
 
     def export_footnote_reference(self, footnote_reference):
+        if self.first_pass:
+            return
+
         if footnote_reference.footnote is None:
             return
         self.footnote_tracker.append(footnote_reference)
@@ -338,15 +436,13 @@ class PyDocXExporter(object):
                     yield result
 
     def export_footnote_reference_mark(self, footnote_reference_mark):
-        return
-        yield
+        pass
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
 
     def export_vml_image_data(self, image_data):
-        return
-        yield
+        pass
 
     def export_sdt(self, sdt):
         return self.export_node(sdt.content)
@@ -367,11 +463,35 @@ class PyDocXExporter(object):
         return self.export_sdt_content(sdt_content_block)
 
     def export_tab_char(self, tab_char):
-        return
-        yield
+        pass
 
     def export_numbering_span(self, numbering_span):
         return self.yield_nested(numbering_span.children, self.export_node)
 
     def export_numbering_item(self, numbering_item):
         return self.yield_nested(numbering_item.children, self.export_node)
+
+    def export_simple_field(self, simple_field):
+        default_results = self.yield_nested(simple_field.children, self.export_node)
+
+        parsed_instr = simple_field.parse_instr()
+        if not parsed_instr:
+            return default_results
+
+        field_type, field_args = parsed_instr
+        func = self.field_type_to_export_func_map.get(field_type, None)
+        if callable(func):
+            return func(simple_field, field_args)
+        return default_results
+
+    def export_field_char(self, field_char):
+        if self.first_pass:
+            if field_char.is_type_begin():
+                self.captured_runs = [field_char.parent]
+            elif field_char.is_type_end() and self.captured_runs is not None:
+                self.complex_field_runs.extend(self.captured_runs)
+                self.captured_runs = None
+            return
+
+    def export_field_code(self, field_code):
+        pass

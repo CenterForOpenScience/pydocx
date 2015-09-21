@@ -29,8 +29,11 @@ class memoized(object):
             return self.cache[args]
         else:
             value = self.func(*args)
-            self.cache[args] = value
+            self.set_cache(value, *args)
             return value
+
+    def set_cache(self, value, *args):
+        self.cache[args] = value
 
     def __repr__(self):
         '''Return the function's docstring.'''
@@ -38,4 +41,6 @@ class memoized(object):
 
     def __get__(self, obj, objtype):
         '''Support instance methods.'''
-        return functools.partial(self.__call__, obj)
+        func = functools.partial(self.__call__, obj)
+        setattr(func, 'memo', self)
+        return func

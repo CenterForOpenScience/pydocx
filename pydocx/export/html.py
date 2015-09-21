@@ -72,6 +72,8 @@ def is_not_empty_and_not_only_whitespace(gen):
     return None
     '''
     queue = []
+    if gen is None:
+        return
     try:
         for item in gen:
             queue.append(item)
@@ -108,13 +110,14 @@ class HtmlTag(object):
         self.allow_whitespace = allow_whitespace
 
     def apply(self, results, allow_empty=True):
-        first = [self]
         if not allow_empty:
             results = is_not_empty_and_not_only_whitespace(results)
             if results is None:
                 return
 
-        sequence = [first, results]
+        sequence = [[self]]
+        if results is not None:
+            sequence.append(results)
 
         if not self.allow_self_closing:
             sequence.append([self.close()])
@@ -481,15 +484,14 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('span', **attrs)
         return tag.apply(results, allow_empty=False)
 
-    def get_hyperlink_tag(self, hyperlink):
-        target_uri = hyperlink.get_target_uri()
+    def get_hyperlink_tag(self, target_uri):
         if target_uri:
             href = self.escape(target_uri)
             return HtmlTag('a', href=href)
 
     def export_hyperlink(self, hyperlink):
         results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
-        tag = self.get_hyperlink_tag(hyperlink)
+        tag = self.get_hyperlink_tag(target_uri=hyperlink.target_uri)
         if tag:
             results = tag.apply(results, allow_empty=False)
 
@@ -708,4 +710,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
             self.export_node,
         )
         tag = HtmlTag('li')
+        return tag.apply(results)
+
+    def export_field_hyperlink(self, simple_field, field_args):
+        results = self.yield_nested(simple_field.children, self.export_node)
+        if not field_args:
+            return results
+        # TODO this doesn't handle any switches passed into the field_args such
+        # as "\l bookmark"
+        tag = self.get_hyperlink_tag(target_uri=field_args[0])
         return tag.apply(results)

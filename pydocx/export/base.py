@@ -147,7 +147,7 @@ class PyDocXExporter(object):
                         field = wordprocessing.SimpleField(children=[])
                     elif child.is_type_end():
                         if field is None:
-                            print('end tag without a beginning')
+                            pass
                         else:
                             fields.append(field)
                         field = None
@@ -155,7 +155,7 @@ class PyDocXExporter(object):
                         separate_triggered = True
 
                 if field is None:
-                    print(child, 'has no field')
+                    pass
                 elif separate_triggered:
                     field.children.append(run)
                     runs_to_remove.add(run)

@@ -1,3 +1,7 @@
+**dev**
+
+- Implemented complex and simple field hyperlinks
+
 **0.8.5**
 
 - Styled whitespace is no longer ignored. Previously, this would result in

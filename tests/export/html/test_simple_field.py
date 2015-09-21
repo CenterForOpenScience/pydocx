@@ -69,3 +69,22 @@ class HyperlinkSimpleFieldTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_instr_missing_target(self):
+        document_xml = '''
+            <p>
+                <fldSimple instr="HYPERLINK ">
+                    <r>
+                        <rPr>
+                            <b />
+                        </rPr>
+                        <t>AAA</t>
+                    </r>
+                </fldSimple>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p><strong>AAA</strong></p>'
+        self.assert_document_generates_html(document, expected_html)

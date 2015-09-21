@@ -116,3 +116,47 @@ class ParseInstrIntoFieldTypeAndArgStringTestCase(TestCase):
             result.groups(),
             ('COMMAND', 'foo bar  "hello   world" '),
         )
+
+
+class ParseInstrArgStringIntoArgsTestCase(TestCase):
+    def parse(self, arg_string):
+        field = SimpleField()
+        return field._parse_instr_arg_string_to_args(arg_string)
+
+    def test_with_blank_string_returns_empty_list(self):
+        result = self.parse('')
+        self.assertEqual(result, [])
+
+    def test_single_word_with_spaces(self):
+        result = self.parse('     foo   ')
+        self.assertEqual(result, [('', 'foo')])
+
+    def test_multiple_word_with_spaces(self):
+        result = self.parse('     foo  bar  ')
+        self.assertEqual(result, [('', 'foo'), ('', 'bar')])
+
+    def test_multiple_words_with_quoted_phrase(self):
+        result = self.parse('     foo  "hello world" bar')
+        self.assertEqual(result, [('', 'foo'), ('hello world', ''), ('', 'bar')])
+
+
+class ParseInstrTestCase(TestCase):
+    def parse(self, instr):
+        field = SimpleField(instr=instr)
+        return field.parse_instr()
+
+    def test_with_blank_instr_returns_None(self):
+        result = self.parse('')
+        self.assertEqual(result, None)
+
+    def test_with_command(self):
+        result = self.parse('COMMAND ')
+        self.assertEqual(result, ('COMMAND', None))
+
+    def test_with_command_with_args(self):
+        result = self.parse('COMMAND foo "hello world" bar')
+        self.assertEqual(result, ('COMMAND', ['foo', 'hello world', 'bar']))
+
+    def test_with_command_and_only_quoted_arg(self):
+        result = self.parse('COMMAND "foo hello  world bar"')
+        self.assertEqual(result, ('COMMAND', ['foo hello  world bar']))

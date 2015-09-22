@@ -1,6 +1,16 @@
-**0.8.6**
+**0.9.0**
 
-- Implemented complex and simple field hyperlinks
+- Implemented complex and simple field hyperlinks.
+- This includes a significant change to the API. The export methods are now all
+  called twice. The results are discarded in the first pass. In first pass
+  (``self.first_pass == True``), you can now track information that will be used to
+  make decisions in the second pass. The notable example where this technique
+  is used is implementing complex fields. Because the export methods are called
+  twice, some exporter extensions that perform lossly operations on the
+  document structure may need to ignore processing during the first pass.
+- The function signature of the ``get_hyperlink_tag`` has changed. It
+  previously accepted a ``Hyperlink`` instance. Now it only accepts
+  ``target_uri``.
 
 **0.8.5**
 

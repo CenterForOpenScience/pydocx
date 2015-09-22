@@ -9,7 +9,7 @@ from pydocx.models import XmlModel, XmlCollection
 from pydocx.openxml.vml.shape import Shape
 
 
-class Object(XmlModel):
+class EmbeddedObject(XmlModel):
     """
     reference: http://www.datypic.com/sc/ooxml/e-w_object-1.html
     """

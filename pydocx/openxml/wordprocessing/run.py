@@ -19,7 +19,7 @@ from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
 from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark
-from pydocx.openxml.wml.object import Object
+from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
 from pydocx.util.memoize import memoized
 
 
@@ -29,7 +29,7 @@ class Run(XmlModel):
     properties = XmlChild(type=RunProperties)
 
     children = XmlCollection(
-        Object,
+        EmbeddedObject,
         TabChar,
         Break,
         NoBreakHyphen,

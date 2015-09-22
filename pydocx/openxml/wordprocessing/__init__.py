@@ -39,8 +39,10 @@ from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 from pydocx.openxml.wordprocessing.table_row import TableRow
 from pydocx.openxml.wordprocessing.text import Text
+from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
 
 __all__ = [
+    'EmbeddedObject',
     'AbstractNum',
     'Body',
     'Break',

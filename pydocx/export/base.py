@@ -15,7 +15,7 @@ from pydocx.export.numbering_span import (
     NumberingSpan,
     NumberingSpanBuilder,
 )
-from pydocx.openxml import wordprocessing, vml
+from pydocx.openxml import wordprocessing, vml, wml
 from pydocx.openxml.packaging import WordprocessingDocument
 
 
@@ -64,10 +64,10 @@ class PyDocXExporter(object):
             wordprocessing.SimpleField: self.export_simple_field,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
+            wml.Object: self.export_object,
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
         }
-
         self.field_type_to_export_func_map = {
             'HYPERLINK': getattr(self, 'export_field_hyperlink', None),
         }
@@ -137,7 +137,8 @@ class PyDocXExporter(object):
                     if previous_run.parent is not run.parent:
                         # scope has changed
                         fields.append(field)
-                        field = wordprocessing.SimpleField(instr=field.instr, children=[])
+                        field = wordprocessing.SimpleField(
+                            instr=field.instr, children=[])
 
                 if isinstance(child, wordprocessing.FieldChar):
                     separate_triggered = False
@@ -265,7 +266,8 @@ class PyDocXExporter(object):
         children = self.yield_paragraph_children(paragraph)
         results = self.yield_nested(children, self.export_node)
         if paragraph.effective_properties:
-            results = self.export_paragraph_apply_properties(paragraph, results)
+            results = self.export_paragraph_apply_properties(
+                paragraph, results)
         return results
 
     def yield_paragraph_children(self, paragraph):
@@ -441,6 +443,9 @@ class PyDocXExporter(object):
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
 
+    def export_object(self, _object):
+        return self.yield_nested(_object.children, self.export_node)
+
     def export_vml_image_data(self, image_data):
         pass
 
@@ -472,7 +477,8 @@ class PyDocXExporter(object):
         return self.yield_nested(numbering_item.children, self.export_node)
 
     def export_simple_field(self, simple_field):
-        default_results = self.yield_nested(simple_field.children, self.export_node)
+        default_results = self.yield_nested(
+            simple_field.children, self.export_node)
 
         parsed_instr = simple_field.parse_instr()
         if not parsed_instr:

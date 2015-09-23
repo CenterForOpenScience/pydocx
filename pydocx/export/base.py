@@ -140,6 +140,13 @@ class PyDocXExporter(object):
         runs_to_remove_by_field = {}
         runs_to_remove = set()
 
+        # All of the complex field runs need to be wrapped in simple fields,
+        # and then the runs need to be removed from their original container
+        # The new simple fields that contain the runs are inserted into the
+        # structure and the parent links are updated
+
+        # First create all the necessary simple fields and group the runs into
+        # their simple fields.
         for run in self.complex_field_runs:
             for child in run.children:
                 if field is not None and previous_run is not None:
@@ -174,6 +181,8 @@ class PyDocXExporter(object):
                     runs_to_remove.add(run)
             previous_run = run
 
+        # Next, remove all of the runs from the run's current parent, and
+        # inject the field in their place.
         for field in fields:
             runs_to_remove = runs_to_remove_by_field.get(field, set())
             if not field.children:
@@ -188,8 +197,12 @@ class PyDocXExporter(object):
                     previous_parent_new_children.append(child)
             first_run.parent.children = previous_parent_new_children
 
+            # If we don't do this, the field's parent will be None. That will
+            # break the hierarchy.
             field.parent = first_run.parent
 
+            # Update the run parent links to point to the field, since the
+            # field is now the run's new parent.
             for run in field.children:
                 run.parent = field
 

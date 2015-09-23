@@ -64,10 +64,10 @@ class PyDocXExporter(object):
             wordprocessing.SimpleField: self.export_simple_field,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
+            wordprocessing.EmbeddedObject: self.export_embedded_object,
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
         }
-
         self.field_type_to_export_func_map = {
             'HYPERLINK': getattr(self, 'export_field_hyperlink', None),
         }
@@ -444,6 +444,9 @@ class PyDocXExporter(object):
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
+
+    def export_embedded_object(self, obj):
+        return self.yield_nested(obj.children, self.export_node)
 
     def export_vml_image_data(self, image_data):
         pass

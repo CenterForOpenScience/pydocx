@@ -1,6 +1,7 @@
 language: python
 install: pip install tox
 script: tox -v -e $TOX_ENV -- --verbose
+sudo: false
 env:
   - TOX_ENV=docs
   - TOX_ENV=py27pep8

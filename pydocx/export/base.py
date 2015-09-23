@@ -110,15 +110,23 @@ class PyDocXExporter(object):
             # document (e.g. fields)
             # In the first pass, discard any generated results
             self.first_pass = True
-            for result in self.export_node(document):
-                pass
+            self._first_pass_export()
 
-            self._convert_complex_fields_into_simple_fields()
+            self._post_first_pass_processing()
 
             # actually render the results
             self.first_pass = False
             for result in self.export_node(document):
                 yield result
+
+    def _first_pass_export(self):
+        document = self.main_document_part.document
+        if document:
+            for result in self.export_node(document):
+                pass
+
+    def _post_first_pass_processing(self):
+        self._convert_complex_fields_into_simple_fields()
 
     def _convert_complex_fields_into_simple_fields(self):
         if not self.complex_field_runs:

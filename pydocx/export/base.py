@@ -137,8 +137,7 @@ class PyDocXExporter(object):
                     if previous_run.parent is not run.parent:
                         # scope has changed
                         fields.append(field)
-                        field = wordprocessing.SimpleField(
-                            instr=field.instr, children=[])
+                        field = wordprocessing.SimpleField(instr=field.instr, children=[])
 
                 if isinstance(child, wordprocessing.FieldChar):
                     separate_triggered = False
@@ -266,8 +265,7 @@ class PyDocXExporter(object):
         children = self.yield_paragraph_children(paragraph)
         results = self.yield_nested(children, self.export_node)
         if paragraph.effective_properties:
-            results = self.export_paragraph_apply_properties(
-                paragraph, results)
+            results = self.export_paragraph_apply_properties(paragraph, results)
         return results
 
     def yield_paragraph_children(self, paragraph):
@@ -477,8 +475,7 @@ class PyDocXExporter(object):
         return self.yield_nested(numbering_item.children, self.export_node)
 
     def export_simple_field(self, simple_field):
-        default_results = self.yield_nested(
-            simple_field.children, self.export_node)
+        default_results = self.yield_nested(simple_field.children, self.export_node)
 
         parsed_instr = simple_field.parse_instr()
         if not parsed_instr:

@@ -6,6 +6,7 @@ from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.document import Document
 from pydocx.openxml.wordprocessing.drawing import Drawing
+from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
 from pydocx.openxml.wordprocessing.field_char import FieldChar
 from pydocx.openxml.wordprocessing.field_code import FieldCode
 from pydocx.openxml.wordprocessing.footnote import Footnote
@@ -39,10 +40,8 @@ from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 from pydocx.openxml.wordprocessing.table_row import TableRow
 from pydocx.openxml.wordprocessing.text import Text
-from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
 
 __all__ = [
-    'EmbeddedObject',
     'AbstractNum',
     'Body',
     'Break',
@@ -50,6 +49,7 @@ __all__ = [
     'DeletedText',
     'Document',
     'Drawing',
+    'EmbeddedObject',
     'FieldChar',
     'FieldCode',
     'Footnote',

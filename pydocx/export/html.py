@@ -214,7 +214,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_document(self, document):
         tag = HtmlTag('html')
         results = super(PyDocXHTMLExporter, self).export_document(document)
-        return tag.apply(chain(self.head(), results))
+        sequence = []
+        head = self.head()
+        if head is not None:
+            sequence.append(head)
+        if results is not None:
+            sequence.append(results)
+        return tag.apply(chain(*sequence))
 
     def export_body(self, body):
         results = super(PyDocXHTMLExporter, self).export_body(body)

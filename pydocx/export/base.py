@@ -180,6 +180,8 @@ class PyDocXExporter(object):
                     previous_parent_new_children.append(child)
             first_run.parent.children = previous_parent_new_children
 
+            field.parent = first_run.parent
+
             for run in field.children:
                 run.parent = field
 

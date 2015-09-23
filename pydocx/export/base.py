@@ -129,6 +129,7 @@ class PyDocXExporter(object):
         separate_triggered = False
         previous_run = None
 
+        runs_to_remove_by_field = {}
         runs_to_remove = set()
 
         for run in self.complex_field_runs:
@@ -136,6 +137,8 @@ class PyDocXExporter(object):
                 if field is not None and previous_run is not None:
                     if previous_run.parent is not run.parent:
                         # scope has changed
+                        runs_to_remove_by_field[field] = runs_to_remove
+                        runs_to_remove = set()
                         fields.append(field)
                         field = wordprocessing.SimpleField(instr=field.instr, children=[])
 
@@ -145,11 +148,11 @@ class PyDocXExporter(object):
                     if child.is_type_begin():
                         field = wordprocessing.SimpleField(children=[])
                     elif child.is_type_end():
-                        if field is None:
-                            pass
-                        else:
+                        if field is not None:
+                            runs_to_remove_by_field[field] = runs_to_remove
+                            runs_to_remove = set()
                             fields.append(field)
-                        field = None
+                            field = None
                     elif child.is_type_separate():
                         separate_triggered = True
 
@@ -164,6 +167,7 @@ class PyDocXExporter(object):
             previous_run = run
 
         for field in fields:
+            runs_to_remove = runs_to_remove_by_field.get(field, set())
             if not field.children:
                 continue
             first_run = field.children[0]

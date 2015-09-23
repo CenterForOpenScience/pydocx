@@ -9,10 +9,47 @@ from __future__ import (
 from unittest import TestCase
 
 
-from pydocx.openxml.packaging import MainDocumentPart
+from pydocx.openxml.packaging import MainDocumentPart, StyleDefinitionsPart
 from pydocx.openxml.wordprocessing.simple_field import SimpleField
 from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
+
+
+class HeadingTestCase(DocumentGeneratorTestCase):
+    def test_styles_are_ignored(self):
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+              <rPr>
+                <b val="on"/>
+                <caps val="on"/>
+                <smallCaps val="on"/>
+                <strike val="on"/>
+                <dstrike val="on"/>
+              </rPr>
+            </style>
+        '''
+
+        document_xml = '''
+            <p>
+                <pPr>
+                    <pStyle val="heading1"/>
+                </pPr>
+                <fldSimple instr="FOO bar">
+                    <r>
+                        <t>AAA</t>
+                    </r>
+                </fldSimple>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <h1>AAA</h1>
+        '''
+        self.assert_document_generates_html(document, expected_html)
 
 
 class HyperlinkSimpleFieldTestCase(DocumentGeneratorTestCase):

@@ -1,4 +1,4 @@
-**dev**
+**0.9.2**
 
 - Fixed issue where multiple complex fields in the same paragraph would cause
   content to disappear.

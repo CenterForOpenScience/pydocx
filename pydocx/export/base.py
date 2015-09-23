@@ -110,15 +110,23 @@ class PyDocXExporter(object):
             # document (e.g. fields)
             # In the first pass, discard any generated results
             self.first_pass = True
-            for result in self.export_node(document):
-                pass
+            self._first_pass_export()
 
-            self._convert_complex_fields_into_simple_fields()
+            self._post_first_pass_processing()
 
             # actually render the results
             self.first_pass = False
             for result in self.export_node(document):
                 yield result
+
+    def _first_pass_export(self):
+        document = self.main_document_part.document
+        if document:
+            for result in self.export_node(document):
+                pass
+
+    def _post_first_pass_processing(self):
+        self._convert_complex_fields_into_simple_fields()
 
     def _convert_complex_fields_into_simple_fields(self):
         if not self.complex_field_runs:
@@ -132,6 +140,13 @@ class PyDocXExporter(object):
         runs_to_remove_by_field = {}
         runs_to_remove = set()
 
+        # All of the complex field runs need to be wrapped in simple fields,
+        # and then the runs need to be removed from their original container
+        # The new simple fields that contain the runs are inserted into the
+        # structure and the parent links are updated
+
+        # First create all the necessary simple fields and group the runs into
+        # their simple fields.
         for run in self.complex_field_runs:
             for child in run.children:
                 if field is not None and previous_run is not None:
@@ -166,6 +181,8 @@ class PyDocXExporter(object):
                     runs_to_remove.add(run)
             previous_run = run
 
+        # Next, remove all of the runs from the run's current parent, and
+        # inject the field in their place.
         for field in fields:
             runs_to_remove = runs_to_remove_by_field.get(field, set())
             if not field.children:
@@ -180,6 +197,12 @@ class PyDocXExporter(object):
                     previous_parent_new_children.append(child)
             first_run.parent.children = previous_parent_new_children
 
+            # If we don't do this, the field's parent will be None. That will
+            # break the hierarchy.
+            field.parent = first_run.parent
+
+            # Update the run parent links to point to the field, since the
+            # field is now the run's new parent.
             for run in field.children:
                 run.parent = field
 

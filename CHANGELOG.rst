@@ -1,8 +1,11 @@
 **dev**
 
-- Added EmbeddedObject support with Shape.
 - Fixed issue where multiple complex fields in the same paragraph would cause
   content to disappear.
+
+**0.9.1**
+
+- Added EmbeddedObject support with Shape
 
 **0.9.0**
 

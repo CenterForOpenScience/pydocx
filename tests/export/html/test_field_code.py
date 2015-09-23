@@ -12,6 +12,86 @@ from pydocx.test import DocumentGeneratorTestCase
 from pydocx.test.utils import WordprocessingDocumentFactory
 
 
+class FieldCodeTestCase(DocumentGeneratorTestCase):
+    def test_unsupported_instr_content_is_not_ignored(self):
+        document_xml = '''
+            <p>
+                <r><t>AAA</t></r>
+                <r>
+                    <fldChar fldCharType="begin"/>
+                </r>
+                <r>
+                    <instrText> FOOBAR baz</instrText>
+                </r>
+                <r>
+                    <fldChar fldCharType="separate"/>
+                </r>
+                <r>
+                    <t>BBB</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="end"/>
+                </r>
+                <r><t>CCC</t></r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>AAABBBCCC</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_multiple_instr_with_same_paragraph_parent(self):
+        document_xml = '''
+            <p>
+                <r>
+                    <t>AAA</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="begin"/>
+                </r>
+                <r>
+                    <instrText> FOOBAR baz</instrText>
+                </r>
+                <r>
+                    <fldChar fldCharType="separate"/>
+                </r>
+                <r>
+                    <t>BBB</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="end"/>
+                </r>
+                <r>
+                    <t>CCC</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="begin"/>
+                </r>
+                <r>
+                    <instrText> FOOBAR baz</instrText>
+                </r>
+                <r>
+                    <fldChar fldCharType="separate"/>
+                </r>
+                <r>
+                    <t>DDD</t>
+                </r>
+                <r>
+                    <fldChar fldCharType="end"/>
+                </r>
+                <r>
+                    <t>EEE</t>
+                </r>
+            </p>
+        '''
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p>AAABBBCCCDDDEEE</p>'
+        self.assert_document_generates_html(document, expected_html)
+
+
 class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
     def test_spanning_single_paragraph(self):
         document_xml = '''

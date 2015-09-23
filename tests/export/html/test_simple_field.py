@@ -52,7 +52,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
-class HyperlinkSimpleFieldTestCase(DocumentGeneratorTestCase):
+class HyperlinkTestCase(DocumentGeneratorTestCase):
     def test_single_run(self):
         document_xml = '''
             <p>

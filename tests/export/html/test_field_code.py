@@ -139,7 +139,7 @@ class FieldCodeTestCase(DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
-class HyperlinkFieldCodeTestCase(DocumentGeneratorTestCase):
+class HyperlinkTestCase(DocumentGeneratorTestCase):
     def test_spanning_single_paragraph(self):
         document_xml = '''
             <p>

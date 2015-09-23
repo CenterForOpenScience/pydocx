@@ -1,3 +1,7 @@
+**0.9.3**
+
+- Headings inside a complex field no longer fail to ignore styles
+
 **0.9.2**
 
 - Fixed issue where multiple complex fields in the same paragraph would cause

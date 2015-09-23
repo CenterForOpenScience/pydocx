@@ -11,7 +11,8 @@ from pydocx.openxml.vml.shape import Shape
 
 class EmbeddedObject(XmlModel):
     """
-    reference: http://www.datypic.com/sc/ooxml/e-w_object-1.html
+    reference:  https://msdn.microsoft.com/en-us/library/documentformat.openxml
+    .wordprocessing.embeddedobject%28v=office.15%29.aspx
     """
 
     XML_TAG = 'object'

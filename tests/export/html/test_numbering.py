@@ -1727,6 +1727,35 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         '''
         self.assert_document_generates_html(document, expected_html)
 
+    def test_faked_within_a_table(self):
+        document_xml = '''
+            <tbl>
+              <tr>
+                <tc>
+                  <p>
+                    <r>
+                      <t>1. Foo</t>
+                    </r>
+                  </p>
+                  <p>
+                    <r>
+                      <t>2. Bar</t>
+                    </r>
+                  </p>
+                </tc>
+              </tr>
+            </tbl>
+        '''
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>Foo</li>
+                <li>Bar</li>
+            </ol>
+        '''
+
+        self.assert_main_document_xml_generates_html(document_xml, expected_html)
+
 
 class FakedNumberingPatternBase(object):
     def assert_html_using_pattern(self, pattern):

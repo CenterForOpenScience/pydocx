@@ -274,6 +274,14 @@ class PyDocXExporter(object):
                 previous_was_empty = empty
 
     def yield_numbering_spans(self, items):
+        if self.first_pass:
+            # If we're in the first pass, just yield back the items we are
+            # passed in instead of processing for the numbering spans, since
+            # doing that is destructive and will cause the second pass to not
+            # convert properly.
+            for item in items:
+                yield item
+            return
         builder = self.numbering_span_builder_class(items)
         numbering_spans = builder.get_numbering_spans()
         for item in numbering_spans:
@@ -284,8 +292,6 @@ class PyDocXExporter(object):
         return self.yield_nested(children, self.export_node)
 
     def yield_body_children(self, body):
-        if self.first_pass:
-            return body.children
         return self.yield_numbering_spans(body.children)
 
     def export_paragraph(self, paragraph):

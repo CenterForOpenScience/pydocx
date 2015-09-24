@@ -1748,10 +1748,16 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         '''
 
         expected_html = '''
-            <ol class="pydocx-list-style-type-decimal">
-                <li>Foo</li>
-                <li>Bar</li>
-            </ol>
+            <table border="1">
+                <tr>
+                    <td>
+                        <ol class="pydocx-list-style-type-decimal">
+                            <li>Foo</li>
+                            <li>Bar</li>
+                        </ol>
+                    </td>
+                </tr>
+            </table>
         '''
 
         self.assert_main_document_xml_generates_html(document_xml, expected_html)

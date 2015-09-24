@@ -1,3 +1,7 @@
+**0.9.4**
+
+- Faked lists inside tables are correctly converted to real lists
+
 **0.9.3**
 
 - Headings inside a complex field no longer fail to ignore styles

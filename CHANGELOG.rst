@@ -1,3 +1,7 @@
+**0.9.5**
+
+- Simple and Complex field hyperlinks now support bookmarks / internal anchors
+
 **0.9.4**
 
 - Faked lists inside tables are correctly converted to real lists

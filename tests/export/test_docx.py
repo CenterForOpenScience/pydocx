@@ -50,7 +50,8 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'table_col_row_span',
         'tables_in_lists',
         'track_changes_on',
-        'table_with_multi_rowspan'
+        'table_with_multi_rowspan',
+        'rotate_image'
     )
 
     @raises(MalformedDocxException)

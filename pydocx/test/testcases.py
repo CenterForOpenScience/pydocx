@@ -233,6 +233,7 @@ class DocXFixtureTestCaseFactory(TestCase):
 
             expected = BASE_HTML % expected
             result = self.convert_docx_to_html(docx_path)
+
             self.assertHtmlEqual(result, expected)
         return run_test
 

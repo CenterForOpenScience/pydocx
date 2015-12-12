@@ -44,6 +44,29 @@ class Drawing(XmlModel):
                 length = width = 0
         return length, width
 
+    def get_picture_rotate_angle(self):
+        graphic = self.graphic
+        rotate = None
+        try:
+            rotate = graphic.graphic_data.picture.shape_properties.xfrm.rotate  # noqa
+        except AttributeError:
+            pass
+        if rotate:
+            try:
+                # according to this link
+                # http://www.ecma-international.org/publications/standards/Ecma-376.htm
+                # §20.1.10.3
+                #
+                # "This simple type represents an angle in 60,000ths of a degree.
+                # Positive angles are clockwise (i.e., towards the positive y axis);
+                # negative angles are counter-clockwise (i.e., towards the negative y axis)."
+
+                rotate = int(int(rotate) / 60000)
+            except (TypeError, ValueError):
+                rotate = None
+
+        return rotate
+
     def get_picture_relationship_id(self):
         graphic = self.graphic
         blip = None

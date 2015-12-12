@@ -584,6 +584,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def export_drawing(self, drawing):
         length, width = drawing.get_picture_extents()
+        rotate = drawing.get_picture_rotate_angle()
         relationship_id = drawing.get_picture_relationship_id()
         if not relationship_id:
             return
@@ -601,6 +602,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
             height_px = '{px:.0f}px'.format(px=convert_emus_to_pixels(width))
             attrs['width'] = width_px
             attrs['height'] = height_px
+        if rotate:
+            attrs['rotate'] = rotate
+
         tag = self.get_image_tag(image=image, **attrs)
         if tag:
             yield tag
@@ -621,15 +625,18 @@ class PyDocXHTMLExporter(PyDocXExporter):
             )
             return self.escape(b64_encoded_src)
 
-    def get_image_tag(self, image, width=None, height=None):
+    def get_image_tag(self, image, width=None, height=None, rotate=None):
         image_src = self.get_image_source(image)
         if image_src:
             attrs = {
-                'src': image_src,
+                'src': image_src
             }
             if width and height:
                 attrs['width'] = width
                 attrs['height'] = height
+            if rotate:
+                attrs['style'] = 'transform: rotate(%sdeg);' % rotate
+
             return HtmlTag(
                 'img',
                 allow_self_closing=True,

@@ -33,3 +33,9 @@ see the `Usage <https://pydocx.readthedocs.org/en/latest/usage.html>`_
 guide
 and also
 `Extending PyDocX <https://pydocx.readthedocs.org/en/latest/extending.html>`_.
+
+######
+COS is Hiring!
+######
+
+Want to help save science? Want to get paid to develop free, open source software? `Check out our openings! <http://cos.io/jobs>`_

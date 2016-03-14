@@ -167,3 +167,30 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p><a href="http://google.com">link</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_with_anchor(self):
+        document_xml = '''
+            <p>
+              <hyperlink anchor="testing" id="foobar">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+              <r>
+                <t>.</t>
+              </r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document_rels = document.relationship_format.format(
+            id='foobar',
+            type='foo/hyperlink',
+            target='http://google.com',
+            target_mode='External',
+        )
+
+        document.add(MainDocumentPart, document_xml, document_rels)
+
+        expected_html = '<p><a href="http://google.com#testing">link</a>.</p>'
+        self.assert_document_generates_html(document, expected_html)

@@ -15,6 +15,7 @@ class Hyperlink(XmlModel):
     XML_TAG = 'hyperlink'
 
     hyperlink_id = XmlAttribute(name='id')
+    anchor = XmlAttribute(name='anchor')
     children = XmlCollection(
         Run,
     )
@@ -32,7 +33,11 @@ class Hyperlink(XmlModel):
             )
         except KeyError:
             return None
-        return relationship.target_uri
+
+        if self.anchor:
+            return '{0}#{1}'.format(relationship.target_uri, self.anchor)
+        else:
+            return relationship.target_uri
 
     @property
     def target_uri(self):

@@ -95,6 +95,5 @@ class MainTestCase(TestCase):
                 '--html',
                 'tests/fixtures/inline_tags.docx',
                 f.name
-            ],
-            stdout=PIPE).wait()
+            ], stdout=PIPE).wait()
         self.assertEqual(result, 0)

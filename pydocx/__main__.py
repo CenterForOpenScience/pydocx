@@ -43,9 +43,11 @@ def main(args=None):
 
     return convert(output_type, docx_path, output_path)
 
+
 def cli():
     # Entry point for PyDocX CLI tool
     sys.exit(main(args=sys.argv[1:]) or 0)
+
 
 if __name__ == "__main__":
     sys.exit(main(args=sys.argv[1:]) or 0)

@@ -5,15 +5,16 @@ from __future__ import (
 )
 
 from os import unlink
+from shutil import copyfile
+from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
-from shutil import copyfile
 
 from nose import SkipTest
 
+from pydocx.__main__ import main
 from pydocx.test.testcases import BASE_HTML
 from pydocx.test.utils import assert_html_equal
-from pydocx.__main__ import main
 
 
 class MainTestCase(TestCase):
@@ -70,3 +71,30 @@ class MainTestCase(TestCase):
             self.assertEqual(result, 0)
             unlink(input_docx.name)
             input_docx.close()
+
+    def test_cli_return_code_with_no_args(self):
+        result = Popen(['pydocx'], stdout=PIPE).wait()
+        self.assertEqual(result, 1)
+
+    def test_cli_return_code_with_one_args(self):
+        result = Popen(['pydocx', 'foo'], stdout=PIPE).wait()
+        self.assertEqual(result, 1)
+
+    def test_cli_return_code_with_two_args(self):
+        result = Popen(['pydocx', 'foo', 'bar'], stdout=PIPE).wait()
+        self.assertEqual(result, 1)
+
+    def test_cli_return_code_with_three_args(self):
+        result = Popen(['pydocx', 'foo', 'bar', 'baz'], stdout=PIPE).wait()
+        self.assertEqual(result, 2)
+
+    def test_cli_convert_to_html_status_code(self):
+        with NamedTemporaryFile() as f:
+            result = Popen([
+                'pydocx',
+                '--html',
+                'tests/fixtures/inline_tags.docx',
+                f.name
+            ],
+            stdout=PIPE).wait()
+        self.assertEqual(result, 0)

@@ -6,6 +6,7 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
+from pydocx.openxml.shared_math import OMath
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
@@ -24,6 +25,7 @@ class Paragraph(XmlModel):
     properties = XmlChild(type=ParagraphProperties)
 
     children = XmlCollection(
+        OMath,
         Run,
         Hyperlink,
         SmartTagRun,

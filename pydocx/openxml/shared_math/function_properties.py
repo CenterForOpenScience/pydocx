@@ -10,6 +10,7 @@ from pydocx.openxml.shared_math.control_properties import ControlProperties
 
 class FunctionProperties(XmlModel):
     XML_TAG = 'funcPr'
+
     children = XmlCollection(
         ControlProperties,
     )

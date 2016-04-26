@@ -5,15 +5,16 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.shared_math.base import Base
+from pydocx.openxml.shared_math.element import Element
 from pydocx.openxml.shared_math.function_properties import FunctionProperties
 
 
 class FunctionApplyFunction(XmlModel):
     XML_TAG = 'func'
+
     children = XmlCollection(
         FunctionProperties,
-        Base
+        Element
     )
 
 

@@ -6,7 +6,7 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlCollection
 from pydocx.openxml.shared_math.matrix_properties import MatrixProperties
-# from pydocx.openxml.shared_math.matrix_row import MatrixRow
+from pydocx.openxml.shared_math.matrix_row import MatrixRow
 
 
 class MatrixFunction(XmlModel):
@@ -14,5 +14,5 @@ class MatrixFunction(XmlModel):
     XML_TAG = 'm'
     children = XmlCollection(
         MatrixProperties,
-        # MatrixRow
+        MatrixRow
     )

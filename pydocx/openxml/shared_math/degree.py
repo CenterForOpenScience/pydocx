@@ -19,16 +19,17 @@ from pydocx.openxml.shared_math.upper_limit_function import UpperLimitFunction
 from pydocx.openxml.shared_math.matrix_function import MatrixFunction
 from pydocx.openxml.shared_math.nary_operator_function import NaryOperatorFunction
 from pydocx.openxml.shared_math.phantom_function import PhantomFunction
-# from pydocx.openxml.shared_math.radical_function import RadicalFunction
-# from pydocx.openxml.shared_math.pre_sub_superscript_function import PreSubSuperscriptFunction
-# from pydocx.openxml.shared_math.subscript_function import SubScriptFunction
-# from pydocx.openxml.shared_math.sub_superscript_function import SubSuperScriptFunction
-# from pydocx.openxml.shared_math.superscript_function import SuperscriptFunction
+from pydocx.openxml.shared_math.radical_function import RadicalFunction
+from pydocx.openxml.shared_math.pre_sub_superscript_function import PreSubSuperscriptFunction
+from pydocx.openxml.shared_math.subscript_function import SubscriptFunction
+from pydocx.openxml.shared_math.sub_superscript_function import SubSuperscriptFunction
+from pydocx.openxml.shared_math.superscript_function import SuperscriptFunction
 from pydocx.openxml.wordprocessing.run import Run
 
 
 class Degree(XmlModel):
     XML_TAG = 'deg'
+
     children = XmlCollection(
         Accent,
         Bar,
@@ -44,10 +45,10 @@ class Degree(XmlModel):
         MatrixFunction,
         NaryOperatorFunction,
         PhantomFunction,
-        # RadicalFunction,
-        # PreSubSuperscriptFunction,
-        # SubScriptFunction,
-        # SubSuperScriptFunction,
-        # SuperscriptFunction,
+        RadicalFunction,
+        PreSubSuperscriptFunction,
+        SubscriptFunction,
+        SubSuperscriptFunction,
+        SuperscriptFunction,
         Run
     )

@@ -5,8 +5,9 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlChild
+from pydocx.openxml.shared_math.character import Character
 
 
 class NaryProperties(XmlModel):
 
-    chr = XmlChild(name='chr', attrname='val')
+    chr = XmlChild(type=Character, attrname='val')

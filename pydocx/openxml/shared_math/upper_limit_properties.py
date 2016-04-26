@@ -4,7 +4,7 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlCollection, XmlChild
+from pydocx.models import XmlModel, XmlCollection
 from pydocx.openxml.shared_math.control_properties import ControlProperties
 
 

@@ -5,12 +5,11 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.wordprocessing.run import Run
+from pydocx.openxml.shared_math.control_properties import ControlProperties
 
 
-class Base(XmlModel):
-    XML_TAG = 'e'
-
+class PreSubSuperscriptProperties(XmlModel):
+    XML_TAG = 'sPrePr'
     children = XmlCollection(
-        Run
+        ControlProperties
     )

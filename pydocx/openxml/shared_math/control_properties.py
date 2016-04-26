@@ -12,6 +12,7 @@ from pydocx.openxml.wordprocessing.run_properties import RunProperties
 
 class ControlProperties(XmlModel):
     XML_TAG = 'ctrlPr'
+
     children = XmlCollection(
         DeletedRun,
         InsertedRun,

@@ -6,7 +6,7 @@ from pydocx.openxml.shared_math.argument_properties import ArgumentProperties
 from pydocx.openxml.shared_math.argument_size import ArgumentSize
 from pydocx.openxml.shared_math.bar import Bar
 from pydocx.openxml.shared_math.bar_properties import BarProperties
-from pydocx.openxml.shared_math.base import Base
+from pydocx.openxml.shared_math.element import Element
 from pydocx.openxml.shared_math.base_justification import BaseJustification
 from pydocx.openxml.shared_math.border_box import BorderBox
 from pydocx.openxml.shared_math.border_box_properties import BorderBoxProperties
@@ -34,7 +34,7 @@ from pydocx.openxml.shared_math.subscript import Subscript
 from pydocx.openxml.shared_math.superscript import Superscript
 from pydocx.openxml.shared_math.superscript_function import SuperscriptFunction
 
-Base.children.types.add(FractionFunction)
+Element.children.types.add(FractionFunction)
 
 
 __all__ = [
@@ -46,7 +46,7 @@ __all__ = [
     'ArgumentSize',
     'Bar',
     'BarProperties',
-    'Base',
+    'Element',
     'BaseJustification',
     'BorderBox',
     'BorderBoxProperties',

@@ -10,6 +10,7 @@ from pydocx.openxml.shared_math.control_properties import ControlProperties
 
 class LowerLimitProperties(XmlModel):
     XML_TAG = 'limLowPr'
+
     children = XmlCollection(
         ControlProperties
     )

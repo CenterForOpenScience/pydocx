@@ -11,6 +11,7 @@ from pydocx.openxml.shared_math.upper_limit_properties import UpperLimitProperti
 
 class UpperLimitFunction(XmlModel):
     XML_TAG = 'limUpp'
+
     children = XmlCollection(
         Element,
         UpperLimitProperties

@@ -4,10 +4,9 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlCollection
+from pydocx.models import XmlModel
 
 
 class Grow(XmlModel):
 
     XML_TAG = 'grow'
-    children = XmlCollection()

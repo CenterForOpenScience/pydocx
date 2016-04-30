@@ -7,6 +7,5 @@ from __future__ import (
 from pydocx.models import XmlModel
 
 
-class HideLeft(XmlModel):
-
-    XML_TAG = 'hideLeft'
+class MatrixColumnJustification(XmlModel):
+    XML_TAG = 'mcJc'

@@ -7,6 +7,6 @@ from __future__ import (
 from pydocx.models import XmlModel
 
 
-class HideLeft(XmlModel):
+class NaryLimitLocation(XmlModel):
 
-    XML_TAG = 'hideLeft'
+    XML_TAG = 'limLoc'

@@ -5,12 +5,12 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.shared_math.control_properties import ControlProperties
+from pydocx.openxml.shared_math.element import Element
 
 
-class UpperLimitProperties(XmlModel):
-    XML_TAG = 'limUppPr'
+class MatrixRow(XmlModel):
+    XML_TAG = 'mr'
 
     children = XmlCollection(
-        ControlProperties
+        Element
     )

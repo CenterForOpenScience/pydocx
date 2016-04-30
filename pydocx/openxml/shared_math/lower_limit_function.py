@@ -11,6 +11,7 @@ from pydocx.openxml.shared_math.lower_limit_properties import LowerLimitProperti
 
 class LowerLimitFunction(XmlModel):
     XML_TAG = 'limLow'
+
     children = XmlCollection(
         Element,
         LowerLimitProperties

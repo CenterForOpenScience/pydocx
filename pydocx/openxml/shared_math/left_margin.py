@@ -7,6 +7,6 @@ from __future__ import (
 from pydocx.models import XmlModel
 
 
-class HideLeft(XmlModel):
+class LeftMargin(XmlModel):
 
-    XML_TAG = 'hideLeft'
+    XML_TAG = 'lMargin'

@@ -4,10 +4,9 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlCollection
+from pydocx.models import XmlModel
 
 
 class IntegralLimitLocations(XmlModel):
 
     XML_TAG = 'intLim'
-    children = XmlCollection()

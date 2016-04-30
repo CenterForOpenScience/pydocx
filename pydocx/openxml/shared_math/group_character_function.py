@@ -11,6 +11,7 @@ from pydocx.openxml.shared_math.group_character_properties import GroupCharacter
 
 class GroupCharacterFunction(XmlModel):
     XML_TAG = 'groupChr'
+
     children = XmlCollection(
         Element,
         GroupCharacterProperties

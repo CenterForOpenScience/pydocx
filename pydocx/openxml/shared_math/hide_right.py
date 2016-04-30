@@ -4,10 +4,9 @@ from __future__ import (
     unicode_literals,
 )
 
-from pydocx.models import XmlModel, XmlCollection
+from pydocx.models import XmlModel
 
 
 class HideRight(XmlModel):
 
     XML_TAG = 'hideRight'
-    children = XmlCollection()

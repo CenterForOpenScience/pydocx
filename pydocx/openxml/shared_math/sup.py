@@ -54,4 +54,3 @@ class Sup(XmlModel):
         SuperscriptFunction,
         Run
     )
-

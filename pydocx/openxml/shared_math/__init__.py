@@ -20,11 +20,17 @@ from pydocx.openxml.shared_math.character import Character
 from pydocx.openxml.shared_math.control_properties import ControlProperties
 from pydocx.openxml.shared_math.default_justification import DefaultJustification
 from pydocx.openxml.shared_math.degree import Degree
-from pydocx.openxml.shared_math.delimiter_beginning_character import DelimiterBeginningCharacter
-from pydocx.openxml.shared_math.delimiter_ending_character import DelimiterEndingCharacter
+from pydocx.openxml.shared_math.delimiter_beginning_character import (
+    DelimiterBeginningCharacter
+)
+from pydocx.openxml.shared_math.delimiter_ending_character import (
+    DelimiterEndingCharacter
+)
 from pydocx.openxml.shared_math.delimiter_function import DelimiterFunction
 from pydocx.openxml.shared_math.delimiter_properties import DelimiterProperties
-from pydocx.openxml.shared_math.delimiter_separator_character import DelimiterSeparatorCharacter
+from pydocx.openxml.shared_math.delimiter_separator_character import (
+    DelimiterSeparatorCharacter
+)
 from pydocx.openxml.shared_math.denominator import Denominator
 from pydocx.openxml.shared_math.differential import Differential
 from pydocx.openxml.shared_math.element import Element
@@ -78,15 +84,23 @@ from pydocx.openxml.shared_math.numerator import Numerator
 from pydocx.openxml.shared_math.object_distribution import ObjectDistribution
 from pydocx.openxml.shared_math.omath import OMath
 from pydocx.openxml.shared_math.omath_paragraph import OMathParagraph
-from pydocx.openxml.shared_math.omath_paragraph_properties import OMathParagraphProperties
+from pydocx.openxml.shared_math.omath_paragraph_properties import (
+    OMathParagraphProperties
+)
 from pydocx.openxml.shared_math.operator_emulator import OperatorEmulator
 from pydocx.openxml.shared_math.phantom_function import PhantomFunction
 from pydocx.openxml.shared_math.phantom_properties import PhantomProperties
 from pydocx.openxml.shared_math.position import Position
 from pydocx.openxml.shared_math.post_equation_spacing import PostEquationSpacing
-from pydocx.openxml.shared_math.pre_equation_spacing import PreEquationSpacing
-from pydocx.openxml.shared_math.pre_sub_superscript_function import PreSubSuperscriptFunction
-from pydocx.openxml.shared_math.pre_sub_superscript_properties import PreSubSuperscriptProperties
+from pydocx.openxml.shared_math.pre_equation_spacing import (
+    PreEquationSpacing
+)
+from pydocx.openxml.shared_math.pre_sub_superscript_function import (
+    PreSubSuperscriptFunction
+)
+from pydocx.openxml.shared_math.pre_sub_superscript_properties import (
+    PreSubSuperscriptProperties
+)
 from pydocx.openxml.shared_math.radical_function import RadicalFunction
 from pydocx.openxml.shared_math.radical_properties import RadicalProperties
 from pydocx.openxml.shared_math.right_margin import RightMargin

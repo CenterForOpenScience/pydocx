@@ -9,4 +9,3 @@ from pydocx.models import XmlModel
 
 class Type(XmlModel):
     XML_TAG = 'type'
-

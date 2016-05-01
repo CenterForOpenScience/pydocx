@@ -10,7 +10,8 @@ from pydocx.openxml.shared_math.hide_degree import HideDegree
 
 
 class RadicalProperties(XmlModel):
-    XML_TAG = 'ctrlPr'
+    XML_TAG = 'radPr'
+
     children = XmlCollection(
         ControlProperties,
         HideDegree

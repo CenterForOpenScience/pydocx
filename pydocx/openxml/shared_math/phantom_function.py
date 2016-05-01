@@ -12,6 +12,7 @@ from pydocx.openxml.shared_math.phantom_properties import PhantomProperties
 class PhantomFunction(XmlModel):
 
     XML_TAG = 'phant'
+
     children = XmlCollection(
         Element,
         PhantomProperties

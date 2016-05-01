@@ -11,6 +11,7 @@ from pydocx.openxml.shared_math.control_properties import ControlProperties
 
 class SubSuperscriptProperties(XmlModel):
     XML_TAG = 'sSubSupPr'
+
     children = XmlCollection(
         AlignScripts,
         ControlProperties

@@ -5,12 +5,13 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.shared_math.control_properties import ControlProperties
+from pydocx.openxml.shared_math.justification import Justification
 
 
-class SubscriptProperties(XmlModel):
-    XML_TAG = 'sSubPr'
+class OMathParagraphProperties(XmlModel):
+
+    XML_TAG = 'mathParaPr'
 
     children = XmlCollection(
-        ControlProperties
+        Justification
     )

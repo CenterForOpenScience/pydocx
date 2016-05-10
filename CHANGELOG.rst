@@ -1,3 +1,7 @@
+**0.9.6**
+
+- Fixed issue in PyDocX CLI tool and added new test cases for the same
+
 **0.9.5**
 
 - Simple and Complex field hyperlinks now support bookmarks / internal anchors

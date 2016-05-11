@@ -6,15 +6,13 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection, XmlAttribute
-from pydocx.openxml.vml.image_data import ImageData
-from pydocx.openxml.wordprocessing.textbox import Textbox
 
 
 class Shape(XmlModel):
     XML_TAG = 'shape'
 
     style = XmlAttribute()
-    children = XmlCollection(ImageData, Textbox)
+    children = XmlCollection('vml.ImageData', 'wordprocessing.Textbox')
 
     # TODO perhaps we could have a prepare_style, or clean_style convention?
 

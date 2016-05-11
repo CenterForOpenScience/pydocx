@@ -6,16 +6,14 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.wordprocessing.run import Run
-from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
 
 
 class InsertedRun(XmlModel):
     XML_TAG = 'ins'
 
     children = XmlCollection(
-        Run,
-        SmartTagRun,
+        'wordprocessing.Run',
+        'wordprocessing.SmartTagRun',
         'wordprocessing.InsertedRun',
         # TODO Needs DeletedRun
     )

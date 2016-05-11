@@ -6,7 +6,6 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
-from pydocx.openxml.wordprocessing.paragraph import Paragraph
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 
 
@@ -16,6 +15,6 @@ class TableCell(XmlModel):
     properties = XmlChild(type=TableCellProperties)
 
     children = XmlCollection(
-        Paragraph,
+        'wordprocessing.Paragraph',
         'wordprocessing.Table',
     )

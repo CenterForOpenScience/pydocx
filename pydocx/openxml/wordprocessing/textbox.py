@@ -6,7 +6,6 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-# from pydocx.openxml.wordprocessing import Paragraph
 
 
 class TxBxContent(XmlModel):

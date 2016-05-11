@@ -129,14 +129,15 @@ class XmlCollection(XmlField):
         return set(self._set_types(*self._types))
 
     def _set_types(self, *types):
-        base_path = 'pydocx.openxml.{}'
+        base_path = 'pydocx.openxml.{0}'
         for _type in types:
-            if isinstance(_type, basestring):
+            try:
                 path, klass, = _type.rsplit('.', 1)
+            except AttributeError:
+                yield _type
+            else:
                 module = importlib.import_module(base_path.format(path))
                 yield getattr(module, klass)
-            else:
-                yield _type
 
     @property
     def name_to_type_map(self):

@@ -51,6 +51,7 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'table_col_row_span',
         'table_with_multi_rowspan',
         'tables_in_lists',
+        'textbox',
         'track_changes_on',
     )
 

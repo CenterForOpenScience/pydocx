@@ -25,6 +25,16 @@ class RunProperties(XmlModel):
     parent_style = XmlChild(name='rStyle', attrname='val')
     pos = XmlChild(name='position', attrname='val')
     sz = XmlChild(name='sz', attrname='val')
+    clr = XmlChild(name='color', attrname='val')
+
+    @property
+    def color(self):
+        if self.clr is None:
+            return
+        if self.clr == '000000':
+            return
+
+        return self.clr
 
     @property
     def position(self):

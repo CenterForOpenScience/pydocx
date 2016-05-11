@@ -64,12 +64,12 @@ class PyDocXExporter(object):
             wordprocessing.SimpleField: self.export_simple_field,
             vml.Shape: self.export_vml_shape,
             vml.ImageData: self.export_vml_image_data,
+            vml.Textbox: self.export_textbox,
             wordprocessing.EmbeddedObject: self.export_embedded_object,
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
             markup_compatibility.AlternateContent: self.export_alternate_content,
             markup_compatibility.Fallback: self.export_fallback,
-            wordprocessing.Textbox: self.export_textbox,
             wordprocessing.TxBxContent: self.export_textbox_content,
         }
         self.field_type_to_export_func_map = {

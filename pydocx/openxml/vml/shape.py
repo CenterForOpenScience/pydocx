@@ -12,7 +12,7 @@ class Shape(XmlModel):
     XML_TAG = 'shape'
 
     style = XmlAttribute()
-    children = XmlCollection('vml.ImageData', 'wordprocessing.Textbox')
+    children = XmlCollection('vml.ImageData', 'vml.Textbox')
 
     # TODO perhaps we could have a prepare_style, or clean_style convention?
 

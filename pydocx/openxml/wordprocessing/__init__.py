@@ -40,6 +40,7 @@ from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_cell_properties import TableCellProperties  # noqa
 from pydocx.openxml.wordprocessing.table_row import TableRow
 from pydocx.openxml.wordprocessing.text import Text
+from pydocx.openxml.wordprocessing.textbox import Textbox
 
 __all__ = [
     'AbstractNum',
@@ -79,6 +80,7 @@ __all__ = [
     'Styles',
     'TabChar',
     'Table',
+    'Textbox',
     'TableCell',
     'TableRow',
     'Text',

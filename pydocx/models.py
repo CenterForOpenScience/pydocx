@@ -5,6 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
+import importlib
 import inspect
 from collections import defaultdict
 
@@ -120,8 +121,22 @@ class XmlCollection(XmlField):
     def __init__(self, *types, **kwargs):
         default = kwargs.pop('default', [])
         super(XmlCollection, self).__init__(self, default=default)
-        self.types = set(types)
+        self._types = types
         self._name_to_type_map = None
+
+    @property
+    def types(self):
+        return set(self._set_types(*self._types))
+
+    def _set_types(self, *types):
+        base_path = 'pydocx.openxml.{}'
+        for _type in types:
+            if isinstance(_type, basestring):
+                path, klass, = _type.rsplit('.', 1)
+                module = importlib.import_module(base_path.format(path))
+                yield getattr(module, klass)
+            else:
+                yield _type
 
     @property
     def name_to_type_map(self):

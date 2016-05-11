@@ -16,7 +16,6 @@ class DeletedRun(XmlModel):
     children = XmlCollection(
         Run,
         SmartTagRun,
+        'wordprocessing.DeletedRun',
         # TODO Needs InsertedRun
     )
-
-DeletedRun.children.types.add(DeletedRun)

@@ -8,7 +8,6 @@ from __future__ import (
 from collections import defaultdict
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.wordprocessing.table_cell import TableCell
 from pydocx.openxml.wordprocessing.table_row import TableRow
 
 
@@ -46,7 +45,3 @@ class Table(XmlModel):
                         if active_rowspan_for_column:
                             cell_to_rowspan_count[active_rowspan_for_column] += 1  # noqa
         return dict(cell_to_rowspan_count)
-
-
-# Python makes defining nested class hierarchies at the global level difficult
-TableCell.children.types.add(Table)

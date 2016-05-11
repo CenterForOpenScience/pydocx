@@ -14,6 +14,5 @@ class SmartTagRun(XmlModel):
 
     children = XmlCollection(
         Run,
+        'wordprocessing.SmartTagRun',
     )
-
-SmartTagRun.children.types.add(SmartTagRun)

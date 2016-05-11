@@ -1,3 +1,8 @@
+**dev**
+
+- Textboxes have been implemented. We no longer lose the content inside of
+  them.
+
 **0.9.6**
 
 - Fixed issue in PyDocX CLI tool and added new test cases for the same

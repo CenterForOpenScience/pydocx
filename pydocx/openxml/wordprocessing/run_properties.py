@@ -31,7 +31,8 @@ class RunProperties(XmlModel):
     def color(self):
         if self.clr is None:
             return
-        if self.clr == '000000':
+        # TODO: When we support background colors, remove FFFFFF check
+        if self.clr == '000000' or self.clr == 'FFFFFF':
             return
 
         return self.clr

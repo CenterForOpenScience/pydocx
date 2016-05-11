@@ -8,8 +8,9 @@ from __future__ import (
 from pydocx.models import XmlModel, XmlCollection
 
 
-class TxBxContent(XmlModel):
-    XML_TAG = 'txbxContent'
+class Textbox(XmlModel):
+    XML_TAG = 'textbox'
+
     children = XmlCollection(
-        'wordprocessing.Paragraph',
+        'wordprocessing.TxBxContent',
     )

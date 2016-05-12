@@ -132,7 +132,7 @@ class XmlCollection(XmlField):
         base_path = 'pydocx.openxml.{0}'
         for _type in types:
             try:
-                path, klass, = _type.rsplit('.', 1)
+                path, klass = _type.rsplit('.', 1)
             except AttributeError:
                 yield _type
             else:

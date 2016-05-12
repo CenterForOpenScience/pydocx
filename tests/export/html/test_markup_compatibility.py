@@ -54,6 +54,7 @@ class TableTestCase(DocumentGeneratorTestCase):
             <p>
                 <r><t>AAA</t></r>
                 <r>
+                    <t>BBB</t>
                     <AlternateContent>
                         <Fallback>
                             <pict>
@@ -62,7 +63,7 @@ class TableTestCase(DocumentGeneratorTestCase):
                                         <txbxContent>
                                             <p>
                                                 <r>
-                                                    <t>BBB</t>
+                                                    <t>CCC</t>
                                                 </r>
                                             </p>
                                         </txbxContent>
@@ -71,8 +72,9 @@ class TableTestCase(DocumentGeneratorTestCase):
                             </pict>
                         </Fallback>
                     </AlternateContent>
+                    <t>DDD</t>
                 </r>
-                <r><t>CCC</t></r>
+                <r><t>EEE</t></r>
             </p>
         '''
 
@@ -81,11 +83,11 @@ class TableTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <p>
-                AAA
+                AAABBB
                 <p>
-                    BBB
+                    CCC
                 </p>
-                CCC
+                DDDEEE
             </p>
         '''
         self.assert_document_generates_html(document, expected_html)

@@ -15,7 +15,7 @@ from pydocx.export.numbering_span import (
     NumberingSpan,
     NumberingSpanBuilder,
 )
-from pydocx.openxml import wordprocessing, vml, markup_compatibility
+from pydocx.openxml import markup_compatibility, vml, wordprocessing
 from pydocx.openxml.packaging import WordprocessingDocument
 
 
@@ -68,8 +68,8 @@ class PyDocXExporter(object):
             wordprocessing.EmbeddedObject: self.export_embedded_object,
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
-            markup_compatibility.AlternateContent: self.export_alternate_content,
-            markup_compatibility.Fallback: self.export_fallback,
+            markup_compatibility.AlternateContent: self.export_markup_compatibility_alternate_content,  # noqa
+            markup_compatibility.Fallback: self.export_markup_compatibility_fallback,
             wordprocessing.TxBxContent: self.export_textbox_content,
         }
         self.field_type_to_export_func_map = {
@@ -547,8 +547,8 @@ class PyDocXExporter(object):
         return self.yield_nested(textbox_content.children, self.export_node)
 
     # Markup Compatibility exporters
-    def export_alternate_content(self, alternate_content):
+    def export_markup_compatibility_alternate_content(self, alternate_content):
         return self.yield_nested(alternate_content.children, self.export_node)
 
-    def export_fallback(self, fallback):
+    def export_markup_compatibility_fallback(self, fallback):
         return self.yield_nested(fallback.children, self.export_node)

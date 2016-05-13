@@ -1,5 +1,6 @@
 **dev**
 
+- Text colors other than black and white are no longer ignored
 - Textboxes have been implemented. We no longer lose the content inside of
   them.
 

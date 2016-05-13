@@ -48,6 +48,7 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'simple_table',
         'special_chars',
         'styled_bolding',
+        'styled_color',
         'table_col_row_span',
         'table_with_multi_rowspan',
         'tables_in_lists',

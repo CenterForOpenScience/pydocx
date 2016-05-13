@@ -8,6 +8,19 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.run_properties import RunProperties
+from pydocx.openxml.wordprocessing.br import Break
+from pydocx.openxml.wordprocessing.drawing import Drawing
+from pydocx.openxml.wordprocessing.field_char import FieldChar
+from pydocx.openxml.wordprocessing.field_code import FieldCode
+from pydocx.openxml.wordprocessing.picture import Picture
+from pydocx.openxml.wordprocessing.no_break_hyphen import NoBreakHyphen
+from pydocx.openxml.wordprocessing.text import Text
+from pydocx.openxml.wordprocessing.tab_char import TabChar
+from pydocx.openxml.wordprocessing.deleted_text import DeletedText
+from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
+from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark
+from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
+from pydocx.openxml.markup_compatibility import AlternateContent
 from pydocx.util.memoize import memoized
 
 
@@ -17,19 +30,19 @@ class Run(XmlModel):
     properties = XmlChild(type=RunProperties)
 
     children = XmlCollection(
-        'wordprocessing.EmbeddedObject',
-        'wordprocessing.TabChar',
-        'wordprocessing.Break',
-        'wordprocessing.NoBreakHyphen',
-        'wordprocessing.Text',
-        'wordprocessing.Drawing',
-        'wordprocessing.Picture',
-        'wordprocessing.DeletedText',
-        'wordprocessing.FootnoteReference',
-        'wordprocessing.FootnoteReferenceMark',
-        'wordprocessing.FieldChar',
-        'wordprocessing.FieldCode',
-        'markup_compatibility.AlternateContent',
+        EmbeddedObject,
+        TabChar,
+        Break,
+        NoBreakHyphen,
+        Text,
+        Drawing,
+        Picture,
+        DeletedText,
+        FootnoteReference,
+        FootnoteReferenceMark,
+        FieldChar,
+        FieldCode,
+        AlternateContent,
     )
 
     def get_style_chain_stack(self):

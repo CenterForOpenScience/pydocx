@@ -6,12 +6,13 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
+from pydocx.openxml.wordprocessing.run import Run
 
 
 class SmartTagRun(XmlModel):
     XML_TAG = 'smartTag'
 
     children = XmlCollection(
-        'wordprocessing.Run',
+        Run,
         'wordprocessing.SmartTagRun',
     )

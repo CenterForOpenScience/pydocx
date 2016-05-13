@@ -8,13 +8,14 @@ from __future__ import (
 from collections import defaultdict
 
 from pydocx.models import XmlModel, XmlCollection
+from pydocx.openxml.wordprocessing.table_row import TableRow
 
 
 class Table(XmlModel):
     XML_TAG = 'tbl'
 
     rows = XmlCollection(
-        'wordprocessing.TableRow',
+        TableRow,
     )
 
     def calculate_table_cell_spans(self):

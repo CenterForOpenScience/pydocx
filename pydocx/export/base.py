@@ -546,7 +546,6 @@ class PyDocXExporter(object):
     def export_textbox_content(self, textbox_content):
         return self.yield_nested(textbox_content.children, self.export_node)
 
-    # Markup Compatibility exporters
     def export_markup_compatibility_alternate_content(self, alternate_content):
         return self.yield_nested(alternate_content.children, self.export_node)
 

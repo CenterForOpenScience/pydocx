@@ -11,4 +11,5 @@ PyDocX
    export_mixins
    enumerated_list_detection
    development
+   plugins
    release_notes

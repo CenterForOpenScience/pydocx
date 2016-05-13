@@ -1,3 +1,7 @@
+**0.9.7**
+
+- Text colors other than black and white are no longer ignored
+
 **0.9.6**
 
 - Fixed issue in PyDocX CLI tool and added new test cases for the same

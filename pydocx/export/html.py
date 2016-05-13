@@ -474,6 +474,16 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('sub')
         return tag.apply(results, allow_empty=False)
 
+    def export_run_property_color(self, run, results):
+        if run.properties is None or run.properties.color is None:
+            return results
+
+        attrs = {
+            'style': 'color:#' + run.properties.color
+        }
+        tag = HtmlTag('span', **attrs)
+        return self.export_run_property(tag, run, results)
+
     def export_text(self, text):
         results = super(PyDocXHTMLExporter, self).export_text(text)
         for result in results:

@@ -100,9 +100,7 @@ class TableTestCase(DocumentGeneratorTestCase):
                     <t>BBB</t>
                     <AlternateContent>
                         <Fallback>
-                            <r>
-                                <t>CCC</t>
-                            </r>
+                            <t>CCC</t>
                         </Fallback>
                     </AlternateContent>
                     <t>DDD</t>

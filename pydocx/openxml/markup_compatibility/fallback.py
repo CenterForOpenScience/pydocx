@@ -13,5 +13,4 @@ class Fallback(XmlModel):
     children = XmlCollection(
         'wordprocessing.Run:children',
         'wordprocessing.Body:children',
-        'wordprocessing.Run',
     )

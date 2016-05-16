@@ -178,3 +178,31 @@ class TableTestCase(DocumentGeneratorTestCase):
             <p>AAA</p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_choice_is_ignored(self):
+        document_xml = '''
+        <AlternateContent>
+            <Choice>
+                <p>
+                    <r>
+                        <t>Ignored</t>
+                    </r>
+                </p>
+            </Choice>
+            <Fallback>
+                <p>
+                    <r>
+                        <t>AAA</t>
+                    </r>
+                </p>
+            </Fallback>
+        </AlternateContent>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAA</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)

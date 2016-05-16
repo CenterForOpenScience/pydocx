@@ -13,8 +13,7 @@ class Shape(XmlModel):
     XML_TAG = 'shape'
 
     style = XmlAttribute()
-    children = XmlCollection(ImageData)
-
+    children = XmlCollection(ImageData, 'vml.Textbox')
     # TODO perhaps we could have a prepare_style, or clean_style convention?
 
     def get_style(self):

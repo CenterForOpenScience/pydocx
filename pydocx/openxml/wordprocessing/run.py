@@ -20,6 +20,7 @@ from pydocx.openxml.wordprocessing.deleted_text import DeletedText
 from pydocx.openxml.wordprocessing.footnote_reference import FootnoteReference
 from pydocx.openxml.wordprocessing.footnote_reference_mark import FootnoteReferenceMark
 from pydocx.openxml.wordprocessing.embedded_object import EmbeddedObject
+from pydocx.openxml.markup_compatibility import AlternateContent
 from pydocx.util.memoize import memoized
 
 
@@ -41,6 +42,7 @@ class Run(XmlModel):
         FootnoteReferenceMark,
         FieldChar,
         FieldCode,
+        AlternateContent,
     )
 
     def get_style_chain_stack(self):

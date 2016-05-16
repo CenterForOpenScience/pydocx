@@ -24,16 +24,15 @@ def convert(path, *args, **kwargs):
 
 class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
     cases = (
-        'read_same_image_multiple_times',
         'all_configured_styles',
+        'export_from_googledocs',
+        'external_image',
+        'has_missing_image',
+        'has_missing_image',
         'has_title',
         'inline_tags',
-        'has_missing_image',
         'justification',
         'list_in_table',
-        'external_image',
-        'export_from_googledocs',
-        'has_missing_image',
         'lists_with_styles',
         'missing_numbering',
         'missing_style',
@@ -41,6 +40,8 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'nested_table_rowspan',
         'nested_tables',
         'no_break_hyphen',
+        'read_same_image_multiple_times',
+        'rotate_image',
         'shift_enter',
         'simple',
         'simple_lists',
@@ -49,10 +50,10 @@ class ConvertDocxToHtmlTestCase(DocXFixtureTestCaseFactory):
         'styled_bolding',
         'styled_color',
         'table_col_row_span',
-        'tables_in_lists',
-        'track_changes_on',
         'table_with_multi_rowspan',
-        'rotate_image'
+        'tables_in_lists',
+        'textbox',
+        'track_changes_on',
     )
 
     @raises(MalformedDocxException)

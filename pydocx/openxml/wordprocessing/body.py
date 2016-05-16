@@ -23,7 +23,6 @@ class Body(XmlModel):
         InsertedRun,
         DeletedRun,
         SdtBlock,
-        'markup_compatibility.AlternateContent',
     )
 
     final_section_properties = XmlChild(type=SectionProperties)

@@ -130,6 +130,7 @@ class XmlCollection(XmlField):
 
     def _set_types(self, *types):
         base_path = 'pydocx.openxml.{0}'
+        types = list(types) + ['markup_compatibility.AlternateContent']
         for _type in types:
             try:
                 path, klass = _type.rsplit('.', 1)

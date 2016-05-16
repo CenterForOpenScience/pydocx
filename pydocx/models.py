@@ -134,10 +134,23 @@ class XmlCollection(XmlField):
             try:
                 path, klass = _type.rsplit('.', 1)
             except AttributeError:
+                # This is a class, not a string
                 yield _type
             else:
+                # Check to see if we want to grab the actual class as the
+                # child, or a classes children as our children
+                field = None
+                if ':' in klass:
+                    # We are going to use klass.field.types as the types we
+                    # need for this instance.
+                    klass, field = klass.split(':')
                 module = importlib.import_module(base_path.format(path))
-                yield getattr(module, klass)
+                Klass = getattr(module, klass)
+                if not field:
+                    yield Klass
+                else:
+                    for _type in getattr(Klass, field).types:
+                        yield _type
 
     @property
     def name_to_type_map(self):

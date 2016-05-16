@@ -12,4 +12,8 @@ from pydocx.openxml.wordprocessing.picture import Picture
 class Fallback(XmlModel):
     XML_TAG = 'Fallback'
     # TODO #204: actually include all of the children defined in the spec.
-    children = XmlCollection(Picture)
+    children = XmlCollection(
+        'wordprocessing.Run:children',
+        'wordprocessing.Body:children',
+        'wordprocessing.Run',
+    )

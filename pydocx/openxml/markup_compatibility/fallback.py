@@ -10,7 +10,6 @@ from pydocx.models import XmlModel, XmlCollection
 
 class Fallback(XmlModel):
     XML_TAG = 'Fallback'
-    # TODO #204: actually include all of the children defined in the spec.
     children = XmlCollection(
         'wordprocessing.Run:children',
         'wordprocessing.Body:children',

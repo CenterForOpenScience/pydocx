@@ -91,3 +91,71 @@ class TableTestCase(DocumentGeneratorTestCase):
             </p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_fallback_is_only_text(self):
+        document_xml = '''
+            <p>
+                <r><t>AAA</t></r>
+                <r>
+                    <t>BBB</t>
+                    <AlternateContent>
+                        <Fallback>
+                            <r>
+                                <t>CCC</t>
+                            </r>
+                        </Fallback>
+                    </AlternateContent>
+                    <t>DDD</t>
+                </r>
+                <r><t>EEE</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAABBBCCCDDDEEE</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_fallback_is_a_table(self):
+        document_xml = '''
+            <p>
+                <r><t>AAA</t></r>
+                <r>
+                    <t>BBB</t>
+                    <AlternateContent>
+                        <Fallback>
+                            <tbl>
+                                <tr>
+                                    <tc>
+                                        <p>
+                                            <r>
+                                                <t>CCC</t>
+                                            </r>
+                                        </p>
+                                    </tc>
+                                </tr>
+                            </tbl>
+                        </Fallback>
+                    </AlternateContent>
+                    <t>DDD</t>
+                </r>
+                <r><t>EEE</t></r>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAABBB
+                <table border="1">
+                    <tr>
+                        <td>CCC</td>
+                    </tr>
+                </table>
+            DDDEEE</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)

@@ -157,3 +157,24 @@ class TableTestCase(DocumentGeneratorTestCase):
             DDDEEE</p>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_fallback_is_in_root(self):
+        document_xml = '''
+        <AlternateContent>
+            <Fallback>
+                <p>
+                    <r>
+                        <t>AAA</t>
+                    </r>
+                </p>
+            </Fallback>
+        </AlternateContent>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAA</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)

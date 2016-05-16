@@ -217,6 +217,10 @@ class PyDocXExporter(object):
         for alternate_content in self.alternate_contents:
             new_parent_children = []
             for child in alternate_content.parent.children:
+                # AlternateContent has two kinds of children: Choice and
+                # Fallback. We don't care about any of the Choices. We want to
+                # replace the AlternateContent in the parent node with the
+                # content of the Fallback children.
                 if isinstance(child, markup_compatibility.AlternateContent):
                     for alternate_content_child in alternate_content.children:
                         # This will future-proof us in case we ever implement

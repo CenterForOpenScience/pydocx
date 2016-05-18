@@ -32,7 +32,6 @@ class PyDocXExporter(object):
 
         self.captured_runs = None
         self.complex_field_runs = []
-        self.alternate_contents = []
 
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
@@ -131,7 +130,6 @@ class PyDocXExporter(object):
 
     def _post_first_pass_processing(self):
         self._convert_complex_fields_into_simple_fields()
-        self._fix_alternate_content()
 
     def _convert_complex_fields_into_simple_fields(self):
         if not self.complex_field_runs:
@@ -210,31 +208,6 @@ class PyDocXExporter(object):
             # field is now the run's new parent.
             for run in field.children:
                 run.parent = field
-
-    def _fix_alternate_content(self):
-        if not self.alternate_contents:
-            return
-        for alternate_content in self.alternate_contents:
-            new_parent_children = []
-            for child in alternate_content.parent.children:
-                # AlternateContent has two kinds of children: Choice and
-                # Fallback. We don't care about any of the Choices. We want to
-                # replace the AlternateContent in the parent node with the
-                # content of the Fallback children.
-                if isinstance(child, markup_compatibility.AlternateContent):
-                    for alternate_content_child in alternate_content.children:
-                        # This will future-proof us in case we ever implement
-                        # markup_compatibility.Choice.
-                        child_is_fallback = isinstance(
-                            alternate_content_child,
-                            markup_compatibility.Fallback,
-                        )
-                        if not child_is_fallback:
-                            continue
-                        new_parent_children.extend(alternate_content_child.children)
-                else:
-                    new_parent_children.append(child)
-            alternate_content.parent.children = new_parent_children
 
     def export_node(self, node):
         caller = self.node_type_to_export_func_map.get(type(node))
@@ -574,4 +547,23 @@ class PyDocXExporter(object):
 
     def export_markup_compatibility_alternate_content(self, alternate_content):
         if self.first_pass:
-            self.alternate_contents.append(alternate_content)
+            new_parent_children = []
+            for child in alternate_content.parent.children:
+                # AlternateContent has two kinds of children: Choice and
+                # Fallback. We don't care about any of the Choices. We want to
+                # replace the AlternateContent in the parent node with the
+                # content of the Fallback children.
+                if isinstance(child, markup_compatibility.AlternateContent):
+                    for alternate_content_child in alternate_content.children:
+                        # This will future-proof us in case we ever implement
+                        # markup_compatibility.Choice.
+                        child_is_fallback = isinstance(
+                            alternate_content_child,
+                            markup_compatibility.Fallback,
+                        )
+                        if not child_is_fallback:
+                            continue
+                        new_parent_children.extend(alternate_content_child.children)
+                else:
+                    new_parent_children.append(child)
+            alternate_content.parent.children = new_parent_children

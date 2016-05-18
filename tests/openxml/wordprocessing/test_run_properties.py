@@ -16,6 +16,16 @@ class RunPropertiesTestCase(TestCase):
         root = parse_xml_from_string(xml)
         return RunProperties.load(root)
 
+    def test_run_properties_with_symbol_font(self):
+        xml = b'''
+            <rPr>
+                <rFonts ascii="Symbol" hAnsi="Symbol"/>
+            </rPr>
+        '''
+        properties = self._load_styles_from_xml(xml)
+
+        self.assertTrue(properties.r_fonts.is_symbol())
+
     def test_bold_on(self):
         xml = b'''
             <rPr>

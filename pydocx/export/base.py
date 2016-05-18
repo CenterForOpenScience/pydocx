@@ -567,3 +567,5 @@ class PyDocXExporter(object):
                 else:
                     new_parent_children.append(child)
             alternate_content.parent.children = new_parent_children
+            for child in new_parent_children:
+                child.parent = alternate_content.parent

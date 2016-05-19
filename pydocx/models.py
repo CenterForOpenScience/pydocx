@@ -120,6 +120,7 @@ class XmlCollection(XmlField):
 
     def __init__(self, *types, **kwargs):
         default = kwargs.pop('default', [])
+        self.allow_all_children = kwargs.pop('allow_all_children', False)
         super(XmlCollection, self).__init__(self, default=default)
         self._types = types
         self._name_to_type_map = None
@@ -128,16 +129,38 @@ class XmlCollection(XmlField):
     def types(self):
         return set(self._set_types(*self._types))
 
-    def _set_types(self, *types):
+    def _get_all_types(self):
         base_path = 'pydocx.openxml.{0}'
+        roots = [
+            'drawing',
+            'markup_compatibility',
+            'vml',
+            'wordprocessing',
+        ]
+        for root in roots:
+            module = importlib.import_module(base_path.format(root))
+            for field_name in dir(module):
+                Field = getattr(module, field_name)
+                if hasattr(Field, 'XML_TAG'):
+                    yield Field
+
+    def _set_types(self, *types):
+        if self.allow_all_children:
+            for Field in self._get_all_types():
+                yield Field
+            return
+        base_path = 'pydocx.openxml.{0}'
+        types = list(types) + ['markup_compatibility.AlternateContent']
         for _type in types:
             try:
                 path, klass = _type.rsplit('.', 1)
             except AttributeError:
+                # This is a class, not a string
                 yield _type
             else:
                 module = importlib.import_module(base_path.format(path))
-                yield getattr(module, klass)
+                Klass = getattr(module, klass)
+                yield Klass
 
     @property
     def name_to_type_map(self):

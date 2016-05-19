@@ -69,7 +69,6 @@ class PyDocXExporter(object):
             NumberingSpan: self.export_numbering_span,
             NumberingItem: self.export_numbering_item,
             markup_compatibility.AlternateContent: self.export_markup_compatibility_alternate_content,  # noqa
-            markup_compatibility.Fallback: self.export_markup_compatibility_fallback,
             wordprocessing.TxBxContent: self.export_textbox_content,
         }
         self.field_type_to_export_func_map = {
@@ -547,7 +546,26 @@ class PyDocXExporter(object):
         return self.yield_nested(textbox_content.children, self.export_node)
 
     def export_markup_compatibility_alternate_content(self, alternate_content):
-        return self.yield_nested(alternate_content.children, self.export_node)
-
-    def export_markup_compatibility_fallback(self, fallback):
-        return self.yield_nested(fallback.children, self.export_node)
+        if self.first_pass:
+            new_parent_children = []
+            for child in alternate_content.parent.children:
+                # AlternateContent has two kinds of children: Choice and
+                # Fallback. We don't care about any of the Choices. We want to
+                # replace the AlternateContent in the parent node with the
+                # content of the Fallback children.
+                if isinstance(child, markup_compatibility.AlternateContent):
+                    for alternate_content_child in alternate_content.children:
+                        # This will future-proof us in case we ever implement
+                        # markup_compatibility.Choice.
+                        child_is_fallback = isinstance(
+                            alternate_content_child,
+                            markup_compatibility.Fallback,
+                        )
+                        if not child_is_fallback:
+                            continue
+                        new_parent_children.extend(alternate_content_child.children)
+                else:
+                    new_parent_children.append(child)
+            alternate_content.parent.children = new_parent_children
+            for child in new_parent_children:
+                child.parent = alternate_content.parent

@@ -6,10 +6,13 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection
-from pydocx.openxml.wordprocessing.picture import Picture
 
 
 class Fallback(XmlModel):
     XML_TAG = 'Fallback'
-    # TODO #204: actually include all of the children defined in the spec.
-    children = XmlCollection(Picture)
+
+    # It would be better to refer to the grandparent's children XmlCollection
+    # lazily. The problem is that we don't have a good way to represent lazy
+    # fields, nor do we have a way for those fields to reference their parents
+    # before they are initialized with content.
+    children = XmlCollection(allow_all_children=True)

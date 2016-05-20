@@ -1,3 +1,7 @@
+**0.9.8**
+
+- Pict elements can now contain Rect elements.
+
 **0.9.7**
 
 - Text colors other than black and white are no longer ignored

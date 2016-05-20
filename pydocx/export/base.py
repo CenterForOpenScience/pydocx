@@ -63,6 +63,7 @@ class PyDocXExporter(object):
             wordprocessing.FieldCode: self.export_field_code,
             wordprocessing.SimpleField: self.export_simple_field,
             vml.Shape: self.export_vml_shape,
+            vml.Rect: self.export_vml_rect,
             vml.ImageData: self.export_vml_image_data,
             vml.Textbox: self.export_textbox,
             wordprocessing.EmbeddedObject: self.export_embedded_object,
@@ -480,6 +481,9 @@ class PyDocXExporter(object):
 
     def export_vml_shape(self, shape):
         return self.yield_nested(shape.children, self.export_node)
+
+    def export_vml_rect(self, rect):
+        return self.yield_nested(rect.children, self.export_node)
 
     def export_embedded_object(self, obj):
         return self.yield_nested(obj.children, self.export_node)

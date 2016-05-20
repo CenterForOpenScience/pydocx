@@ -1,5 +1,6 @@
 **0.9.8**
 
+- Textboxes can now contain tables.
 - Pict elements can now contain Rect elements.
 
 **0.9.7**

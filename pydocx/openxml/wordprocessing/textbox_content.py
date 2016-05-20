@@ -12,4 +12,5 @@ class TxBxContent(XmlModel):
     XML_TAG = 'txbxContent'
     children = XmlCollection(
         'wordprocessing.Paragraph',
+        'wordprocessing.Table',
     )

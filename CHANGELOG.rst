@@ -1,3 +1,7 @@
+**0.9.8**
+
+- Textboxes can now contain tables.
+
 **0.9.7**
 
 - Text colors other than black and white are no longer ignored

@@ -1,3 +1,7 @@
+**0.9.9**
+
+- Rect elements now correctly handle image data
+
 **0.9.8**
 
 - Textboxes can now contain tables.

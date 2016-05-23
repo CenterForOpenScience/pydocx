@@ -14,8 +14,8 @@ class Shape(XmlModel):
 
     style = XmlAttribute()
     children = XmlCollection(ImageData, 'vml.Textbox')
-    # TODO perhaps we could have a prepare_style, or clean_style convention?
 
+    # TODO perhaps we could have a prepare_style, or clean_style convention?
     def get_style(self):
         if self.style:
             return dict(

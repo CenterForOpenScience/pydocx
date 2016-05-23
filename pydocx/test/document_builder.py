@@ -19,6 +19,7 @@ templates = {
     'p': 'p.xml',
     'pict': 'pict.xml',
     'r': 'r.xml',
+    'rect': 'rect.xml',
     'rpr': 'rpr.xml',
     'sdt': 'sdt.xml',
     'sectPr': 'sectPr.xml',
@@ -247,6 +248,16 @@ class DocxBuilder(object):
     @classmethod
     def pict(self, r_id=None, height=None, width=None):
         template = env.get_template(templates['pict'])
+        return template_render(
+            template,
+            r_id=r_id,
+            height=height,
+            width=width,
+        )
+
+    @classmethod
+    def rect(self, r_id=None, height=None, width=None):
+        template = env.get_template(templates['rect'])
         return template_render(
             template,
             r_id=r_id,

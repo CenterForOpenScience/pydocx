@@ -30,19 +30,29 @@ class ImageLocal(TranslationTestCase):
             target_path='media/image2.jpeg',
             data=b'content2',
         ),
+        dict(
+            relationship_id='rId2',
+            relationship_type=ImagePart.relationship_type,
+            external=False,
+            target_path='media/image3.jpeg',
+            data=b'content3',
+        ),
     ]
 
     expected_output = '''
     <p><img src="data:image/jpeg;base64,Y29udGVudDE=" /></p>
     <p><img src="data:image/jpeg;base64,Y29udGVudDI=" /></p>
+    <p><img src="data:image/jpeg;base64,Y29udGVudDM=" /></p>
     '''
 
     def get_xml(self):
         drawing = DXB.drawing(height=None, width=None, r_id='rId0')
         pict = DXB.pict(height=None, width=None, r_id='rId1')
+        rect = DXB.rect(height=None, width=None, r_id='rId2')
         tags = [
             drawing,
             pict,
+            rect,
         ]
         body = b''
         for el in tags:
@@ -67,6 +77,13 @@ class ImageTestCase(TranslationTestCase):
             target_path='media/image2.jpeg',
             data=b'content2',
         ),
+        dict(
+            relationship_id='rId2',
+            relationship_type=ImagePart.relationship_type,
+            external=False,
+            target_path='media/image3.jpeg',
+            data=b'content3',
+        ),
     ]
 
     expected_output = '''
@@ -84,14 +101,23 @@ class ImageTestCase(TranslationTestCase):
                 width="41pt"
             />
         </p>
+        <p>
+            <img
+                height="22pt"
+                src="data:image/jpeg;base64,Y29udGVudDM="
+                width="42pt"
+            />
+        </p>
     '''
 
     def get_xml(self):
         drawing = DXB.drawing(height=20, width=40, r_id='rId0')
         pict = DXB.pict(height=21, width=41, r_id='rId1')
+        rect = DXB.rect(height=22, width=42, r_id='rId2')
         tags = [
             drawing,
             pict,
+            rect,
         ]
         body = b''
         for el in tags:

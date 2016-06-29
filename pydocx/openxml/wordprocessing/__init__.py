@@ -26,6 +26,7 @@ from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperti
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.run_properties import RunProperties  # noqa
+from pydocx.openxml.wordprocessing.rfonts import RFonts
 from pydocx.openxml.wordprocessing.sdt_block import SdtBlock
 from pydocx.openxml.wordprocessing.sdt_content_block import SdtContentBlock
 from pydocx.openxml.wordprocessing.sdt_content_run import SdtContentRun
@@ -71,6 +72,7 @@ __all__ = [
     'Picture',
     'Run',
     'RunProperties',
+    'RFonts',
     'SdtBlock',
     'SdtContentBlock',
     'SdtContentRun',

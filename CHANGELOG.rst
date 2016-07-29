@@ -1,6 +1,6 @@
 **0.9.10**
 
-- Correctly handle margin positions with decimal points.
+- No longer error when processing margin positions with decimal points.
 
 **0.9.9**
 

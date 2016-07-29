@@ -1,3 +1,7 @@
+**0.9.10**
+
+- No longer error when processing margin positions with decimal points.
+
 **0.9.9**
 
 - Rect elements now correctly handle image data

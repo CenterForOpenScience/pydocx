@@ -35,11 +35,11 @@ class ParagraphProperties(XmlModel):
         # ignored.
         start_margin = 0
         if self.indentation_left:
-            start_margin += int(self.indentation_left)
+            start_margin += int(float(self.indentation_left))
         if self.indentation_hanging:
-            start_margin -= int(self.indentation_hanging)
+            start_margin -= int(float(self.indentation_hanging))
         elif self.indentation_first_line:
-            start_margin += int(self.indentation_first_line)
+            start_margin += int(float(self.indentation_first_line))
         if start_margin:
             return start_margin
         return 0

@@ -105,3 +105,21 @@ class StartMarginPositionTestCase(ParagraphPropertiesTestBase):
         '''
         properties = self._load_from_xml(xml)
         self.assertEqual(properties.start_margin_position, 100)
+
+    def test_allow_decimal_indentation_for_hanging(self):
+        xml = '''
+            <pPr>
+                <ind left="123.0" hanging="23.0" />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        self.assertEqual(properties.start_margin_position, 100)
+
+    def test_allow_decimal_indentation_for_first_line(self):
+        xml = '''
+            <pPr>
+                <ind left="123.0" firstLine="50.0" />
+            </pPr>
+        '''
+        properties = self._load_from_xml(xml)
+        self.assertEqual(properties.start_margin_position, 173)

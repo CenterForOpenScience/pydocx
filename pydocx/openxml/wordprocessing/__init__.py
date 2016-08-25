@@ -1,6 +1,7 @@
 # coding: utf-8
 from pydocx.openxml.wordprocessing.abstract_num import AbstractNum
 from pydocx.openxml.wordprocessing.body import Body
+from pydocx.openxml.wordprocessing.bookmark import Bookmark
 from pydocx.openxml.wordprocessing.br import Break
 from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.deleted_text import DeletedText
@@ -47,6 +48,7 @@ from pydocx.openxml.wordprocessing.textbox_content import TxBxContent
 __all__ = [
     'AbstractNum',
     'Body',
+    'Bookmark',
     'Break',
     'DeletedRun',
     'DeletedText',

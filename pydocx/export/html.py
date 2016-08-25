@@ -512,10 +512,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def export_hyperlink(self, hyperlink):
         results = super(PyDocXHTMLExporter, self).export_hyperlink(hyperlink)
-        if hyperlink.target_uri:
-            tag = self.get_hyperlink_tag(target_uri=hyperlink.target_uri)
-        else:
+        if not hyperlink.target_uri and hyperlink.anchor:
             tag = self.get_hyperlink_tag(target_uri='#' + hyperlink.anchor)
+        else:
+            tag = self.get_hyperlink_tag(target_uri=hyperlink.target_uri)
         if tag:
             results = tag.apply(results, allow_empty=False)
 

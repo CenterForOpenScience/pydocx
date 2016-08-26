@@ -194,3 +194,21 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
 
         expected_html = '<p><a href="http://google.com#testing">link</a>.</p>'
         self.assert_document_generates_html(document, expected_html)
+
+    def test_internal_link(self):
+        document_xml = '''
+            <p>
+              <hyperlink anchor="testing">
+                <r>
+                  <t>link</t>
+                </r>
+              </hyperlink>
+            </p>
+        '''
+
+        document = WordprocessingDocumentFactory()
+
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<p><a href="#testing">link</a></p>'
+        self.assert_document_generates_html(document, expected_html)

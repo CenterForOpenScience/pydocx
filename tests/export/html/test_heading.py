@@ -744,3 +744,30 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
+
+    def test_heading_with_bookmark(self):
+        document_xml = '''
+            <p>
+              <pPr>
+                <pStyle val="heading1"/>
+              </pPr>
+              <bookmarkStart name="testing"/>
+              <bookmarkEnd/>
+              <r>
+                <t>aaa</t>
+              </r>
+            </p>
+        '''
+
+        style_xml = '''
+            <style styleId="heading1" type="paragraph">
+              <name val="Heading 1"/>
+            </style>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(StyleDefinitionsPart, style_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '<h1 id="testing">aaa</h1>'
+        self.assert_document_generates_html(document, expected_html)

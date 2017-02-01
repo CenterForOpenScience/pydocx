@@ -47,6 +47,10 @@ class Paragraph(XmlModel):
             self._effective_properties = properties
         return self._effective_properties
 
+    @property
+    def numbering_definition(self):
+        return self.get_numbering_definition()
+
     def has_structured_document_parent(self):
         from pydocx.openxml.wordprocessing import SdtBlock
         return self.has_ancestor(SdtBlock)

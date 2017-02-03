@@ -27,3 +27,20 @@ class AbstractNum(XmlModel):
 
     def get_level(self, level_id):
         return self._levels.get(level_id)
+
+    def get_indentation_between_levels(self):
+        """
+        Depending on the word version we may get a different default indentation between
+        levels. For this we will only check first 2 levels as the other follow the same step.
+        """
+
+        try:
+            lvl0_ind = self.levels[0].paragraph_properties.to_int('indentation_left',
+                                                                  default=0)
+            lvl1_ind = self.levels[1].paragraph_properties.to_int('indentation_left',
+                                                                  default=0)
+            ind_step = lvl1_ind - lvl0_ind
+        except IndexError:
+            ind_step = 720  # default one
+
+        return ind_step

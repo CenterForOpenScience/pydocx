@@ -4,7 +4,7 @@ from __future__ import (
     print_function,
     unicode_literals,
 )
-
+from pydocx.util.memoize import memoized
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
@@ -89,9 +89,8 @@ class Paragraph(XmlModel):
     def heading_style(self, style):
         self._heading_style = style
 
+    @memoized
     def get_numbering_definition(self):
-        # TODO add memoization
-
         # TODO the getattr is necessary because of footnotes. From the context
         # of a footnote, a paragraph's container is the footnote part, which
         # doesn't have access to the numbering_definitions_part
@@ -107,8 +106,8 @@ class Paragraph(XmlModel):
             num_id=numbering_properties.num_id,
         )
 
+    @memoized
     def get_numbering_level(self):
-        # TODO add memoization
         numbering_definition = self.get_numbering_definition()
         if not numbering_definition:
             return
@@ -180,3 +179,29 @@ class Paragraph(XmlModel):
             else:
                 break
         return tab_count
+
+    @property
+    @memoized
+    def has_numbering_properties(self):
+        return bool(getattr(self.properties, 'numbering_properties', None))
+
+    @property
+    @memoized
+    def has_numbering_definition(self):
+        return bool(self.numbering_definition)
+
+    @memoized
+    def get_numbering_default_level_indentation(self, first_level_left=720):
+        """Given an input listing paragraph we calculate what is the default left
+        indentation on this level. Based on this we can determine whether we should
+        add margins to html <li> or leave the default added by tag."""
+
+        # by default a list is started with 'first_level_left' indentation.
+
+        level_id = int(self.properties.numbering_properties.level_id)
+
+        default_left_inc = self.numbering_definition.get_indentation_between_levels()
+
+        left = first_level_left * (1 if not level_id else level_id)
+
+        return {'left': left, 'level_indentation_step': default_left_inc}

@@ -18,7 +18,6 @@ from pydocx.util.memoize import memoized
 # Defined in 17.15.1.25
 DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
 
-
 roman_numeral_map = tuple(zip(
     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
@@ -211,7 +210,8 @@ class BaseNumberingSpanBuilder(object):
 
     def detect_parent_child_map_for_items(self):
         """
-        There are cases when we have span inside an item and this span is different from the parent one.
+        There are cases when we have span inside an item and this span is different from
+        the parent one.
             Example listing:
                     1. A
                     2. B
@@ -220,8 +220,9 @@ class BaseNumberingSpanBuilder(object):
                             * B2
                     3. C
 
-        In the above example B1, B2 items are creating a separate span and does have different num. definition.
-        We need to somehow detect this cases and make sure we properly continue numbering(in this case '3. C').
+        In the above example B1, B2 items are creating a separate span and does have different
+        num. definition. We need to somehow detect this cases and make sure we properly
+        continue numbering(in this case '3. C').
 
         We parse this as following:
             let say that list: A, B, C has abstract_num_id = 1
@@ -245,8 +246,10 @@ class BaseNumberingSpanBuilder(object):
         parent_child_map = {}
         child_parent_map = {}
         # we are interested only in components that are part of the listing
-        components = [component for component in self.components if component.properties
-                      and component.properties.numbering_properties]
+        components = [component for component in self.components if
+                      hasattr(component, 'properties')
+                      and hasattr(component.properties, 'numbering_properties')
+                      and component.numbering_definition]
         if not components:
             return
 
@@ -279,8 +282,7 @@ class BaseNumberingSpanBuilder(object):
         self.parent_child_num_map = parent_child_map
 
     def inside_parent_span(self, paragraph):
-        numbering_properties = paragraph.properties.numbering_properties
-        if not numbering_properties:
+        if not paragraph.has_numbering_properties or not paragraph.has_numbering_definition:
             return False
 
         paragraph_num_id = paragraph.numbering_definition.abstract_num_id
@@ -291,8 +293,7 @@ class BaseNumberingSpanBuilder(object):
         return bool(self.child_parent_num_map.get(paragraph_num_id, None))
 
     def is_parent_of_current_span(self, paragraph):
-        numbering_properties = paragraph.properties.numbering_properties
-        if not numbering_properties:
+        if not paragraph.has_numbering_properties or not paragraph.has_numbering_definition:
             return False
 
         paragraph_num_id = paragraph.numbering_definition.abstract_num_id
@@ -438,7 +439,8 @@ class BaseNumberingSpanBuilder(object):
                 if self.is_parent_of_current_span(paragraph):
                     previous_span = self.find_previous_numbering_span_by_num_def(paragraph)
                 else:
-                    previous_span = self.find_previous_numbering_span_with_lower_level(level_id)
+                    previous_span = self.find_previous_numbering_span_with_lower_level(
+                        level_id)
 
                 if self.numbering_span_stack:
                     assert previous_span

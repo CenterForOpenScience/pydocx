@@ -8,12 +8,12 @@ from __future__ import (
 
 from pydocx.export.html import PyDocXHTMLExporter
 from pydocx.export.mixins import FakedSuperscriptAndSubscriptExportMixin
+from pydocx.openxml.packaging import MainDocumentPart, StyleDefinitionsPart
 from pydocx.test import DocumentGeneratorTestCase, DocXFixtureTestCaseFactory
 from pydocx.test.utils import (
     PyDocXHTMLExporterNoStyle,
     WordprocessingDocumentFactory,
 )
-from pydocx.openxml.packaging import MainDocumentPart, StyleDefinitionsPart
 
 
 class FakedSuperscriptAndSubscriptHTMLExporterNoStyle(
@@ -341,5 +341,6 @@ class DocXFixtureTestCase(DocXFixtureTestCaseFactory):
         'fake_subscript',
         'fake_superscript',
     )
+
 
 DocXFixtureTestCase.generate()

@@ -416,9 +416,8 @@ class BaseNumberingSpanBuilder(object):
         else:
             level_id = int(level.level_id)
             current_level_id = int(self.current_span.numbering_level.level_id)
-            if level_id > current_level_id or self.inside_parent_span(paragraph):
+            if level_id > current_level_id:
                 # Add a new span + item to hold this new level
-
                 next_numbering_span = NumberingSpan(
                     numbering_level=level,
                     numbering_definition=num_def,
@@ -428,6 +427,7 @@ class BaseNumberingSpanBuilder(object):
                 next_numbering_item = NumberingItem(
                     numbering_span=next_numbering_span,
                 )
+
                 next_numbering_span.children.append(next_numbering_item)
                 self.current_item.append_child(next_numbering_span)
                 self.current_span = next_numbering_span
@@ -462,6 +462,29 @@ class BaseNumberingSpanBuilder(object):
                 )
                 self.current_item_index = index
                 self.current_span.append_child(self.current_item)
+            elif self.inside_parent_span(paragraph):
+                parent_span = self.find_parent_numbering_span(paragraph)
+                parent_span_last_item = parent_span.children[-1]
+
+                next_numbering_span = NumberingSpan(
+                    numbering_level=level,
+                    numbering_definition=num_def,
+                    parent=parent_span,
+                )
+
+                self.numbering_span_stack.append(next_numbering_span)
+                next_numbering_item = NumberingItem(
+                    numbering_span=next_numbering_span,
+                )
+
+                next_numbering_span.children.append(next_numbering_item)
+                # add this span to the parent list
+                # which mean that parent list may be a different list
+                parent_span_last_item.append_child(next_numbering_span)
+
+                self.current_span = next_numbering_span
+                self.current_item = next_numbering_item
+                self.current_item_index = index
 
     def find_previous_numbering_span_with_lower_level(self, level_id):
         previous_span = None
@@ -482,6 +505,23 @@ class BaseNumberingSpanBuilder(object):
                 # we found the parent span of the paragraph item
                 break
             self.numbering_span_stack.pop()
+        return previous_span
+
+    def find_parent_numbering_span(self, paragraph):
+        previous_span = None
+
+        num_id = paragraph.numbering_definition.abstract_num_id
+        parent_id = self.child_parent_num_map.get(num_id, None)
+        if not parent_id:
+            return previous_span
+
+        while self.numbering_span_stack:
+            previous_span = self.numbering_span_stack[-1]
+            if previous_span.numbering_definition.abstract_num_id == parent_id:
+                # we found the parent span of the paragraph item
+                break
+            self.numbering_span_stack.pop()
+
         return previous_span
 
     def handle_paragraph(self, index, paragraph):

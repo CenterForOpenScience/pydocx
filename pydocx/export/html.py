@@ -311,12 +311,13 @@ class PyDocXHTMLExporter(PyDocXExporter):
     def export_paragraph_property_indentation(self, paragraph, results):
         # TODO these classes should be applied on the paragraph, and not as
         # inline styles
+
         properties = paragraph.effective_properties
 
         style = {}
 
         # for numbering properties we add style to span item level
-        if paragraph.properties.numbering_properties is None:
+        if properties.numbering_properties is None:
             indentation_left = properties.to_int('indentation_left')
             indentation_first_line = properties.to_int('indentation_first_line')
         else:
@@ -349,6 +350,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             first_line = convert_twips_to_ems(indentation_first_line)
             # TODO text-indent doesn't work with inline elements like span
             style['text-indent'] = '{0:.2f}em'.format(first_line)
+            style['display'] = 'inline-block'
 
         if style:
             attrs = {
@@ -373,7 +375,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 return prev_level_paragraphs[-1]
 
             if prev_level_id == 0 and not prev_level_paragraphs:
-                # this is an ege case with older version of word when it may contain a sublist
+                # this is an edge case with older version of word when it may contain a sublist
                 # into a separate num_id.
                 break
 

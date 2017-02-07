@@ -234,7 +234,7 @@ class BaseNumberingSpanBuilder(object):
              }
 
              parent_child_num_map = {
-                "1": "4"
+                "1": ["4"]
              }
 
         So, when we process paragraph item we know from the start that it has a parent or not.

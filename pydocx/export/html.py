@@ -316,11 +316,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         style = {}
 
-        # for numbering properties we add style to span item level
-        if properties.numbering_properties is None:
-            indentation_left = properties.to_int('indentation_left')
-            indentation_first_line = properties.to_int('indentation_first_line')
-        else:
+        # Numbering properties can define a text indentation on a paragraph
+        if properties.numbering_properties:
             indentation_left = None
             indentation_first_line = None
 
@@ -335,6 +332,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 if 'text-indent' in listing_style and listing_style['text-indent'] != '0.00em':
                     style['text-indent'] = listing_style['text-indent']
                     style['display'] = 'inline-block'
+        else:
+            indentation_left = properties.to_int('indentation_left')
+            indentation_first_line = properties.to_int('indentation_first_line')
 
         indentation_right = properties.to_int('indentation_right')
 
@@ -348,7 +348,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         if indentation_first_line:
             first_line = convert_twips_to_ems(indentation_first_line)
-            # TODO text-indent doesn't work with inline elements like span
             style['text-indent'] = '{0:.2f}em'.format(first_line)
             style['display'] = 'inline-block'
 
@@ -375,7 +374,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 return prev_level_paragraphs[-1]
 
             if prev_level_id == 0 and not prev_level_paragraphs:
-                # this is an edge case with older version of word when it may contain a sublist
+                # This is an edge case with older version of word when it may contain a sublist
                 # into a separate num_id.
                 break
 
@@ -383,8 +382,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         return None
 
-    def export_listing_paragraph_property_indentation(self, paragraph, level_properties,
-                                                      include_text_indent=False):
+    def export_listing_paragraph_property_indentation(
+            self,
+            paragraph,
+            level_properties,
+            include_text_indent=False
+    ):
         style = {}
 
         if not level_properties or not paragraph.has_numbering_properties:
@@ -407,48 +410,47 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         left = paragraph_ind_left or level_ind_left
         hanging = paragraph_ind_hanging or level_ind_hanging
-
-        # at this point we have no info about indentation, so we keep the default one
+        # At this point we have no info about indentation, so we keep the default one
         if not left and not hanging:
             return style
 
         if num_id not in self.numbering_level_listing_track:
-            # by default there are only 9 numbering levels in docx(0 indexed)
+            # By default there are only 9 numbering levels in docx(0 indexed)
             self.numbering_level_listing_track[num_id] = [[] for _ in range(10)]
         if paragraph not in self.numbering_level_listing_track[num_id][level_id]:
             self.numbering_level_listing_track[num_id][level_id].append(paragraph)
 
-        # by default left contains hanging as well, so we remove it
+        # By default left contains hanging as well, so we remove it
         left -= hanging
 
         if level_id == 0:
-            # because html ul/ol/li elements have there default indentations
-            # we remove the default word one as well
-            # this way we will have as near as possible migration to html
+            # Because html ul/ol/li elements have their default indentations
+            # We remove the default word one as well,
+            # This way we will have as near as possible migration to html
             left -= (default_level_indentation['left'] - level_ind_hanging)
 
-            # first line are added left margins
+            # First line are added to left margins
             if paragraph_ind_first_line:
                 left += paragraph_ind_first_line
 
         if level_id > 0:
-            # for nested levels we need to add indentation based on parent level
+            # For nested levels we need to add indentation based on parent level
             prev_paragraph = self.get_previous_level_paragraph(num_id, level_id)
             if prev_paragraph:
-                prev_left_level_indentation = prev_paragraph.get_numbering_level().\
-                    paragraph_properties.to_int('indentation_left')
+                prev_left_level_indentation = prev_paragraph.get_numbering_level(
+                    ).paragraph_properties.to_int('indentation_left')
                 left -= (prev_left_level_indentation - level_ind_hanging)
             else:
-                # there are edge cases when we have a level > 0 for specific num_id but no
+                # There are edge cases when we have a level > 0 for specific num_id but no
                 # actual level=0 for this num_id. in such cases we just do the default
                 # indentation
                 left -= level_ind_hanging
 
-            # because lists add there own nested level indentation we subtract it here
+            # Because lists add there own nested level indentation we subtract it here
             # and the remaining part will be the actual needed indentation
             left -= default_level_indentation['level_indentation_step']
 
-        # here we well, we remove the default hanging which word adds
+        # Here as well, we remove the default hanging which word adds
         # because <li> tag will provide it's own
         hanging -= level_ind_hanging
 

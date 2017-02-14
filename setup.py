@@ -42,7 +42,7 @@ def main():
         author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",
         url="http://github.com/CenterForOpenScience/pydocx",
         platforms=["any"],
-        license="BSD",
+        license="Apache",
         packages=find_packages(),
         package_data={
             'pydocx': [
@@ -64,7 +64,7 @@ def main():
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: BSD License",
+            "License :: OSI Approved :: Apache Software License"
             "Operating System :: OS Independent",
             "Topic :: Text Processing :: Markup :: HTML",
             "Topic :: Text Processing :: Markup :: XML",

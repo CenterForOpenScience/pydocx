@@ -6,17 +6,17 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlCollection, XmlChild
+from pydocx.openxml.wordprocessing.bookmark import Bookmark
+from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
+from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
 from pydocx.openxml.wordprocessing.run import Run
-from pydocx.openxml.wordprocessing.tab_char import TabChar
-from pydocx.openxml.wordprocessing.text import Text
-from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
-from pydocx.openxml.wordprocessing.inserted_run import InsertedRun
-from pydocx.openxml.wordprocessing.deleted_run import DeletedRun
 from pydocx.openxml.wordprocessing.sdt_run import SdtRun
 from pydocx.openxml.wordprocessing.simple_field import SimpleField
-from pydocx.openxml.wordprocessing.bookmark import Bookmark
+from pydocx.openxml.wordprocessing.smart_tag_run import SmartTagRun
+from pydocx.openxml.wordprocessing.tab_char import TabChar
+from pydocx.openxml.wordprocessing.text import Text
 
 
 class Paragraph(XmlModel):
@@ -38,6 +38,20 @@ class Paragraph(XmlModel):
     def __init__(self, **kwargs):
         super(Paragraph, self).__init__(**kwargs)
         self._effective_properties = None
+
+    @property
+    def is_empty(self):
+        if not self.children:
+            return True
+
+        # we may have cases when a paragraph has a Bookmark with name '_GoBack'
+        # and we should treat it as empty paragraph
+        if len(self.children) == 1 and \
+                isinstance(self.children[0], Bookmark) and \
+                self.children[0].name in ('_GoBack',):
+            return True
+
+        return False
 
     @property
     def effective_properties(self):

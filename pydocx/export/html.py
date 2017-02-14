@@ -101,6 +101,7 @@ class HtmlTag(object):
         allow_self_closing=False,
         closed=False,
         allow_whitespace=False,
+        custom_text=None,
         **attrs
     ):
         self.tag = tag
@@ -108,6 +109,7 @@ class HtmlTag(object):
         self.attrs = attrs
         self.closed = closed
         self.allow_whitespace = allow_whitespace
+        self.custom_text = custom_text
 
     def apply(self, results, allow_empty=True):
         if not allow_empty:
@@ -116,12 +118,15 @@ class HtmlTag(object):
                 return
 
         sequence = [[self]]
+
+        if self.custom_text:
+            sequence.append([self.custom_text])
+
         if results is not None:
             sequence.append(results)
 
         if not self.allow_self_closing:
             sequence.append([self.close()])
-
         results = chain(*sequence)
 
         for result in results:
@@ -178,6 +183,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
         styles = {
             'body': {
                 'margin': '0px auto',
+            },
+            'p': {
+                'margin': '0'
             }
         }
 
@@ -248,17 +256,15 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(results, allow_empty=False)
 
     def get_paragraph_tag(self, paragraph):
+        if paragraph.is_empty:
+            return HtmlTag('p', custom_text='&nbsp;')
+
         heading_style = paragraph.heading_style
         if heading_style:
             tag = self.get_heading_tag(paragraph)
             if tag:
                 return tag
-        if self.in_table_cell:
-            return
-        if paragraph.has_structured_document_parent():
-            return
-        if isinstance(paragraph.parent, NumberingItem):
-            return
+
         return HtmlTag('p')
 
     def get_heading_tag(self, paragraph):
@@ -276,10 +282,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
     def export_paragraph(self, paragraph):
         results = super(PyDocXHTMLExporter, self).export_paragraph(paragraph)
-
-        results = is_not_empty_and_not_only_whitespace(results)
-        if results is None:
-            return
 
         tag = self.get_paragraph_tag(paragraph)
         if tag:
@@ -585,9 +587,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
             tag = HtmlTag('td', **attrs)
 
         numbering_spans = self.yield_numbering_spans(table_cell.children)
-        results = self.yield_nested_with_line_breaks_between_paragraphs(
+        
+        results = self.yield_nested(
             numbering_spans,
-            self.export_node,
+            self.export_node
         )
         if tag:
             results = tag.apply(results)
@@ -733,10 +736,8 @@ class PyDocXHTMLExporter(PyDocXExporter):
         return tag.apply(results)
 
     def export_numbering_item(self, numbering_item):
-        results = self.yield_nested_with_line_breaks_between_paragraphs(
-            numbering_item.children,
-            self.export_node,
-        )
+        results = super(PyDocXHTMLExporter, self).export_numbering_item(numbering_item)
+
         tag = HtmlTag('li')
         return tag.apply(results)
 

@@ -341,8 +341,10 @@ class PyDocXExporter(object):
 
         # TODO squash multiple sequential text nodes into one?
         results = self.yield_nested(run.children, self.export_node)
+
         if run.effective_properties:
             results = self.export_run_apply_properties(run, results)
+
         return results
 
     def get_run_styles_to_apply(self, run):

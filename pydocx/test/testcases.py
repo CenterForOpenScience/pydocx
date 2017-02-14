@@ -50,6 +50,7 @@ STYLE = (
     '.pydocx-tab {display:inline-block;width:4em}'
     '.pydocx-underline {text-decoration:underline}'
     'body {margin:0px auto;width:51.00em}'
+    'p {margin:0}'
     '</style>'
 )
 

@@ -33,6 +33,19 @@ class NumberingTestBase(object):
         </p>
     '''
 
+    simple_list_item_with_indentation = '''
+            <p>
+                <pPr>
+                    <numPr>
+                        <ilvl val="{ilvl}" />
+                        <numId val="{num_id}" />
+                    </numPr>
+                    <ind {ind} />
+                </pPr>
+                <r><t>{content}</t></r>
+            </p>
+        '''
+
     simple_list_definition = '''
         <num numId="{num_id}">
             <abstractNumId val="{num_id}"/>
@@ -1114,6 +1127,493 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         self.assert_document_generates_html(document, expected_html)
 
 
+class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase):
+    def test_no_numbering_definition_defined(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=2,
+            ),
+        )
+
+        document = WordprocessingDocumentFactory()
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <p>AAA</p>
+            <p>BBB</p>
+            <p>CCC</p>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_default_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=1,
+                ilvl=2,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="2">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="2160" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>AAA
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>BBB
+                            <ol class="pydocx-list-style-type-decimal">
+                                <li>CCC</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_custom_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item_with_indentation.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+                ind='left="1440" hanging="360"'
+            ),
+            bbb=self.simple_list_item_with_indentation.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+                ind='left="2880" hanging="360"'
+            ),
+            ccc=self.simple_list_item_with_indentation.format(
+                content='CCC',
+                num_id=1,
+                ilvl=2,
+                ind='left="4320" hanging="360"'
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="2">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="2160" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li style="margin-left:3.00em">AAA
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li style="margin-left:3.00em">BBB
+                            <ol class="pydocx-list-style-type-decimal">
+                                <li style="margin-left:3.00em">CCC</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_custom_hanging_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item_with_indentation.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+                ind='left="720" hanging="500"'
+            ),
+            bbb=self.simple_list_item_with_indentation.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+                ind='left="1440" hanging="700"'
+            ),
+            ccc=self.simple_list_item_with_indentation.format(
+                content='CCC',
+                num_id=1,
+                ilvl=2,
+                ind='left="2160" hanging="800"'
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="2">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="2160" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li style="margin-left:-0.58em">
+                    <span style="display:inline-block;text-indent:0.58em">AAA</span>
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li style="margin-left:-1.42em">
+                            <span style="display:inline-block;text-indent:1.42em">BBB</span>
+                            <ol class="pydocx-list-style-type-decimal">
+                                <li style="margin-left:-1.83em">
+                                    <span style="display:inline-block;text-indent:1.83em">CCC
+                                    </span>
+                                </li>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_custom_first_line_indentation(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+        '''.format(
+            aaa=self.simple_list_item_with_indentation.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0,
+                ind='firstLine="360"'
+            ),
+            bbb=self.simple_list_item_with_indentation.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+                ind='firstLine="360"'
+            ),
+            ccc=self.simple_list_item_with_indentation.format(
+                content='CCC',
+                num_id=1,
+                ilvl=2,
+                ind='firstLine="360"'
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="2">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="2160" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li style="margin-left:1.50em">AAA
+                    <ol class="pydocx-list-style-type-decimal">
+                        <li>BBB
+                            <ol class="pydocx-list-style-type-decimal">
+                                <li>CCC</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_nested_separated_lists(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+            {ddd}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=1,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=2,
+                ilvl=0,
+            ),
+            ddd=self.simple_list_item.format(
+                content='DDD',
+                num_id=1,
+                ilvl=1,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <num numId="2">
+                <abstractNumId val="2"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="2">
+                    <numFmt val="decimal" />
+                    <pPr>
+                        <ind left="2160" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+            <abstractNum abstractNumId="2">
+                <lvl ilvl="0">
+                    <numFmt val="lowerLetter"/>
+                    <pPr>
+                        <ind left="2880" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+            <li>
+                AAA
+                <ol class="pydocx-list-style-type-decimal">
+                    <li>
+                        BBB
+                        <ol class="pydocx-list-style-type-lowerLetter">
+                            <li style="margin-left:3.00em">CCC</li>
+                        </ol>
+                    </li>
+                    <li>DDD</li>
+                </ol>
+            </li>
+        </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+    def test_nested_separated_lists_different_level(self):
+        document_xml = '''
+            {aaa}
+            {bbb}
+            {ccc}
+            {ddd}
+        '''.format(
+            aaa=self.simple_list_item.format(
+                content='AAA',
+                num_id=1,
+                ilvl=0
+            ),
+            bbb=self.simple_list_item.format(
+                content='BBB',
+                num_id=2,
+                ilvl=1,
+            ),
+            ccc=self.simple_list_item.format(
+                content='CCC',
+                num_id=2,
+                ilvl=1,
+            ),
+            ddd=self.simple_list_item.format(
+                content='DDD',
+                num_id=1,
+                ilvl=0,
+            ),
+        )
+
+        numbering_xml = '''
+            <num numId="1">
+                <abstractNumId val="1"/>
+            </num>
+            <num numId="2">
+                <abstractNumId val="2"/>
+            </num>
+            <abstractNum abstractNumId="1">
+                <lvl ilvl="0">
+                    <numFmt val="decimal"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+            <abstractNum abstractNumId="2">
+                <lvl ilvl="0">
+                    <numFmt val="lowerLetter"/>
+                    <pPr>
+                        <ind left="720" hanging="360" />
+                    </pPr>
+                </lvl>
+                <lvl ilvl="1">
+                    <numFmt val="lowerLetter" />
+                    <pPr>
+                        <ind left="1440" hanging="360" />
+                    </pPr>
+                </lvl>
+            </abstractNum>
+        '''
+
+        document = WordprocessingDocumentFactory()
+        document.add(NumberingDefinitionsPart, numbering_xml)
+        document.add(MainDocumentPart, document_xml)
+
+        expected_html = '''
+            <ol class="pydocx-list-style-type-decimal">
+                <li>
+                    AAA
+                    <ol class="pydocx-list-style-type-lowerLetter">
+                        <li>BBB</li>
+                        <li>CCC</li>
+                    </ol>
+                </li>
+                <li>DDD</li>
+            </ol>
+        '''
+        self.assert_document_generates_html(document, expected_html)
+
+
 class FakedNumberingManyItemsTestCase(NumberingTestBase, DocumentGeneratorTestCase):
     def assert_html(self, list_type, digit_generator):
         paragraphs = []
@@ -1386,7 +1886,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AAA
+                <li style="margin-left:1.50em">AAA
                     <ol class="pydocx-list-style-type-decimal">
                         <li>BBB</li>
                         <li>CCC</li>
@@ -1445,7 +1945,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AAA
+                <li style="margin-left:1.50em">AAA
                     <ol class="pydocx-list-style-type-decimal">
                         <li>BBB</li>
                     </ol>

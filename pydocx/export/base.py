@@ -286,7 +286,7 @@ class PyDocXExporter(object):
             for item in items:
                 yield item
             return
-        builder = self.numbering_span_builder_class(items)
+        builder = self.numbering_span_builder_class(items, process_components=True)
         numbering_spans = builder.get_numbering_spans()
         for item in numbering_spans:
             yield item

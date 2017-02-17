@@ -10,15 +10,13 @@ import re
 import string
 
 from pydocx.openxml import wordprocessing
-from pydocx.util.memoize import memoized
-
 from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.text import Text
+from pydocx.util.memoize import memoized
 
 # Defined in 17.15.1.25
 DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
-
 
 roman_numeral_map = tuple(zip(
     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
@@ -140,6 +138,9 @@ class NumberingSpan(object):
 
     def __init__(self, numbering_level, numbering_definition, parent):
         self.children = []
+        self._nested_level = 0
+        # Mark a separate nested list
+        self.is_separate_list = False
         self.numbering_level = numbering_level
         self.numbering_definition = numbering_definition
         self.parent = parent
@@ -155,6 +156,27 @@ class NumberingSpan(object):
         if not first_item.children:
             return
         return first_item.children[0]
+
+    def get_last_child(self):
+        if not self.children:
+            return
+        last_item = self.children[-1]
+
+        return last_item
+
+    def get_numbering_level(self):
+        return self.numbering_level
+
+    @property
+    def nested_level(self):
+        return self._nested_level
+
+    def inc_nested_level(self):
+        nested_level = 0
+        if isinstance(self.parent, (NumberingSpan, NumberingItem)):
+            nested_level = self.parent.nested_level
+
+        self._nested_level = nested_level + 1
 
 
 class NumberingItem(object):
@@ -174,6 +196,16 @@ class NumberingItem(object):
         child.parent = self
         self.children.append(child)
 
+    @property
+    def nested_level(self):
+        return self.parent.nested_level
+
+    def get_first_child(self):
+        if self.children:
+            return self.children[0]
+
+        return None
+
 
 class BaseNumberingSpanBuilder(object):
     '''
@@ -189,7 +221,7 @@ class BaseNumberingSpanBuilder(object):
     accomplished using the NumberingSpan and NumberingItem classes.
     '''
 
-    def __init__(self, components=None):
+    def __init__(self, components=None, process_components=False):
         if not components:
             components = []
         self.components = components
@@ -198,6 +230,12 @@ class BaseNumberingSpanBuilder(object):
         self.current_item = None
         self.current_item_index = 0
         self.candidate_numbering_items = []
+        self.child_parent_num_map = {}
+        self.parent_child_num_map = {}
+        self.list_start_stop_index = {}
+
+        if process_components:
+            self.detect_parent_child_map_for_items()
 
     @memoized
     def get_numbering_level(self, paragraph):
@@ -205,6 +243,147 @@ class BaseNumberingSpanBuilder(object):
         if level and level.format_is_none():
             return None
         return level
+
+    def _get_component_item(self, component, to_tuple=False):
+        item = {
+            'num_id': component.numbering_definition.abstract_num_id,
+            'level': component.get_numbering_level().level_id
+        }
+
+        if to_tuple:
+            item = (item['num_id'], item['level'])
+
+        return item
+
+    def detect_parent_child_map_for_items(self):
+        """
+        There are cases when we have span inside an item and this span is different from
+        the parent one.
+            Example listing:
+                    1. A
+                    2. B
+                        Separate
+                            * B1
+                            * B2
+                    3. C
+
+        In the above example B1, B2 items are creating a separate span and does have different
+        num. definition. We need to somehow detect this cases and make sure we properly
+        continue numbering(in this case '3. C').
+
+        We parse this as following:
+            let say that list: A, B, C has abstract_num_id = 1, level = 0
+            and list: B1, B2 has abstract_num_id = 4, level = 0
+
+        As output we will construct 2 dicts as follow:
+             child_parent_num_map = {
+                "4": {"num_id": '1', "level": '0'}
+             }
+
+             parent_child_num_map = {
+                ("1", "0"): [{"num_id": '4', "level": '0'}]
+             }
+
+        So, when we process paragraph item we know from the start that it has a parent or not.
+        """
+
+        if not self.components:
+            return False
+
+        parent_child_map = {}
+        child_parent_map = {}
+        list_start_stop_index = {}
+        # we are interested only in components that are part of the listing
+        components = [component for component in self.components if
+                      hasattr(component, 'properties')
+                      and hasattr(component.properties, 'numbering_properties')
+                      and component.numbering_definition
+                      and component.get_numbering_level()]
+        if not components:
+            return False
+
+        components_reversed_list = list(reversed(components))
+        for i, component in enumerate(components[:-1]):
+            parent_item = self._get_component_item(component)
+            nums = []
+            outer_item_found = False
+            if i > 0:
+                components_reversed = components_reversed_list[:-i]
+            else:
+                components_reversed = components_reversed_list
+
+            for j, next_component in enumerate(components_reversed):
+                next_item = self._get_component_item(next_component)
+                if parent_item == next_item:
+                    outer_item_found = True
+                    if not parent_item['num_id'] in list_start_stop_index:
+                        # We need to find the index of the component from original
+                        # self.components list so that we take into account all additional
+                        # paragraphs that a list can contain
+                        list_start_stop_index[parent_item['num_id']] = {
+                            'start': self.components.index(component),
+                            'stop': self.components.index(next_component)
+                        }
+                    break
+            if outer_item_found:
+                for _component in components[i + 1:-j - 1]:
+                    child_item = self._get_component_item(_component)
+                    # We need to process only items that have different num_id
+                    # which mean are part of the different list
+                    if child_item['num_id'] != parent_item['num_id']:
+                        # Check if child is not already a parent
+                        child_item_children = parent_child_map.get(
+                            (child_item['num_id'], child_item['level']), [])
+                        if parent_item not in child_item_children:
+                            nums.append(child_item)
+                if nums:
+                    # parent_key = parent_item['num_id']
+                    parent_key = (parent_item['num_id'], parent_item['level'])
+                    if parent_key not in parent_child_map:
+                        parent_child_map[parent_key] = []
+
+                    for num in nums:
+                        child_parent_map[num['num_id']] = parent_item
+                        if num not in parent_child_map[parent_key]:
+                            parent_child_map[parent_key].append(num)
+
+        self.child_parent_num_map = child_parent_map
+        self.parent_child_num_map = parent_child_map
+        self.list_start_stop_index = list_start_stop_index
+
+        return True
+
+    def has_parent_list(self, paragraph):
+        '''
+        Check if current paragraph is inside a list which is separated from parent list.
+        '''
+
+        if not paragraph.has_numbering_properties or not paragraph.has_numbering_definition:
+            return False
+
+        if not self.current_span:
+            return False
+
+        num_item = self._get_component_item(paragraph)
+
+        return bool(self.child_parent_num_map.get(num_item['num_id'], None))
+
+    def is_parent_of_current_span(self, paragraph):
+        '''
+
+        :param paragraph:
+        :return:
+        '''
+        if not paragraph.has_numbering_properties or not paragraph.has_numbering_definition:
+            return False
+
+        if not self.current_span:
+            return True
+
+        num_item = self._get_component_item(paragraph, to_tuple=True)
+        span_item = self._get_component_item(self.current_span)
+
+        return span_item in self.parent_child_num_map.get(num_item, [])
 
     def include_candidate_items_in_current_item(self, new_item_index):
         '''
@@ -224,7 +403,7 @@ class BaseNumberingSpanBuilder(object):
         # Since we've processed all of the candidate numbering items, reset it
         self.candidate_numbering_items = []
 
-    def should_start_new_span(self, paragraph):
+    def should_start_new_span(self, index, paragraph):
         '''
         If there's not a current span, and the paragraph is a heading
         style, do not start a new span.
@@ -235,28 +414,128 @@ class BaseNumberingSpanBuilder(object):
         span, start a new span.
         Otherwise, do not start a new span.
         '''
+
         if self.current_span is None:
             return True
+
         level = self.get_numbering_level(paragraph)
         num_def = None
         if level:
             num_def = level.parent
+
+        if num_def == self.current_span.numbering_definition:
+            return False
+        elif self.has_parent_list(paragraph):
+            return False
+        elif self.is_parent_of_current_span(paragraph):
+            return False
+        elif self.current_span.is_separate_list:
+            return False
+
+        list_idx = self.list_start_stop_index.get(num_def.abstract_num_id)
+        if list_idx and list_idx['start'] == index:
+            return True
+
         return num_def != self.current_span.numbering_definition
 
-    def should_start_new_item(self, paragraph):
+    def should_start_new_item(self, index, paragraph):
         '''
         If there is not a current span, do not start a new item.
         If the paragraph is a heading style, do not start a new item.
-        Otherwise, only start a new item if the numbering definition of the
-        paragraph matches the numbering definition of the current span.
+        Start new item if:
+            Paragraph is from separate list and inside a span
+            Paragraph is from separate list and is parent of the current span
+            Paragraph level id is bigger then 0 which mean we are still inside list
+            Numbering definition of the paragraph matches the numbering definition of the
+            current span.
         '''
+
         if self.current_span is None:
             return False
+
         level = self.get_numbering_level(paragraph)
         num_def = None
         if level:
             num_def = level.parent
+
+        if self.has_parent_list(paragraph):
+            return True
+        elif self.is_parent_of_current_span(paragraph):
+            return True
+        else:
+            list_idx = self.list_start_stop_index.get(num_def.abstract_num_id)
+            # For mangled lists we need to make sure that we are not handling
+            # the first element from the list which have level > 0
+            if list_idx and index > list_idx['start']:
+                # We are still in the list
+                if int(level.level_id) > 0:
+                    return True
+
         return num_def == self.current_span.numbering_definition
+
+    def add_item_to_span(self, index, current_span=None):
+        '''
+        Add a new item to the current span or the span we specify.
+        '''
+
+        self.current_span = current_span or self.current_span
+
+        self.current_item = NumberingItem(
+            numbering_span=self.current_span,
+        )
+        self.current_item_index = index
+        self.current_span.append_child(self.current_item)
+
+    def add_new_span_and_item(self, index, level, parent_span=None):
+        parent_span = parent_span or self.current_span
+
+        num_def = level.parent
+
+        next_numbering_span = NumberingSpan(
+            numbering_level=level,
+            numbering_definition=num_def,
+            parent=parent_span,
+        )
+
+        self.numbering_span_stack.append(next_numbering_span)
+        next_numbering_item = NumberingItem(
+            numbering_span=next_numbering_span,
+        )
+
+        next_numbering_span.append_child(next_numbering_item)
+        self.current_item.append_child(next_numbering_span)
+        self.current_span = next_numbering_span
+        self.current_item = next_numbering_item
+        self.current_item_index = index
+
+        self.current_span.inc_nested_level()
+
+    def add_new_span_and_item_lower_level(self, index, level, previous_span=None):
+        num_def = level.parent
+
+        level_id = int(level.level_id)
+
+        if not previous_span:
+            # we need to "subtract" a level. To do that, find the level
+            # that we're going back to, which may not even exist
+            previous_span = self.find_previous_numbering_span_with_lower_level(level_id)
+
+        if self.numbering_span_stack:
+            assert previous_span
+            self.current_span = previous_span
+        else:
+            # If the numbering_span_stack is empty now, it means
+            # we're handling a mangled level case
+            # For that scenario, create a new span
+            self.current_span = NumberingSpan(
+                numbering_level=level,
+                numbering_definition=num_def,
+                parent=self.current_span,
+            )
+            self.numbering_span_stack = [self.current_span]
+            yield self.current_span
+
+        self.add_item_to_span(index)
 
     def handle_start_new_span(self, index, paragraph):
         level = self.get_numbering_level(paragraph)
@@ -279,11 +558,7 @@ class BaseNumberingSpanBuilder(object):
 
         self.numbering_span_stack = [self.current_span]
 
-        self.current_item = NumberingItem(
-            numbering_span=self.current_span,
-        )
-        self.current_item_index = index
-        self.current_span.append_child(self.current_item)
+        self.add_item_to_span(index)
 
     def handle_start_new_item(self, index, paragraph):
         level = self.get_numbering_level(paragraph)
@@ -298,54 +573,37 @@ class BaseNumberingSpanBuilder(object):
 
         if level == self.current_span.numbering_level:
             # The level hasn't changed
-            self.current_item = NumberingItem(
-                numbering_span=self.current_span,
-            )
-            self.current_item_index = index
-            self.current_span.append_child(self.current_item)
+            self.add_item_to_span(index)
         else:
+            has_parent_list = self.has_parent_list(paragraph)
+            is_parent_of_current_span = self.is_parent_of_current_span(paragraph)
+
             level_id = int(level.level_id)
             current_level_id = int(self.current_span.numbering_level.level_id)
-            if level_id > current_level_id:
-                # Add a new span + item to hold this new level
-                next_numbering_span = NumberingSpan(
-                    numbering_level=level,
-                    numbering_definition=num_def,
-                    parent=self.current_span,
-                )
-                self.numbering_span_stack.append(next_numbering_span)
-                next_numbering_item = NumberingItem(
-                    numbering_span=next_numbering_span,
-                )
-                next_numbering_span.children.append(next_numbering_item)
-                self.current_item.append_child(next_numbering_span)
-                self.current_span = next_numbering_span
-                self.current_item = next_numbering_item
-                self.current_item_index = index
-            elif level_id < current_level_id:
-                # we need to "subtract" a level. To do that, find the level
-                # that we're going back to, which may not even exist
-                previous_span = self.find_previous_numbering_span_with_lower_level(level_id)
-                if self.numbering_span_stack:
-                    assert previous_span
-                    self.current_span = previous_span
-                else:
-                    # If the numbering_span_stack is empty now, it means
-                    # we're handling a mangled level case
-                    # For that scenario, create a new span
-                    self.current_span = NumberingSpan(
-                        numbering_level=level,
-                        numbering_definition=num_def,
-                        parent=self.current_span,
-                    )
-                    self.numbering_span_stack = [self.current_span]
-                    yield self.current_span
 
-                self.current_item = NumberingItem(
-                    numbering_span=self.current_span,
-                )
-                self.current_item_index = index
-                self.current_span.append_child(self.current_item)
+            if num_def == self.current_span.numbering_definition:
+                # At this stage we process all the items that are part of the same list.
+                # All item from the same list have same numbering definition
+                if level_id > current_level_id:
+                    self.add_new_span_and_item(index, level)
+                elif level_id < current_level_id:
+                    for item in self.add_new_span_and_item_lower_level(index, level):
+                        yield item
+            else:
+                # Here we deal with lists that separate from the parent list meaning
+                # that have different numbering definition
+                if not has_parent_list and not is_parent_of_current_span:
+                    self.current_span = self.find_previous_numbering_span_by_num_def(paragraph)
+                    self.current_item = self.current_span.get_last_child()
+                    self.add_new_span_and_item(index, level)
+                elif has_parent_list and not is_parent_of_current_span:
+                    self.current_span = self.find_parent_numbering_span(paragraph)
+                    self.current_item = self.current_span.get_last_child()
+                    self.add_new_span_and_item(index, level)
+                    self.current_span.is_separate_list = True
+                else:
+                    self.current_span = self.find_previous_numbering_span_by_num_def(paragraph)
+                    self.add_item_to_span(index)
 
     def find_previous_numbering_span_with_lower_level(self, level_id):
         previous_span = None
@@ -356,6 +614,36 @@ class BaseNumberingSpanBuilder(object):
                 # We may have found the level
                 break
             self.numbering_span_stack.pop()
+        return previous_span
+
+    def find_previous_numbering_span_by_num_def(self, paragraph):
+        previous_span = None
+        while self.numbering_span_stack:
+            previous_span = self.numbering_span_stack[-1]
+            if previous_span.numbering_definition == paragraph.numbering_definition:
+                # we found the parent span of the paragraph item
+                break
+            self.numbering_span_stack.pop()
+        return previous_span
+
+    def find_parent_numbering_span(self, paragraph):
+        previous_span = None
+
+        num_item = self._get_component_item(paragraph)
+
+        parent_num_item = self.child_parent_num_map.get(num_item['num_id'], None)
+        if not parent_num_item:
+            return previous_span
+
+        while self.numbering_span_stack:
+            previous_span = self.numbering_span_stack[-1]
+            previous_span_item = self._get_component_item(previous_span)
+
+            if previous_span_item == parent_num_item:
+                # we found the parent span of the paragraph item
+                break
+            self.numbering_span_stack.pop()
+
         return previous_span
 
     def handle_paragraph(self, index, paragraph):
@@ -378,8 +666,8 @@ class BaseNumberingSpanBuilder(object):
                 self.candidate_numbering_items.append((index, paragraph))
             return
 
-        start_new_span = self.should_start_new_span(paragraph)
-        start_new_item = self.should_start_new_item(paragraph)
+        start_new_span = self.should_start_new_span(index, paragraph)
+        start_new_item = self.should_start_new_item(index, paragraph)
 
         if start_new_span:
             for item in self.handle_start_new_span(index, paragraph):
@@ -549,8 +837,10 @@ class FakeNumberingDetection(object):
 
     def get_left_position_for_numbering_span(self, numbering_span):
         paragraph = numbering_span.get_first_child_of_first_item()
+
         left_pos = self.get_left_position_for_paragraph(paragraph)
         num_level_para_properties = numbering_span.numbering_level.paragraph_properties
+
         if num_level_para_properties:
             left_pos += num_level_para_properties.start_margin_position
         return left_pos

@@ -4,7 +4,7 @@ from __future__ import (
     print_function,
     unicode_literals,
 )
-
+from pydocx.util.memoize import memoized
 from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.hyperlink import Hyperlink
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
@@ -47,6 +47,10 @@ class Paragraph(XmlModel):
             self._effective_properties = properties
         return self._effective_properties
 
+    @property
+    def numbering_definition(self):
+        return self.get_numbering_definition()
+
     def has_structured_document_parent(self):
         from pydocx.openxml.wordprocessing import SdtBlock
         return self.has_ancestor(SdtBlock)
@@ -85,9 +89,8 @@ class Paragraph(XmlModel):
     def heading_style(self, style):
         self._heading_style = style
 
+    @memoized
     def get_numbering_definition(self):
-        # TODO add memoization
-
         # TODO the getattr is necessary because of footnotes. From the context
         # of a footnote, a paragraph's container is the footnote part, which
         # doesn't have access to the numbering_definitions_part
@@ -103,8 +106,8 @@ class Paragraph(XmlModel):
             num_id=numbering_properties.num_id,
         )
 
+    @memoized
     def get_numbering_level(self):
-        # TODO add memoization
         numbering_definition = self.get_numbering_definition()
         if not numbering_definition:
             return
@@ -176,3 +179,30 @@ class Paragraph(XmlModel):
             else:
                 break
         return tab_count
+
+    @property
+    @memoized
+    def has_numbering_properties(self):
+        return bool(getattr(self.properties, 'numbering_properties', None))
+
+    @property
+    @memoized
+    def has_numbering_definition(self):
+        return bool(self.numbering_definition)
+
+    def get_indentation(self, indentation, only_level_ind=False):
+        '''
+        Get specific indentation of the current paragraph. If indentation is
+        not present on the paragraph level, get it from the numbering definition.
+        '''
+
+        ind = None
+
+        if self.properties:
+            if not only_level_ind:
+                ind = self.properties.to_int(indentation)
+            if ind is None:
+                level = self.get_numbering_level()
+                ind = level.paragraph_properties.to_int(indentation, default=0)
+
+        return ind

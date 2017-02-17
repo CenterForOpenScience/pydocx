@@ -360,28 +360,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
 
         return results
 
-    def get_previous_level_paragraph(self, num_id, level_id):
-        level_id = int(level_id)
-
-        while True:
-            if level_id == 0:
-                prev_level_id = level_id
-            else:
-                prev_level_id = level_id - 1
-
-            prev_level_paragraphs = self.numbering_level_listing_track[num_id][prev_level_id]
-            if prev_level_paragraphs:
-                return prev_level_paragraphs[-1]
-
-            if prev_level_id == 0 and not prev_level_paragraphs:
-                # This is an edge case with older version of word when it may contain a sublist
-                # into a separate num_id.
-                break
-
-            level_id -= 1
-
-        return None
-
     def export_listing_paragraph_property_indentation(
             self,
             paragraph,
@@ -393,12 +371,10 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if not level_properties or not paragraph.has_numbering_properties:
             return style
 
-        default_level_indentation = paragraph.get_numbering_default_level_indentation()
+        level_indentation_step = \
+            paragraph.numbering_definition.get_indentation_between_levels()
 
         paragraph_properties = paragraph.properties
-
-        level_id = int(paragraph_properties.numbering_properties.level_id)
-        num_id = paragraph_properties.numbering_properties.num_id
 
         level_ind_left = level_properties.to_int('indentation_left', default=0)
         level_ind_hanging = level_properties.to_int('indentation_hanging', default=0)
@@ -414,49 +390,50 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if not left and not hanging:
             return style
 
-        if num_id not in self.numbering_level_listing_track:
-            # By default there are only 9 numbering levels in docx(0 indexed)
-            self.numbering_level_listing_track[num_id] = [[] for _ in range(10)]
-        if paragraph not in self.numbering_level_listing_track[num_id][level_id]:
-            self.numbering_level_listing_track[num_id][level_id].append(paragraph)
+        # All the bellow left margin calculation is done because html ul/ol/li elements have
+        # their default indentations and we need to make sure that we migrate as near as
+        # possible solution to html.
+        margin_left = left
 
-        # By default left contains hanging as well, so we remove it
-        left -= hanging
+        # Because hanging can be set independently, we remove it from left margin and will
+        # be added as text-indent later on
+        margin_left -= hanging
 
-        if level_id == 0:
-            # Because html ul/ol/li elements have their default indentations
-            # We remove the default word one as well,
-            # This way we will have as near as possible migration to html
-            left -= (default_level_indentation['left'] - level_ind_hanging)
+        # Take into account that current span can have custom left margin
+        if level_indentation_step > level_ind_hanging:
+            margin_left -= (level_indentation_step - level_ind_hanging)
+        else:
+            margin_left -= level_indentation_step
 
-            # First line are added to left margins
-            if paragraph_ind_first_line:
-                left += paragraph_ind_first_line
+        # First line are added to left margins
+        margin_left += paragraph_ind_first_line
 
-        if level_id > 0:
-            # For nested levels we need to add indentation based on parent level
-            prev_paragraph = self.get_previous_level_paragraph(num_id, level_id)
-            if prev_paragraph:
-                prev_left_level_indentation = prev_paragraph.get_numbering_level(
-                    ).paragraph_properties.to_int('indentation_left')
-                left -= (prev_left_level_indentation - level_ind_hanging)
-            else:
-                # There are edge cases when we have a level > 0 for specific num_id but no
-                # actual level=0 for this num_id. in such cases we just do the default
-                # indentation
-                left -= level_ind_hanging
+        if isinstance(paragraph.parent, NumberingItem):
+            try:
+                # In case of nested lists elements, we need to adjust left margin
+                # based on the parent item
+                parent_paragraph = paragraph.parent.numbering_span.parent.get_first_child()
 
-            # Because lists add there own nested level indentation we subtract it here
-            # and the remaining part will be the actual needed indentation
-            left -= default_level_indentation['level_indentation_step']
+                parent_ind_left = parent_paragraph.get_indentation('indentation_left')
+                parent_ind_hanging = parent_paragraph.get_indentation('indentation_hanging')
+                parent_lvl_ind_hanging = parent_paragraph.get_indentation(
+                    'indentation_hanging')
+
+                margin_left -= (parent_ind_left - parent_ind_hanging)
+                margin_left -= parent_lvl_ind_hanging
+                # To mimic the word way of setting first line, we need to move back(left) all
+                # elements by first_line value
+                margin_left -= parent_paragraph.get_indentation('indentation_first_line')
+            except AttributeError:
+                pass
 
         # Here as well, we remove the default hanging which word adds
         # because <li> tag will provide it's own
         hanging -= level_ind_hanging
 
-        if left:
-            left = convert_twips_to_ems(left)
-            style['margin-left'] = '{0:.2f}em'.format(left)
+        if margin_left:
+            margin_left = convert_twips_to_ems(margin_left)
+            style['margin-left'] = '{0:.2f}em'.format(margin_left)
 
         # we don't allow negative hanging
         if hanging < 0:
@@ -466,7 +443,6 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if hanging is not None:
                 # Now, here we add the hanging as text-indent for the paragraph
                 hanging = convert_twips_to_ems(hanging)
-                # TODO text-indent doesn't work with inline elements like span
                 style['text-indent'] = '{0:.2f}em'.format(hanging)
 
         return style

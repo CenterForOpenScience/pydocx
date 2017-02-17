@@ -190,18 +190,19 @@ class Paragraph(XmlModel):
     def has_numbering_definition(self):
         return bool(self.numbering_definition)
 
-    @memoized
-    def get_numbering_default_level_indentation(self, first_level_left=720):
-        """Given an input listing paragraph we calculate what is the default left
-        indentation on this level. Based on this we can determine whether we should
-        add margins to html <li> or leave the default added by tag."""
+    def get_indentation(self, indentation, only_level_ind=False):
+        '''
+        Get specific indentation of the current paragraph. If indentation is
+        not present on the paragraph level, get it from the numbering definition.
+        '''
 
-        # by default a list is started with 'first_level_left' indentation.
+        ind = None
 
-        level_id = int(self.properties.numbering_properties.level_id)
+        if self.properties:
+            if not only_level_ind:
+                ind = self.properties.to_int(indentation)
+            if ind is None:
+                level = self.get_numbering_level()
+                ind = level.paragraph_properties.to_int(indentation, default=0)
 
-        default_left_inc = self.numbering_definition.get_indentation_between_levels()
-
-        left = first_level_left * (1 if not level_id else level_id)
-
-        return {'left': left, 'level_indentation_step': default_left_inc}
+        return ind

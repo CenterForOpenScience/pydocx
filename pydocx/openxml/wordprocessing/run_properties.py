@@ -28,16 +28,23 @@ class RunProperties(XmlModel):
     sz = XmlChild(name='sz', attrname='val')
     clr = XmlChild(name='color', attrname='val')
     r_fonts = XmlChild(type=RFonts)
+    highlight_clr = XmlChild(name='highlight', attrname='val')
 
     @property
     def color(self):
         if self.clr is None:
             return
-        # TODO: When we support background colors, remove FFFFFF check
-        if self.clr == '000000' or self.clr == 'FFFFFF':
+        if self.clr == '000000':
             return
 
         return self.clr
+
+    @property
+    def highlight_color(self):
+        if self.highlight_clr is None:
+            return
+
+        return self.highlight_clr
 
     @property
     def position(self):

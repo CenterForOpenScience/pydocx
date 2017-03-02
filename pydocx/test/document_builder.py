@@ -206,13 +206,14 @@ class DocxBuilder(object):
         )
 
     @classmethod
-    def table_cell(self, paragraph, merge=False, merge_continue=False):
+    def table_cell(self, paragraph, merge=False, merge_continue=False, fill_color='auto'):
         template = env.get_template(templates['tc'])
         return template_render(
             template,
             paragraph=paragraph,
             merge=merge,
             merge_continue=merge_continue,
+            fill_color=fill_color
         )
 
     @classmethod

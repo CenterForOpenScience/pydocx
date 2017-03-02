@@ -296,6 +296,35 @@ class TableWithListAndParagraph(TranslationTestCase):
         return xml
 
 
+class TableWithCellBackgroundColor(TranslationTestCase):
+    expected_output = '''
+        <table border="1">
+            <tr>
+                <td style="background-color: #FF00FF">AAA</td>
+                <td>BBB</td>
+            </tr>
+            <tr>
+                <td>CCC</td>
+                <td style="background-color: #000000">
+                    <span style="color: #FFFFFF">DDD</span>
+                </td>
+            </tr>
+        </table>
+    '''
+
+    def get_xml(self):
+        cell1 = DXB.table_cell(paragraph=DXB.p_tag('AAA'), fill_color='FF00FF')
+        cell2 = DXB.table_cell(paragraph=DXB.p_tag('BBB'), fill_color='FFFFFF')
+        cell3 = DXB.table_cell(paragraph=DXB.p_tag('CCC'), fill_color='auto')
+        # for dark color we get white text color
+        cell4 = DXB.table_cell(paragraph=DXB.p_tag('DDD'), fill_color='000000')
+        rows = [DXB.table_row([cell1, cell2]), DXB.table_row([cell3, cell4])]
+        table = DXB.table(rows)
+        body = table
+        xml = DXB.xml(body)
+        return xml
+
+
 class SimpleListTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">

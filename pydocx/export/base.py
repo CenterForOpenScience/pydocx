@@ -359,6 +359,8 @@ class PyDocXExporter(object):
             (properties.hidden, self.export_run_property_hidden),
             (properties.vertical_align, self.export_run_property_vertical_align),
             (properties.color, self.export_run_property_color),
+            (properties.highlight_color, self.export_run_property_highlight_color),
+            (not properties.color, self.export_run_property_parent_background_color),
         ]
         for actual_value, handler in property_rules:
             if actual_value:
@@ -405,6 +407,12 @@ class PyDocXExporter(object):
         return results
 
     def export_run_property_color(self, run, results):
+        return results
+
+    def export_run_property_highlight_color(self, run, results):
+        return results
+
+    def export_run_property_parent_background_color(self, run, results):
         return results
 
     def export_hyperlink(self, hyperlink):

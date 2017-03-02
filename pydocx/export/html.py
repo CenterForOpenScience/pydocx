@@ -17,11 +17,16 @@ from pydocx.constants import (
     POINTS_PER_EM,
     PYDOCX_STYLES,
     TWIPS_PER_POINT,
-    EMUS_PER_PIXEL
+    EMUS_PER_PIXEL,
+    BRIGHTNESS_DARK_COLOR,
+    COLOR_FOR_DARK_BACKGROUND
 )
 from pydocx.export.base import PyDocXExporter
 from pydocx.export.numbering_span import NumberingItem
 from pydocx.openxml import wordprocessing
+from pydocx.openxml.wordprocessing.paragraph import Paragraph
+from pydocx.openxml.wordprocessing.table_cell import TableCell
+from pydocx.util import color
 from pydocx.util.uri import uri_is_external
 from pydocx.util.xml import (
     convert_dictionary_to_html_attributes,
@@ -572,6 +577,40 @@ class PyDocXHTMLExporter(PyDocXExporter):
         tag = HtmlTag('span', **attrs)
         return self.export_run_property(tag, run, results)
 
+    def export_run_property_highlight_color(self, run, results):
+        if run.properties is None or run.properties.highlight_color is None:
+            return results
+
+        attrs = {
+            'style': 'background-color: %s' % run.properties.highlight_color
+        }
+        tag = HtmlTag('span', **attrs)
+
+        return self.export_run_property(tag, run, results)
+
+    def export_run_property_parent_background_color(self, run, results):
+        background_color = None
+
+        if isinstance(run.parent, (Paragraph,)):
+            paragraph = run.parent
+            if isinstance(paragraph.parent, (TableCell,)) and paragraph.parent.properties:
+                table_cell_prop = paragraph.parent.properties
+                background_color = table_cell_prop.background_color
+
+        if background_color:
+            brightness = color.brightness(background_color)
+            # We need to change the text color if background color is dark
+            # and text run does not have custom color.
+            # Office Word does this automatically.
+            if brightness < BRIGHTNESS_DARK_COLOR:
+                attrs = {
+                    'style': 'color: #%s' % COLOR_FOR_DARK_BACKGROUND
+                }
+                tag = HtmlTag('span', **attrs)
+                results = self.export_run_property(tag, run, results)
+
+        return results
+
     def export_text(self, text):
         results = super(PyDocXHTMLExporter, self).export_text(text)
         for result in results:
@@ -668,6 +707,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 attrs['colspan'] = colspan
             if rowspan > 1:
                 attrs['rowspan'] = rowspan
+
+            if table_cell.properties:
+                background_color = table_cell.properties.background_color
+                if background_color:
+                    attrs['style'] = 'background-color: #%s' % background_color
+
             tag = HtmlTag('td', **attrs)
 
         numbering_spans = self.yield_numbering_spans(table_cell.children)

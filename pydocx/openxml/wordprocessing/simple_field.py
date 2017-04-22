@@ -38,6 +38,8 @@ class SimpleField(XmlModel):
         return re.findall(r'\s*(?:"([^"]+)"|([^\s]+))+', arg_string)
 
     def parse_instr(self):
+        if self.instr is None:
+            return
         m = self._parse_instr_into_field_type_and_arg_string()
         if not m:
             return

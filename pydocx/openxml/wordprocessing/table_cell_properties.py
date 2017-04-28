@@ -21,7 +21,11 @@ class TableCellProperties(XmlModel):
         # of preceding cells shall be closed.
         if self.vertical_merge is None:
             return True
+        return not self.is_continue_vertical_merge
+
+    @property
+    def is_continue_vertical_merge(self):
+        if self.vertical_merge is None:
+            return False
         merge = self.vertical_merge.get('val', 'continue')
-        if merge != 'continue':
-            return True
-        return False
+        return merge == 'continue'

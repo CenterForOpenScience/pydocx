@@ -33,6 +33,12 @@ JUSTIFY_RIGHT = 'right'
 
 POINTS_PER_EM = 12
 
+# Defined in 17.15.1.25
+DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
+
+# Define the whitespace character
+HTML_WHITE_SPACE = '&#160;'
+
 PYDOCX_STYLES = {
     'insert': {
         'color': 'green',

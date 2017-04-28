@@ -33,7 +33,7 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td><p>Foo</p></td>
                 </tr>
             </table>
         '''
@@ -65,7 +65,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo<br />Bar</td>
+                    <td>
+                        <p>Foo</p>
+                        <p>Bar</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -115,12 +118,12 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
-                    <td>Bar</td>
+                    <td><p>Foo</p></td>
+                    <td><p>Bar</p></td>
                 </tr>
                 <tr>
-                    <td>One</td>
-                    <td>Two</td>
+                    <td><p>One</p></td>
+                    <td><p>Two</p></td>
                 </tr>
             </table>
         '''
@@ -173,7 +176,11 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td><em><strong>Foo</strong></em></td>
+                    <td>
+                        <p>
+                            <em><strong>Foo</strong></em>
+                        </p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -219,11 +226,13 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td colspan="2">Foo</td>
+                    <td colspan="2">
+                        <p>Foo</p>
+                    </td>
                 </tr>
                 <tr>
-                    <td>One</td>
-                    <td>Two</td>
+                    <td><p>One</p></td>
+                    <td><p>Two</p></td>
                 </tr>
             </table>
         '''
@@ -274,11 +283,17 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td rowspan="2">Foo</td>
-                    <td>Bar</td>
+                    <td rowspan="2">
+                        <p>Foo</p>
+                    </td>
+                    <td>
+                        <p>Bar</p>
+                    </td>
                 </tr>
                 <tr>
-                    <td>Two</td>
+                    <td>
+                        <p>Two</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -302,7 +317,9 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td></td>
+                    <td>
+                        <p>&#160;</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -329,7 +346,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>Foo</p>
+                        <p>&#160;</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -356,7 +376,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>&#160;</p>
+                        <p>Foo</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -384,7 +407,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>&#160;</p>
+                        <p>Foo</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -412,7 +438,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>Foo</p>
+                        <p>&#160;</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -440,7 +469,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p></p>
+                        <p>Foo</p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -468,7 +500,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>Foo</p>
+                        <p></p>
+                    </td>
                 </tr>
             </table>
         '''
@@ -496,7 +531,10 @@ class TableTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <table border="1">
                 <tr>
-                    <td>Foo</td>
+                    <td>
+                        <p>Foo</p>
+                        <p> </p>
+                    </td>
                 </tr>
             </table>
         '''

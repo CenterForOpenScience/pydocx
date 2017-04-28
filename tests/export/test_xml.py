@@ -131,12 +131,12 @@ class TableTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
-                <td>AAA</td>
-                <td>BBB</td>
+                <td><p>AAA</p></td>
+                <td><p>BBB</p></td>
             </tr>
             <tr>
-                <td>CCC</td>
-                <td>DDD</td>
+                <td><p>CCC</p></td>
+                <td><p>DDD</p></td>
             </tr>
         </table>
     '''
@@ -158,11 +158,17 @@ class RowSpanTestCase(TranslationTestCase):
     expected_output = '''
            <table border="1">
             <tr>
-                <td rowspan="2">AAA</td>
-                <td>BBB</td>
+                <td rowspan="2">
+                    <p>AAA</p>
+                </td>
+                <td>
+                    <p>BBB</p>
+                </td>
             </tr>
             <tr>
-                <td>CCC</td>
+                <td>
+                    <p>CCC</p>
+                </td>
             </tr>
         </table>
     '''
@@ -185,20 +191,20 @@ class NestedTableTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
-                <td>AAA</td>
-                <td>BBB</td>
+                <td><p>AAA</p></td>
+                <td><p>BBB</p></td>
             </tr>
             <tr>
-                <td>CCC</td>
+                <td><p>CCC</p></td>
                 <td>
                     <table border="1">
                         <tr>
-                            <td>DDD</td>
-                            <td>EEE</td>
+                            <td><p>DDD</p></td>
+                            <td><p>EEE</p></td>
                         </tr>
                         <tr>
-                            <td>FFF</td>
-                            <td>GGG</td>
+                            <td><p>FFF</p></td>
+                            <td><p>GGG</p></td>
                         </tr>
                     </table>
                 </td>
@@ -228,12 +234,12 @@ class TableWithInvalidTag(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
-                <td>AAA</td>
-                <td>BBB</td>
+                <td><p>AAA</p></td>
+                <td><p>BBB</p></td>
             </tr>
             <tr>
                 <td></td>
-                <td>DDD</td>
+                <td><p>DDD</p></td>
             </tr>
         </table>
     '''
@@ -256,11 +262,11 @@ class TableWithListAndParagraph(TranslationTestCase):
             <tr>
                 <td>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>AAA</li>
-                        <li>BBB</li>
+                        <li><p>AAA</p></li>
+                        <li><p>BBB</p></li>
                     </ol>
-                    CCC<br />
-                    DDD
+                    <p>CCC</p>
+                    <p>DDD</p>
                 </td>
             </tr>
         </table>
@@ -299,9 +305,9 @@ class TableWithListAndParagraph(TranslationTestCase):
 class SimpleListTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
-            <li>AAA</li>
-            <li>BBB</li>
-            <li>CCC</li>
+            <li><p>AAA</p></li>
+            <li><p>BBB</p></li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -329,7 +335,7 @@ class SimpleListTestCase(TranslationTestCase):
 class SingleListItemTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
-            <li>AAA</li>
+            <li><p>AAA</p></li>
         </ol>
     '''
 
@@ -355,20 +361,24 @@ class SingleListItemTestCase(TranslationTestCase):
 class ListWithContinuationTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA<br />BBB</li>
-            <li>CCC
+            <li>
+                <p>AAA</p>
+                <p>BBB</p>
+            </li>
+            <li>
+                <p>CCC</p>
                 <table border="1">
                     <tr>
-                        <td>DDD</td>
-                        <td>EEE</td>
+                        <td><p>DDD</p></td>
+                        <td><p>EEE</p></td>
                     </tr>
                     <tr>
-                        <td>FFF</td>
-                        <td>GGG</td>
+                        <td><p>FFF</p></td>
+                        <td><p>GGG</p></td>
                     </tr>
                 </table>
             </li>
-            <li>HHH</li>
+            <li><p>HHH</p></li>
         </ol>
     '''
 
@@ -397,19 +407,20 @@ class ListWithContinuationTestCase(TranslationTestCase):
 class ListWithMultipleContinuationTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA
+            <li>
+                <p>AAA</p>
                 <table border="1">
                     <tr>
-                        <td>BBB</td>
+                        <td><p>BBB</p></td>
                     </tr>
                 </table>
                 <table border="1">
                     <tr>
-                        <td>CCC</td>
+                        <td><p>CCC</p></td>
                     </tr>
                 </table>
             </li>
-            <li>DDD</li>
+            <li><p>DDD</p></li>
         </ol>
     '''
 
@@ -437,13 +448,13 @@ class ListWithMultipleContinuationTestCase(TranslationTestCase):
 class MangledIlvlTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
-            <li>AAA</li>
+            <li><p>AAA</p></li>
         </ol>
         <ol class="pydocx-list-style-type-decimal">
-            <li>BBB</li>
+            <li><p>BBB</p></li>
         </ol>
         <ol class="pydocx-list-style-type-decimal">
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -465,13 +476,13 @@ class SeperateListsIntoParentListTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
             <li>
-                AAA
+                <p>AAA</p>
                 <ol class="pydocx-list-style-type-decimal">
-                    <li>BBB</li>
-                    <li>CCC</li>
+                    <li><p>BBB</p></li>
+                    <li><p>CCC</p></li>
                 </ol>
             </li>
-            <li>DDD</li>
+            <li><p>DDD</p></li>
         </ol>
     '''
 
@@ -496,12 +507,13 @@ class SeperateListsIntoParentListTestCase(TranslationTestCase):
 class InvalidIlvlOrderTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA
+            <li>
+                <p>AAA</p>
                 <ol class="pydocx-list-style-type-decimal">
-                    <li>BBB</li>
+                    <li><p>BBB</p></li>
                 </ol>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -617,7 +629,7 @@ class NonStandardTextTagsTestCase(TranslationTestCase):
 
 
 class RTagWithNoText(TranslationTestCase):
-    expected_output = ''
+    expected_output = '<p>&#160;</p>'
 
     def get_xml(self):
         p_tag = DXB.p_tag(None)  # No text
@@ -634,11 +646,12 @@ class DeleteTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
             <li>
-                AAA
-                <br />
-                <span class="pydocx-delete">BBB</span>
+                <p>AAA</p>
+                <p>
+                    <span class="pydocx-delete">BBB</span>
+                </p>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -664,11 +677,12 @@ class InsertTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
             <li>
-                AAA
-                <br />
-                <span class="pydocx-insert">BBB</span>
+                <p>AAA</p>
+                <p>
+                    <span class="pydocx-insert">BBB</span>
+                </p>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -695,11 +709,10 @@ class SmartTagInList(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
             <li>
-                AAA
-                <br />
-                BBB
+                <p>AAA</p>
+                <p>BBB</p>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -725,7 +738,7 @@ class SmartTagInList(TranslationTestCase):
 class SingleListItem(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
-            <li>AAA</li>
+            <li><p>AAA</p></li>
         </ol>
         <p>BBB</p>
     '''
@@ -752,19 +765,19 @@ class SimpleTableTest(TranslationTestCase):
     expected_output = '''
         <table border="1">
             <tr>
-                <td>Blank</td>
-                <td>Column 1</td>
-                <td>Column 2</td>
+                <td><p>Blank</p></td>
+                <td><p>Column 1</p></td>
+                <td><p>Column 2</p></td>
             </tr>
             <tr>
-                <td>Row 1</td>
-                <td>First</td>
-                <td>Second</td>
+                <td><p>Row 1</p></td>
+                <td><p>First</p></td>
+                <td><p>Second</p></td>
             </tr>
             <tr>
-                <td>Row 2</td>
-                <td>Third</td>
-                <td>Fourth</td>
+                <td><p>Row 2</p></td>
+                <td><p>Third</p></td>
+                <td><p>Fourth</p></td>
             </tr>
         </table>'''
 
@@ -790,10 +803,11 @@ class SimpleTableTest(TranslationTestCase):
 class MissingIlvl(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAA<br />
-                BBB
+            <li>
+                <p>AAA</p>
+                <p>BBB</p>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -814,18 +828,19 @@ class MissingIlvl(TranslationTestCase):
 class SameNumIdInTable(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
-            <li>AAA
+            <li>
+                <p>AAA</p>
                 <table border="1">
                     <tr>
                         <td>
                             <ol class="pydocx-list-style-type-lowerLetter">
-                                <li>BBB</li>
+                                <li><p>BBB</p></li>
                             </ol>
                         </td>
                     </tr>
                 </table>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -858,9 +873,11 @@ class SameNumIdInTable(TranslationTestCase):
 class SDTTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-decimal">
-            <li>AAABBB
+            <li>
+                <p>AAA</p>
+                <p>BBB</p>
             </li>
-            <li>CCC</li>
+            <li><p>CCC</p></li>
         </ol>
     '''
 
@@ -1023,16 +1040,23 @@ class AvailableInlineTags(TranslationTestCase):
 class NestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol class="pydocx-list-style-type-decimal">
-        <li>AAA
+        <li>
+            <p>AAA</p>
             <ol class="pydocx-list-style-type-decimal">
-                <li>BBB</li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         </li>
-        <li>CCC
+        <li>
+            <p>CCC</p>
             <ol class="pydocx-list-style-type-decimal">
-                <li>DDD
+                <li>
+                    <p>DDD</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>EEE</li>
+                        <li>
+                            <p>EEE</p>
+                        </li>
                     </ol>
                 </li>
             </ol>
@@ -1068,58 +1092,58 @@ class MultipleNestedListTestCase(TranslationTestCase):
     expected_output = u"""
     <ol class="pydocx-list-style-type-decimal">
         <li>
-            AAA
+            <p>AAA</p>
             <ol class="pydocx-list-style-type-decimal">
                 <li>
-                    BBB
+                    <p>BBB</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>CCC</li>
-                        <li>DDD</li>
+                        <li><p>CCC</p></li>
+                        <li><p>DDD</p></li>
                     </ol>
                 </li>
                 <li>
-                    EEE
+                    <p>EEE</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>FFF</li>
-                        <li>GGG</li>
+                        <li><p>FFF</p></li>
+                        <li><p>GGG</p></li>
                     </ol>
                 </li>
                 <li>
-                    HHH
+                    <p>HHH</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>III</li>
-                        <li>JJJ</li>
+                        <li><p>III</p></li>
+                        <li><p>JJJ</p></li>
                     </ol>
                 </li>
             </ol>
         </li>
-        <li>KKK</li>
+        <li><p>KKK</p></li>
     </ol>
     <ol class="pydocx-list-style-type-lowerLetter">
         <li>
-            LLL
+            <p>LLL</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>MMM</li>
-                <li>NNN</li>
+                <li><p>MMM</p></li>
+                <li><p>NNN</p></li>
             </ol>
         </li>
         <li>
-            OOO
+            <p>OOO</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>PPP</li>
+                <li><p>PPP</p></li>
                 <li>
-                    QQQ
+                    <p>QQQ</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>RRR</li>
+                        <li><p>RRR</p></li>
                     </ol>
                 </li>
             </ol>
         </li>
         <li>
-            SSS
+            <p>SSS</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>TTT</li>
-                <li>UUU</li>
+                <li><p>TTT</p></li>
+                <li><p>UUU</p></li>
             </ol>
         </li>
     </ol>

@@ -308,6 +308,8 @@ class XmlModel(object):
             if field.name is not None:
                 attr_name = field.name
             value = element.attrib.get(attr_name, field.default)
+            if callable(field.type):
+                value = field.type(value)
             kwargs[field_name] = value
 
         # Child tag fields may specify a handler/type, which is responsible for
@@ -395,3 +397,11 @@ class XmlModel(object):
 
         # Create a new instance using the values we've calculated
         return cls(**kwargs)
+
+    @property
+    def default_doc_styles(self):
+        part = getattr(self.container, 'style_definitions_part', None)
+        if part:
+            return part.styles.doc_defaults
+
+        return None

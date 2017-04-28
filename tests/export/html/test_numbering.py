@@ -78,7 +78,9 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li>
+                    <p>AAA</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -115,8 +117,12 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <p>Foo</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                </li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
             <p>Bar</p>
         '''
@@ -172,11 +178,15 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <p>Foo</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA
+                <li>
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>BBB
+                        <li>
+                            <p>BBB</p>
                             <ol class="pydocx-list-style-type-upperLetter">
-                                <li>CCC</li>
+                                <li>
+                                    <p>CCC</p>
+                                </li>
                             </ol>
                         </li>
                     </ol>
@@ -226,10 +236,14 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <p>Foo</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li>
+                    <p>AAA</p>
+                </li>
             </ol>
             <ol class="pydocx-list-style-type-decimal">
-                <li>BBB</li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
             <p>Bar</p>
         '''
@@ -293,7 +307,9 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li>
+                    <p>AAA</p>
+                </li>
             </ol>
             <ol class="pydocx-list-style-type-decimal">
                 <li>
@@ -345,11 +361,11 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <p>Foo</p>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li><p>AAA</p></li>
             </ol>
             <p>Bar</p>
             <ol class="pydocx-list-style-type-decimal">
-                <li>BBB</li>
+                <li><p>BBB</p></li>
             </ol>
             <p>Baz</p>
         '''
@@ -382,7 +398,7 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li><p>AAA</p></li>
             </ol>
             <p>Foo</p>
         '''
@@ -421,8 +437,11 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA<br />Foo</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                    <p>Foo</p>
+                </li>
+                <li><p>BBB</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -545,7 +564,7 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li><p>AAA</p></li>
             </ol>
             <p>foo</p>
         '''
@@ -592,11 +611,12 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
                 <li>
-                    AAA
-                    <br />
-                    foo
+                    <p>AAA</p>
+                    <p>foo</p>
                 </li>
-                <li>BBB</li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -628,8 +648,11 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
+                <li>
+                    <p>AAA</p>
+                </li>
             </ol>
+            <p>&#160;</p>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -666,8 +689,13 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                    <p>&#160;</p>
+                </li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -707,8 +735,13 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                    <p></p>
+                </li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -748,8 +781,13 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                    <p>&#160;</p>
+                </li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -792,8 +830,14 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA<br />BBB</li>
-                <li>CCC</li>
+                <li>
+                    <p>AAA</p>
+                    <p>&#160;</p>
+                    <p>BBB</p>
+                </li>
+                <li>
+                    <p>CCC</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -842,8 +886,16 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA<br />BBB</li>
-                <li>CCC</li>
+                <li>
+                    <p>AAA</p>
+                    <p>&#160;</p>
+                    <p>&#160;</p>
+                    <p>&#160;</p>
+                    <p>BBB</p>
+                </li>
+                <li>
+                    <p>CCC</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -892,8 +944,16 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA<br />Foo<br />Bar</li>
-                <li>CCC</li>
+                <li>
+                    <p>AAA</p>
+                    <p>&#160;</p>
+                    <p>Foo</p>
+                    <p>&#160;</p>
+                    <p>Bar</p>
+                </li>
+                <li>
+                    <p>CCC</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -933,8 +993,13 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li>
+                    <p>AAA</p>
+                    <p> </p>
+                </li>
+                <li>
+                    <p>BBB</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -965,7 +1030,7 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li></li>
+                <li><p></p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1058,13 +1123,13 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                 <li>
-                    AAA
-                    <br />
-                    BBB
-                    <br />
-                    CCC
+                    <p>AAA</p>
+                    <p>BBB</p>
+                    <p>CCC</p>
                 </li>
-                <li>DDD</li>
+                <li>
+                    <p>DDD</p>
+                </li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1119,8 +1184,8 @@ class NumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
         expected_html = '''
             <p>AAA</p>
             <ol class="pydocx-list-style-type-decimal">
-                <li>BBB</li>
-                <li>CCC</li>
+                <li><p>BBB</p></li>
+                <li><p>CCC</p></li>
             </ol>
             <p>DDD</p>
         '''
@@ -1216,11 +1281,15 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AAA
+                <li>
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>BBB
+                        <li>
+                            <p>BBB</p>
                             <ol class="pydocx-list-style-type-decimal">
-                                <li>CCC</li>
+                                <li>
+                                    <p>CCC</p>
+                                </li>
                             </ol>
                         </li>
                     </ol>
@@ -1287,11 +1356,15 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li style="margin-left:3.00em">AAA
+                <li style="margin-left:3.00em">
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li style="margin-left:3.00em">BBB
+                        <li style="margin-left:3.00em">
+                            <p>BBB</p>
                             <ol class="pydocx-list-style-type-decimal">
-                                <li style="margin-left:3.00em">CCC</li>
+                                <li style="margin-left:3.00em">
+                                    <p>CCC</p>
+                                </li>
                             </ol>
                         </li>
                     </ol>
@@ -1359,14 +1432,13 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                 <li style="margin-left:-0.58em">
-                    <span style="display:inline-block;text-indent:0.58em">AAA</span>
+                    <p style="text-indent:0.58em">AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
                         <li style="margin-left:-1.42em">
-                            <span style="display:inline-block;text-indent:1.42em">BBB</span>
+                            <p style="text-indent:1.42em">BBB</p>
                             <ol class="pydocx-list-style-type-decimal">
                                 <li style="margin-left:-1.83em">
-                                    <span style="display:inline-block;text-indent:1.83em">CCC
-                                    </span>
+                                    <p style="text-indent:1.83em">CCC</p>
                                 </li>
                             </ol>
                         </li>
@@ -1434,11 +1506,13 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li style="margin-left:1.50em">AAA
+                <li style="margin-left:1.50em">
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>BBB
+                        <li>
+                            <p>BBB</p>
                             <ol class="pydocx-list-style-type-decimal">
-                                <li>CCC</li>
+                                <li><p>CCC</p></li>
                             </ol>
                         </li>
                     </ol>
@@ -1520,15 +1594,19 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
             <li>
-                AAA
+                <p>AAA</p>
                 <ol class="pydocx-list-style-type-decimal">
                     <li>
-                        BBB
+                        <p>BBB</p>
                         <ol class="pydocx-list-style-type-lowerLetter">
-                            <li style="margin-left:3.00em">CCC</li>
+                            <li style="margin-left:3.00em">
+                                <p>CCC</p>
+                            </li>
                         </ol>
                     </li>
-                    <li>DDD</li>
+                    <li>
+                        <p>DDD</p>
+                    </li>
                 </ol>
             </li>
         </ol>
@@ -1602,13 +1680,17 @@ class NumberingIndentationTestCase(NumberingTestBase, DocumentGeneratorTestCase)
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                 <li>
-                    AAA
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-lowerLetter">
-                        <li>BBB</li>
-                        <li>CCC</li>
+                        <li>
+                            <p>BBB</p>
+                        </li>
+                        <li>
+                            <p>CCC</p>
+                        </li>
                     </ol>
                 </li>
-                <li>DDD</li>
+                <li><p>DDD</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1632,7 +1714,7 @@ class FakedNumberingManyItemsTestCase(NumberingTestBase, DocumentGeneratorTestCa
         document_xml = ''.join(paragraphs)
 
         items = [
-            '<li>{item}</li>'.format(item=item)
+            '<li><p>{item}</p></li>'.format(item=item)
             for item in expected_items
         ]
 
@@ -1707,9 +1789,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>Foo</li>
-                <li>Bar</li>
-                <li>Baz</li>
+                <li><p>Foo</p></li>
+                <li><p>Bar</p></li>
+                <li><p>Baz</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1745,10 +1827,11 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AAA
+                <li>
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-lowerLetter">
-                        <li>BBB</li>
-                        <li>CCC</li>
+                        <li><p>BBB</p></li>
+                        <li><p>CCC</p></li>
                     </ol>
                 </li>
             </ol>
@@ -1788,9 +1871,9 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>Foo</li>
-                <li>Bar</li>
-                <li>AAA</li>
+                <li><p>Foo</p></li>
+                <li><p>Bar</p></li>
+                <li><p>AAA</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1805,12 +1888,12 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AA</li>
-                <li>AB</li>
+                <li><p>AA</p></li>
+                <li><p>AB</p></li>
             </ol>
             <ol class="pydocx-list-style-type-decimal">
-                <li>BA</li>
-                <li>BB</li>
+                <li><p>BA</p></li>
+                <li><p>BB</p></li>
             </ol>
         '''
 
@@ -1826,12 +1909,12 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AA</li>
-                <li>AB</li>
+                <li><p>AA</p></li>
+                <li><p>AB</p></li>
             </ol>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>BA</li>
-                <li>BB</li>
+                <li><p>BA</p></li>
+                <li><p>BB</p></li>
             </ol>
         '''
 
@@ -1886,10 +1969,11 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li style="margin-left:1.50em">AAA
+                <li style="margin-left:1.50em">
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>BBB</li>
-                        <li>CCC</li>
+                        <li><p>BBB</p></li>
+                        <li><p style="margin-left:-3.00em">CCC</p></li>
                     </ol>
                 </li>
             </ol>
@@ -1945,12 +2029,13 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li style="margin-left:1.50em">AAA
+                <li style="margin-left:1.50em">
+                    <p>AAA</p>
                     <ol class="pydocx-list-style-type-decimal">
-                        <li>BBB</li>
+                        <li><p>BBB</p></li>
                     </ol>
                 </li>
-                <li>CCC</li>
+                <li><p style="margin-left:-3.00em">CCC</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -1993,19 +2078,21 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AA
+                <li>
+                    <p>AA</p>
                     <ol class="pydocx-list-style-type-lowerLetter">
-                        <li>AAA</li>
-                        <li>AAB</li>
-                        <li>AAC
+                        <li><p>AAA</p></li>
+                        <li><p>AAB</p></li>
+                        <li>
+                            <p>AAC</p>
                             <ol class="pydocx-list-style-type-upperLetter">
-                                <li>AACA</li>
+                                <li><p>AACA</p></li>
                             </ol>
                         </li>
-                        <li>AAD</li>
+                        <li><p>AAD</p></li>
                     </ol>
                 </li>
-                <li>AB</li>
+                <li><p>AB</p></li>
             </ol>
         '''
 
@@ -2020,8 +2107,8 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AA</li>
-                <li>AB</li>
+                <li><p>AA</p></li>
+                <li><p>AB</p></li>
             </ol>
             <p>
                 4. AC
@@ -2065,8 +2152,8 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>1</li>
-                <li>2</li>
+                <li><p>1</p></li>
+                <li><p>2</p></li>
             </ol>
         '''
 
@@ -2102,19 +2189,19 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>a</li>
+                <li><p>a</p></li>
             </ol>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>b</li>
+                <li><p>b</p></li>
             </ol>
             <ol class="pydocx-list-style-type-upperLetter">
-                <li>c</li>
+                <li><p>c</p></li>
             </ol>
             <ol class="pydocx-list-style-type-upperRoman">
-                <li>d</li>
+                <li><p>d</p></li>
             </ol>
             <ol class="pydocx-list-style-type-lowerRoman">
-                <li>e</li>
+                <li><p>e</p></li>
             </ol>
         '''
 
@@ -2131,19 +2218,19 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>a</li>
+                <li><p>a</p></li>
             </ol>
             <ol class="pydocx-list-style-type-lowerLetter">
-                <li>b</li>
+                <li><p>b</p></li>
             </ol>
             <ol class="pydocx-list-style-type-upperLetter">
-                <li>c</li>
+                <li><p>c</p></li>
             </ol>
             <ol class="pydocx-list-style-type-upperRoman">
-                <li>d</li>
+                <li><p>d</p></li>
             </ol>
             <ol class="pydocx-list-style-type-lowerRoman">
-                <li>e</li>
+                <li><p>e</p></li>
             </ol>
         '''
 
@@ -2162,7 +2249,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>Foo Bar</li>
+                <li><p>Foo Bar</p></li>
             </ol>
         '''
 
@@ -2181,7 +2268,7 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>Foo Bar</li>
+                <li><p>Foo Bar</p></li>
             </ol>
         '''
 
@@ -2221,8 +2308,8 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>AAA</li>
-                <li>BBB</li>
+                <li><p>AAA</p></li>
+                <li><p>BBB</p></li>
             </ol>
         '''
         self.assert_document_generates_html(document, expected_html)
@@ -2252,8 +2339,8 @@ class FakedNumberingTestCase(NumberingTestBase, DocumentGeneratorTestCase):
                 <tr>
                     <td>
                         <ol class="pydocx-list-style-type-decimal">
-                            <li>Foo</li>
-                            <li>Bar</li>
+                            <li><p>Foo</p></li>
+                            <li><p>Bar</p></li>
                         </ol>
                     </td>
                 </tr>
@@ -2396,14 +2483,15 @@ class FakedNestedNoContentBase(FakedNumberingPatternBase):
 
         self.expected_html = '''
             <ol class="pydocx-list-style-type-{0}">
-                <li></li>
+                <li><p></p></li>
                 <li>
+                    <p></p>
                     <ol class="pydocx-list-style-type-{1}">
-                        <li></li>
-                        <li></li>
+                        <li><p></p></li>
+                        <li><p></p></li>
                     </ol>
                 </li>
-                <li></li>
+                <li><p></p></li>
             </ol>
         '''
 
@@ -2488,21 +2576,27 @@ class FakedNestedNumberingPatternBase(FakedNumberingPatternBase):
 
         self.expected_html = '''
             <ol class="pydocx-list-style-type-{0}">
-                <li>AA</li>
-                <li>AB
+                <li>
+                    <p>AA</p>
+                </li>
+                <li>
+                    <p>AB</p>
                     <ol class="pydocx-list-style-type-{1}">
-                        <li>ABA</li>
-                        <li>ABB
+                        <li>
+                            <p>ABA</p>
+                        </li>
+                        <li>
+                            <p>ABB</p>
                             <ol class="pydocx-list-style-type-{2}">
-                                <li>ABBA</li>
-                                <li>ABBB</li>
-                                <li>ABBC</li>
+                                <li><p>ABBA</p></li>
+                                <li><p>ABBB</p></li>
+                                <li><p>ABBC</p></li>
                             </ol>
                         </li>
-                        <li>ABC</li>
+                        <li><p>ABC</p></li>
                     </ol>
                 </li>
-                <li>AC</li>
+                <li><p>AC</p></li>
             </ol>
         '''
 

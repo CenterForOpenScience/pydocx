@@ -86,7 +86,7 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
 
         document.add(MainDocumentPart, document_xml, document_rels)
 
-        expected_html = ''
+        expected_html = '<p>&#160;</p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_undefined_relationship(self):

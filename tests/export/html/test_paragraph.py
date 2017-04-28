@@ -17,7 +17,7 @@ class NoEmptyParagraphsTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p>&#160;</p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_multiple_runs_with_only_whitespace(self):
@@ -34,7 +34,7 @@ class NoEmptyParagraphsTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p>  </p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_run_with_only_whitespace_styled(self):
@@ -51,7 +51,7 @@ class NoEmptyParagraphsTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p> </p>'
         self.assert_document_generates_html(document, expected_html)
 
 
@@ -154,7 +154,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>Foo Bar</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_paragraph_with_only_whitespace_is_ignored(self):
+    def test_paragraph_with_only_whitespace_is_not_ignored(self):
         document_xml = '''
             <p>
               <r>
@@ -168,7 +168,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p>  </p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_leading_whitespace_is_preserved(self):
@@ -205,7 +205,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         expected_html = '<p>ABC</p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_empty_text_tag_does_not_create_paragraph(self):
+    def test_empty_text_tag_does_create_paragraph(self):
         document_xml = '''
             <p>
               <r>
@@ -216,7 +216,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p></p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_unicode_character_from_xml_entity(self):
@@ -301,7 +301,7 @@ class ParagraphTestCase(DocumentGeneratorTestCase):
 
 
 class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
-    def test_with_empty_text_does_not_render_paragraph(self):
+    def test_with_empty_text_does_render_paragraph(self):
         document_xml = '''
             <p>
               <pPr>
@@ -316,10 +316,10 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p class="pydocx-center"></p>'
         self.assert_document_generates_html(document, expected_html)
 
-    def test_with_missing_text_does_not_render_paragraph(self):
+    def test_with_missing_text_does_render_paragraph(self):
         document_xml = '''
             <p>
               <pPr>
@@ -332,7 +332,7 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p class="pydocx-center">&#160;</p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_with_blank_space_in_text_does_not_render_paragraph_with_span(self):  # noqa
@@ -350,7 +350,7 @@ class ParagraphJustificationTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p class="pydocx-center"> </p>'
         self.assert_document_generates_html(document, expected_html)
 
 
@@ -363,7 +363,7 @@ class IgnoringBreakTagExporter(DocumentGeneratorTestCase.exporter):
 class IgnoringBreakTagTestCase(DocumentGeneratorTestCase):
     exporter = IgnoringBreakTagExporter
 
-    def test_break_tag_by_itself_yields_no_output(self):
+    def test_break_tag_by_itself_yields_only_paragraph(self):
         document_xml = '''
             <p>
               <r>
@@ -375,7 +375,7 @@ class IgnoringBreakTagTestCase(DocumentGeneratorTestCase):
         document = WordprocessingDocumentFactory()
         document.add(MainDocumentPart, document_xml)
 
-        expected_html = ''
+        expected_html = '<p></p>'
         self.assert_document_generates_html(document, expected_html)
 
     def test_break_tag_with_text_break_tag_is_ignored(self):

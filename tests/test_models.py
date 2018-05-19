@@ -15,7 +15,6 @@ from pydocx.models import (
     XmlModel,
     XmlRootElementMismatchException,
 )
-
 from pydocx.util.xml import parse_xml_from_string
 
 
@@ -67,6 +66,17 @@ class BucketModel(XmlModel):
 
     circle_color = XmlChild(name='circle', attrname='color')
     circle_size = XmlChild(name='circle', attrname='sz')
+
+
+class BaseItemModel(XmlModel):
+    val1 = XmlAttribute(name='val1')
+    val2 = XmlAttribute(name='val2')
+
+
+class ItemModel(BaseItemModel):
+    XML_TAG = 'item'
+
+    val3 = XmlAttribute(name='val3')
 
 
 class BaseTestCase(TestCase):
@@ -298,3 +308,17 @@ class XmlCollectionTestCase(BaseTestCase):
             'four',
         ]
         self.assertEqual(types, expected_types)
+
+
+class InheritFromBaseModelTestCase(BaseTestCase):
+    model = ItemModel
+
+    def test_attributes_available_from_base_class(self):
+        xml = '''
+            <item val1='item_val1' val2='item_val2' val3='item_val3'/>
+        '''
+        item = self._get_model_instance_from_xml(xml)
+        self.assertEqual(
+            {'val1': 'item_val1', 'val2': 'item_val2', 'val3': 'item_val3'},
+            dict(item.fields)
+        )

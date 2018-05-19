@@ -21,3 +21,14 @@ class NumberingProperties(XmlModel):
             return False
 
         return self.level_id == self.ROOT_LEVEL_ID
+
+    @classmethod
+    def attributes_list(cls, obj):
+        if obj:
+            return obj.level_id, obj.num_id
+
+    def __eq__(self, other):
+        return self.attributes_list(self) == self.attributes_list(other)
+
+    def __ne__(self, other):
+        return not self == other

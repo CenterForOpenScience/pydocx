@@ -15,12 +15,14 @@ from pydocx.export.numbering_span import (
     NumberingSpan,
     NumberingSpanBuilder,
 )
+from pydocx.export.border_and_shading import BorderAndShadingBuilder
 from pydocx.openxml import markup_compatibility, vml, wordprocessing
 from pydocx.openxml.packaging import WordprocessingDocument
 
 
 class PyDocXExporter(object):
     numbering_span_builder_class = NumberingSpanBuilder
+    border_and_shading_builder_class = BorderAndShadingBuilder
 
     def __init__(self, path):
         self.path = path
@@ -32,6 +34,9 @@ class PyDocXExporter(object):
 
         self.captured_runs = None
         self.complex_field_runs = []
+        self.paragraphs = []
+        self.border_and_shading_builder = self.border_and_shading_builder_class(
+            self.paragraphs)
 
         self.node_type_to_export_func_map = {
             wordprocessing.Document: self.export_document,
@@ -299,6 +304,9 @@ class PyDocXExporter(object):
         return self.yield_numbering_spans(body.children)
 
     def export_paragraph(self, paragraph):
+        if self.first_pass:
+            self.paragraphs.append(paragraph)
+
         children = self.yield_paragraph_children(paragraph)
         results = self.yield_nested(children, self.export_node)
         if paragraph.effective_properties:

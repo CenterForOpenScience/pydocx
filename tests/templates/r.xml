@@ -3,4 +3,5 @@
 	{% for element in elements %}
 		{{ element }}
 	{% endfor %}
+
 </w:r>

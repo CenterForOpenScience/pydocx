@@ -1168,3 +1168,453 @@ class MultipleNestedListTestCase(TranslationTestCase):
 
         xml = DXB.xml(lis)
         return xml
+
+
+class ParagraphBordersTestCase(TranslationTestCase):
+    expected_output = '''
+        <div style="border-top:1pt solid #000000;padding:0pt">
+            <p>AAA</p>
+        </div>
+        <div style="border-bottom:0.6pt solid #0000FF;padding:0pt 0pt 2pt 0pt">
+            <p>BBB</p>
+        </div>
+    '''
+
+    def get_xml(self):
+        p1_border = {
+            'top': {
+                'color': 'auto'
+            }
+        }
+        p2_border = {
+            'bottom': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            }
+        }
+        p_tags = [
+            DXB.p_tag('AAA', borders=p1_border),
+            DXB.p_tag('BBB', borders=p2_border)
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class ParagraphBordersSameTopBottomTestCase(TranslationTestCase):
+    expected_output = '''
+        <div style="border:0.6pt solid #0000FF;padding:2pt">
+            <p>AAA</p>
+        </div>
+        <div style="border-top:0.6pt solid #0000FF;padding:2pt 0pt 0pt 0pt">
+            <p>BBB</p>
+        </div>
+    '''
+
+    def get_xml(self):
+        p1_border = {
+            'top': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'bottom': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'left': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'right': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+        }
+        p2_border = {
+            'top': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            }
+        }
+
+        p_tags = [
+            DXB.p_tag('AAA', borders=p1_border),
+            DXB.p_tag('BBB', borders=p2_border),
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class ParagraphBordersSameTopBottomWithShadingTestCase(TranslationTestCase):
+    expected_output = '''
+    <div style="background-color:#0000FF;border:0.6pt solid #0000FF;padding:2pt">
+       <p>AAA</p>
+   </div>
+   <div style="background-color:#FF00FF;border:0.6pt solid #0000FF;border-top:0;padding:2pt">
+      <p>BBB</p>
+    </div>
+'''
+
+    def get_xml(self):
+        p1_border = {
+            'top': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'bottom': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'left': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+            'right': {
+                'val': 'single',
+                'sz': '5',
+                'space': '2',
+                'color': '0000FF'
+            },
+        }
+        p1_shading = {
+            'fill': '0000FF',
+        }
+        p2_border = p1_border.copy()
+        p2_shading = {
+            'fill': 'FF00FF',
+        }
+
+        p_tags = [
+            DXB.p_tag('AAA', borders=p1_border, shading=p1_shading),
+            DXB.p_tag('BBB', borders=p2_border, shading=p2_shading),
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class ParagraphShadingTestCase(TranslationTestCase):
+    expected_output = '''
+        <div style="background-color:#0000FF">
+            <p>AAA</p>
+            <p>BBB</p>
+        </div>
+        <div style="background-color:#000000">
+            <p>CCC</p>
+        </div>
+        <div style="background-color:#FF00FF">
+            <p>DDD</p>
+        </div>
+    '''
+
+    def get_xml(self):
+        # <w:shd w:val="clear" w:color="auto" w:fill="92D050"/>
+        p1_shading = {
+            'fill': '0000FF',
+        }
+        p2_shading = {
+            'fill': '0000FF',
+        }
+        p3_shading = {
+            'val': 'solid',
+            'color': 'auto'
+        }
+        p4_shading = {
+            'val': 'solid',
+            'color': 'FF00FF'
+        }
+
+        p_tags = [
+            DXB.p_tag('AAA', shading=p1_shading),
+            DXB.p_tag('BBB', shading=p2_shading),
+            DXB.p_tag('CCC', shading=p3_shading),
+            DXB.p_tag('DDD', shading=p4_shading),
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class ParagraphBorderAndShadingTestCase(TranslationTestCase):
+    expected_output = '''
+        <div style="background-color:#0000FF;border-top:0.6pt solid #0000FF;padding:0pt">
+            <p>AAA</p>
+            <p>BBB</p>
+        </div>
+        <div style="background-color:#FF00FF;border-bottom:0.6pt solid #0000FF;padding:0pt">
+            <p>CCC</p>
+        </div>
+        <div style="background-color:#FFFFFF;border-bottom:0.6pt solid #0000FF;padding:0pt">
+            <p>DDD</p>
+        </div>
+    '''
+
+    def get_xml(self):
+        p1_border = {
+            'top': {
+                'val': 'single',
+                'sz': '5',
+                'space': '0',
+                'color': '0000FF'
+            }
+        }
+        p1_shading = {
+            'fill': '0000FF',
+        }
+        p2_border = {
+            'top': {
+                'val': 'single',
+                'sz': '5',
+                'space': '0',
+                'color': '0000FF'
+            }
+        }
+        p2_shading = {
+            'fill': '0000FF',
+        }
+        p3_border = {
+            'bottom': {
+                'val': 'single',
+                'sz': '5',
+                'space': '0',
+                'color': '0000FF'
+            }
+        }
+        p3_shading = {
+            'val': 'solid',
+            'color': 'FF00FF',
+            'fill': '000000',
+        }
+
+        p4_border = {
+            'bottom': {
+                'val': 'single',
+                'sz': '5',
+                'space': '0',
+                'color': '0000FF'
+            }
+        }
+        p4_shading = {
+            'val': 'solid',
+            'color': 'FFFFFF',
+            'fill': '000000',
+        }
+
+        p_tags = [
+            DXB.p_tag('AAA', borders=p1_border, shading=p1_shading),
+            DXB.p_tag('BBB', borders=p2_border, shading=p2_shading),
+            DXB.p_tag('CCC', borders=p3_border, shading=p3_shading),
+            DXB.p_tag('DDD', borders=p4_border, shading=p4_shading),
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class RunBordersTestCase(TranslationTestCase):
+    expected_output = '''
+        <p>
+            <span style="border:1pt solid #00FF00">AAA</span>
+            <span style="border:1pt solid #00FF00;padding:1pt">BBB</span>
+        </p>
+    '''
+
+    def get_xml(self):
+        r1_border = {
+            'bdr': {
+                'color': '00FF00',
+                'space': '0'
+            }
+        }
+        r2_border = {
+            'bdr': {
+                'color': '00FF00',
+                'space': '1'
+            }
+        }
+
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('AAA')],
+                        borders=r1_border
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        borders=r2_border
+                    ),
+                ],
+            )
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+
+        xml = DXB.xml(body)
+        return xml
+
+
+class RunShadingTestCase(TranslationTestCase):
+    expected_output = '''
+        <p>
+            <span style="background-color:#0000FF">AAABBB</span>
+            <span style="background-color:#000000">CCC</span>
+            <span style="background-color:#FF00FF">DDD</span>
+        </p>
+    '''
+
+    def get_xml(self):
+        r1_shading = {
+            'fill': '0000FF',
+        }
+        r2_shading = {
+            'fill': '0000FF',
+        }
+        r3_shading = {
+            'val': 'solid',
+            'color': 'auto'
+        }
+        r4_shading = {
+            'val': 'solid',
+            'color': 'FF00FF'
+        }
+
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('AAA')],
+                        shading=r1_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        shading=r2_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        shading=r3_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('DDD')],
+                        shading=r4_shading
+                    ),
+                ],
+            )
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml
+
+
+class RunBordersAndShadingTestCase(TranslationTestCase):
+    expected_output = '''
+<p>
+    <span style="background-color:#0000FF;border:1pt solid #00FF00">AAABBB</span>
+    <span style="background-color:#000000;border:1pt solid #FFFF00;padding:1pt">CCC</span>
+    <span style="background-color:#FF00FF;border:1pt solid #FFFF00;padding:1pt">DDD</span>
+</p>
+'''
+
+    def get_xml(self):
+        r1_border = {
+            'bdr': {
+                'color': '00FF00',
+                'space': '0'
+            }
+        }
+        r1_shading = {
+            'fill': '0000FF',
+        }
+        r2_border = {
+            'bdr': {
+                'color': '00FF00',
+                'space': '0'
+            }
+        }
+        r2_shading = {
+            'fill': '0000FF',
+        }
+        r3_border = {
+            'bdr': {
+                'color': 'FFFF00',
+                'space': '1'
+            }
+        }
+        r3_shading = {
+            'val': 'solid',
+            'color': 'auto'
+        }
+        r4_border = {
+            'bdr': {
+                'color': 'FFFF00',
+                'space': '1'
+            }
+        }
+        r4_shading = {
+            'val': 'solid',
+            'color': 'FF00FF'
+        }
+
+        p_tags = [
+            DXB.p_tag(
+                [
+                    DXB.r_tag(
+                        [DXB.t_tag('AAA')],
+                        borders=r1_border,
+                        shading=r1_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('BBB')],
+                        borders=r2_border,
+                        shading=r2_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('CCC')],
+                        borders=r3_border,
+                        shading=r3_shading
+                    ),
+                    DXB.r_tag(
+                        [DXB.t_tag('DDD')],
+                        borders=r4_border,
+                        shading=r4_shading
+                    ),
+                ],
+            )
+        ]
+        body = b''
+        for p_tag in p_tags:
+            body += p_tag
+        xml = DXB.xml(body)
+        return xml

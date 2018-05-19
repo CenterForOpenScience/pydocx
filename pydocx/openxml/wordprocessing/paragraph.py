@@ -183,12 +183,17 @@ class Paragraph(XmlModel):
     @property
     @memoized
     def has_numbering_properties(self):
-        return bool(getattr(self.properties, 'numbering_properties', None))
+        return bool(getattr(self.effective_properties, 'numbering_properties', None))
 
     @property
     @memoized
     def has_numbering_definition(self):
         return bool(self.numbering_definition)
+
+    @property
+    @memoized
+    def has_border_properties(self):
+        return bool(getattr(self.effective_properties, 'border_properties', None))
 
     def get_indentation(self, indentation, only_level_ind=False):
         '''
@@ -206,3 +211,12 @@ class Paragraph(XmlModel):
                 ind = level.paragraph_properties.to_int(indentation, default=0)
 
         return ind
+
+    def have_same_numbering_properties_as(self, paragraph):
+        prop1 = getattr(self.effective_properties, 'numbering_properties', None)
+        prop2 = getattr(paragraph.effective_properties, 'numbering_properties', None)
+
+        if prop1 == prop2:
+            return True
+
+        return False

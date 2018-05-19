@@ -23,9 +23,11 @@ from pydocx.export.base import PyDocXExporter
 from pydocx.export.numbering_span import NumberingItem
 from pydocx.openxml import wordprocessing
 from pydocx.util.uri import uri_is_external
-from pydocx.util.xml import (
-    convert_dictionary_to_html_attributes,
-    convert_dictionary_to_style_fragment,
+from pydocx.util.xml import convert_dictionary_to_style_fragment
+from pydocx.export.html_tag import (
+    HtmlTag,
+    is_only_whitespace,
+    is_not_empty_and_not_only_whitespace
 )
 
 
@@ -52,106 +54,6 @@ def get_first_from_sequence(sequence, default=None):
     except StopIteration:
         pass
     return first_result
-
-
-def is_only_whitespace(obj):
-    '''
-    If the obj has `strip` return True if calling strip on the obj results in
-    an empty instance. Otherwise, return False.
-    '''
-    if hasattr(obj, 'strip'):
-        return not obj.strip()
-    return False
-
-
-def is_not_empty_and_not_only_whitespace(gen):
-    '''
-    Determine if a generator is empty, or consists only of whitespace.
-
-    If the generator is non-empty, return the original generator. Otherwise,
-    return None
-    '''
-    queue = []
-    if gen is None:
-        return
-    try:
-        for item in gen:
-            queue.append(item)
-            is_whitespace = True
-            if isinstance(item, HtmlTag):
-                # If we encounter a tag that allows whitespace, then we can stop
-                is_whitespace = not item.allow_whitespace
-            else:
-                is_whitespace = is_only_whitespace(item)
-
-            if not is_whitespace:
-                # This item isn't whitespace, so we're done scanning
-                return chain(queue, gen)
-
-    except StopIteration:
-        pass
-
-
-class HtmlTag(object):
-    closed_tag_format = '</{tag}>'
-
-    def __init__(
-            self,
-            tag,
-            allow_self_closing=False,
-            closed=False,
-            allow_whitespace=False,
-            **attrs
-    ):
-        self.tag = tag
-        self.allow_self_closing = allow_self_closing
-        self.attrs = attrs
-        self.closed = closed
-        self.allow_whitespace = allow_whitespace
-
-    def apply(self, results, allow_empty=True):
-        if not allow_empty:
-            results = is_not_empty_and_not_only_whitespace(results)
-            if results is None:
-                return
-
-        sequence = [[self]]
-        if results is not None:
-            sequence.append(results)
-
-        if not self.allow_self_closing:
-            sequence.append([self.close()])
-
-        results = chain(*sequence)
-
-        for result in results:
-            yield result
-
-    def close(self):
-        return HtmlTag(
-            tag=self.tag,
-            closed=True,
-        )
-
-    def to_html(self):
-        if self.closed is True:
-            return self.closed_tag_format.format(tag=self.tag)
-        else:
-            attrs = self.get_html_attrs()
-            end_bracket = '>'
-            if self.allow_self_closing:
-                end_bracket = ' />'
-            if attrs:
-                return '<{tag} {attrs}{end}'.format(
-                    tag=self.tag,
-                    attrs=attrs,
-                    end=end_bracket,
-                )
-            else:
-                return '<{tag}{end}'.format(tag=self.tag, end=end_bracket)
-
-    def get_html_attrs(self):
-        return convert_dictionary_to_html_attributes(self.attrs)
 
 
 class PyDocXHTMLExporter(PyDocXExporter):
@@ -274,18 +176,28 @@ class PyDocXHTMLExporter(PyDocXExporter):
             return HtmlTag(tag, id=paragraph.bookmark_name)
         return HtmlTag(tag)
 
+    def export_run(self, run):
+        results = super(PyDocXHTMLExporter, self).export_run(run)
+
+        for result in self.border_and_shading_builder.export_borders(
+                run, results, first_pass=self.first_pass):
+            yield result
+
     def export_paragraph(self, paragraph):
         results = super(PyDocXHTMLExporter, self).export_paragraph(paragraph)
-
         results = is_not_empty_and_not_only_whitespace(results)
-        if results is None:
+
+        # TODO@botzill In PR#234 we render empty paragraphs properly so
+        # we don't need this check anymore. Adding for now and to be removed when merging
+        if results is None and not paragraph.has_border_properties:
             return
 
         tag = self.get_paragraph_tag(paragraph)
         if tag:
             results = tag.apply(results)
 
-        for result in results:
+        for result in self.border_and_shading_builder.export_borders(
+                paragraph, results, first_pass=self.first_pass):
             yield result
 
     def export_paragraph_property_justification(self, paragraph, results):
@@ -606,6 +518,12 @@ class PyDocXHTMLExporter(PyDocXExporter):
         # the export underline function. There's got to be a better way.
         old = self.export_run_property_underline
         self.export_run_property_underline = lambda run, results: results
+
+        # Before starting new hyperlink we need to make sure that if there is any run
+        # with border opened before, we need to close it here.
+        for result in self.border_and_shading_builder.export_close_run_border():
+            yield result
+
         for result in results:
             yield result
         self.export_run_property_underline = old
@@ -633,8 +551,17 @@ class PyDocXHTMLExporter(PyDocXExporter):
         table_cell_spans = table.calculate_table_cell_spans()
         self.table_cell_rowspan_tracking[table] = table_cell_spans
         results = super(PyDocXHTMLExporter, self).export_table(table)
+
+        # Before starting new table new need to make sure that if there is any paragraph
+        # with border opened before, we need to close it here.
+        for result in self.border_and_shading_builder.export_close_paragraph_border():
+            yield result
+
         tag = self.get_table_tag(table)
-        return tag.apply(results)
+        results = tag.apply(results)
+
+        for result in results:
+            yield result
 
     def export_table_row(self, table_row):
         results = super(PyDocXHTMLExporter, self).export_table_row(table_row)

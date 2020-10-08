@@ -5,11 +5,16 @@ from __future__ import (
 )
 
 from pydocx.export import PyDocXHTMLExporter, PyDocXMarkdownExporter
-
+from pydocx.util.xml import (
+    check_mht
+)
 
 class PyDocX(object):
     @staticmethod
     def to_html(path_or_stream):
+        mht_str = check_mht(path_or_stream)
+        if len(mht_str) > 0:
+            return mht_str
         return PyDocXHTMLExporter(path_or_stream).export()
 
     @staticmethod

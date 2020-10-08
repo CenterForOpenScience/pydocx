@@ -16,6 +16,38 @@ except ImportError:
 
 from pydocx.exceptions import MalformedDocxException
 
+def mht2html(mht_str):
+    """
+    Convert mhtml to html
+    """
+    mht_str = mht_str[mht_str.find("<"):mht_str.rfind(">")+1]
+    mht_str = re.sub(r'3D','',mht_str)
+
+    return mht_str
+
+def check_mht(path_or_stream):
+    """
+    Check if it is mhtml types docx
+    """
+    if check_mht.__dict__.get('mht_str') is not None: # add cache
+        return check_mht.__dict__.get('mht_str')
+    try:
+        f = zipfile.ZipFile(path_or_stream)
+    except:
+        print("read docx failure!")
+    try:
+        
+        uris = f.namelist()
+        for uri in uris:  
+            if re.search(r'\.mht',uri) is not None:
+                data = f.read(uri)
+                check_mht.mht_str = mht2html(str(data,encoding="utf-8"))
+                return check_mht.mht_str
+    finally:
+        f.close()
+    
+    check_mht.mht_str = ""
+    return check_mht.mht_str
 
 def filter_children(element, tags):
     return [

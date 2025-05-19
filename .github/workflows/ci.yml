@@ -24,4 +24,4 @@ jobs:
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
       - name: Run tests
-        run: nosetests --with-doctest []
+        run: nosetests --with-doctest

@@ -6,11 +6,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     strategy:
-      matrix:
-        python-version: [2.7, 3.6, 3.7]
-
+        matrix:
+          include:
+            - python-version: 2.7
+              image: python:2.7-slim
+            - python-version: 3.6
+              image: python:3.6-slim
+            - python-version: 3.7
+              image: python:3.7-slim
+    container:
+      image: python:${{ matrix.python-version }}-slim
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}

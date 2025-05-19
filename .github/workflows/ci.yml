@@ -4,25 +4,38 @@ on:
   push:
 
 jobs:
-  test:
+  legacy:
     runs-on: ubuntu-latest
     strategy:
-        matrix:
-          include:
-            - python-version: 2.7
-              image: python:2.7-slim
-            - python-version: 3.6
-              image: python:3.6-slim
-            - python-version: 3.7
-              image: python:3.7-slim
+      matrix:
+        python: [2.6, 2.7, 3.3, 3.4, 3.6, 3.7]
+        defusedxml: [none, 0.4.1]
+        include:
+          - python: 2.6
+            image: python:2.6-slim
+          - python: 2.7
+            image: python:2.7-slim
+          - python: 3.3
+            image: python:3.3-slim
+          - python: 3.4
+            image: python:3.4-slim
+          - python: 3.6
+            image: python:3.6-slim
+          - python: 3.7
+            image: python:3.7-slim
+
     container:
-      image: python:${{ matrix.python-version }}-slim
+      image: ${{ matrix.image }}
+
     steps:
       - uses: actions/checkout@v4
       - name: Check python version
         run: python --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
+      - name: Install defusedxml if specified
+        if: ${{ matrix.defusedxml != 'none' }}
+        run: pip install defusedxml==${{ matrix.defusedxml }}
       - name: Install PyDocX
         run: pip install -e .[dev]  # editable install so CLI entry points are available
       - name: Run tests

@@ -19,10 +19,8 @@ jobs:
       image: python:${{ matrix.python-version }}-slim
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Check python version
+        run: python --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
       - name: Run tests

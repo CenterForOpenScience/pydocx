@@ -23,5 +23,7 @@ jobs:
         run: python --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
+      - name: Install PyDocX
+        run: pip install -e .[dev]  # editable install so CLI entry points are available
       - name: Run tests
         run: nosetests --with-doctest

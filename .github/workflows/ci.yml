@@ -8,11 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [2.6, 2.7, 3.3, 3.4, 3.6, 3.7]
+        python: [2.7, 3.3, 3.4, 3.6, 3.7]
         defusedxml: [none, 0.4.1]
         include:
-          - python: 2.6
-            image: python:2.6-slim
           - python: 2.7
             image: python:2.7-slim
           - python: 3.3

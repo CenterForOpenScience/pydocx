@@ -40,7 +40,6 @@ jobs:
     strategy:
       matrix:
         python: [2.7, 3.6, 3.7, 3.8]
-        defusedxml: [none, 0.4.1]
         include:
           - python: 2.7
             image: python:2.7-slim
@@ -60,9 +59,6 @@ jobs:
         run: python --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
-      - name: Install defusedxml if specified
-        if: ${{ matrix.defusedxml != 'none' }}
-        run: pip install defusedxml==${{ matrix.defusedxml }}
       - name: Install PyDocX
         run: pip install -e .[dev]  # editable install so CLI entry points are available
       - name: Run tests

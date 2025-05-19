@@ -14,9 +14,9 @@ jobs:
           - python-version: 2.6
             image: cronosmobi/python2.6
           - python-version: 3.3
-            image: python:3.3-slim
+            image: python:3.3
           - python-version: 3.4
-            image: python:3.4-slim
+            image: python:3.4
 
     steps:
       - name: Checkout code

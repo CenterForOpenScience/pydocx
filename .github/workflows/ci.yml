@@ -39,6 +39,7 @@ jobs:
               https://files.pythonhosted.org/packages/69/be/9c322ed286263a93e5ee0ff575662d0709fc73ee906522e7cfa72b08b946/mccabe-0.5.3-py2.py3-none-any.whl \
               https://files.pythonhosted.org/packages/05/00/2867f51e4c2526fd8524176520aecfcd1562033cc5f7110673012294fcc7/pyflakes-1.1.0-py2.py3-none-any.whl \
               https://files.pythonhosted.org/packages/73/31/136a79364c1681a3c276796d1f5090833bd03461b78a1b037638d1a2c484/pycodestyle-2.0.0-py2.py3-none-any.whl
+            test "${{ matrix.python-version}}" = "2.6" && wget https://files.pythonhosted.org/packages/31/77/3781f65cafe55480b56914def99022a5d2965a4bb269655c89ef2f1de3cd/importlib-1.0.4.zip && pip install --no-index importlib-1.0.4.zip
             pip install --no-index *.whl *.tar.gz
             pip install --no-index -e .
             nosetests --with-doctest

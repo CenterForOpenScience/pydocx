@@ -9,15 +9,11 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python: [2.7, 3.3, 3.4, 3.6, 3.7, 3.8]
-        defusedxml: [none]
+        python: [2.7, 3.6, 3.7, 3.8]
+        defusedxml: [none, 0.4.1]
         include:
           - python: 2.7
             image: python:2.7-slim
-          - python: 3.3
-            image: python:3.3-slim
-          - python: 3.4
-            image: python:3.4-slim
           - python: 3.6
             image: python:3.6-slim
           - python: 3.7

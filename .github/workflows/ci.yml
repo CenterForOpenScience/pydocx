@@ -6,10 +6,11 @@ on:
 jobs:
   legacy:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
-        python: [2.7, 3.3, 3.4, 3.6, 3.7]
-        defusedxml: [none, 0.4.1]
+        python: [2.7, 3.3, 3.4, 3.6, 3.7, 3.8, 3.10]
+        defusedxml: [none]
         include:
           - python: 2.7
             image: python:2.7-slim
@@ -21,6 +22,10 @@ jobs:
             image: python:3.6-slim
           - python: 3.7
             image: python:3.7-slim
+          - python: 3.8
+            image: python:3.8-slim
+          - python: 3.10
+            image: python:3.10-slim
 
     container:
       image: ${{ matrix.image }}

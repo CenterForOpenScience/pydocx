@@ -30,8 +30,17 @@ jobs:
           run: |
             cd /workspace
             python --version
-            pip install --trusted-host pypi.org --index-url=http://pypi.org/simple "Jinja2==2.10" "MarkupSafe<2.0" "coverage==3.6" "nose==1.30" "flake8==2.6.2"
-            pip install -e .
+            wget \
+              https://files.pythonhosted.org/packages/65/e0/eb35e762802015cab1ccee04e8a277b03f1d8e53da3ec3106882ec42558b/Jinja2-2.10.3-py2.py3-none-any.whl \
+              https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz \
+              https://files.pythonhosted.org/packages/d2/2d/e15d38b0a34a3e88e3c164a7ec04ed43f45869c20304db13875b24002506/coverage-3.6.tar.gz \
+              https://files.pythonhosted.org/packages/79/61/6b0f82f55dd2307439ae89a92550458633221a652d75b49608a77071c2be/nose-1.3.4-py2-none-any.whl \
+              https://files.pythonhosted.org/packages/70/a9/9b66f22d038de51e05f92d5e677fd89d8f9c980db0b8a130621baad052f5/flake8-2.6.2-py2.py3-none-any.whl \
+              https://files.pythonhosted.org/packages/69/be/9c322ed286263a93e5ee0ff575662d0709fc73ee906522e7cfa72b08b946/mccabe-0.5.3-py2.py3-none-any.whl \
+              https://files.pythonhosted.org/packages/05/00/2867f51e4c2526fd8524176520aecfcd1562033cc5f7110673012294fcc7/pyflakes-1.1.0-py2.py3-none-any.whl \
+              https://files.pythonhosted.org/packages/73/31/136a79364c1681a3c276796d1f5090833bd03461b78a1b037638d1a2c484/pycodestyle-2.0.0-py2.py3-none-any.whl
+            pip install --no-index *.whl *.tar.gz
+            pip install --no-index -e .
             nosetests --with-doctest
 
   legacy:

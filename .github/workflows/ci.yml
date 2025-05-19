@@ -9,7 +9,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python: [2.7, 3.3, 3.4, 3.6, 3.7, 3.8, 3.10]
+        python: [2.7, 3.3, 3.4, 3.6, 3.7, 3.8]
         defusedxml: [none]
         include:
           - python: 2.7
@@ -24,8 +24,6 @@ jobs:
             image: python:3.7-slim
           - python: 3.8
             image: python:3.8-slim
-          - python: 3.10
-            image: python:3.10-slim
 
     container:
       image: ${{ matrix.image }}

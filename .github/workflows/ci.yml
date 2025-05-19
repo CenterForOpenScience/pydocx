@@ -4,6 +4,36 @@ on:
   push:
 
 jobs:
+  superlegacy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [2.6, 3.3, 3.4]
+        include:
+          - python-version: 2.6
+            image: cronosmobi/python2.6
+          - python-version: 3.3
+            image: python:3.3-slim
+          - python-version: 3.4
+            image: python:3.4-slim
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests in Python ${{ matrix.python-version }}
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ${{ matrix.image }}
+          options: -v ${{ github.workspace }}:/workspace
+          run: |
+            cd /workspace
+            python --version
+            pip install -r requirements.txt
+            pip install -e .
+            nosetests --with-doctest
+
   legacy:
     runs-on: ubuntu-latest
     continue-on-error: true

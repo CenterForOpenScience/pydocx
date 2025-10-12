@@ -81,7 +81,7 @@ Currently Supported HTML elements
   * list styles
   * nested lists
   * list of tables
-  * list of pragraphs
+  * list of paragraphs
 
 * justification
 * images

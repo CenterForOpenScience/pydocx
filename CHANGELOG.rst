@@ -56,7 +56,7 @@
   (``self.first_pass == True``), you can now track information that will be used to
   make decisions in the second pass. The notable example where this technique
   is used is implementing complex fields. Because the export methods are called
-  twice, some exporter extensions that perform lossly operations on the
+  twice, some exporter extensions that perform lossy operations on the
   document structure may need to ignore processing during the first pass.
 - The function signature of the ``get_hyperlink_tag`` has changed. It
   previously accepted a ``Hyperlink`` instance. Now it only accepts
@@ -183,7 +183,7 @@
 **0.4.00**
 
 - External images are now handled. This causes a backwards incompatible change
-  with all handers related to images.
+  with all handlers related to images.
 
 **0.3.23**
 

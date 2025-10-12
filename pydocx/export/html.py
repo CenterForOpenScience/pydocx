@@ -428,7 +428,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 pass
 
         # Here as well, we remove the default hanging which word adds
-        # because <li> tag will provide it's own
+        # because <li> tag will provide its own
         hanging -= level_ind_hanging
 
         if margin_left:

@@ -390,7 +390,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if not left and not hanging:
             return style
 
-        # All the bellow left margin calculation is done because html ul/ol/li elements have
+        # All the below left margin calculation is done because html ul/ol/li elements have
         # their default indentations and we need to make sure that we migrate as near as
         # possible solution to html.
         margin_left = left

@@ -183,7 +183,7 @@
 **0.4.00**
 
 - External images are now handled. This causes a backwards incompatible change
-  with all handers related to images.
+  with all handlers related to images.
 
 **0.3.23**
 

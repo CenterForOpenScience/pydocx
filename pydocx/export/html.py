@@ -497,7 +497,17 @@ class PyDocXHTMLExporter(PyDocXExporter):
             'class': 'pydocx-underline',
         }
         tag = HtmlTag('span', **attrs)
-        return self.export_run_property(tag, run, results)
+
+        # Added function to apply underline to whitespace.
+        def preserve_spaces(items):
+            for item in items:
+                # If the item is only whitespace, convert it to a space entity
+                if is_only_whitespace(item) and hasattr(item, 'replace'):
+                    yield item.replace(' ', '&#160;')
+                else:
+                    yield item
+
+        return self.export_run_property(tag, run, preserve_spaces(results))
 
     def export_run_property_caps(self, run, results):
         attrs = {

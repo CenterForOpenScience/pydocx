@@ -14,6 +14,7 @@ class TableCellProperties(XmlModel):
     grid_span = XmlChild(name='gridSpan', attrname='val')
 
     vertical_merge = XmlChild(name='vMerge', type=lambda el: dict(el.attrib))  # noqa
+    shading = XmlChild(name='shd', attrname='fill')
 
     def should_close_previous_vertical_merge(self):
         # If vMerge is omitted, then this cell shall not be part of any

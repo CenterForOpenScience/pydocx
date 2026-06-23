@@ -1,7 +1,7 @@
 name: CI
 
 on:
-  push:
+  pull_request:
 
 jobs:
   superlegacy:
@@ -9,13 +9,12 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python-version: [2.6, 3.3, 3.4]
         include:
-          - python-version: 2.6
+          - python-version: "2.6"
             image: cronosmobi/python2.6
-          - python-version: 3.3
+          - python-version: "3.3"
             image: python:3.3
-          - python-version: 3.4
+          - python-version: "3.4"
             image: python:3.4
 
     steps:
@@ -51,15 +50,14 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        python: [2.7, 3.6, 3.7, 3.8]
         include:
-          - python: 2.7
+          - python: "2.7"
             image: python:2.7-slim
-          - python: 3.6
+          - python: "3.6"
             image: python:3.6-slim
-          - python: 3.7
+          - python: "3.7"
             image: python:3.7-slim
-          - python: 3.8
+          - python: "3.8"
             image: python:3.8-slim
 
     container:
@@ -72,6 +70,6 @@ jobs:
       - name: Install dependencies
         run: pip install --requirement requirements/testing.txt
       - name: Install PyDocX
-        run: pip install -e .[dev]  # editable install so CLI entry points are available
+        run: pip install -e .  # editable install so CLI entry points are available
       - name: Run tests
         run: nosetests --with-doctest

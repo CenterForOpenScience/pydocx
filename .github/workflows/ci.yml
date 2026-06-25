@@ -6,7 +6,6 @@ on:
 jobs:
   superlegacy:
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         include:
@@ -47,7 +46,6 @@ jobs:
 
   legacy:
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         include:

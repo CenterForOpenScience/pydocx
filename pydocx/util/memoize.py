@@ -5,8 +5,14 @@ from __future__ import (
     unicode_literals,
 )
 
-import collections
 import functools
+
+try:
+    # Python 3.3+
+    from collections.abc import Hashable
+except ImportError:
+    # Python 2.7
+    from collections import Hashable
 
 
 class memoized(object):
@@ -21,7 +27,7 @@ class memoized(object):
         self.cache = {}
 
     def __call__(self, *args):
-        if not isinstance(args, collections.Hashable):
+        if not isinstance(args, Hashable):
             # uncacheable. a list, for instance.
             # better to not cache than blow up.
             return self.func(*args)

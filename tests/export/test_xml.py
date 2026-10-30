@@ -490,7 +490,7 @@ class MangledIlvlTestCase(TranslationTestCase):
         return xml
 
 
-class SeperateListsIntoParentListTestCase(TranslationTestCase):
+class SeparateListsIntoParentListTestCase(TranslationTestCase):
     expected_output = '''
         <ol class="pydocx-list-style-type-lowerLetter">
             <li>

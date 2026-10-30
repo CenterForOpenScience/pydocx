@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  legacy:
+    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.6"
+            image: cronosmobi/python2.6
+          - python-version: "2.6"
+            image: cronosmobi/python2.6
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+
+          - python-version: "3.3"
+            image: python:3.3-slim
+          - python-version: "3.3"
+            image: python:3.3-slim
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+
+          - python-version: "3.4"
+            image: python:3.4-slim
+          - python-version: "3.4"
+            image: python:3.4-slim
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with these older python versions
+      - name: Check python version
+        run: python --version
+      - name: Ensure wget is installed
+        run: |
+          command -v wget >/dev/null 2>&1 || {
+            echo "deb http://archive.debian.org/debian/ jessie main contrib non-free" > /etc/apt/sources.list;
+            echo "deb http://archive.debian.org/debian-security/ jessie/updates main contrib non-free" >> /etc/apt/sources.list;
+            echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/90ignore-release-date
+            apt-get update;
+            apt-get install -y --allow-unauthenticated wget;
+          }
+      - name: Download dependencies
+        run: wget -i requirements/python-${{ matrix.python-version }}.txt
+      - name: Install dependencies
+        run: |
+          pip install --no-index *.whl *.tar.gz
+          if [ "${{ matrix.python-version }}" = "2.6" ]; then
+            pip install --no-index importlib-1.0.4.zip
+          fi
+      - name: Install defusedxml ${{ matrix.defusedxml }}
+        if: matrix.defusedxml
+        run: |
+          wget ${{ matrix.defusedxml_url }}
+          pip install --no-index defusedxml-${{ matrix.defusedxml }}.tar.gz
+      - name: Install PyDocX
+        run: pip install -e .
+      - name: Run tests
+        run: nosetests --with-doctest
+
+  main:
+    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.7"
+            image: python:2.7-slim
+          - python-version: "2.7"
+            image: python:2.7-slim
+            defusedxml: "0.4.1"
+
+          - python-version: "3.6"
+            image: python:3.6-slim
+          - python-version: "3.6"
+            image: python:3.6-slim
+            defusedxml: "0.7.1"
+
+          - python-version: "3.7"
+            image: python:3.7-slim
+          - python-version: "3.7"
+            image: python:3.7-slim
+            defusedxml: "0.7.1"
+
+          - python-version: "3.8"
+            image: python:3.8-slim
+          - python-version: "3.8"
+            image: python:3.8-slim
+            defusedxml: "0.7.1"
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Check python version
+        run: python --version
+      - name: Install dependencies
+        run: pip install --requirement requirements/testing-base.txt
+      - name: Install defusedxml ${{ matrix.defusedxml }}
+        if: matrix.defusedxml
+        run: pip install defusedxml==${{ matrix.defusedxml }}
+      - name: Install PyDocX
+        run: pip install -e .
+      - name: Run tests
+        run: nosetests --with-doctest
+
+
+  flake8:
+    name: python ${{ matrix.python-version }} (flake8)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.7"
+            image: python:2.7-slim
+            flake8: "3.3.0"
+          - python-version: "3.4"
+            image: python:3.4-slim
+            flake8: "3.3.0"
+          - python-version: "3.8"
+            image: python:3.8-slim
+            flake8: "3.8.4"
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - run: pip install flake8==${{ matrix.flake8 }}
+      - run: flake8 pydocx
+
+  coverage:
+    name: python ${{ matrix.python-version }} (coverage)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.7"
+            image: python:2.7-slim
+            coverage: "3.6"
+          - python-version: "3.4"
+            image: python:3.4-slim
+            coverage: "3.6"
+          - python-version: "3.8"
+            image: python:3.8-slim
+            coverage: "5.5"
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - run: pip install --requirement requirements/testing-base.txt coverage==${{ matrix.coverage }}
+      - name: Install PyDocX
+        run: pip install -e .
+      - run: nosetests --with-doctest --with-coverage --cover-package pydocx
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.6-slim
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install docs dependencies
+        run: pip install --requirement requirements/docs.txt
+      - name: Build docs (warnings as errors)
+        run: sphinx-build -W -b html -d /tmp/doctrees docs docs/_build/html

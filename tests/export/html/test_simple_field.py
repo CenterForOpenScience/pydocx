@@ -202,6 +202,10 @@ class ParseInstrTestCase(TestCase):
         field = SimpleField(instr=instr)
         return field.parse_instr()
 
+    def test_with_None_instr_returns_None(self):
+        result = self.parse(None)
+        self.assertEqual(result, None)
+
     def test_with_blank_instr_returns_None(self):
         result = self.parse('')
         self.assertEqual(result, None)

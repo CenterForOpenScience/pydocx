@@ -28,10 +28,16 @@ jobs:
       - uses: actions/checkout@v1
       - name: Check python version
         run: python --version
+      - name: Ensure wget is installed
+        run: command -v wget >/dev/null 2>&1 || { sudo apt-get update && sudo apt-get install -y wget; }
+      - name: Download dependencies
+        run: wget -i requirements/python-${{ matrix.python-version }}.txt
       - name: Install dependencies
         run: |
-          wget -i requirements/python-${{ matrix.python-version }}.txt
           pip install --no-index *.whl *.tar.gz
+          if [ "${{ matrix.python-version }}" = "2.6" ]; then
+            pip install --no-index importlib-1.0.4.zip
+          fi
       - name: Install PyDocX
         run: pip install -e .
       - name: Run tests

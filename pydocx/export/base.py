@@ -427,6 +427,8 @@ class PyDocXExporter(object):
         return self.yield_nested(table.rows, self.export_node)
 
     def export_table_row(self, table_row):
+        if table_row.is_hidden:
+            return  # skip — row is marked hidden in the docx
         return self.yield_nested(table_row.cells, self.export_node)
 
     def export_table_cell(self, table_cell):

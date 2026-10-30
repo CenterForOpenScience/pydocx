@@ -34,15 +34,21 @@ def find_version(*file_paths):
 
 
 def main():
+    authors = ", ".join(
+        line.split("<", 1)[0].strip()
+        for line in read("AUTHORS").splitlines()
+        if line.strip()
+    )
     setup(
         name="PyDocX",
         version=find_version('pydocx', '__init__.py'),
-        description="docx (OOXML) to html converter",
-        author="Jason Ward, Sam Portnow",
-        author_email="jason.louard.ward@gmail.com, samson91787@gmail.com",
-        url="http://github.com/CenterForOpenScience/pydocx",
+        description="An extensible Python library for converting DOCX documents to HTML and other markup formats",
+        maintainer="Kyle Gibson",
+        maintainer_email="kyle.gibson@frozenonline.com",
+        author=authors,
+        url="https://github.com/CenterForOpenScience/pydocx",
         platforms=["any"],
-        license="Apache",
+        license="Apache-2.0",
         packages=find_packages(),
         package_data={
             'pydocx': [
@@ -64,12 +70,13 @@ def main():
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: Apache Software License"
+            "License :: OSI Approved :: Apache Software License",
             "Operating System :: OS Independent",
             "Topic :: Text Processing :: Markup :: HTML",
             "Topic :: Text Processing :: Markup :: XML",
         ],
         long_description=read('README.rst'),
+        long_description_content_type="text/x-rst",
         entry_points={
             'console_scripts': [
                 'pydocx = pydocx.__main__:cli',

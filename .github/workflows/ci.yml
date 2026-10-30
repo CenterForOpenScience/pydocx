@@ -8,7 +8,7 @@ on:
 
 jobs:
   legacy:
-    name: python ${{ matrix.python-version }} (tests)
+    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,6 +20,18 @@ jobs:
             image: python:3.3-slim
           - python-version: "3.4"
             image: python:3.4-slim
+          - python-version: "2.6"
+            image: cronosmobi/python2.6
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+          - python-version: "3.3"
+            image: python:3.3-slim
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+          - python-version: "3.4"
+            image: python:3.4-slim
+            defusedxml: "0.4.1"
+            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
 
     container:
       image: ${{ matrix.image }}
@@ -45,13 +57,18 @@ jobs:
           if [ "${{ matrix.python-version }}" = "2.6" ]; then
             pip install --no-index importlib-1.0.4.zip
           fi
+      - name: Install defusedxml ${{ matrix.defusedxml }}
+        if: matrix.defusedxml
+        run: |
+          wget ${{ matrix.defusedxml_url }}
+          pip install --no-index defusedxml-${{ matrix.defusedxml }}.tar.gz
       - name: Install PyDocX
         run: pip install -e .
       - name: Run tests
         run: nosetests --with-doctest
 
   main:
-    name: python ${{ matrix.python-version }} (tests)
+    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -65,6 +82,9 @@ jobs:
             image: python:3.7-slim
           - python-version: "3.8"
             image: python:3.8-slim
+          - python-version: "2.7"
+            image: python:2.7-slim
+            defusedxml: "0.4.1"
 
     container:
       image: ${{ matrix.image }}
@@ -75,6 +95,9 @@ jobs:
         run: python --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing-base.txt
+      - name: Install defusedxml ${{ matrix.defusedxml }}
+        if: matrix.defusedxml
+        run: pip install defusedxml==${{ matrix.defusedxml }}
       - name: Install PyDocX
         run: pip install -e .
       - name: Run tests

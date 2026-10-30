@@ -1,0 +1,3 @@
+[flake8]
+select = E,W,F
+max-line-length = 95

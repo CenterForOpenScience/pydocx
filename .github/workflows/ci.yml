@@ -130,6 +130,8 @@ jobs:
             image: python:2.7-slim
           - python-version: "3.4"
             image: python:3.4-slim
+          - python-version: "3.8"
+            image: python:3.8-slim
     container:
       image: ${{ matrix.image }}
 
@@ -150,6 +152,8 @@ jobs:
             image: python:2.7-slim
           - python-version: "3.4"
             image: python:3.4-slim
+          - python-version: "3.8"
+            image: python:3.8-slim
     container:
       image: ${{ matrix.image }}
 

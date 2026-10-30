@@ -35,7 +35,7 @@ jobs:
             echo "deb http://archive.debian.org/debian-security/ jessie/updates main contrib non-free" >> /etc/apt/sources.list;
             echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/90ignore-release-date
             apt-get update;
-            apt-get install -y wget;
+            apt-get install -y --allow-unauthenticated wget;
           }
       - name: Download dependencies
         run: wget -i requirements/python-${{ matrix.python-version }}.txt

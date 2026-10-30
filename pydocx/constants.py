@@ -25,6 +25,11 @@ USE_ALIGNMENTS = True
 # https://en.wikipedia.org/wiki/Twip
 TWIPS_PER_POINT = 20
 
+# According to this: http://alienryderflex.com/hsp.html
+BRIGHTNESS_DARK_COLOR = 50
+
+COLOR_FOR_DARK_BACKGROUND = 'FFFFFF'
+
 # TODO These alignment values are for traditional conformance. Strict
 # conformance uses different values
 JUSTIFY_CENTER = 'center'

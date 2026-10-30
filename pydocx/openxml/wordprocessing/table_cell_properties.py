@@ -6,12 +6,15 @@ from __future__ import (
 )
 
 from pydocx.models import XmlModel, XmlChild
+from pydocx.constants import COLOR_FOR_DARK_BACKGROUND
 
 
 class TableCellProperties(XmlModel):
     XML_TAG = 'tcPr'
 
     grid_span = XmlChild(name='gridSpan', attrname='val')
+
+    background_fill = XmlChild(name='shd', attrname='fill')
 
     vertical_merge = XmlChild(name='vMerge', type=lambda el: dict(el.attrib))  # noqa
 
@@ -25,3 +28,11 @@ class TableCellProperties(XmlModel):
         if merge != 'continue':
             return True
         return False
+
+    @property
+    def background_color(self):
+        # There is no need to set white background color
+        if self.background_fill not in ('auto', COLOR_FOR_DARK_BACKGROUND):
+            return self.background_fill
+
+        return None

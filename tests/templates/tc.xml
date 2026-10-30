@@ -14,7 +14,7 @@
 			<w:left w:color="000000" w:space="0" w:sz="2" w:val="single"/>
 			<w:bottom w:color="000000" w:space="0" w:sz="2" w:val="single"/>
 		</w:tcBorders>
-		<w:shd w:fill="auto" w:val="clear"/>
+		<w:shd w:fill="{{ fill_color }}" w:val="clear"/>
 		<w:tcMar>
 			<w:top w:type="dxa" w:w="55"/>
 			<w:left w:type="dxa" w:w="55"/>

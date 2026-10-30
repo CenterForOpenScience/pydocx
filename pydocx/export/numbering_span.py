@@ -26,7 +26,7 @@ roman_numeral_map = tuple(zip(
 
 def int_to_roman(i):
     '''
-    Given any integer, return the roman numberal string.
+    Given any integer, return the roman numeral string.
 
     >>> int_to_roman(1) == 'I'
     True
@@ -47,7 +47,7 @@ def int_to_roman(i):
 
 def roman_to_int(n):
     '''
-    Given a roman numberal string, return the decimal equivalent.
+    Given a roman numeral string, return the decimal equivalent.
 
     >>> roman_to_int('I')
     1

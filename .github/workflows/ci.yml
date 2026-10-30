@@ -97,7 +97,7 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v1
       - run: pip install flake8==3.3.0
       - run: flake8 pydocx
 
@@ -117,7 +117,7 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v1
       - run: pip install --requirement requirements/testing-base.txt coverage==3.6
       - name: Install PyDocX
         run: pip install -e .

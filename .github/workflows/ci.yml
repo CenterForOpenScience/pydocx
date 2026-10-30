@@ -16,18 +16,20 @@ jobs:
         include:
           - python-version: "2.6"
             image: cronosmobi/python2.6
-          - python-version: "3.3"
-            image: python:3.3-slim
-          - python-version: "3.4"
-            image: python:3.4-slim
           - python-version: "2.6"
             image: cronosmobi/python2.6
             defusedxml: "0.4.1"
             defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+
+          - python-version: "3.3"
+            image: python:3.3-slim
           - python-version: "3.3"
             image: python:3.3-slim
             defusedxml: "0.4.1"
             defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
+
+          - python-version: "3.4"
+            image: python:3.4-slim
           - python-version: "3.4"
             image: python:3.4-slim
             defusedxml: "0.4.1"
@@ -76,15 +78,16 @@ jobs:
         include:
           - python-version: "2.7"
             image: python:2.7-slim
+          - python-version: "2.7"
+            image: python:2.7-slim
+            defusedxml: "0.4.1"
+
           - python-version: "3.6"
             image: python:3.6-slim
           - python-version: "3.7"
             image: python:3.7-slim
           - python-version: "3.8"
             image: python:3.8-slim
-          - python-version: "2.7"
-            image: python:2.7-slim
-            defusedxml: "0.4.1"
 
     container:
       image: ${{ matrix.image }}

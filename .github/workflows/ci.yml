@@ -86,19 +86,19 @@ jobs:
             image: python:3.6-slim
           - python-version: "3.6"
             image: python:3.6-slim
-            defusedxml: "0.4.1"
+            defusedxml: "0.7.1"
 
           - python-version: "3.7"
             image: python:3.7-slim
           - python-version: "3.7"
             image: python:3.7-slim
-            defusedxml: "0.4.1"
+            defusedxml: "0.7.1"
 
           - python-version: "3.8"
             image: python:3.8-slim
           - python-version: "3.8"
             image: python:3.8-slim
-            defusedxml: "0.4.1"
+            defusedxml: "0.7.1"
 
     container:
       image: ${{ matrix.image }}

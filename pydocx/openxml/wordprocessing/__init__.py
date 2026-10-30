@@ -24,6 +24,8 @@ from pydocx.openxml.wordprocessing.numbering_instance import NumberingInstance
 from pydocx.openxml.wordprocessing.numbering_properties import NumberingProperties  # noqa
 from pydocx.openxml.wordprocessing.paragraph import Paragraph
 from pydocx.openxml.wordprocessing.paragraph_properties import ParagraphProperties  # noqa
+from pydocx.openxml.wordprocessing.border_properties import ParagraphBorders
+from pydocx.openxml.wordprocessing.border_properties import RunBorders
 from pydocx.openxml.wordprocessing.picture import Picture
 from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.run_properties import RunProperties  # noqa
@@ -71,9 +73,11 @@ __all__ = [
     'NumberingProperties',
     'Paragraph',
     'ParagraphProperties',
+    'ParagraphBorders',
     'Picture',
     'Run',
     'RunProperties',
+    'RunBorders',
     'RFonts',
     'SdtBlock',
     'SdtContentBlock',

@@ -7,6 +7,8 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlChild
 from pydocx.openxml.wordprocessing.numbering_properties import NumberingProperties  # noqa
+from pydocx.openxml.wordprocessing.border_properties import ParagraphBorders
+from pydocx.openxml.wordprocessing.shading_properties import ParagraphShading
 
 
 class ParagraphProperties(XmlModel):
@@ -14,6 +16,8 @@ class ParagraphProperties(XmlModel):
 
     parent_style = XmlChild(name='pStyle', attrname='val')
     numbering_properties = XmlChild(type=NumberingProperties)
+    border_properties = XmlChild(type=ParagraphBorders)
+    shading_properties = XmlChild(type=ParagraphShading)
     justification = XmlChild(name='jc', attrname='val')
     # TODO ind can appear multiple times. Need to merge them in document order
     # This probably means other elements can appear multiple times

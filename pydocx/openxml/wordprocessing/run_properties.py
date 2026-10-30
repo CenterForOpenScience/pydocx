@@ -8,6 +8,8 @@ from __future__ import (
 from pydocx.models import XmlModel, XmlChild
 from pydocx.types import OnOff, Underline
 from pydocx.openxml.wordprocessing.rfonts import RFonts
+from pydocx.openxml.wordprocessing.border_properties import RunBorders
+from pydocx.openxml.wordprocessing.shading_properties import RunShading
 
 
 class RunProperties(XmlModel):
@@ -28,6 +30,8 @@ class RunProperties(XmlModel):
     sz = XmlChild(name='sz', attrname='val')
     clr = XmlChild(name='color', attrname='val')
     r_fonts = XmlChild(type=RFonts)
+    border_properties = XmlChild(type=RunBorders)
+    shading_properties = XmlChild(type=RunShading)
 
     @property
     def color(self):

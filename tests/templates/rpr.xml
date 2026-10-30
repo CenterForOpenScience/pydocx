@@ -2,4 +2,10 @@
 		{% for tag, value in tags.items() %}
 		<w:{{ tag }} {% if value %} w:val="{{ value }}"{% endif %}/>
 		{% endfor %}
+		{% if borders %}
+			{{ borders }}
+		{% endif %}
+		{% if shading %}
+			{{ shading }}
+		{% endif %}
 	</w:rPr>

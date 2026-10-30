@@ -208,7 +208,7 @@ class XmlModel(object):
         parent=None,
         **kwargs
     ):
-        for field_name, field in self.__class__.__dict__.items():
+        for field_name, field in self._get_all_attributes(self.__class__).items():
             if isinstance(field, XmlField):
                 # TODO field.default may only refer to the attr, and not if the
                 # field itself is missing
@@ -223,6 +223,24 @@ class XmlModel(object):
 
         self._parent = parent
         self.container = kwargs.get('container')
+
+    @classmethod
+    def _get_all_attributes(cls, klass):
+        """Return a set of the accessible attributes of class/type klass.
+
+        This includes all attributes of klass and all of the base classes
+        recursively.
+        """
+
+        attrs = {}
+        ns = getattr(klass, '__dict__', None)
+        if ns is not None:
+            attrs.update(ns)
+        bases = getattr(klass, '__bases__', [])
+        for base in bases:
+            attrs.update(cls._get_all_attributes(base))
+
+        return attrs
 
     @property
     def parent(self):
@@ -263,7 +281,7 @@ class XmlModel(object):
         model, and yields back only those fields which have been set to a value
         that isn't the field's default.
         '''
-        for field_name, field in self.__class__.__dict__.items():
+        for field_name, field in self._get_all_attributes(self.__class__).items():
             if isinstance(field, XmlField):
                 value = getattr(self, field_name, field.default)
                 if value != field.default:
@@ -288,7 +306,7 @@ class XmlModel(object):
 
         # Enumerate the defined fields and separate them into attributes and
         # tags
-        for field_name, field in cls.__dict__.items():
+        for field_name, field in cls._get_all_attributes(cls).items():
             if isinstance(field, XmlAttribute):
                 attribute_fields[field_name] = field
             if isinstance(field, XmlChild):

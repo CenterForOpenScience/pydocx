@@ -8,7 +8,7 @@ on:
 
 jobs:
   legacy:
-    name: python ${{ matrix.python-version }}
+    name: python ${{ matrix.python-version }} (tests)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -51,7 +51,7 @@ jobs:
         run: nosetests --with-doctest
 
   main:
-    name: python ${{ matrix.python-version }}
+    name: python ${{ matrix.python-version }} (tests)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -82,7 +82,7 @@ jobs:
 
 
   pep8:
-    name: pep8 (python ${{ matrix.python-version }})
+    name: python ${{ matrix.python-version }} (pep8)
     runs-on: ubuntu-latest
 
     strategy:
@@ -102,7 +102,7 @@ jobs:
       - run: flake8 pydocx
 
   coverage:
-    name: coverage (python ${{ matrix.python-version }})
+    name: python ${{ matrix.python-version }} (coverage)
     runs-on: ubuntu-latest
 
     strategy:

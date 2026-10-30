@@ -294,11 +294,13 @@ class BaseNumberingSpanBuilder(object):
         child_parent_map = {}
         list_start_stop_index = {}
         # we are interested only in components that are part of the listing
-        components = [component for component in self.components if
-                      hasattr(component, 'properties')
-                      and hasattr(component.properties, 'numbering_properties')
-                      and component.numbering_definition
-                      and component.get_numbering_level()]
+        components = [
+            component for component in self.components
+            if hasattr(component, 'properties')
+            if hasattr(component.properties, 'numbering_properties')
+            if component.numbering_definition
+            if component.get_numbering_level()
+        ]
         if not components:
             return False
 

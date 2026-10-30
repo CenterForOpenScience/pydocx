@@ -116,13 +116,13 @@ class BetweenBorder(BaseBorder):
 
 class BaseBorderStyle(object):
     def get_border_style(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_shadow_style(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_padding_style(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class ParagraphBorders(XmlModel, BaseBorderStyle):

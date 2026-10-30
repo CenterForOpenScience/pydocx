@@ -30,7 +30,7 @@ def create_zip_archive(paths_to_data):
     that path specified by the key.
 
     Each path MUST NOT include an initial '/'. Each path MUST use '/' as a file
-    separator (this is requried by the zip specification).
+    separator (this is required by the zip specification).
 
     paths_to_data = {
         'path/file.txt': 'hello',

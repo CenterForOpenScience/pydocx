@@ -1,0 +1,3 @@
+https://files.pythonhosted.org/packages/65/e0/eb35e762802015cab1ccee04e8a277b03f1d8e53da3ec3106882ec42558b/Jinja2-2.10.3-py2.py3-none-any.whl
+https://files.pythonhosted.org/packages/4d/de/32d741db316d8fdb7680822dd37001ef7a448255de9699ab4bfcbdf4172b/MarkupSafe-1.0.tar.gz
+https://files.pythonhosted.org/packages/de/f4/b205776cf5cbddbc1e2c3223fa29c0d05f18a9b8afad8cfa23438c217434/nose-1.3.0.tar.gz

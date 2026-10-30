@@ -32,7 +32,7 @@ class SimpleField(XmlModel):
     )
 
     def _parse_instr_into_field_type_and_arg_string(self):
-        return re.match('^\s*([^\s]+)\s*(.*)$', self.instr)
+        return re.match(r'^\s*([^\s]+)\s*(.*)$', self.instr)
 
     def _parse_instr_arg_string_to_args(self, arg_string):
         return re.findall(r'\s*(?:"([^"]+)"|([^\s]+))+', arg_string)

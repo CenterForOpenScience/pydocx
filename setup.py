@@ -70,7 +70,6 @@ def main():
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: Implementation :: PyPy",
             "Intended Audience :: Developers",
-            "License :: OSI Approved :: Apache Software License",
             "Operating System :: OS Independent",
             "Topic :: Text Processing :: Markup :: HTML",
             "Topic :: Text Processing :: Markup :: XML",

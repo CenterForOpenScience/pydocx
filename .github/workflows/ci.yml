@@ -118,8 +118,8 @@ jobs:
         run: nosetests --with-doctest
 
 
-  pep8:
-    name: python ${{ matrix.python-version }} (pep8)
+  flake8:
+    name: python ${{ matrix.python-version }} (flake8)
     runs-on: ubuntu-latest
 
     strategy:
@@ -128,16 +128,19 @@ jobs:
         include:
           - python-version: "2.7"
             image: python:2.7-slim
+            flake8: "3.3.0"
           - python-version: "3.4"
             image: python:3.4-slim
+            flake8: "3.3.0"
           - python-version: "3.8"
             image: python:3.8-slim
+            flake8: "3.8.4"
     container:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with these older python versions
-      - run: pip install flake8==3.3.0
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - run: pip install flake8==${{ matrix.flake8 }}
       - run: flake8 pydocx
 
   coverage:
@@ -150,16 +153,19 @@ jobs:
         include:
           - python-version: "2.7"
             image: python:2.7-slim
+            coverage: "3.6"
           - python-version: "3.4"
             image: python:3.4-slim
+            coverage: "3.6"
           - python-version: "3.8"
             image: python:3.8-slim
+            coverage: "5.5"
     container:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with these older python versions
-      - run: pip install --requirement requirements/testing-base.txt coverage==3.6
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - run: pip install --requirement requirements/testing-base.txt coverage==${{ matrix.coverage }}
       - name: Install PyDocX
         run: pip install -e .
       - run: nosetests --with-doctest --with-coverage --cover-package pydocx

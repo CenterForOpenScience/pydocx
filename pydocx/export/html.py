@@ -854,7 +854,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         for arg in field_args:
             if bookmark_option is True:
                 bookmark = arg
-            if arg == '\l':
+            if arg == '\\l':
                 bookmark_option = True
         if bookmark_option and bookmark:
             target_uri = '{0}#{1}'.format(target_uri, bookmark)

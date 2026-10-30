@@ -6,6 +6,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   legacy:
     name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}

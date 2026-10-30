@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  main:
+  legacy:
     name: python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
@@ -16,12 +16,36 @@ jobs:
         include:
           - python-version: "2.6"
             image: cronosmobi/python2.6
-          - python-version: "2.7"
-            image: python:2.7-slim
           - python-version: "3.3"
             image: python:3.3-slim
           - python-version: "3.4"
             image: python:3.4-slim
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check python version
+        run: python --version
+      - name: Install dependencies
+        run: |
+          wget -i requirements/python-${{ matrix.python-version }}.txt
+          pip install --no-index *.whl *.tar.gz
+      - name: Install PyDocX
+        run: pip install -e .
+      - name: Run tests
+        run: nosetests --with-doctest
+
+  main:
+    name: python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.7"
+            image: python:2.7-slim
           - python-version: "3.6"
             image: python:3.6-slim
           - python-version: "3.7"
@@ -37,13 +61,7 @@ jobs:
       - name: Check python version
         run: python --version
       - name: Install dependencies
-        run: |
-          if [ -e requirements/python-${{ matrix.python-version }}.txt ]; then
-            wget -i requirements/python-${{ matrix.python-version }}.txt
-            pip install --no-index *.whl *.tar.gz
-          else
-            pip install --requirement requirements/testing-base.txt
-          fi
+        run: pip install --requirement requirements/testing-base.txt
       - name: Install PyDocX
         run: pip install -e .
       - name: Run tests

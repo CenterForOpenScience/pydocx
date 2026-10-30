@@ -8,7 +8,7 @@ in the core library.
 
 If it's something that should exist, the
 PyDocX project is always open to new
-contributions. Details of how to contibute
+contributions. Details of how to contribute
 can be found in :doc:`/development`.
 
 For things that don't fit in the core

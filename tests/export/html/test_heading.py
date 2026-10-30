@@ -274,7 +274,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                 <li>
-                    foo
+                    <p>foo</p>
                     <ol class="pydocx-list-style-type-lowerLetter">
                         <li>
                             <strong>bar</strong>
@@ -351,10 +351,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                     <li>
-                            foo
-                            <ol class="pydocx-list-style-type-lowerLetter">
-                                    <li>bar</li>
-                            </ol>
+                        <p>foo</p>
+                        <ol class="pydocx-list-style-type-lowerLetter">
+                                <li><p>bar</p></li>
+                        </ol>
                     </li>
             </ol>
             <h1>baz</h1>
@@ -416,8 +416,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
             <ol class="pydocx-list-style-type-decimal">
                 <li>
                     <strong>foo</strong>
-                    <br />
-                    bare paragraph
+                    <p>bare paragraph</p>
                 </li>
                 <li>
                     <strong>bar</strong>
@@ -527,7 +526,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>foo</li>
+                <li><p>foo</p></li>
             </ol>
             <p>bare paragraph</p>
             <ol class="pydocx-list-style-type-decimal">
@@ -588,7 +587,10 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>foo<br />bare paragraph</li>
+                <li>
+                    <p>foo</p>
+                    <p>bare paragraph</p>
+                </li>
                 <li><strong>bar</strong></li>
             </ol>
         '''
@@ -662,13 +664,13 @@ class HeadingTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
-                <li>single list item</li>
+                <li><p>single list item</p></li>
             </ol>
             <h1>actual heading</h1>
             <p>before table</p>
             <table border="1">
                 <tr>
-                    <td>foo</td>
+                    <td><p>foo</p></td>
                 </tr>
             </table>
             <p>after table</p>
@@ -739,7 +741,7 @@ class HeadingTestCase(DocumentGeneratorTestCase):
         expected_html = '''
             <ol class="pydocx-list-style-type-decimal">
                 <li><strong>foo</strong></li>
-                <li>non-heading list item</li>
+                <li><p>non-heading list item</p></li>
                 <li><strong>bar</strong></li>
             </ol>
         '''

@@ -7,6 +7,8 @@ from __future__ import (
 
 from pydocx.models import XmlModel, XmlChild
 from pydocx.openxml.wordprocessing.numbering_properties import NumberingProperties  # noqa
+from pydocx.openxml.wordprocessing.paragraph_spacing import ParagraphSpacing
+from pydocx.types import OnOff
 
 
 class ParagraphProperties(XmlModel):
@@ -24,6 +26,10 @@ class ParagraphProperties(XmlModel):
     indentation_right = XmlChild(name='ind', attrname='right')
     indentation_first_line = XmlChild(name='ind', attrname='firstLine')
     indentation_hanging = XmlChild(name='ind', attrname='hanging')
+
+    contextual_spacing = XmlChild(type=OnOff, name='contextualSpacing', attrname='val')
+    # paragraph spacing
+    spacing_properties = XmlChild(type=ParagraphSpacing)
 
     @property
     def start_margin_position(self):
@@ -51,3 +57,16 @@ class ParagraphProperties(XmlModel):
             return int(getattr(self, attribute, default))
         except (ValueError, TypeError):
             return default
+
+    @property
+    def is_list_paragraph(self):
+        return self.parent_style == 'ListParagraph'
+
+    @property
+    def no_indentation(self):
+        return not any((
+            self.indentation_left,
+            self.indentation_hanging,
+            self.indentation_right,
+            self.indentation_first_line,
+        ))

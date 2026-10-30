@@ -115,11 +115,15 @@ class TableTestCase(DocumentGeneratorTestCase):
         document.add(MainDocumentPart, document_xml)
 
         expected_html = '''
-            <table border="1">
-                <tr>
-                    <td>AAA</td>
-                </tr>
-            </table>
+            <p>
+                <table border="1">
+                    <tr>
+                        <td>
+                            <p>AAA</p>
+                        </td>
+                    </tr>
+                </table>
+            </p>
         '''
         self.assert_document_generates_html(document, expected_html)
 
@@ -166,7 +170,9 @@ class TableTestCase(DocumentGeneratorTestCase):
                 AAA
                 <table border="1">
                     <tr>
-                        <td>BBB</td>
+                        <td>
+                            <p>BBB</p>
+                        </td>
                     </tr>
                 </table>
                 CCC

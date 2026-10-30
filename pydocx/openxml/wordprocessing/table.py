@@ -7,12 +7,15 @@ from __future__ import (
 
 from collections import defaultdict
 
-from pydocx.models import XmlModel, XmlCollection
+from pydocx.models import XmlModel, XmlCollection, XmlChild
 from pydocx.openxml.wordprocessing.table_row import TableRow
+from pydocx.openxml.wordprocessing.table_properties import TableProperties
 
 
 class Table(XmlModel):
     XML_TAG = 'tbl'
+
+    properties = XmlChild(type=TableProperties)
 
     rows = XmlCollection(
         TableRow,
@@ -45,3 +48,14 @@ class Table(XmlModel):
                         if active_rowspan_for_column:
                             cell_to_rowspan_count[active_rowspan_for_column] += 1  # noqa
         return dict(cell_to_rowspan_count)
+
+    def get_style_chain_stack(self):
+        # Even if parent style is not defined we still need to check the default style
+        # properties applied
+        parent_style = getattr(self.properties, 'parent_style', None)
+
+        part = getattr(self.container, 'style_definitions_part', None)
+        if part:
+            style_stack = part.get_style_chain_stack('table', parent_style)
+            for result in style_stack:
+                yield result

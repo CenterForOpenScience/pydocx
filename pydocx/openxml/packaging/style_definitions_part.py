@@ -51,28 +51,39 @@ class StyleDefinitionsPart(OpenXmlPart):
         styleB
         styleC
         '''
+
         visited_styles = set()
-        visited_styles.add(style_id)
-
         styles = self.styles.get_styles_by_type(style_type)
-        base_style = styles.get(style_id)
+        styles_to_apply = {}
 
-        if base_style:
-            yield base_style
+        def yield_styles_parent_stack(base_style):
+            if base_style:
+                yield base_style
 
-        # Build up the stack of styles to merge together
-        current_style = base_style
-        while current_style:
-            if not current_style.parent_style:
-                # The current style doesn't have a parent style
-                break
-            if current_style.parent_style in visited_styles:
-                # Loop detected
-                break
-            style = styles.get(current_style.parent_style)
-            if not style:
-                # Style doesn't exist
-                break
-            visited_styles.add(style.style_id)
-            yield style
-            current_style = style
+            # Build up the stack of styles to merge together
+            current_style = base_style
+            while current_style:
+                if not current_style.parent_style:
+                    # The current style doesn't have a parent style
+                    break
+                if current_style.parent_style in visited_styles:
+                    # Loop detected
+                    break
+                style = styles.get(current_style.parent_style)
+                if not style:
+                    # Style doesn't exist
+                    break
+                visited_styles.add(style.style_id)
+                yield style
+                current_style = style
+
+        if not style_id:
+            # In this case we need to check the default defined styles
+            styles_to_apply = self.styles.get_default_styles_by_type(style_type)
+        else:
+            styles_to_apply[style_id] = styles.get(style_id)
+
+        for style_id, style in styles_to_apply.items():
+            visited_styles.add(style_id)
+            for s in yield_styles_parent_stack(style):
+                yield s

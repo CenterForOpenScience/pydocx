@@ -5,6 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
+from pydocx.constants import DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL
 from pydocx.models import XmlModel, XmlChild, XmlAttribute, XmlCollection
 from pydocx.openxml.wordprocessing.level import Level
 
@@ -40,7 +41,7 @@ class AbstractNum(XmlModel):
             lvl1_ind = self.levels[1].paragraph_properties.to_int('indentation_left',
                                                                   default=0)
             ind_step = lvl1_ind - lvl0_ind
-        except IndexError:
-            ind_step = 720  # default one
+        except (IndexError, AttributeError):
+            ind_step = DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL  # default one
 
         return ind_step

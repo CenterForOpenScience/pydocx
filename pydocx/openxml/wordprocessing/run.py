@@ -46,12 +46,9 @@ class Run(XmlModel):
     )
 
     def get_style_chain_stack(self):
-        if not self.properties:
-            return
-
-        parent_style = self.properties.parent_style
-        if not parent_style:
-            return
+        # Even if parent style is not defined we still need to check the default style
+        # properties applied
+        parent_style = getattr(self.properties, 'parent_style', None)
 
         # TODO the getattr is necessary because of footnotes. From the context
         # of a footnote, a paragraph's container is the footnote part, which
@@ -90,6 +87,11 @@ class Run(XmlModel):
     @property
     def inherited_properties(self):
         properties = {}
+        if self.default_doc_styles and getattr(self.default_doc_styles.run, 'properties'):
+            properties.update(
+                dict(self.default_doc_styles.run.properties.fields),
+            )
+
         properties.update(
             self._get_properties_inherited_from_parent_paragraph(),
         )

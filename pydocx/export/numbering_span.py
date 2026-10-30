@@ -14,9 +14,7 @@ from pydocx.openxml.wordprocessing.run import Run
 from pydocx.openxml.wordprocessing.tab_char import TabChar
 from pydocx.openxml.wordprocessing.text import Text
 from pydocx.util.memoize import memoized
-
-# Defined in 17.15.1.25
-DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL = 720  # twips
+from pydocx.constants import DEFAULT_AUTOMATIC_TAB_STOP_INTERVAL
 
 roman_numeral_map = tuple(zip(
     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),

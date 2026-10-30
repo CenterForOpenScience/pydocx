@@ -206,6 +206,7 @@ class HyperlinkTestCase(DocumentGeneratorTestCase):
 
         expected_html = '''
             <p>Link: </p>
+            <p></p>
             <p><a href="http://www.google.com/">AAABBB</a></p>
             <p><a href="http://www.google.com/">CCC</a></p>
             <p><a href="http://www.google.com/">DDD</a>.</p>

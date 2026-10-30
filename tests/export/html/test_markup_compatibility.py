@@ -155,7 +155,9 @@ class TableTestCase(DocumentGeneratorTestCase):
             <p>AAABBB</p>
             <table border="1">
                 <tr>
-                    <td>CCC</td>
+                    <td>
+                        <p>CCC</p>
+                    </td>
                 </tr>
             </table>
             <p>DDDEEE</p>
@@ -204,7 +206,9 @@ class TableTestCase(DocumentGeneratorTestCase):
             <p>AAABBB
                 <table border="1">
                     <tr>
-                        <td>CCC</td>
+                        <td>
+                            <p>CCC</p>
+                        </td>
                     </tr>
                 </table>
             DDDEEE</p>

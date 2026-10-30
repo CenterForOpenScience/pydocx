@@ -28,10 +28,15 @@ jobs:
       - uses: actions/checkout@v1
       - name: Check python version
         run: python --version
-      - run: curl --version || true
-      - run: wget --version || true
       - name: Ensure wget is installed
-        run: command -v wget >/dev/null 2>&1 || { apt-get update && apt-get install -y wget; }
+        run: |
+          command -v wget >/dev/null 2>&1 || {
+            echo "deb http://archive.debian.org/debian/ jessie main contrib non-free" > /etc/apt/sources.list;
+            echo "deb http://archive.debian.org/debian-security/ jessie/updates main contrib non-free" >> /etc/apt/sources.list;
+            echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/90ignore-release-date
+            apt-get update;
+            apt-get install -y wget;
+          }
       - name: Download dependencies
         run: wget -i requirements/python-${{ matrix.python-version }}.txt
       - name: Install dependencies

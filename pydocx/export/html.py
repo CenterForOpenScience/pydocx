@@ -390,7 +390,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         if not left and not hanging:
             return style
 
-        # All the bellow left margin calculation is done because html ul/ol/li elements have
+        # All the below left margin calculation is done because html ul/ol/li elements have
         # their default indentations and we need to make sure that we migrate as near as
         # possible solution to html.
         margin_left = left
@@ -428,7 +428,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 pass
 
         # Here as well, we remove the default hanging which word adds
-        # because <li> tag will provide it's own
+        # because <li> tag will provide its own
         hanging -= level_ind_hanging
 
         if margin_left:
@@ -864,7 +864,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
         for arg in field_args:
             if bookmark_option is True:
                 bookmark = arg
-            if arg == '\l':
+            if arg == '\\l':
                 bookmark_option = True
         if bookmark_option and bookmark:
             target_uri = '{0}#{1}'.format(target_uri, bookmark)

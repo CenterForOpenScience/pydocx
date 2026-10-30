@@ -2,14 +2,15 @@
 PyDocX
 ######
 
-.. image:: https://travis-ci.org/CenterForOpenScience/pydocx.png?branch=master
+.. image:: https://github.com/CenterForOpenScience/pydocx/actions/workflows/ci.yml/badge.svg?branch=master
    :align: left
-   :target: https://travis-ci.org/CenterForOpenScience/pydocx
+   :alt: CI
+   :target: https://github.com/CenterForOpenScience/pydocx/actions/workflows/ci.yml
 
 * `Installation <https://pydocx.readthedocs.org/en/latest/installation.html>`_
 * `Documentation <https://pydocx.readthedocs.org>`_
 * `Release Notes <https://pydocx.readthedocs.org/en/latest/release_notes.html>`_
-* `Github Page <https://github.com/CenterForOpenScience/pydocx>`_
+* `GitHub Page <https://github.com/CenterForOpenScience/pydocx>`_
 * `Issue Tracking <https://github.com/CenterForOpenScience/pydocx/issues>`_
 
 PyDocX is a tool

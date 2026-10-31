@@ -214,13 +214,10 @@ jobs:
     container:
       image: ${{ matrix.image }}
 
-    env:
-      TOX_ENV: "py$(printf '%s' "${{ matrix.python-version }}" | tr -d '.')-coverage"
-
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
       - run: pip install tox
-      - run: tox -e "$TOX_ENV"
+      - run: tox -e "py$(printf '%s' "${{ matrix.python-version }}" | tr -d '.')-coverage"
 
   docs:
     name: docs

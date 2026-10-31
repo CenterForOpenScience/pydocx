@@ -741,7 +741,7 @@ class PyDocXHTMLExporter(PyDocXExporter):
             if rotate:
                 attrs['style'] = 'transform: rotate(%sdeg);' % rotate
             if description:
-                attrs['alt'] = description
+                attrs['alt'] = self.escape(description).replace('"', '&quot;')
 
             return HtmlTag(
                 'img',

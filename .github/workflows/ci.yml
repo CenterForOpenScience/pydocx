@@ -232,7 +232,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Install docs dependencies
-        run: pip install --requirement requirements/docs.txt
-      - name: Build docs (warnings as errors)
-        run: sphinx-build -W -b html -d /tmp/doctrees docs docs/_build/html
+      - run: pip install tox
+      - run: tox -e docs

@@ -668,6 +668,9 @@ class PyDocXHTMLExporter(PyDocXExporter):
                 attrs['colspan'] = colspan
             if rowspan > 1:
                 attrs['rowspan'] = rowspan
+            fill = getattr(table_cell.properties, 'shading', None)
+            if fill and fill != 'auto':
+                attrs['style'] = 'background-color:#%s;' % fill
             tag = HtmlTag('td', **attrs)
 
         numbering_spans = self.yield_numbering_spans(table_cell.children)

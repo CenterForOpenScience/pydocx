@@ -102,10 +102,12 @@ jobs:
           - python-version: "3.6"
             image: pypy:3.6-slim
             implementation: "pypy"
+            python-executable: "pypy3"
           - python-version: "3.6"
             image: pypy:3.6-slim
             defusedxml: "0.7.1"
             implementation: "pypy"
+            python-executable: "pypy3"
 
           - python-version: "3.7"
             image: python:3.7-slim
@@ -138,10 +140,13 @@ jobs:
     container:
       image: ${{ matrix.image }}
 
+    env:
+      PYTHON: ${{ matrix.python-executable || 'python' }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Check python version
-        run: python --version
+      - name: Output python version
+        run: $PYTHON --version
       - name: Install dependencies
         run: pip install --requirement requirements/testing-base.txt
       - name: Install defusedxml ${{ matrix.defusedxml }}

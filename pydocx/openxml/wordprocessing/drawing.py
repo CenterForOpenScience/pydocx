@@ -27,6 +27,12 @@ class Drawing(XmlModel):
         except AttributeError:
             pass
 
+    def get_picture_description(self):
+        try:
+            return self.inline.DocPr.descr
+        except AttributeError:
+            return None
+
     def get_picture_extents(self):
         graphic = self.graphic
         length = 0

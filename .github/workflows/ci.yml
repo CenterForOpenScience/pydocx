@@ -73,7 +73,7 @@ jobs:
         run: nosetests --with-doctest
 
   main:
-    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
+    name: ${{ matrix.implementation || 'python' }} ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -85,11 +85,27 @@ jobs:
             image: python:2.7-slim
             defusedxml: "0.4.1"
 
+          - python-version: "2.7"
+            image: pypy:2.7-slim
+            implementation: "pypy"
+          - python-version: "2.7"
+            image: pypy:2.7-slim
+            defusedxml: "0.4.1"
+            implementation: "pypy"
+
           - python-version: "3.6"
             image: python:3.6-slim
           - python-version: "3.6"
             image: python:3.6-slim
             defusedxml: "0.7.1"
+
+          - python-version: "3.6"
+            image: pypy:3.6-slim
+            implementation: "pypy"
+          - python-version: "3.6"
+            image: pypy:3.6-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
 
           - python-version: "3.7"
             image: python:3.7-slim
@@ -97,11 +113,27 @@ jobs:
             image: python:3.7-slim
             defusedxml: "0.7.1"
 
+          - python-version: "3.7"
+            image: pypy:3.7-slim
+            implementation: "pypy"
+          - python-version: "3.7"
+            image: pypy:3.7-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
+
           - python-version: "3.8"
             image: python:3.8-slim
           - python-version: "3.8"
             image: python:3.8-slim
             defusedxml: "0.7.1"
+
+          - python-version: "3.8"
+            image: pypy:3.8-slim
+            implementation: "pypy"
+          - python-version: "3.8"
+            image: pypy:3.8-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
 
     container:
       image: ${{ matrix.image }}

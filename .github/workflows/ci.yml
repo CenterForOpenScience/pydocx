@@ -147,6 +147,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Output python version
         run: $PYTHON --version
+      - name: Check Python version and implementation
+        env:
+          EXPECTED_IMPLEMENTATION: ${{ matrix.implementation || 'cpython' }}
+        run: |
+          $PYTHON --version
+          $PYTHON - <<'PY'
+          import os
+          import platform
+          import sys
+
+          expected = os.environ["EXPECTED_IMPLEMENTATION"].lower()
+          actual = platform.python_implementation().lower()
+          print("Expected: {0}; running: {1}".format(expected, actual))
+          if actual != expected:
+              sys.exit("Python implementation mismatch")
+          PY
       - name: Install dependencies
         run: pip install --requirement requirements/testing-base.txt
       - name: Install defusedxml ${{ matrix.defusedxml }}

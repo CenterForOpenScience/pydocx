@@ -73,7 +73,7 @@ jobs:
         run: nosetests --with-doctest
 
   main:
-    name: python ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
+    name: ${{ matrix.implementation || 'python' }} ${{ matrix.python-version }} tests ${{ matrix.defusedxml && format('+ defusedxml {0}', matrix.defusedxml) || '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -85,11 +85,29 @@ jobs:
             image: python:2.7-slim
             defusedxml: "0.4.1"
 
+          - python-version: "2.7"
+            image: pypy:2.7-slim
+            implementation: "pypy"
+          - python-version: "2.7"
+            image: pypy:2.7-slim
+            defusedxml: "0.4.1"
+            implementation: "pypy"
+
           - python-version: "3.6"
             image: python:3.6-slim
           - python-version: "3.6"
             image: python:3.6-slim
             defusedxml: "0.7.1"
+
+          - python-version: "3.6"
+            image: pypy:3.6-slim
+            implementation: "pypy"
+            python-executable: "pypy3"
+          - python-version: "3.6"
+            image: pypy:3.6-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
+            python-executable: "pypy3"
 
           - python-version: "3.7"
             image: python:3.7-slim
@@ -97,19 +115,52 @@ jobs:
             image: python:3.7-slim
             defusedxml: "0.7.1"
 
+          - python-version: "3.7"
+            image: pypy:3.7-slim
+            implementation: "pypy"
+          - python-version: "3.7"
+            image: pypy:3.7-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
+
           - python-version: "3.8"
             image: python:3.8-slim
           - python-version: "3.8"
             image: python:3.8-slim
             defusedxml: "0.7.1"
+
+          - python-version: "3.8"
+            image: pypy:3.8-slim
+            implementation: "pypy"
+          - python-version: "3.8"
+            image: pypy:3.8-slim
+            defusedxml: "0.7.1"
+            implementation: "pypy"
 
     container:
       image: ${{ matrix.image }}
 
+    env:
+      PYTHON: ${{ matrix.python-executable || 'python' }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Check python version
-        run: python --version
+      - name: Check Python version and implementation
+        env:
+          EXPECTED_IMPLEMENTATION: ${{ matrix.implementation || 'cpython' }}
+        run: |
+          $PYTHON --version
+          $PYTHON - <<'PY'
+          import os
+          import platform
+          import sys
+
+          expected = os.environ["EXPECTED_IMPLEMENTATION"].lower()
+          actual = platform.python_implementation().lower()
+          print("Expected: {0}; running: {1}".format(expected, actual))
+          if actual != expected:
+              sys.exit("Python implementation mismatch")
+          PY
       - name: Install dependencies
         run: pip install --requirement requirements/testing-base.txt
       - name: Install defusedxml ${{ matrix.defusedxml }}
@@ -156,22 +207,17 @@ jobs:
         include:
           - python-version: "2.7"
             image: python:2.7-slim
-            coverage: "3.6"
           - python-version: "3.4"
             image: python:3.4-slim
-            coverage: "3.6"
           - python-version: "3.8"
             image: python:3.8-slim
-            coverage: "5.5"
     container:
       image: ${{ matrix.image }}
 
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
-      - run: pip install --requirement requirements/testing-base.txt coverage==${{ matrix.coverage }}
-      - name: Install PyDocX
-        run: pip install -e .
-      - run: nosetests --with-doctest --with-coverage --cover-package pydocx
+      - run: pip install tox
+      - run: tox -e "py$(printf '%s' "${{ matrix.python-version }}" | tr -d '.')-coverage"
 
   docs:
     name: docs
@@ -181,7 +227,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - name: Install docs dependencies
-        run: pip install --requirement requirements/docs.txt
-      - name: Build docs (warnings as errors)
-        run: sphinx-build -W -b html -d /tmp/doctrees docs docs/_build/html
+      - run: pip install tox
+      - run: tox -e docs

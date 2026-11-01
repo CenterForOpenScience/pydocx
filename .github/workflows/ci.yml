@@ -179,32 +179,6 @@ jobs:
   flake8:
     name: python ${{ matrix.python-version }} (flake8)
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - python-version: "2.7"
-            image: python:2.7-slim
-            flake8: "3.3.0"
-          - python-version: "3.4"
-            image: python:3.4-slim
-            flake8: "3.3.0"
-          - python-version: "3.8"
-            image: python:3.8-slim
-            flake8: "3.8.4"
-    container:
-      image: ${{ matrix.image }}
-
-    steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
-      - run: pip install flake8==${{ matrix.flake8 }}
-      - run: flake8 pydocx
-
-  coverage:
-    name: python ${{ matrix.python-version }} (coverage)
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
@@ -214,10 +188,27 @@ jobs:
           - python-version: "3.8"
     container:
       image: python:${{ matrix.python-version }}-slim
+    env:
+      TOXENV: py${{ matrix.python-version }}-flake8
+    steps:
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - run: pip install tox
+      - run: tox
 
+  coverage:
+    name: python ${{ matrix.python-version }} (coverage)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "2.7"
+          - python-version: "3.4"
+          - python-version: "3.8"
+    container:
+      image: python:${{ matrix.python-version }}-slim
     env:
       TOXENV: py${{ matrix.python-version }}-coverage
-
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
       - run: pip install tox
@@ -228,7 +219,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:3.6-slim
-
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - run: pip install tox

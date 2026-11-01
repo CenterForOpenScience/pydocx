@@ -86,11 +86,7 @@ jobs:
           - python-version: "3.4"
             defusedxml: true
 
-          - python-version: "3.4"
-            implementation: "pypy"
-          - python-version: "3.4"
-            implementation: "pypy"
-            defusedxml: true
+          # there is no container image for pypy3.4, so we skip it
 
           - python-version: "3.6"
           - python-version: "3.6"

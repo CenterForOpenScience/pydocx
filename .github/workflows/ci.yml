@@ -118,6 +118,16 @@ jobs:
             implementation: "pypy"
             defusedxml: true
 
+          - python-version: "3.10"
+          - python-version: "3.10"
+            defusedxml: true
+
+          - python-version: "3.10"
+            implementation: "pypy"
+          - python-version: "3.10"
+            implementation: "pypy"
+            defusedxml: true
+
     container:
       image: ${{ matrix.implementation || 'python' }}:${{ matrix.python-version }}-slim
 

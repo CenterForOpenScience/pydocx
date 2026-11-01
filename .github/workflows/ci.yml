@@ -31,13 +31,6 @@ jobs:
             defusedxml: "0.4.1"
             defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
 
-          - python-version: "3.4"
-            image: python:3.4-slim
-          - python-version: "3.4"
-            image: python:3.4-slim
-            defusedxml: "0.4.1"
-            defusedxml_url: "https://files.pythonhosted.org/packages/09/3b/b1afa9649f48517d027e99413fec54f387f648c90156b3cf6451c8cd45f9/defusedxml-0.4.1.tar.gz"
-
     container:
       image: ${{ matrix.image }}
 
@@ -86,6 +79,16 @@ jobs:
           - python-version: "2.7"
             implementation: "pypy"
           - python-version: "2.7"
+            implementation: "pypy"
+            defusedxml: true
+
+          - python-version: "3.4"
+          - python-version: "3.4"
+            defusedxml: true
+
+          - python-version: "3.4"
+            implementation: "pypy"
+          - python-version: "3.4"
             implementation: "pypy"
             defusedxml: true
 

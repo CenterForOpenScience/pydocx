@@ -42,8 +42,6 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - run: ls -l /usr/local/bin/python* || true
-      - run: ls -l /usr/bin/python* || true
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with these older python versions
       - name: Check python version
         run: python --version
@@ -128,8 +126,6 @@ jobs:
       TOXENV: ${{ matrix.implementation || 'py' }}${{ matrix.python-version }}${{ matrix.defusedxml && '-defusedxml' || '' }}
 
     steps:
-      - run: ls -l /usr/local/bin/py* || true
-      - run: ls -l /usr/bin/py* || true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - run: pip install tox
       - run: tox

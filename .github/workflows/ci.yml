@@ -146,8 +146,8 @@ jobs:
       PYTHON: ${{ matrix.python-executable || 'python' }}
 
     steps:
-      - run: ls -l /usr/local/bin/python* || true
-      - run: ls -l /usr/bin/python* || true
+      - run: ls -l /usr/local/bin/py* || true
+      - run: ls -l /usr/bin/py* || true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Check Python version and implementation
         env:

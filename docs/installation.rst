@@ -5,9 +5,16 @@ Installation
 Python & OS Support
 ###################
 
-PyDocX is supported and tested with CPython versions 2.6, 2.7, 3.3, 3.4, and pypy.
+* CPython versions 2.6, 2.7, 3.3, 3.4, 3.6, 3.7, 3.8
+* PyPy (Python compatibility versions) 2.7, 3.6, 3.7, 3.8
 
-PyDocX is supported and tested with Linux and Windows.
+.. warning::
+
+   A future release will drop support for all Python and PyPy versions below 3.8
+
+PyDocX is supported and tested with Linux.
+
+Windows is supported, but not tested. If you are using Windows and have issues, please report them.
 
 Install using pip
 #################
@@ -22,4 +29,3 @@ Upgrade using pip
 .. code-block:: shell-session
 
     $ pip install -U pydocx
-

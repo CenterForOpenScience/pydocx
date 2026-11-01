@@ -119,10 +119,14 @@ jobs:
             defusedxml: true
 
           - python-version: "3.10"
-            image: python:3.10-slim
           - python-version: "3.10"
-            image: python:3.10-slim
-            defusedxml: "0.7.1"
+            defusedxml: true
+
+          - python-version: "3.10"
+            implementation: "pypy"
+          - python-version: "3.10"
+            implementation: "pypy"
+            defusedxml: true
 
     container:
       image: ${{ matrix.implementation || 'python' }}:${{ matrix.python-version }}-slim

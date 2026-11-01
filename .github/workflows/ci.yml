@@ -129,7 +129,7 @@ jobs:
       TOXENV: ${{ matrix.implementation || 'py' }}${{ matrix.python-version }}${{ matrix.defusedxml && '-defusedxml' || '' }}
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/checkout@${{ matrix.python-version == '3.4' && '50fbc622fc4ef5163becd7fab6573eac35f8462e' || '3d3c42e5aac5ba805825da76410c181273ba90b1' }}
       - run: pip install tox
       - run: tox
 
@@ -149,7 +149,7 @@ jobs:
     env:
       TOXENV: py${{ matrix.python-version }}-flake8
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - uses: actions/checkout@${{ matrix.python-version == '3.4' && '50fbc622fc4ef5163becd7fab6573eac35f8462e' || '3d3c42e5aac5ba805825da76410c181273ba90b1' }}
       - run: pip install tox
       - run: tox
 
@@ -168,7 +168,7 @@ jobs:
     env:
       TOXENV: py${{ matrix.python-version }}-coverage
     steps:
-      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
+      - uses: actions/checkout@${{ matrix.python-version == '3.4' && '50fbc622fc4ef5163becd7fab6573eac35f8462e' || '3d3c42e5aac5ba805825da76410c181273ba90b1' }}
       - run: pip install tox
       - run: tox
 

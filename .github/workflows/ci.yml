@@ -209,17 +209,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tox-python-version: "27"
-            image: python:2.7-slim
-          - tox-python-version: "34"
-            image: python:3.4-slim
-          - tox-python-version: "38"
-            image: python:3.8-slim
+          - python-version: "2.7"
+          - python-version: "3.4"
+          - python-version: "3.8"
     container:
-      image: ${{ matrix.image }}
+      image: python:${{ matrix.python-version }}-slim
 
     env:
-      TOXENV: py${{ matrix.tox-python-version }}-coverage
+      TOXENV: py${{ matrix.python-version }}-coverage
 
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions

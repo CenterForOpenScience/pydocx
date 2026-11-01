@@ -219,15 +219,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
-      - name: Create expected interpreter alias
-        run: |
-          interpreter="$(command -v python)"
-          expected="python${PYTHON_VERSION}"
-          if ! command -v "$expected" >/dev/null 2>&1; then
-            ln -s "$interpreter" "/usr/local/bin/$expected"
-          fi
-          ls -l /usr/local/bin/python* || true
-          ls -l /usr/bin/python* || true
       - run: pip install tox
       - run: tox -e "py$(printf '%s' "$PYTHON_VERSION" | tr -d '.')-coverage" -vv
 

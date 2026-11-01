@@ -42,6 +42,8 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
+      - run: ls -l /usr/local/bin/python* || true
+      - run: ls -l /usr/bin/python* || true
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with these older python versions
       - name: Check python version
         run: python --version
@@ -144,6 +146,8 @@ jobs:
       PYTHON: ${{ matrix.python-executable || 'python' }}
 
     steps:
+      - run: ls -l /usr/local/bin/python* || true
+      - run: ls -l /usr/bin/python* || true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Check Python version and implementation
         env:
@@ -218,6 +222,8 @@ jobs:
       PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
+      - run: ls -l /usr/local/bin/python* || true
+      - run: ls -l /usr/bin/python* || true
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
       - run: pip install tox
       - run: tox -e "py$(printf '%s' "$PYTHON_VERSION" | tr -d '.')-coverage" -vv

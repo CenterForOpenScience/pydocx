@@ -209,24 +209,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "2.7"
+          - tox-python-version: "27"
             image: python:2.7-slim
-          - python-version: "3.4"
+          - tox-python-version: "34"
             image: python:3.4-slim
-          - python-version: "3.8"
+          - tox-python-version: "38"
             image: python:3.8-slim
     container:
       image: ${{ matrix.image }}
 
     env:
-      PYTHON_VERSION: ${{ matrix.python-version }}
+      TOXENV: py${{ matrix.tox-python-version }}-coverage
 
     steps:
-      - run: ls -l /usr/local/bin/python* || true
-      - run: ls -l /usr/bin/python* || true
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e # v1 is the only version that works with older python versions
       - run: pip install tox
-      - run: tox -e "py$(printf '%s' "$PYTHON_VERSION" | tr -d '.')-coverage" -vv
+      - run: tox
 
   docs:
     name: docs

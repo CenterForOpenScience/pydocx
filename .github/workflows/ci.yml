@@ -138,6 +138,16 @@ jobs:
             implementation: "pypy"
             defusedxml: true
 
+          - python-version: "3.12"
+          - python-version: "3.12"
+            defusedxml: true
+
+          - python-version: "3.12"
+            implementation: "pypy"
+          - python-version: "3.12"
+            implementation: "pypy"
+            defusedxml: true
+
     container:
       image: ${{ matrix.implementation || 'python' }}:${{ matrix.python-version }}-slim
 
@@ -164,6 +174,7 @@ jobs:
           - python-version: "3.4"
           - python-version: "3.8"
           - python-version: "3.11"
+          - python-version: "3.12"
     container:
       image: python:${{ matrix.python-version }}-slim
     env:
@@ -187,6 +198,7 @@ jobs:
           - python-version: "3.4"
           - python-version: "3.8"
           - python-version: "3.11"
+          - python-version: "3.12"
     container:
       image: python:${{ matrix.python-version }}-slim
     env:

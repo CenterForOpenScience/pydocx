@@ -5,8 +5,8 @@ Installation
 Python & OS Support
 ###################
 
-* CPython versions 2.6, 2.7, 3.3, 3.4, 3.6, 3.7, 3.8, 3.10, 3.11
-* PyPy (Python compatibility versions) 2.7, 3.6, 3.7, 3.8, 3.10, 3.11
+* CPython versions 2.6, 2.7, 3.3, 3.4, 3.6, 3.7, 3.8, 3.10, 3.11, 3.12
+* PyPy (Python compatibility versions) 2.7, 3.6, 3.7, 3.8, 3.10, 3.11, 3.12
 
 .. warning::
 
